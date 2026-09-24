@@ -76,6 +76,19 @@ jobs:
         echo "Dependency source: **$source** ($reason)" >> "$GITHUB_STEP_SUMMARY"
         echo "Dependency source: $source ($reason)"
 
+    # qpm-action saves ~/.local/share/QPM-RS/cache after it resolves the NDK
+    # whenever `cache` is on, whether or not `restore` ran. With restore off
+    # (every source but qpackages) nothing creates that directory, so the save
+    # fails with "Path Validation Error" and takes the whole step down. It only
+    # ever passed while an older qpm-cache-* entry was being restored into it;
+    # once that entry was evicted every build failed before compiling anything.
+    # A placeholder file keeps the directory non-empty so the save has something
+    # to archive.
+    - name: Create the QPM cache directory qpm-action saves
+      run: |
+        mkdir -p "$HOME/.local/share/QPM-RS/cache"
+        touch "$HOME/.local/share/QPM-RS/cache/.keep"
+
     - name: QPM Action
       id: qpm
       uses: Fernthedev/qpm-action@v1
