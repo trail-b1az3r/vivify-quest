@@ -33,6 +33,113 @@ port from scratch — see Credits below.
   - Full settings-menu parity: every toggle the runtime already had a config
     key for is now actually exposed in the in-game settings UI.
 
+## 0.10.0 — white notes, white levels, and features from the other forks
+
+This release is built from `main` (0.9.14), with the build and dependency fixes
+from the `stable` branch kept. `stable` was a rollback to roughly 0.7, the last
+build whose converted maps drew their models. That rollback brought back 0.7's
+two visible problems: **blocks are white** and **levels come out white**. Both
+are fixed here without going back to 0.8's black levels. 0.9.13's gates and
+0.9.14's readable-texture flag stay in place.
+
+### Blocks (notes) drawn pure white
+
+A note replacement gets its colour from the game. Beat Saber writes the note
+colour into the note's `MaterialPropertyBlock` as `_Color`, and Vivify on PC
+relies on exactly that. On a converted bundle the replacement's own shader
+cannot run, so it wears a stand-in. The stand-in is chosen for having *a*
+colour property, `_Color` **or** `_BaseColor`. One that reads `_BaseColor`
+never receives the note colour. It draws in its material's own colour, which
+for a note material, authored to be tinted at runtime, is the default white.
+
+- The note colour is now mirrored into `_Color`, `_BaseColor`, `_TintColor` and
+  `_MainColor` in the same block, so whichever name the shader declares gets
+  it. Sabers, saber trails and debris get the same treatment.
+- If a note has no `MaterialPropertyBlockController` to borrow, or its block has
+  no colour yet, the colour is looked up from the `ColorManager` and written
+  directly. Before, those replacements were never coloured at all.
+- Colours that change after spawn (Chroma, colour-scheme events) are picked up:
+  each frame, any replaced note or debris whose `_Color` has moved gets its
+  aliases rewritten. That costs two property reads per replaced object per
+  frame, plus a write only when the colour changed.
+
+### Levels coming out white (or black)
+
+The colour carried from a material onto its stand-in was being picked badly in
+four ways:
+
+- **HDR colours clamped to white.** PC maps author glow as HDR colours, such as
+  `(6, 0.8, 0.3)`, and let bloom turn the overflow into a halo. The Quest renders
+  LDR with no bloom, so that colour clamps to `(1, 0.8, 0.3)`, and anything
+  brighter comes out white. Carried colours are now scaled so the brightest
+  channel is 1, which keeps the hue.
+- **Black emission counted as the colour.** `_EmissionColor` was checked before
+  `_Color`, and every Standard material has emission at its default of black. A
+  black emission is now ignored, and emission is only used, last, when it
+  actually glows.
+- **Rim/outline/shadow colours tinting whole meshes.** The name scan took any
+  property with "col" in it. It now skips secondary colours (rim, outline,
+  shadow, specular, fog, fresnel and similar). A material with a real albedo
+  texture keeps its primary colour even if that is white, because then the
+  texture carries the look.
+- **Unsampleable textures.** A texture still in a BC/DXT format after the
+  decode pass has no pixels this GPU can use. It samples as flat white, and it
+  also made the colour search think the texture carried the look. It is no
+  longer carried onto the stand-in, so the colour search can find the real tint.
+
+When all a stand-in has left is untextured default white, it is drawn in soft
+grey (`0.55`) instead of glaring white. A converted level is mostly geometry
+like that, which is why whole maps read as white. Notes, sabers and debris are
+unaffected, because their colour arrives through the property block. The level
+log reports how many stand-ins were dimmed this way.
+
+**What this cannot fix:** a texture whose pixels are not available on the
+device still draws untextured. Re-convert maps converted by an older build
+(0.9.14's conversion cache version already forces this), so that 0.9.14's
+readable-texture flag is applied.
+
+### Features merged from the other Quest forks
+
+Most of what [webbs7524-wq/Vivify-Quest-2](https://github.com/webbs7524-wq/Vivify-Quest-2)
+and [PATTT160/Vivify-Quest3.0fork](https://github.com/PATTT160/Vivify-Quest3.0fork)
+add was already in `main`: `PostProcess`/`PostProcessing`/`ScreenEffect`
+aliases, screen textures sized from the camera, `depthTextureMode` arrays,
+`SolidColor` clear flags, track-scoped non-additive `AssignObjectPrefab`, and
+track matching straight from note custom data. New in this build:
+
+- **Blit material aliases**: `material`, `effect`, `postProcessMaterial` and
+  `postProcessingMaterial` are accepted where `asset` is.
+- **Blit order spellings**: `phase`/`timing` as synonyms for `order`, `before`/
+  `pre`/`beforeMain` as values, and boolean `beforeMainEffect`/`afterMainEffect`.
+- **Clearing a Blit**: `"clear": true`, `"remove": true` or `"enabled": false`
+  stops matching running effects instead of starting one. Each of `asset`,
+  `source`, `destination`, `priority` and `pass` that the event names narrows
+  the match; naming none clears that order's whole list.
+- **Persistent Blits**: `"duration": -1` keeps an effect running until it is
+  cleared.
+
+From [gamesbeash-art/Vivify-Quest_enabled-Play](https://github.com/gamesbeash-art/Vivify-Quest_enabled-Play):
+
+- **Named enum values in `SetRenderingSettings`**, for example `"fogMode":
+  "ExponentialSquared"`, `"ambientMode": "Flat"` or `"shadows": "HardOnly"`,
+  not just numbers. Case-insensitive.
+- **The rest of `RenderTextureFormat`** for `CreateScreenTexture`: `RInt`,
+  `RGInt`, `ARGBInt`, `RGHalf`, `ARGB64`, `ARGB2101010`, `RGB111110Float`,
+  `BGRA32`, `RG32`, `RG16`, `R16`, `RGBAUShort`. Before, these fell back to
+  ARGB32, which quantises the data such textures exist to hold. A format the
+  GPU cannot render is still downgraded.
+
+Deliberately **not** merged: those forks' gameplay overlay camera, which draws
+notes over everything. It is the "blocks render on top of everything" behaviour
+this port's per-`CameraEvent` rendering exists to avoid.
+
+### Verified / unverified
+
+The host syntax check passes for every source file. The converter (54/54),
+DXBC (128/128), shader-scan (60/60), texture-decoder and report suites pass
+under ASan/UBSan, and the converter fuzz pass finds no crashes. As with every
+build here, none of this has run on a headset yet.
+
 ## 0.9.14 — giving the decoder something to decode
 
 0.9.13 stops a texture whose pixels are gone from being turned into a black one.

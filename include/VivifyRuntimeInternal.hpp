@@ -210,6 +210,9 @@ private:
   void ReapplyCurrentRenderSettings();
 
   bool SameBlitData(BlitMaterialData const& left, BlitMaterialData const& right);
+  std::optional<std::string_view> ReadBlitAssetName(rapidjson::Value const& json);
+  void RemoveMatchingBlitEffects(std::vector<ActiveBlitEffect>& effects, rapidjson::Value const& json,
+                                 BlitMaterialData const& filter, bool filterAsset);
   PostProcessingOrder ParsePostProcessingOrder(rapidjson::Value const& json);
   void AddOrUpdateBlitEffect(std::vector<ActiveBlitEffect>& effects, ActiveBlitEffect effect);
   void HandleBlit(CustomJSONData::CustomEventData* customEventData, rapidjson::Value const& json);
@@ -297,9 +300,12 @@ private:
   void ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc,
                               std::vector<AssignedPrefabInfo*> const& infos, VisualReplacement& replacement);
   void ApplyReplacementRenderersToMaterialBlock(GlobalNamespace::MaterialPropertyBlockController* mpb,
-                                                VisualReplacement& replacement, bool hideOriginal);
+                                                VisualReplacement& replacement, bool hideOriginal,
+                                                std::optional<UnityEngine::Color> fallbackColor = std::nullopt);
   void ApplyReplacementRenderersToMaterialBlock(UnityEngine::GameObject* gameObject,
-                                                VisualReplacement& replacement, bool hideOriginal);
+                                                VisualReplacement& replacement, bool hideOriginal,
+                                                std::optional<UnityEngine::Color> fallbackColor = std::nullopt);
+  void SyncReplacementTintColors();
   void RestoreAllVisualReplacements();
   void PurgeInvalidActiveSabers();
   void ForceGameObjectRenderersOnTop(UnityEngine::GameObject* gameObject);
@@ -466,6 +472,7 @@ private:
   // Counted apart from the failures: these are meant to be undrawn, and folding
   // them into "could not be repaired" hid a rule that was deleting scenery.
   int _screenEffectsDeclined = 0;
+  int _standInsDimmedFromWhite = 0;
   // Materials already visited by the texture pass. One material is normally
   // shared by many renderers across a prefab, and the decode budget is spent in
   // real milliseconds.

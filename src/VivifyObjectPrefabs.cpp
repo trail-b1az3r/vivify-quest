@@ -919,7 +919,7 @@ void Runtime::ApplyColorToRenderers(std::vector<UnityEngine::Renderer*> const& r
 
   auto* block = UnityEngine::MaterialPropertyBlock::New_ctor();
   if (block == nullptr) return;
-  block->SetColor(ColorPropertyId(), color);
+  SetTintColors(block, color);
   for (auto* renderer : renderers) {
     if (IsAlive(renderer)) {
       renderer->SetPropertyBlock(block);
@@ -989,8 +989,14 @@ void Runtime::ReplaceNoteVisuals(GlobalNamespace::NoteController* noteController
   }
 
   auto* mpb = GetReplacementMaterialPropertyBlockController(noteController, replacementParent);
+  auto const noteColor = GetNoteColor(noteController);
   if (IsAlive(mpb)) {
-    ApplyReplacementRenderersToMaterialBlock(mpb, replacement, hideOriginal);
+    ApplyReplacementRenderersToMaterialBlock(mpb, replacement, hideOriginal, noteColor);
+  } else {
+    // No controller to borrow means nothing will ever write the note colour
+    // onto these renderers, and they would draw in their material's own
+    // colour -- white, for a note material authored to be tinted at runtime.
+    ApplyColorToRenderers(replacement.replacementRenderers, noteColor);
   }
   if (hideOriginal) {
     DisableOriginalRenderers(originalRenderers, replacement);
@@ -1196,8 +1202,26 @@ void Runtime::ReplaceDebrisVisuals(GlobalNamespace::NoteDebris* debris) {
 }
 
 void Runtime::ApplyReplacementRenderersToMaterialBlock(GlobalNamespace::MaterialPropertyBlockController* mpb,
-                                                       VisualReplacement& replacement, bool hideOriginal) {
+                                                       VisualReplacement& replacement, bool hideOriginal,
+                                                       std::optional<UnityEngine::Color> fallbackColor) {
   if (!IsAlive(mpb)) return;
+  // The game has already written this object's colour into the controller's
+  // block as `_Color` by the time the Init hooks run. Mirror it under the other
+  // tint names so a stand-in shader that reads `_BaseColor` is coloured too
+  // (see TintColorPropertyIds). A block that has no `_Color` yet reads back as
+  // all zeros; then the colour the caller worked out is used instead of
+  // leaving the replacement in its material's white.
+  if (auto* block = mpb->get_materialPropertyBlock(); block != nullptr) {
+    auto color = block->GetColor(ColorPropertyId());
+    bool const unset = color.r == 0.0f && color.g == 0.0f && color.b == 0.0f && color.a == 0.0f;
+    if (unset && fallbackColor.has_value()) {
+      color = *fallbackColor;
+      block->SetColor(ColorPropertyId(), color);
+    }
+    if (!unset || fallbackColor.has_value()) {
+      SetTintColors(block, color);
+    }
+  }
   std::vector<UnityEngine::Renderer*> replacementRenderers;
   replacementRenderers.reserve(replacement.replacementRenderers.size());
   for (auto* renderer : replacement.replacementRenderers) {
@@ -1242,11 +1266,46 @@ void Runtime::ApplyReplacementRenderersToMaterialBlock(GlobalNamespace::Material
 }
 
 void Runtime::ApplyReplacementRenderersToMaterialBlock(UnityEngine::GameObject* gameObject,
-                                                       VisualReplacement& replacement, bool hideOriginal) {
+                                                       VisualReplacement& replacement, bool hideOriginal,
+                                                       std::optional<UnityEngine::Color> fallbackColor) {
   if (!IsAlive(gameObject)) return;
   auto* mpb = gameObject->GetComponentInChildren<GlobalNamespace::MaterialPropertyBlockController*>(true);
   if (IsAlive(mpb)) {
-    ApplyReplacementRenderersToMaterialBlock(mpb, replacement, hideOriginal);
+    ApplyReplacementRenderersToMaterialBlock(mpb, replacement, hideOriginal, fallbackColor);
+  } else if (fallbackColor.has_value()) {
+    ApplyColorToRenderers(replacement.replacementRenderers, *fallbackColor);
+  }
+}
+
+// Colour changes after spawn -- Chroma recolouring a note mid-flight, a
+// colour-scheme event -- arrive as a new `_Color` in the controller's block
+// followed by ApplyChanges. The aliases written at replace time would then be
+// stale, and a stand-in reading `_BaseColor` would keep the old colour. This
+// re-mirrors any block whose `_Color` has moved away from its `_BaseColor`.
+// It is two property reads per replaced note per frame, and a write only on a
+// change.
+void Runtime::SyncReplacementTintColors() {
+  static int const baseColorId = UnityEngine::Shader::PropertyToID(u"_BaseColor");
+  auto sync = [this](VisualReplacement& replacement) {
+    auto* mpb = replacement.materialPropertyBlockController;
+    if (!IsAlive(mpb) || replacement.replacementRenderers.empty()) return;
+    auto* block = mpb->get_materialPropertyBlock();
+    if (block == nullptr) return;
+    auto const color = block->GetColor(ColorPropertyId());
+    if (NearlySameColor(color, block->GetColor(baseColorId))) return;
+    SetTintColors(block, color);
+    try {
+      mpb->ApplyChanges();
+    } catch (...) {
+      // Same reasoning as the other ApplyChanges call sites: never let a
+      // native throw here unwind through the frame.
+    }
+  };
+  for (auto& [controller, replacement] : _noteReplacements) {
+    if (IsAlive(controller)) sync(replacement);
+  }
+  for (auto& [debris, replacement] : _debrisReplacements) {
+    if (IsAlive(debris)) sync(replacement);
   }
 }
 

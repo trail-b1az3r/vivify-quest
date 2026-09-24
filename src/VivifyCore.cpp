@@ -147,6 +147,7 @@ void Runtime::Update() {
     RefreshCameraComponents(true);
     DetectSongRestart();
     UpdateSaberReplacementColors();
+    SyncReplacementTintColors();
   } catch (std::exception const& ex) {
     LogThrottledUpdateError(ex.what());
   } catch (...) {

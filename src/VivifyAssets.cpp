@@ -312,6 +312,29 @@ bool IsUninformativeColor(UnityEngine::Color const& color) {
   return nearWhite || invisible;
 }
 
+// Emission is additive: black emission means "no glow", not "this object is
+// black". Every Standard-shader material carries `_EmissionColor` at its
+// default of (0, 0, 0, 1), and when this list checked emission before
+// `_Color` that default counted as the material's real colour -- so any
+// converted Standard material came out black whatever its albedo was.
+bool IsBlankEmission(UnityEngine::Color const& color) {
+  return color.r < 0.02f && color.g < 0.02f && color.b < 0.02f;
+}
+
+// Names that are colour-shaped but describe something other than the
+// surface: a rim, an outline, a shadow tint, a specular highlight, fog. Taking
+// one of those as the albedo tints the whole mesh the colour of its edge.
+bool IsSecondaryColorName(std::string const& key) {
+  static constexpr std::string_view secondary[] = {
+      "shadow"sv, "spec"sv,   "rim"sv,   "outline"sv, "fog"sv,   "reflect"sv,
+      "fresnel"sv, "edge"sv,  "ambient"sv, "sss"sv,   "subsurface"sv, "highlight"sv,
+  };
+  for (auto word : secondary) {
+    if (key.find(word) != std::string::npos) return true;
+  }
+  return false;
+}
+
 // Recovers the colour a material was actually tinted with.
 //
 // This used to return the first property that *existed*, which is almost always
@@ -323,32 +346,57 @@ bool IsUninformativeColor(UnityEngine::Color const& color) {
 // SerializedFile and are entirely platform-independent, so that colour survives
 // conversion perfectly -- it was only ever being looked up wrong.
 //
-// Every candidate is now collected and the first informative one wins, falling
-// back to whatever was found if they are all blank.
-std::optional<UnityEngine::Color> ReadMaterialFallbackColor(UnityEngine::Material* material) {
+// Three refinements on top of "first informative colour wins":
+//   - the albedo names come first and emission last, and a black emission is
+//     never taken (see IsBlankEmission);
+//   - when the material has an albedo texture, its primary colour is kept even
+//     at white, because then the texture carries the look and white is the
+//     correct multiplier -- hunting on for "something more colourful" is how a
+//     rim or outline colour ended up painted over a whole textured mesh;
+//   - HDR colours are brought back into range keeping their hue (see
+//     NormalizeHdrColor), since the Quest has no bloom to spend the overflow on
+//     and an unscaled (6, 0.8, 0.3) clamps to near-white.
+std::optional<UnityEngine::Color> ReadMaterialFallbackColor(UnityEngine::Material* material,
+                                                            bool hasAlbedoTexture = false) {
   if (!IsManagedAlive(material)) return std::nullopt;
-  static int const colorIds[] = {
+  static int const primaryIds[] = {
       UnityEngine::Shader::PropertyToID(u"_BaseColor"),
+      UnityEngine::Shader::PropertyToID(u"_Color"),
       UnityEngine::Shader::PropertyToID(u"_MainColor"),
       UnityEngine::Shader::PropertyToID(u"_TintColor"),
       UnityEngine::Shader::PropertyToID(u"_Tint"),
-      UnityEngine::Shader::PropertyToID(u"_EmissionColor"),
-      UnityEngine::Shader::PropertyToID(u"_Emission"),
+  };
+  static int const secondaryIds[] = {
       UnityEngine::Shader::PropertyToID(u"_HorizonCol"),
       UnityEngine::Shader::PropertyToID(u"_SkyCol"),
-      UnityEngine::Shader::PropertyToID(u"_Color"),
+  };
+  static int const emissionIds[] = {
+      UnityEngine::Shader::PropertyToID(u"_EmissionColor"),
+      UnityEngine::Shader::PropertyToID(u"_Emission"),
   };
 
   std::optional<UnityEngine::Color> firstFound;
-  auto consider = [&firstFound](UnityEngine::Color const& color) {
+  auto consider = [&firstFound](UnityEngine::Color color) {
+    color = NormalizeHdrColor(color);
     if (!firstFound.has_value()) firstFound = color;
     return !IsUninformativeColor(color);
   };
 
-  for (int id : colorIds) {
+  // With a texture, a primary colour is the answer even at white -- but a
+  // shader declaring both `_BaseColor` and `_Color` usually sets only one of
+  // them, so a non-white primary still beats a white one.
+  std::optional<UnityEngine::Color> texturedPrimary;
+  for (int id : primaryIds) {
+    if (!material->HasProperty(id)) continue;
+    auto color = NormalizeHdrColor(material->GetColor(id));
+    if (consider(color)) return color;
+    if (hasAlbedoTexture && color.a > 0.01f && !texturedPrimary.has_value()) texturedPrimary = color;
+  }
+  if (texturedPrimary.has_value()) return texturedPrimary;
+  for (int id : secondaryIds) {
     if (!material->HasProperty(id)) continue;
     auto color = material->GetColor(id);
-    if (consider(color)) return color;
+    if (consider(color)) return NormalizeHdrColor(color);
   }
 
   // Then anything colour-shaped the material declares itself. Colours live in
@@ -359,13 +407,24 @@ std::optional<UnityEngine::Color> ReadMaterialFallbackColor(UnityEngine::Materia
       if (!name) continue;
       std::string key = NormalizeAssetKey(ToStdString(name));
       if (key.find("color") == std::string::npos && key.find("colour") == std::string::npos &&
-          key.find("col") == std::string::npos && key.find("tint") == std::string::npos &&
-          key.find("emis") == std::string::npos) {
+          key.find("col") == std::string::npos && key.find("tint") == std::string::npos) {
         continue;
       }
+      if (IsSecondaryColorName(key) || key.find("emis") != std::string::npos) continue;
       auto color = material->GetColor(name);
-      if (consider(color)) return color;
+      if (consider(color)) return NormalizeHdrColor(color);
     }
+  }
+
+  // Emission last, and only when it is actually glowing. For an emissive-only
+  // material -- common in Vivify maps, whose look is all glow -- this is the
+  // colour that matters.
+  for (int id : emissionIds) {
+    if (!material->HasProperty(id)) continue;
+    auto color = material->GetColor(id);
+    if (IsBlankEmission(color)) continue;
+    color.a = 1.0f;
+    if (consider(color)) return NormalizeHdrColor(color);
   }
   return firstFound;
 }
@@ -375,9 +434,24 @@ std::optional<UnityEngine::Color> ReadMaterialFallbackColor(UnityEngine::Materia
 // Material.mainTexture only ever resolves `_MainTex`. Custom shaders routinely
 // name their albedo something else (`_BaseMap`, `_Albedo`, `_Tex`), so any
 // material not using the conventional name came through untextured.
+//
+// A texture this GPU cannot sample is not worth carrying. The decode pass runs
+// before shader repair and swaps every texture it can rescue for an RGBA32
+// copy, so anything still in a block-compressed format by now has no pixels
+// available (see ResolveUsableTexture). Handed to a stand-in it samples as flat
+// white, and -- worse -- its presence tells ReadMaterialFallbackColor that the
+// texture carries the look, so a white `_Color` would be kept as-is. Treating it
+// as absent lets the colour search find the material's real tint instead.
+bool IsSampleableTexture(UnityEngine::Texture* texture) {
+  if (!IsManagedAlive(texture)) return false;
+  auto* texture2d = il2cpp_utils::try_cast<UnityEngine::Texture2D>(texture).value_or(nullptr);
+  if (!IsManagedAlive(texture2d)) return true;
+  return UnityEngine::SystemInfo::SupportsTextureFormat(texture2d->get_format());
+}
+
 UnityEngine::Texture* ReadMaterialFallbackTexture(UnityEngine::Material* material) {
   if (!IsManagedAlive(material)) return nullptr;
-  if (auto* mainTexture = material->get_mainTexture().unsafePtr(); IsManagedAlive(mainTexture)) {
+  if (auto* mainTexture = material->get_mainTexture().unsafePtr(); IsSampleableTexture(mainTexture)) {
     return mainTexture;
   }
   auto names = material->GetPropertyNames(UnityEngine::MaterialPropertyType::Texture);
@@ -392,7 +466,7 @@ UnityEngine::Texture* ReadMaterialFallbackTexture(UnityEngine::Material* materia
         key.find("height") != std::string::npos || key.find("detail") != std::string::npos) {
       continue;
     }
-    if (auto* texture = material->GetTexture(name).unsafePtr(); IsManagedAlive(texture)) {
+    if (auto* texture = material->GetTexture(name).unsafePtr(); IsSampleableTexture(texture)) {
       return texture;
     }
   }
@@ -402,8 +476,8 @@ UnityEngine::Texture* ReadMaterialFallbackTexture(UnityEngine::Material* materia
 MaterialFallbackState CaptureMaterialFallbackState(UnityEngine::Material* material) {
   MaterialFallbackState state;
   if (!IsManagedAlive(material)) return state;
-  state.color = ReadMaterialFallbackColor(material);
   state.mainTexture = ReadMaterialFallbackTexture(material);
+  state.color = ReadMaterialFallbackColor(material, IsManagedAlive(state.mainTexture));
   state.renderQueue = material->get_renderQueue();
   return state;
 }
@@ -1599,6 +1673,19 @@ void Runtime::RepairMaterialShader(UnityEngine::Material* material, std::string_
     _repairedMaterials.emplace(material);
     return;
   }
+  if (usingGenericStandIn && !IsManagedAlive(fallbackState.mainTexture) && fallbackState.color.has_value() &&
+      IsUninformativeColor(*fallbackState.color)) {
+    // The only colour on offer is the default white every material starts at,
+    // and there is no texture to multiply it by. On PC the map's own shader
+    // turned that white into the intended look; the stand-in cannot, so the
+    // mesh comes out as a flat, fully lit white shape -- and because a converted
+    // level is mostly such meshes, the whole map reads as white. A soft grey
+    // keeps the geometry legible without glaring over everything else. Note,
+    // saber and debris replacements are unaffected: their colour arrives
+    // through the MaterialPropertyBlock at spawn, which overrides this.
+    fallbackState.color = UnityEngine::Color(0.55f, 0.55f, 0.58f, 1.0f);
+    _standInsDimmedFromWhite++;
+  }
   if (usingGenericStandIn && !canCarryLook) {
     // Dim, opaque, and deliberately unlike anything a map would author, so it
     // reads as "this is a stand-in" rather than as the intended look.
@@ -1943,6 +2030,7 @@ void Runtime::RepairLoadedMaterialShaders() {
   _shaderRepairSucceeded = 0;
   _shaderRepairFailed = 0;
   _screenEffectsDeclined = 0;
+  _standInsDimmedFromWhite = 0;
   for (auto const& [path, asset] : _assets) {
     if (!IsAlive(asset)) continue;
     if (auto* material = il2cpp_utils::try_cast<UnityEngine::Material>(asset).value_or(nullptr); IsAlive(material)) {
@@ -1955,8 +2043,9 @@ void Runtime::RepairLoadedMaterialShaders() {
     // Worth logging unconditionally: a bundle whose shaders all had to be
     // replaced is a converted PC bundle rendering with stand-in shading, and a
     // non-zero failure count means some of it will not draw at all.
-    PaperLogger.info("Vivify shader repair: {} screen/masking effect(s) left undrawn on purpose",
-                   _screenEffectsDeclined);
+    PaperLogger.info("Vivify shader repair: {} screen/masking effect(s) left undrawn on purpose, {} white "
+                     "untextured stand-in(s) dimmed to grey",
+                     _screenEffectsDeclined, _standInsDimmedFromWhite);
   PaperLogger.info("Vivify shader repair: {} material(s) had an unusable shader, {} replaced, {} could not be",
                      _shaderRepairAttempts, _shaderRepairSucceeded, _shaderRepairFailed);
   }

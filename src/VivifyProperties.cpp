@@ -685,6 +685,29 @@ std::unordered_map<std::string_view, std::string_view> const kIcallSettingOwners
     {"occlusionMaskScale"sv, "UnityEngine.XR.XRSettings"sv},
 };
 
+// Enum-valued settings may be written by name as well as by number -- "fogMode":
+// "ExponentialSquared" rather than 3 (from gamesbeash-art's
+// Vivify-Quest_enabled-Play). Names match the C# enum members, compared after
+// NormalizeAssetKey, so case does not matter.
+std::optional<int> ParseNamedSettingValue(std::string_view key, std::string_view value) {
+  static std::unordered_map<std::string_view, std::unordered_map<std::string, int>> const kNamedValues = {
+      {"fogMode"sv, {{"linear", 1}, {"exponential", 2}, {"exponentialsquared", 3}}},
+      {"ambientMode"sv, {{"skybox", 0}, {"trilight", 1}, {"flat", 3}, {"custom", 4}}},
+      {"defaultReflectionMode"sv, {{"skybox", 0}, {"custom", 1}}},
+      {"shadows"sv, {{"disable", 0}, {"hardonly", 1}, {"all", 2}}},
+      {"shadowResolution"sv, {{"low", 0}, {"medium", 1}, {"high", 2}, {"veryhigh", 3}}},
+      {"shadowProjection"sv, {{"closefit", 0}, {"stablefit", 1}}},
+      {"shadowmaskMode"sv, {{"shadowmask", 0}, {"distanceshadowmask", 1}}},
+      {"anisotropicFiltering"sv, {{"disable", 0}, {"enable", 1}, {"forceenable", 2}}},
+      {"skinWeights"sv, {{"none", 0}, {"onebone", 1}, {"twobones", 2}, {"fourbones", 4}, {"unlimited", 255}}},
+  };
+  auto owner = kNamedValues.find(key);
+  if (owner == kNamedValues.end()) return std::nullopt;
+  auto it = owner->second.find(NormalizeAssetKey(value));
+  if (it == owner->second.end()) return std::nullopt;
+  return it->second;
+}
+
 bool IsLiteralColorArray(rapidjson::Value const& value) {
   if (!value.IsArray() || value.Size() < 3 || value.Size() > 4) return false;
   for (auto const& entry : value.GetArray()) {
@@ -769,6 +792,15 @@ void Runtime::ParseAndApplyRenderSetting(std::string const& key, rapidjson::Valu
     case SettingType::Int: {
       if (val.IsNumber()) {
         ApplyRenderSettingInt(key, static_cast<int>(val.GetFloat()));
+        return;
+      }
+      if (val.IsString()) {
+        std::string_view const name(val.GetString(), val.GetStringLength());
+        if (auto named = ParseNamedSettingValue(key, name); named.has_value()) {
+          ApplyRenderSettingInt(key, *named);
+        } else if (GetVivifyDebugLogging()) {
+          PaperLogger.warn("Vivify SetRenderingSettings: '{}' has no value named '{}'", key, std::string(name));
+        }
         return;
       }
       if (auto point = MakePointDefinition(parent, key, Tracks::ffi::WrapBaseValueType::Float); point.has_value()) {
