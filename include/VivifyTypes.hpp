@@ -2,6 +2,8 @@
 #include "VivifyRuntime.hpp"
 #include "main.hpp"
 #include <algorithm>
+#include <array>
+#include <limits>
 #include <cctype>
 #include <cmath>
 #include <cstdint>
@@ -304,6 +306,24 @@ struct ActiveRenderSettingAnimation {
   Functions easing = Functions::EaseLinear;
 };
 enum class AssignedPrefabKind { Object, AnyDirectionObject, Debris, Trail };
+
+// Whether instantiating a replacement prefab can produce anything at all on
+// this device.
+//
+// A note prefab whose shaders no GLES driver will run draws nothing, so the
+// original note is kept visible and the spawned copy sits invisibly on top of
+// it. Doing that once is a wasted Instantiate; doing it for every note in a
+// song is thousands of them, plus a warning line each. Classifying the prefab
+// asset once lets the useless ones be skipped outright.
+enum class PrefabRenderability {
+  // At least one renderer carries a shader this GPU can actually run.
+  Renderable,
+  // Nothing draws, but the prefab still emits light or sound, so it has to be
+  // spawned anyway.
+  SideEffectsOnly,
+  // Nothing draws and nothing else happens: spawning it is pure cost.
+  Inert,
+};
 struct AssignedPrefabInfo {
   std::string asset;
   std::vector<TrackW> tracks;
@@ -554,6 +574,45 @@ inline UnityEngine::Vector4 ToUnityVector(NEVector::Vector4 value) {
 inline int ColorPropertyId() {
   static int id = UnityEngine::Shader::PropertyToID(u"_Color");
   return id;
+}
+// The colour names a replacement's shader may read its tint from, `_Color`
+// first. Vivify on PC only ever writes `_Color` into a note's or saber's
+// MaterialPropertyBlock, which is enough while the map's own shader runs. A
+// stand-in shader for a converted bundle is chosen for carrying *a* colour --
+// `_Color` or `_BaseColor` -- and one that reads `_BaseColor` never sees the
+// note colour at all, so the note draws in whatever its material says, which
+// for a note material is nearly always the default white. That is the
+// "blocks are white" report on converted maps. Writing the same colour under
+// every alias costs a few property writes per block and reaches whichever
+// name the shader actually declares; a shader that declares none of them
+// ignores the extra entries.
+inline std::array<int, 4> const& TintColorPropertyIds() {
+  static std::array<int, 4> const ids = {
+      UnityEngine::Shader::PropertyToID(u"_Color"),
+      UnityEngine::Shader::PropertyToID(u"_BaseColor"),
+      UnityEngine::Shader::PropertyToID(u"_TintColor"),
+      UnityEngine::Shader::PropertyToID(u"_MainColor"),
+  };
+  return ids;
+}
+// Brings an HDR colour back into displayable range without losing its hue.
+//
+// PC maps routinely author glow as an HDR colour -- (6, 0.8, 0.3) and the
+// like -- and rely on bloom to turn the overflow into a halo. Quest renders
+// LDR with no bloom, so every channel above 1 clamps: that example becomes
+// (1, 0.8, 0.3), and anything brighter than about 3x on two channels comes out
+// white. Scaling the colour so its brightest channel is exactly 1 keeps the
+// hue the author picked, which is the part that survives the trip.
+inline UnityEngine::Color NormalizeHdrColor(UnityEngine::Color color) {
+  float const peak = std::max({color.r, color.g, color.b});
+  if (!(peak > 1.0f) || !std::isfinite(peak)) return color;
+  return UnityEngine::Color(color.r / peak, color.g / peak, color.b / peak, std::clamp(color.a, 0.0f, 1.0f));
+}
+inline void SetTintColors(UnityEngine::MaterialPropertyBlock* block, UnityEngine::Color color) {
+  if (block == nullptr) return;
+  for (int id : TintColorPropertyIds()) {
+    block->SetColor(id, color);
+  }
 }
 inline bool IsManagedAlive(UnityEngine::Object* object) {
   return object != nullptr && UnityEngine::Object::op_Implicit_bool(object);

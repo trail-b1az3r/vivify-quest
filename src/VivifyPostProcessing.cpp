@@ -394,10 +394,26 @@ bool Runtime::SameBlitData(BlitMaterialData const& left, BlitMaterialData const&
 }
 
 PostProcessingOrder Runtime::ParsePostProcessingOrder(rapidjson::Value const& json) {
+  // Friendlier spellings, from webbs7524-wq's Vivify-Quest-2: a boolean
+  // "beforeMainEffect"/"afterMainEffect", and "phase"/"timing" as synonyms for
+  // "order" with "before"/"pre" as short forms. PC Vivify only reads "order",
+  // so a map written against it is unaffected; these only widen what a
+  // hand-written Quest map is allowed to say.
+  if (auto beforeMain = ReadBool(json, "beforeMainEffect"); beforeMain.has_value()) {
+    return *beforeMain ? PostProcessingOrder::BeforeMainEffect : PostProcessingOrder::AfterMainEffect;
+  }
+  if (auto afterMain = ReadBool(json, "afterMainEffect"); afterMain.has_value()) {
+    return *afterMain ? PostProcessingOrder::AfterMainEffect : PostProcessingOrder::BeforeMainEffect;
+  }
   auto order = ReadStringView(json, "order");
+  if (!order.has_value()) order = ReadStringView(json, "phase");
+  if (!order.has_value()) order = ReadStringView(json, "timing");
   if (!order.has_value()) return PostProcessingOrder::AfterMainEffect;
   std::string normalized = NormalizeAssetKey(*order);
-  if (normalized == "beforemaineffect") return PostProcessingOrder::BeforeMainEffect;
+  if (normalized == "beforemaineffect" || normalized == "beforemain" || normalized == "before" ||
+      normalized == "pre") {
+    return PostProcessingOrder::BeforeMainEffect;
+  }
   if (normalized == "beforeskybox") return PostProcessingOrder::BeforeSkybox;
   if (normalized == "afterskybox") return PostProcessingOrder::AfterSkybox;
   if (normalized == "beforeopaque") return PostProcessingOrder::BeforeOpaque;
@@ -430,8 +446,41 @@ void Runtime::AddOrUpdateBlitEffect(std::vector<ActiveBlitEffect>& effects, Acti
   }
 }
 
+// "asset" is what PC Vivify reads. The others are accepted for hand-written
+// Quest maps (from webbs7524-wq's Vivify-Quest-2), in this order of precedence.
+std::optional<std::string_view> Runtime::ReadBlitAssetName(rapidjson::Value const& json) {
+  for (auto key : {"asset"sv, "material"sv, "effect"sv, "postProcessMaterial"sv, "postProcessingMaterial"sv}) {
+    if (auto value = ReadStringView(json, key)) return value;
+  }
+  return std::nullopt;
+}
+
+// Removes the active effects a clearing Blit event describes. Each field the
+// event actually names narrows the match; an event naming nothing but
+// "clear": true empties that order's whole list.
+void Runtime::RemoveMatchingBlitEffects(std::vector<ActiveBlitEffect>& effects, rapidjson::Value const& json,
+                                        BlitMaterialData const& filter, bool filterAsset) {
+  bool const filterSource = ReadValuePtr(json, "source") != nullptr;
+  bool const filterTargets = ReadValuePtr(json, "destination") != nullptr;
+  bool const filterPriority = ReadValuePtr(json, "priority") != nullptr;
+  bool const filterPass = ReadValuePtr(json, "pass") != nullptr;
+  effects.erase(std::remove_if(effects.begin(), effects.end(), [&](ActiveBlitEffect const& active) {
+    if (filterAsset && active.data.asset != filter.asset) return false;
+    if (filterSource && active.data.source != filter.source) return false;
+    if (filterTargets && active.data.targets != filter.targets) return false;
+    if (filterPriority && active.data.priority != filter.priority) return false;
+    if (filterPass && active.data.pass != filter.pass) return false;
+    return true;
+  }), effects.end());
+}
+
 void Runtime::HandleBlit(CustomJSONData::CustomEventData* customEventData, rapidjson::Value const& json) {
-  auto asset = ReadStringView(json, "asset");
+  auto asset = ReadBlitAssetName(json);
+  // "clear"/"remove": true, or "enabled": false, turns the event into a stop
+  // for effects already running rather than a new one. Without it the only way
+  // to end a long Blit early was to author its duration exactly.
+  bool const clear = ReadBool(json, "clear").value_or(false) || ReadBool(json, "remove").value_or(false) ||
+                     !ReadBool(json, "enabled").value_or(true);
   std::string normalizedAsset = asset.has_value() ? NormalizeAssetKey(*asset) : std::string();
   if (GetDisableAllBlits()) {
     if (GetVivifyDebugLogging()) {
@@ -451,7 +500,7 @@ void Runtime::HandleBlit(CustomJSONData::CustomEventData* customEventData, rapid
   float const durationBeats = ReadFloat(json, "duration").value_or(0.0f);
   float const duration = DurationBeatsToSeconds(durationBeats);
   UnityEngine::Material* material = nullptr;
-  if (asset.has_value()) {
+  if (asset.has_value() && !clear) {
     material = GetAssetAs<UnityEngine::Material>(*asset);
     if (material == nullptr) {
       if (GetVivifyDebugLogging()) {
@@ -490,6 +539,16 @@ void Runtime::HandleBlit(CustomJSONData::CustomEventData* customEventData, rapid
   }();
   BlitMaterialData bd{material, priority, std::move(sourceStr), std::move(targets), pass,
                       std::nullopt, std::move(normalizedAsset), customEventData->time};
+  if (clear) {
+    size_t const before = effects.size();
+    RemoveMatchingBlitEffects(effects, json, bd, asset.has_value());
+    if (GetVivifyDebugLogging()) {
+      PaperLogger.info("Vivify Blit clear: time={} asset='{}' order={} removed={}", customEventData->time,
+                       asset.has_value() ? std::string(*asset) : std::string("<any>"), static_cast<int>(order),
+                       before - effects.size());
+    }
+    return;
+  }
   if (GetVivifyDebugLogging()) {
     PaperLogger.info("Vivify Blit event: time={} asset='{}' source='{}' targets={} priority={} pass={} order={} durationBeats={}",
                      customEventData->time,
@@ -504,6 +563,11 @@ void Runtime::HandleBlit(CustomJSONData::CustomEventData* customEventData, rapid
     AddOrUpdateBlitEffect(effects, ActiveBlitEffect{std::move(bd), 0.0f});
   } else if (durationBeats > 0.0f && songTime <= customEventData->time + duration) {
     AddOrUpdateBlitEffect(effects, ActiveBlitEffect{std::move(bd), customEventData->time + duration});
+  } else if (durationBeats < 0.0f) {
+    // A negative duration keeps the effect until a clearing event (or the end
+    // of the map) removes it. It is stored with an expiry at infinity rather
+    // than 0, because 0 is how a single-frame effect is marked.
+    AddOrUpdateBlitEffect(effects, ActiveBlitEffect{std::move(bd), std::numeric_limits<float>::infinity()});
   }
 
 }
@@ -566,6 +630,23 @@ void Runtime::HandleCreateScreenTexture(rapidjson::Value const& json) {
       if (s == "RHalf") return UnityEngine::RenderTextureFormat::RHalf;
       if (s == "R8") return UnityEngine::RenderTextureFormat::R8;
       if (s == "DefaultHDR") return UnityEngine::RenderTextureFormat::DefaultHDR;
+      // The integer and packed formats Unity's enum also names. Maps that pack
+      // IDs or bit masks into a screen texture ask for these, and an unknown
+      // name used to fall through to ARGB32 -- which quantises exactly the data
+      // those maps need to read back intact. SupportedRenderTextureFormat still
+      // downgrades any this GPU cannot render to.
+      if (s == "ARGB2101010") return UnityEngine::RenderTextureFormat::ARGB2101010;
+      if (s == "ARGB64") return UnityEngine::RenderTextureFormat::ARGB64;
+      if (s == "RGHalf") return UnityEngine::RenderTextureFormat::RGHalf;
+      if (s == "ARGBInt") return UnityEngine::RenderTextureFormat::ARGBInt;
+      if (s == "RGInt") return UnityEngine::RenderTextureFormat::RGInt;
+      if (s == "RInt") return UnityEngine::RenderTextureFormat::RInt;
+      if (s == "BGRA32") return UnityEngine::RenderTextureFormat::BGRA32;
+      if (s == "RGB111110Float") return UnityEngine::RenderTextureFormat::RGB111110Float;
+      if (s == "RG32") return UnityEngine::RenderTextureFormat::RG32;
+      if (s == "RGBAUShort") return UnityEngine::RenderTextureFormat::RGBAUShort;
+      if (s == "RG16") return UnityEngine::RenderTextureFormat::RG16;
+      if (s == "R16") return UnityEngine::RenderTextureFormat::R16;
       return std::nullopt;
     }();
   if (auto fm = ReadStringView(json, "filterMode"))
