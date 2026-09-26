@@ -33,6 +33,31 @@ port from scratch — see Credits below.
   - Full settings-menu parity: every toggle the runtime already had a config
     key for is now actually exposed in the in-game settings UI.
 
+## 0.13.2 — chords and chains, second attempt: no instancing on converted maps
+
+0.13.1 did not fix it: chords and chains on Burning Sands were still drawn in
+the wrong place. This time the log included the converted bundle, and its note
+shader came out as 0.13.1 intended, with the instanced array sized at run
+time. So the array size was not the whole problem.
+
+The pattern still holds. Single notes are right; anything Beat Saber draws as
+one instanced batch (chords, chain links) is wrong. So on the Quest, something
+in the instanced path of a translated shader still fails. Two candidates:
+- **The per-instance block:** how Unity's GLES renderer fills it.
+- **`unity_BaseInstanceID`:** the engine may not set it.
+
+I cannot reproduce either off the headset.
+
+What already works is the plain, non-instanced variant. So GPU instancing is
+now turned off on every material of a converted bundle when it loads, and
+each note is drawn on its own through that variant. Notes are few enough that
+the extra draw calls cost very little. The log says how many materials this
+applied to:
+
+    Vivify: GPU instancing turned off on N material(s) of this converted bundle
+
+This happens at load, not in conversion, so nothing reconverts.
+
 ## 0.13.1 — chords and chains drawn in the wrong place on converted maps
 
 Burning Sands loaded and played after 0.13.0, but notes in chords and chain
