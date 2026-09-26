@@ -1,4 +1,4 @@
-import os, sys, subprocess, itertools, struct, tempfile
+import os, re, shutil, sys, subprocess, itertools, struct, tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mkbundle import build, read_converted, target_of
 
@@ -478,6 +478,305 @@ else:
     fails += 1
 
 
+# --- conversion through m_ParsedForm (Unity 2021.3.16's real Shader layout) --
+#
+# These shaders are serialized through Unity's own type tree for the class, so
+# m_ParsedForm is complete: passes, per-stage player sub-program lists,
+# parameter blobs, keyword names. That is what conversion now edits -- the
+# program types Unity selects by, and which store entry each variant uses.
+import mkshader2021  # noqa: E402
+
+AND_OP, ITOF, DCL_INPUT_SGV, DCL_INPUT_PS_SGV = 1, 43, 96, 99
+SV_RT_ARRAY_INDEX, SV_INSTANCE_ID = 4, 8
+GLES3_TYPE = 4
+
+
+def _vs(spi, texcoord=True):
+    inputs = [{"name": "POSITION", "index": 0, "register": 0}]
+    outputs = [{"name": "SV_POSITION", "index": 0, "register": 0, "sv": 1, "rw_mask": 0}]
+    if texcoord:
+        outputs.append({"name": "TEXCOORD", "index": 0, "register": 1, "rw_mask": 0})
+    if spi:
+        inputs.append({"name": "SV_InstanceID", "index": 0, "register": 1, "sv": SV_INSTANCE_ID,
+                       "mask": 0x1, "rw_mask": 0x1, "component_type": 1})
+        outputs.append({"name": "SV_RenderTargetArrayIndex", "index": 0, "register": 2,
+                        "sv": SV_RT_ARRAY_INDEX, "mask": 0x1, "rw_mask": 0xE, "component_type": 1})
+    matrix = "unity_StereoMatrixVP" if spi else "unity_MatrixVP"
+    rdef = dx.rdef_chunk(
+        constant_buffers=[{"name": "$Globals", "size": 128 if spi else 64, "variables": [
+            {"name": matrix, "offset": 0, "size": 128 if spi else 64, "class": 3, "type": 3,
+             "rows": 4, "columns": 4, "elements": 2 if spi else 0}]}],
+        bindings=[{"name": "$Globals", "type": 0, "dimension": 0, "bind_point": 0}])
+    code = []
+    code += dx.insn(DCL_INPUT, dx.dest(dx.OPERAND_INPUT, 0))
+    if spi:
+        code += dx.insn(DCL_INPUT_SGV, dx.dest(dx.OPERAND_INPUT, 1, 0x1), extra=[SV_INSTANCE_ID])
+    code += dx.insn(DCL_OUTPUT_SIV, dx.dest(dx.OPERAND_OUTPUT, 0), extra=[1])
+    if texcoord:
+        code += dx.insn(DCL_OUTPUT, dx.dest(dx.OPERAND_OUTPUT, 1))
+    if spi:
+        code += dx.insn(DCL_OUTPUT_SIV, dx.dest(dx.OPERAND_OUTPUT, 2, 0x1), extra=[SV_RT_ARRAY_INDEX])
+    code += dx.insn(DCL_TEMPS, extra=[1])
+    code += dx.insn(MUL, dx.dest(dx.OPERAND_TEMP, 0), dx.src(dx.OPERAND_INPUT, 0, (0, 0, 0, 0)),
+                    dx.src_cb(0, 0))
+    code += dx.insn(ADD, dx.dest(dx.OPERAND_OUTPUT, 0), dx.src(dx.OPERAND_TEMP, 0), dx.src_cb(0, 1))
+    if texcoord:
+        code += dx.insn(ADD, dx.dest(dx.OPERAND_OUTPUT, 1), dx.src(dx.OPERAND_INPUT, 0), dx.src_cb(0, 1))
+    if spi:
+        code += dx.insn(AND_OP, dx.dest(dx.OPERAND_OUTPUT, 2, 0x1),
+                        dx.src(dx.OPERAND_INPUT, 1, (0, 0, 0, 0)), dx.imm_int(1, 1, 1, 1))
+    code += dx.insn(RET)
+    return dx.unity_program([rdef, dx.signature_chunk(inputs, b"ISGN"),
+                             dx.signature_chunk(outputs, b"OSGN"), dx.shex_chunk([code], stage=1)])
+
+
+def _ps(spi, flat=True):
+    inputs = [{"name": "TEXCOORD", "index": 0, "register": 0}]
+    if spi:
+        inputs.append({"name": "SV_RenderTargetArrayIndex", "index": 0, "register": 1,
+                       "sv": SV_RT_ARRAY_INDEX, "mask": 0x1, "rw_mask": 0x1, "component_type": 1})
+    outputs = [{"name": "SV_Target", "index": 0, "register": 0, "rw_mask": 0}]
+    code = []
+    code += dx.insn(DCL_INPUT_PS, dx.dest(dx.OPERAND_INPUT, 0), controls=1 if flat else 2)
+    if spi:
+        code += dx.insn(DCL_INPUT_PS_SGV, dx.dest(dx.OPERAND_INPUT, 1, 0x1), controls=1,
+                        extra=[SV_RT_ARRAY_INDEX])
+    code += dx.insn(DCL_OUTPUT, dx.dest(dx.OPERAND_OUTPUT, 0))
+    if spi:
+        code += dx.insn(ITOF, dx.dest(dx.OPERAND_OUTPUT, 0), dx.src(dx.OPERAND_INPUT, 1, (0, 0, 0, 0)))
+    else:
+        code += dx.insn(ADD, dx.dest(dx.OPERAND_OUTPUT, 0), dx.src(dx.OPERAND_INPUT, 0),
+                        dx.src(dx.OPERAND_INPUT, 0))
+    code += dx.insn(RET)
+    return dx.unity_program([dx.signature_chunk(inputs, b"ISGN"), dx.signature_chunk(outputs, b"OSGN"),
+                             dx.shex_chunk([code], stage=0)])
+
+
+def pc_shader_2021(name, vertex_programs, fragment_programs, keyword_names=("STEREO_INSTANCING_ON",),
+                   share_vertex=False):
+    """A PC (Direct3D 11) shader in 2021.3.16's layout. *_programs: list of
+    (dxbc, keyword index list). Every program gets a parameter blob after it,
+    as 2021.3.10+ stores them, and fragments live in a second segment. With
+    share_vertex, every vertex variant points at the first vertex entry, the
+    way Unity dedups identical programs."""
+    entries, vertex_refs, vertex_params, fragment_refs, fragment_params = [], [], [], [], []
+    for code, keywords in vertex_programs:
+        blob = 0 if (share_vertex and vertex_refs) else len(entries)
+        vertex_refs.append(mkshader2021.player_sub_program(blob, DX11_VERTEX_SM50, keywords))
+        entries.append((mkshader.sub_program(DX11_VERTEX_SM50, code), 0))
+        vertex_params.append(len(entries))
+        entries.append((b"\x00\x00\x00\x00PARAMS-VS" + bytes([len(entries)]), 0))
+    for code, keywords in fragment_programs:
+        fragment_refs.append(mkshader2021.player_sub_program(len(entries), DX11_PIXEL_SM50, keywords))
+        entries.append((mkshader.sub_program(DX11_PIXEL_SM50, code), 1))
+        fragment_params.append(len(entries))
+        entries.append((b"\x00\x00\x00\x00PARAMS-PS" + bytes([len(entries)]), 1))
+    store = mkshader.build_program_store([mkshader.segmented_chunks(entries)])
+    return mkshader2021.shader_body(name, [4], store, [{
+        mkshader2021.VERTEX: {"player": [vertex_refs], "params": [vertex_params]},
+        mkshader2021.FRAGMENT: {"player": [fragment_refs], "params": [fragment_params]},
+    }], keyword_names), entries
+
+
+def inspect_converted(dst):
+    _, _, _, nodes, data = read_converted(dst)
+    off, size, _, _ = nodes[0]
+    sf_path = os.path.join(TMP, "inspect.sf")
+    with open(sf_path, "wb") as handle:
+        handle.write(data[off:off + size])
+    proc = subprocess.run([CONV, "--inspect", sf_path], capture_output=True, text=True)
+    refs, entries, platforms = [], {}, None
+    for line in proc.stdout.splitlines():
+        if line.startswith("shader="):
+            platforms = line.split("platforms=")[1]
+        elif line.startswith("ref "):
+            refs.append(dict(part.split("=", 1) for part in line[4:].split(" ")))
+        elif line.startswith("entry "):
+            head, _, code = line[6:].partition(" code=")
+            entry = dict(part.split("=", 1) for part in head.split(" "))
+            entry["code"] = code
+            entries[int(entry["blob"])] = entry
+    return platforms, refs, entries
+
+
+GLSLANG = shutil.which("glslangValidator")
+
+
+def glslang_link_problem(dst):
+    """Compiles and links every linked program in a converted bundle with the
+    Khronos reference front-end, when it is installed: a program that passes
+    the string checks but that a GLSL ES compiler rejects would still draw
+    nothing on the headset."""
+    if GLSLANG is None or not os.path.exists(dst):
+        return None
+    _, _, entries = inspect_converted(dst)
+    for blob, entry in entries.items():
+        code = entry["code"].replace("|", "\n")
+        if not code.startswith("#ifdef VERTEX"):
+            continue
+        sections = dict(re.findall(r"#ifdef (VERTEX|FRAGMENT|GEOMETRY)\n(.*?)#endif\n", code, re.S))
+        files = []
+        for stage, ext in (("VERTEX", "vert"), ("FRAGMENT", "frag"), ("GEOMETRY", "geom")):
+            if stage in sections:
+                path = os.path.join(TMP, f"link_{blob}.{ext}")
+                with open(path, "w") as handle:
+                    handle.write(sections[stage])
+                files.append(path)
+        proc = subprocess.run([GLSLANG, "-l"] + files, capture_output=True, text=True, errors="replace")
+        if proc.returncode != 0:
+            return f"glslang will not link entry {blob}: {(proc.stdout + proc.stderr).strip()[:800]}"
+    return None
+
+
+def pc_shader_case(name, body, check):
+    global fails, cases
+    cases += 1
+    src = os.path.join(TMP, "pc_src.vivify")
+    dst = os.path.join(TMP, "pc_dst.vivify")
+    sf = mkshader.serialized_file_with_shaders([body], sf_version=22, shader_tree=mkshader2021.RealTypeTree())
+    build(src, sf_bytes=[sf], with_resource=False)
+    proc, fields, refusals = run_shaders(src, dst)
+    try:
+        problem = check(proc, fields, refusals, dst) or glslang_link_problem(dst)
+    except Exception as e:  # noqa: BLE001 - a crash in a check is a failure, with its reason
+        problem = f"check raised {type(e).__name__}: {e}"
+    if problem:
+        print(f"FAIL {name}: {problem}\n{proc.stdout}{proc.stderr}")
+        fails += 1
+    else:
+        print(f"ok   {name}")
+
+
+stereo_body, stereo_entries = pc_shader_2021(
+    "Swifter/Stereo",
+    [(_vs(spi=False), []), (_vs(spi=True), [0])],
+    [(_ps(spi=False), []), (_ps(spi=True), [0])])
+
+
+def expect_linked(proc, fields, refusals, dst):
+    if fields.get("status") != "converted" or fields.get("linked") != "1":
+        return f"status '{fields.get('status')}' linked={fields.get('linked')} refusals={refusals}"
+    platforms, refs, entries = inspect_converted(dst)
+    if platforms != "9":
+        return f"platforms {platforms}, wanted GLES3 (9)"
+    if len(refs) != 4 or any(r["type"] != str(GLES3_TYPE) for r in refs):
+        return f"every variant should now say GLES3: {refs}"
+    by_stage = {(r["stage"], r["keywords"]): r for r in refs}
+    plain_vs = entries[int(by_stage[("0", "")]["blob"])]["code"]
+    for needle in ("#ifdef VERTEX|#version 300 es|#extension GL_OVR_multiview2 : require|"
+                   "layout(num_views = 2) in;", "#ifdef FRAGMENT|", "gl_InstanceID * 2 + int(gl_ViewID_OVR)"):
+        if needle not in plain_vs:
+            return f"the plain vertex variant's program lacks '{needle}': {plain_vs}"
+    if "hlslcc_mtx4x4unity_StereoMatrixVP" not in plain_vs:
+        return "the plain variant was not handed its SPI twin's per-eye code"
+    if "flat out vec4 vs_TEXCOORD0;" not in plain_vs:
+        return f"the fragment's flat qualifier did not reach the vertex output: {plain_vs}"
+    spi_vs = entries[int(by_stage[("0", "STEREO_INSTANCING_ON")]["blob"])]["code"]
+    if "int(gl_ViewID_OVR)" not in spi_vs.split("#ifdef FRAGMENT")[1]:
+        return "the SPI variant's fragment does not read the eye from gl_ViewID_OVR"
+    plain_fs = plain_vs.split("#ifdef FRAGMENT")[1]
+    if "int(gl_ViewID_OVR)" not in plain_fs:
+        return "the plain fragment variant was not handed its SPI twin's eye index"
+    for index, (payload, _) in enumerate(stereo_entries):
+        if payload.startswith(b"\x00\x00\x00\x00PARAMS"):
+            entry = entries.get(index)
+            if entry is None or entry["raw"] != "1" or int(entry["rawSize"]) != len(payload):
+                return f"parameter blob {index} did not survive: {entry}"
+    frag = entries[int(by_stage[("1", "")]["blob"])]["code"]
+    if not frag.startswith("#ifdef VERTEX|") or "#ifdef FRAGMENT|" not in frag:
+        return f"the fragment variant's entry does not hold a linked program: {frag}"
+    if fields.get("stereoRemapped") != "2":
+        return f"stereoRemapped={fields.get('stereoRemapped')}"
+    return None
+
+
+pc_shader_case("a PC shader is linked into multiview GLES programs Unity will select",
+               stereo_body, expect_linked)
+# Kept for fuzz.py, which mutates it to exercise the m_ParsedForm walker and the
+# program-list patching on hostile input.
+with open(os.path.join(TMP, "pc_src.vivify"), "rb") as _seed, \
+        open(os.path.join(TMP, "fuzz_seed_2021.vivify"), "wb") as _copy:
+    _copy.write(_seed.read())
+
+
+def expect_idempotent_linked(proc, fields, refusals, dst):
+    problem = expect_linked(proc, fields, refusals, dst)
+    if problem:
+        return problem
+    again = os.path.join(TMP, "pc_dst2.vivify")
+    _, fields2, _ = run_shaders(dst, again)
+    if fields2.get("status") != "already an Android bundle" or fields2.get("leftAlone") != "1":
+        return f"second pass: {fields2}"
+    return None
+
+
+pc_shader_case("a linked shader is left alone by a second pass", stereo_body, expect_idempotent_linked)
+
+mono_body, _ = pc_shader_2021("Custom/Mono", [(_vs(spi=False, texcoord=False), [])],
+                              [(_ps(spi=False, flat=False), [])], keyword_names=())
+
+
+def expect_missing_varying(proc, fields, refusals, dst):
+    if fields.get("linked") != "1":
+        return f"linked={fields.get('linked')} refusals={refusals}"
+    _, refs, entries = inspect_converted(dst)
+    code = entries[int(refs[0]["blob"])]["code"]
+    vertex = code.split("#ifdef FRAGMENT")[0]
+    if "out vec4 vs_TEXCOORD0;" not in vertex:
+        return f"a varying the fragment reads was not declared on the vertex side: {vertex}"
+    if "stereoInstanced" in code or "gl_InstanceID * 2" in code:
+        return "a mono shader was given the SPI instance remap"
+    return None
+
+
+pc_shader_case("a varying only the fragment declares is declared on the vertex side too",
+               mono_body, expect_missing_varying)
+
+# Unity dedups identical programs, so two keyword variants of the vertex stage
+# can share one store entry while their fragments differ. Linked, they are two
+# different programs, and the entry has to be split rather than overwritten.
+shared_vs = _vs(spi=False)
+split_body, split_entries = pc_shader_2021(
+    "Custom/Fog", [(shared_vs, []), (shared_vs, [0])],
+    [(_ps(spi=False, flat=False), []), (_ps(spi=False, flat=True), [0])], keyword_names=("FOG",),
+    share_vertex=True)
+
+
+def expect_split(proc, fields, refusals, dst):
+    if fields.get("linked") != "1":
+        return f"linked={fields.get('linked')} refusals={refusals}"
+    _, refs, entries = inspect_converted(dst)
+    vertex = {r["keywords"]: r for r in refs if r["stage"] == "0"}
+    a, b = entries[int(vertex[""]["blob"])]["code"], entries[int(vertex["FOG"]["blob"])]["code"]
+    if a == b:
+        return "variants that link different fragments ended up with the same program"
+    if "flat out vec4 vs_TEXCOORD0;" not in b or "flat out vec4 vs_TEXCOORD0;" in a:
+        return "each variant should carry its own fragment's interpolation"
+    return None
+
+
+pc_shader_case("vertex variants that link different fragments get separate programs",
+               split_body, expect_split)
+
+broken_body, _ = pc_shader_2021("Custom/Broken", [(_vs(spi=False), [])],
+                                [(dxbc_untranslatable(), [])], keyword_names=())
+
+
+def expect_refused_linked(proc, fields, refusals, dst):
+    if fields.get("refused") != "1" or fields.get("linked") != "0":
+        return f"refused={fields.get('refused')} linked={fields.get('linked')}"
+    if not refusals:
+        return "no refusal reason was reported"
+    if os.path.exists(dst):
+        platforms, refs, _ = inspect_converted(dst)
+        if platforms != "4" or any(r["type"] == str(GLES3_TYPE) for r in refs):
+            return "a shader that could not link was relabelled anyway"
+    return None
+
+
+pc_shader_case("a shader whose fragment will not translate is left as it was",
+               broken_body, expect_refused_linked)
+
 cases += 1
 p = subprocess.run([CONV, "--shaders", bad, os.path.join(TMP, "sh_bad.out")],
                    capture_output=True, text=True)
@@ -486,5 +785,7 @@ if p.returncode != 0 and not os.path.exists(os.path.join(TMP, "sh_bad.out")):
 else:
     print("FAIL shader conversion accepted a non-bundle:\n" + p.stdout); fails += 1
 
+if GLSLANG is None:
+    print("note: glslangValidator not installed; linked programs were not compiled")
 print(f"\n{cases - fails}/{cases} passed")
 sys.exit(1 if fails else 0)

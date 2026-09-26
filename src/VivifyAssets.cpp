@@ -36,7 +36,15 @@ namespace {
 //      pixels survive load and can be decoded on device. A version 3 cache has
 //      textures whose CPU copy Unity drops, which is a level that renders
 //      untextured
-constexpr int kBundleConversionVersion = 4;
+//   5  shaders converted through m_ParsedForm: every variant Unity selects is
+//      relabelled as a GLES program, vertex and fragment are linked into one
+//      program the way Unity stores GLES variants, and everything is emitted
+//      for the Quest's single-pass multiview eye buffer. A version 4 cache left
+//      m_ParsedForm calling every program Direct3D 11, so Unity found no program
+//      it could run in any converted shader (isSupported = false throughout),
+//      and its programs could not have drawn into a multiview framebuffer if it
+//      had
+constexpr int kBundleConversionVersion = 5;
 
 std::string ConversionMarkerPath(std::string const& destPath) {
   return destPath + ".version";
@@ -124,6 +132,11 @@ BundleConversionOutcome RunBundleConversion(std::string const& source, std::stri
     PaperLogger.info("Vivify shader translation left {} further shader(s) as they were",
                      conversion.shadersRefused - static_cast<int>(conversion.refusals.size()));
   }
+  PaperLogger.info("Vivify shader conversion: {} of {} shader(s) linked for multiview GLES, {} keyword "
+                   "variant(s) linked and {} left on DirectX (one of their stages did not translate), {} "
+                   "variant(s) given their single-pass stereo twin's per-eye code, {} shader(s) refused",
+                   conversion.shadersLinked, conversion.shadersSeen, conversion.variantsLinked,
+                   conversion.variantsRefused, conversion.stereoVariantsRemapped, conversion.shadersRefused);
   if (conversion.texturesSeen > 0) {
     PaperLogger.info(
         "Vivify conversion marked {} of {} block-compressed texture(s) readable ({} keep their pixels "

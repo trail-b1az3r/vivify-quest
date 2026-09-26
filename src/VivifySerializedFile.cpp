@@ -2,6 +2,10 @@
 
 #include <algorithm>
 #include <cstring>
+#include <array>
+#include <map>
+#include <set>
+#include <tuple>
 
 namespace SerializedFileParse {
 namespace {
@@ -29,6 +33,7 @@ class Reader {
 
   bool ok() const { return _ok; }
   size_t position() const { return _pos; }
+  uint8_t const* base() const { return _data; }
   size_t remaining() const { return _pos <= _size ? _size - _pos : 0; }
   void setBigEndian(bool big) { _big = big; }
 
@@ -298,6 +303,340 @@ void WalkNode(Reader& reader, SerializedTypeInfo const& type, size_t nodeIndex,
   if ((node.metaFlag & kMetaFlagAlignBytes) != 0) reader.align4();
 }
 
+
+// Direct children of every node, built once per walk. ChildIndices rescans
+// every descendant on each call, which is fine for the handful of top-level
+// fields ReadShaderObject visits and quadratic for m_ParsedForm, where one
+// SerializedPass node is re-entered for every pass of every subshader.
+std::vector<std::vector<size_t>> BuildChildLists(std::vector<TypeTreeNode> const& nodes) {
+  std::vector<std::vector<size_t>> children(nodes.size());
+  std::vector<size_t> open;  // the chain of ancestors of the current node
+  for (size_t i = 0; i < nodes.size(); i++) {
+    uint8_t const level = nodes[i].level;
+    while (!open.empty() && nodes[open.back()].level >= level) open.pop_back();
+    if (!open.empty() && nodes[open.back()].level + 1 == level) children[open.back()].push_back(i);
+    open.push_back(i);
+  }
+  return children;
+}
+
+std::string_view NodeNameView(SerializedTypeInfo const& type, TypeTreeNode const& node) {
+  if ((node.nameStrOffset & kCommonStringBit) != 0) return {};
+  if (node.nameStrOffset >= type.stringBuffer.size()) return {};
+  char const* base = type.stringBuffer.data() + node.nameStrOffset;
+  size_t const maxLen = type.stringBuffer.size() - node.nameStrOffset;
+  size_t len = 0;
+  while (len < maxLen && base[len] != '\0') len++;
+  return std::string_view(base, len);
+}
+
+int32_t StageForProgramField(std::string_view name) {
+  if (name == "progVertex") return kProgramStageVertex;
+  if (name == "progFragment") return kProgramStageFragment;
+  if (name == "progGeometry") return kProgramStageGeometry;
+  if (name == "progHull") return kProgramStageHull;
+  if (name == "progDomain") return kProgramStageDomain;
+  if (name == "progRayTracing") return kProgramStageRayTracing;
+  return -1;
+}
+
+// Walks m_ParsedForm and collects every pass's program references.
+//
+// The walk is driven entirely by the type tree -- exactly as WalkNode is -- and
+// consumes exactly the bytes WalkNode would, so the caller's reader stays in
+// step. What it looks for is found by the field names Unity gives them, which
+// are shader-specific and so live in the file's own string table: m_SubShaders,
+// m_Passes, progVertex..progRayTracing, m_SubPrograms / m_PlayerSubPrograms /
+// m_ParameterBlobIndices, and inside a sub-program m_BlobIndex,
+// m_GpuProgramType, m_ShaderHardwareTier and m_KeywordIndices. Structural
+// names like "Array" and "data" come from Unity's common string table and
+// resolve empty here, so nothing depends on them; array elements are told
+// apart by their element index instead.
+class ParsedFormWalker {
+ public:
+  ParsedFormWalker(Reader& reader, SerializedTypeInfo const& type, size_t fileOffset,
+                   ShaderObject& shader)
+      : _reader(reader), _type(type), _fileOffset(fileOffset), _shader(shader),
+        _children(BuildChildLists(type.nodes)) {}
+
+  void Walk(size_t nodeIndex) {
+    Visit(nodeIndex, 1, -1);
+    Finish();
+  }
+
+ private:
+  enum Container : int32_t { kNone = 0, kSubPrograms = 1, kPlayerSubPrograms = 2, kParameterBlobs = 3 };
+
+  struct Frame {
+    std::string_view name;
+    int32_t element = -1;
+  };
+
+  struct Context {
+    int32_t subShader = -1;
+    int32_t pass = -1;
+    int32_t stage = -1;
+    Container container = kNone;
+    size_t containerFrame = 0;
+    std::vector<int32_t> elements;  // element indices below the container
+  };
+
+  // Reads the current path into a Context. Returns false when the path is not
+  // inside a pass's program list.
+  bool CurrentContext(Context& ctx) const {
+    enum { kExpectNothing, kExpectSubShader, kExpectPass, kExpectContainerElements } expect = kExpectNothing;
+    for (size_t i = 0; i < _path.size(); i++) {
+      Frame const& frame = _path[i];
+      if (!frame.name.empty()) {
+        if (frame.name == "m_SubShaders") {
+          expect = kExpectSubShader;
+        } else if (frame.name == "m_Passes") {
+          expect = kExpectPass;
+        } else if (int32_t const stage = StageForProgramField(frame.name); stage >= 0) {
+          ctx.stage = stage;
+          expect = kExpectNothing;
+        } else if (ctx.stage >= 0 && ctx.container == kNone &&
+                   (frame.name == "m_SubPrograms" || frame.name == "m_PlayerSubPrograms" ||
+                    frame.name == "m_ParameterBlobIndices")) {
+          ctx.container = frame.name == "m_SubPrograms"         ? kSubPrograms
+                          : frame.name == "m_PlayerSubPrograms" ? kPlayerSubPrograms
+                                                                : kParameterBlobs;
+          ctx.containerFrame = i;
+          expect = kExpectContainerElements;
+        }
+      }
+      if (frame.element < 0) continue;
+      if (expect == kExpectSubShader) {
+        ctx.subShader = frame.element;
+        expect = kExpectNothing;
+      } else if (expect == kExpectPass) {
+        ctx.pass = frame.element;
+        expect = kExpectNothing;
+      } else if (expect == kExpectContainerElements) {
+        ctx.elements.push_back(frame.element);
+      }
+    }
+    return ctx.subShader >= 0 && ctx.pass >= 0 && ctx.stage >= 0 && ctx.container != kNone;
+  }
+
+  // The named frames after the container, not counting the leaf itself. A
+  // sub-program field is a direct member of the element struct, so there are
+  // none; anything deeper (m_Parameters' own arrays) is not what is wanted.
+  size_t NamedFramesBetween(Context const& ctx, size_t endExclusive) const {
+    size_t named = 0;
+    for (size_t i = ctx.containerFrame + 1; i < endExclusive && i < _path.size(); i++) {
+      if (!_path[i].name.empty()) named++;
+    }
+    return named;
+  }
+
+  ParsedProgramRef* RefFor(Context const& ctx) {
+    bool const player = ctx.container == kPlayerSubPrograms;
+    size_t const wanted = player ? 2u : 1u;
+    if (ctx.elements.size() != wanted) return nullptr;
+    int32_t const list = player ? ctx.elements[0] : 0;
+    int32_t const index = player ? ctx.elements[1] : ctx.elements[0];
+    Key const key{ctx.subShader, ctx.pass, ctx.stage, player, list, index};
+    auto it = _refIndex.find(key);
+    if (it != _refIndex.end()) return &_shader.programRefs[it->second];
+    ParsedProgramRef ref;
+    ref.subShader = ctx.subShader;
+    ref.pass = ctx.pass;
+    ref.stage = ctx.stage;
+    ref.player = player;
+    ref.list = list;
+    ref.index = index;
+    _shader.programRefs.push_back(std::move(ref));
+    _refIndex.emplace(key, _shader.programRefs.size() - 1);
+    return &_shader.programRefs.back();
+  }
+
+  void OnScalar(std::string_view name, size_t position, int32_t byteSize) {
+    if (name != "m_BlobIndex" && name != "m_GpuProgramType" && name != "m_ShaderHardwareTier") return;
+    Context ctx;
+    if (!CurrentContext(ctx) || ctx.container == kParameterBlobs) return;
+    if (NamedFramesBetween(ctx, _path.size() - 1) != 0) return;
+    ParsedProgramRef* ref = RefFor(ctx);
+    if (ref == nullptr) return;
+    uint8_t const* at = _data() + position;
+    if (name == "m_BlobIndex" && byteSize == 4) {
+      ref->blobIndex = static_cast<uint32_t>(at[0]) | (static_cast<uint32_t>(at[1]) << 8) |
+                       (static_cast<uint32_t>(at[2]) << 16) | (static_cast<uint32_t>(at[3]) << 24);
+      ref->blobIndexFileOffset = _fileOffset + position;
+    } else if (name == "m_GpuProgramType" && byteSize == 1) {
+      ref->gpuProgramType = static_cast<int8_t>(at[0]);
+      ref->gpuProgramTypeFileOffset = _fileOffset + position;
+    } else if (name == "m_ShaderHardwareTier" && byteSize == 1) {
+      ref->hardwareTier = static_cast<int8_t>(at[0]);
+    }
+  }
+
+  void OnFlatArray(size_t position, uint32_t count, int32_t elementSize) {
+    // The flat array's own frame is the Array node (unnamed); its owner is the
+    // named frame before it.
+    std::string_view owner;
+    size_t ownerFrame = 0;
+    for (size_t i = _path.size(); i-- > 0;) {
+      if (!_path[i].name.empty()) {
+        owner = _path[i].name;
+        ownerFrame = i;
+        break;
+      }
+    }
+    uint8_t const* at = _data() + position;
+
+    if (owner == "m_KeywordIndices" && elementSize == 2) {
+      Context ctx;
+      if (!CurrentContext(ctx) || ctx.container == kParameterBlobs) return;
+      if (NamedFramesBetween(ctx, ownerFrame) != 0) return;
+      ParsedProgramRef* ref = RefFor(ctx);
+      if (ref == nullptr) return;
+      ref->keywordIndices.clear();
+      for (uint32_t i = 0; i < count; i++) {
+        ref->keywordIndices.push_back(static_cast<uint16_t>(at[i * 2] | (at[i * 2 + 1] << 8)));
+      }
+      return;
+    }
+
+    if (elementSize == 4) {
+      // m_ParameterBlobIndices is vector<vector<uint>>: one flat inner array per
+      // player sub-program list, one value per sub-program.
+      Context ctx;
+      if (!CurrentContext(ctx) || ctx.container != kParameterBlobs) return;
+      if (ctx.elements.size() != 1 || NamedFramesBetween(ctx, _path.size()) != 0) return;
+      int32_t const list = ctx.elements[0];
+      for (uint32_t i = 0; i < count; i++) {
+        uint32_t const value = static_cast<uint32_t>(at[i * 4]) | (static_cast<uint32_t>(at[i * 4 + 1]) << 8) |
+                               (static_cast<uint32_t>(at[i * 4 + 2]) << 16) |
+                               (static_cast<uint32_t>(at[i * 4 + 3]) << 24);
+        _parameterBlobs.push_back({ctx.subShader, ctx.pass, ctx.stage, list, static_cast<int32_t>(i), value});
+      }
+      return;
+    }
+
+    if (elementSize == 1) {
+      // m_KeywordNames is vector<string>, and a string is a flat char array.
+      // Only the one directly under m_ParsedForm is wanted: [m_KeywordNames,
+      // Array, data(i), Array] with no named frame in between.
+      for (size_t i = _path.size(); i-- > 0;) {
+        if (_path[i].name.empty()) continue;
+        if (_path[i].name != "m_KeywordNames") return;
+        // One element frame (the string) between the owner and here.
+        int32_t element = -1;
+        for (size_t j = i + 1; j < _path.size(); j++) {
+          if (_path[j].element >= 0) element = _path[j].element;
+        }
+        if (element < 0) return;
+        if (_shader.keywordNames.size() <= static_cast<size_t>(element)) {
+          _shader.keywordNames.resize(static_cast<size_t>(element) + 1);
+        }
+        _shader.keywordNames[static_cast<size_t>(element)].assign(reinterpret_cast<char const*>(at), count);
+        return;
+      }
+    }
+  }
+
+  void Visit(size_t nodeIndex, int depth, int32_t element) {
+    if (!_reader.ok() || nodeIndex >= _type.nodes.size()) return;
+    if (depth > 64) { _reader.skip(_reader.remaining()); return; }
+    TypeTreeNode const& node = _type.nodes[nodeIndex];
+    std::vector<size_t> const& children = _children[nodeIndex];
+    _path.push_back({NodeNameView(_type, node), element});
+
+    if ((node.typeFlags & kTypeFlagIsArray) != 0) {
+      if (children.size() < 2) {
+        _reader.skip(_reader.remaining());
+      } else {
+        uint32_t const count = _reader.u32();
+        size_t const dataNode = children[1];
+        TypeTreeNode const& elementNode = _type.nodes[dataNode];
+        bool const flat = elementNode.byteSize > 0 && _children[dataNode].empty();
+        if (!_reader.ok()) {
+          // nothing
+        } else if (flat) {
+          uint64_t const bytes = static_cast<uint64_t>(count) * static_cast<uint64_t>(elementNode.byteSize);
+          if (bytes > _reader.remaining()) {
+            _reader.skip(_reader.remaining());
+          } else {
+            OnFlatArray(_reader.position(), count, elementNode.byteSize);
+            _reader.skip(static_cast<size_t>(bytes));
+          }
+        } else if (count > _reader.remaining()) {
+          _reader.skip(_reader.remaining());
+        } else {
+          for (uint32_t i = 0; i < count && _reader.ok(); i++) {
+            Visit(dataNode, depth + 1, static_cast<int32_t>(i));
+          }
+        }
+      }
+    } else if (children.empty()) {
+      if (node.byteSize < 0) {
+        _reader.skip(_reader.remaining());
+      } else {
+        if (static_cast<size_t>(node.byteSize) <= _reader.remaining()) {
+          OnScalar(_path.back().name, _reader.position(), node.byteSize);
+        }
+        _reader.skip(static_cast<size_t>(node.byteSize));
+      }
+    } else {
+      for (size_t child : children) {
+        if (!_reader.ok()) break;
+        Visit(child, depth + 1, -1);
+      }
+    }
+
+    if ((node.metaFlag & kMetaFlagAlignBytes) != 0) _reader.align4();
+    _path.pop_back();
+  }
+
+  // Joins m_ParameterBlobIndices onto the player sub-programs they belong to:
+  // the two are parallel arrays, [list][index] for [list][index].
+  void Finish() {
+    for (auto const& blob : _parameterBlobs) {
+      Key const key{blob.subShader, blob.pass, blob.stage, true, blob.list, blob.index};
+      auto it = _refIndex.find(key);
+      if (it == _refIndex.end()) continue;
+      _shader.programRefs[it->second].hasParameterBlob = true;
+      _shader.programRefs[it->second].parameterBlobIndex = blob.value;
+    }
+    // A reference is only useful if both of the fields conversion rewrites were
+    // actually located; anything else means the tree was not the shape this
+    // walk understands, and is dropped rather than half-trusted.
+    std::vector<ParsedProgramRef> kept;
+    kept.reserve(_shader.programRefs.size());
+    for (auto& ref : _shader.programRefs) {
+      if (ref.blobIndexFileOffset != 0 && ref.gpuProgramTypeFileOffset != 0) kept.push_back(std::move(ref));
+    }
+    _shader.programRefs = std::move(kept);
+    _shader.parsedFormRead = !_shader.programRefs.empty();
+  }
+
+  uint8_t const* _data() const { return _reader.base(); }
+
+  struct Key {
+    int32_t subShader, pass, stage;
+    bool player;
+    int32_t list, index;
+    bool operator<(Key const& other) const {
+      return std::tie(subShader, pass, stage, player, list, index) <
+             std::tie(other.subShader, other.pass, other.stage, other.player, other.list, other.index);
+    }
+  };
+  struct ParameterBlob {
+    int32_t subShader, pass, stage, list, index;
+    uint32_t value;
+  };
+
+  Reader& _reader;
+  SerializedTypeInfo const& _type;
+  size_t _fileOffset;
+  ShaderObject& _shader;
+  std::vector<std::vector<size_t>> _children;
+  std::vector<Frame> _path;
+  std::map<Key, size_t> _refIndex;
+  std::vector<ParameterBlob> _parameterBlobs;
+};
+
 // Reads a Shader object: walks its top-level fields in order, capturing the one
 // named "platforms" and the shader's name if it is reachable by name.
 ShaderObject ReadShaderObject(uint8_t const* data, size_t size, size_t fileOffset,
@@ -352,7 +691,30 @@ ShaderObject ReadShaderObject(uint8_t const* data, size_t size, size_t fileOffse
       }
     } else {
       size_t const before = reader.position();
-      WalkNode(reader, type, child, nullptr, 1);
+      if (name == "m_ParsedForm") {
+        ParsedFormWalker walker(reader, type, fileOffset, shader);
+        walker.Walk(child);
+      } else {
+        WalkNode(reader, type, child, nullptr, 1);
+      }
+      // A real Shader object starts with its NamedObject m_Name, whose field
+      // name comes from Unity's common string table and so resolves empty
+      // here. It is the only unnamed variable-size field before m_ParsedForm.
+      if (shader.name.empty() && name.empty() && child == ChildIndices(type.nodes, 0).front() &&
+          type.nodes[child].byteSize < 0 && reader.position() >= before + 4) {
+        Reader nameReader(data + before, reader.position() - before);
+        uint32_t const length = nameReader.u32();
+        if (nameReader.ok() && length > 0 && length <= 256 && length <= nameReader.remaining()) {
+          std::string candidate;
+          bool printable = true;
+          for (uint32_t i = 0; i < length; i++) {
+            char const c = static_cast<char>(nameReader.u8());
+            if (c < 0x20 || c > 0x7e) { printable = false; break; }
+            candidate.push_back(c);
+          }
+          if (printable) shader.name = candidate;
+        }
+      }
       // m_ParsedForm carries the shader's name. Rather than decode that whole
       // nested structure, take the first NUL-free run of printable bytes at its
       // start, which is where the serialized m_Name string lands.
@@ -733,49 +1095,6 @@ size_t Lz4DecodeBlock(uint8_t const* src, size_t srcSize, uint8_t* dst, size_t d
 
 namespace {
 
-// Reads the [offset, length] table at the start of a decompressed sub-blob.
-//
-// Unity has used both 8-byte and 12-byte entries here depending on version. The
-// entry size is worked out from the data rather than from a version rule: only
-// one of the two lays every program inside the blob and clear of the table
-// itself, so the layout is checked instead of assumed.
-bool ReadProgramTable(uint8_t const* blob, size_t blobSize,
-                      std::vector<std::pair<uint32_t, uint32_t>>& out, int32_t& entryWidth) {
-  if (blobSize < 4) return false;
-  auto readU32 = [blob](size_t at) {
-    return static_cast<uint32_t>(blob[at]) | (static_cast<uint32_t>(blob[at + 1]) << 8) |
-           (static_cast<uint32_t>(blob[at + 2]) << 16) | (static_cast<uint32_t>(blob[at + 3]) << 24);
-  };
-
-  uint32_t const count = readU32(0);
-  // A count large enough to overflow the header would be rejected below anyway,
-  // but bail early rather than sizing a vector from a hostile number.
-  if (count > blobSize / 8) return false;
-
-  for (size_t entrySize : {size_t(8), size_t(12)}) {
-    size_t const header = 4 + static_cast<size_t>(count) * entrySize;
-    if (header > blobSize) continue;
-
-    std::vector<std::pair<uint32_t, uint32_t>> candidate;
-    candidate.reserve(count);
-    bool good = true;
-    for (uint32_t i = 0; i < count && good; i++) {
-      size_t const at = 4 + static_cast<size_t>(i) * entrySize;
-      uint32_t const offset = readU32(at);
-      uint32_t const length = readU32(at + 4);
-      if (offset < header || length == 0) { good = false; break; }
-      if (offset > blobSize || length > blobSize - offset) { good = false; break; }
-      candidate.emplace_back(offset, length);
-    }
-    if (good) {
-      out = std::move(candidate);
-      entryWidth = static_cast<int32_t>(entrySize);
-      return true;
-    }
-  }
-  return false;
-}
-
 // Parses one compiled sub-program's header.
 //
 // Layout, as Unity writes it: format version, ShaderGpuProgramType, three ints
@@ -881,7 +1200,8 @@ void WriteLittleU32(std::vector<uint8_t>& out, size_t offset, uint32_t value) {
 ShaderBodyRewrite BuildShaderObjectBody(uint8_t const* data, size_t size,
                                         ShaderObject const& shader,
                                         std::vector<int32_t> const& platforms,
-                                        EncodedProgramStore const& store) {
+                                        EncodedProgramStore const& store,
+                                        std::vector<BytePatch> const& patches) {
   ShaderBodyRewrite result;
   if (data == nullptr) {
     result.message = "no buffer to rebuild from";
@@ -951,6 +1271,17 @@ ShaderBodyRewrite BuildShaderObjectBody(uint8_t const* data, size_t size,
     return true;
   };
 
+  // Fixed-width writes into m_ParsedForm. They all sit before the blob, so
+  // they are applied to the body before anything in it moves.
+  for (auto const& patch : patches) {
+    if (patch.bytes.empty()) continue;
+    if (patch.fileOffset < bodyStart || patch.fileOffset + patch.bytes.size() > shader.blobFileOffset - 4) {
+      result.message = "a program-list patch falls outside m_ParsedForm";
+      return result;
+    }
+    std::memcpy(body.data() + (patch.fileOffset - bodyStart), patch.bytes.data(), patch.bytes.size());
+  }
+
   if (!patchTable(shader.platformsTableOffsets[0], platforms)) {
     result.message = "the platforms array does not fit where it was found";
     return result;
@@ -996,82 +1327,94 @@ ShaderBodyRewrite BuildShaderObjectBody(uint8_t const* data, size_t size,
 }
 
 EncodedProgramStore EncodeShaderPrograms(std::vector<int32_t> const& platforms,
-                                         std::vector<ShaderSubProgram> const& programs) {
+                                         std::vector<ShaderSubProgram> const& programs,
+                                         std::vector<StoreGroupLayout> const& layouts) {
   EncodedProgramStore store;
   size_t const groupCount = platforms.size();
   store.offsets.resize(groupCount);
   store.compressedLengths.resize(groupCount);
   store.decompressedLengths.resize(groupCount);
 
+  auto putU32 = [](std::vector<uint8_t>& out, uint32_t value) {
+    out.push_back(static_cast<uint8_t>(value & 0xff));
+    out.push_back(static_cast<uint8_t>((value >> 8) & 0xff));
+    out.push_back(static_cast<uint8_t>((value >> 16) & 0xff));
+    out.push_back(static_cast<uint8_t>((value >> 24) & 0xff));
+  };
+
   for (size_t group = 0; group < groupCount; group++) {
-    // Collect this group's programs, keyed by the sub-blob they belong to.
-    int32_t highestBlob = -1;
+    std::vector<ShaderSubProgram const*> members;
     for (auto const& program : programs) {
       if (static_cast<size_t>(program.groupIndex) != group) continue;
-      if (program.blobIndex < 0) {
-        store.message = "a program carries a negative blob index";
+      if (program.blobIndex < 0 || program.segment < 0) {
+        store.message = "a program carries a negative blob index or segment";
         return store;
       }
-      highestBlob = std::max(highestBlob, program.blobIndex);
+      members.push_back(&program);
     }
-    if (highestBlob < 0) continue;  // a platform with no programs keeps an empty group
-
-    for (int32_t blobIndex = 0; blobIndex <= highestBlob; blobIndex++) {
-      std::vector<ShaderSubProgram const*> members;
-      for (auto const& program : programs) {
-        if (static_cast<size_t>(program.groupIndex) == group && program.blobIndex == blobIndex) {
-          members.push_back(&program);
-        }
-      }
-      if (members.empty()) {
-        store.message = "sub-blob " + std::to_string(blobIndex) + " of platform group " +
-                        std::to_string(group) + " has no programs, so the store would have a hole";
+    StoreGroupLayout layout = group < layouts.size() ? layouts[group] : StoreGroupLayout{};
+    if (members.empty()) {
+      if (layout.chunkCount > 0) {
+        store.message = "platform group " + std::to_string(group) +
+                        " had chunks but has no entries left to put in them";
         return store;
       }
-      std::stable_sort(members.begin(), members.end(),
-                       [](ShaderSubProgram const* a, ShaderSubProgram const* b) {
-                         return a->programIndex < b->programIndex;
-                       });
-
-      // The entry width is whatever the sub-blob was read with, so a file that
-      // used 12-byte entries keeps using them.
-      size_t const entrySize = members.front()->entrySize == 12 ? 12u : 8u;
-
-      std::vector<std::vector<uint8_t>> bodies;
-      bodies.reserve(members.size());
-      for (auto const* program : members) {
-        std::vector<uint8_t> body;
-        WriteSubProgram(*program, body);
-        bodies.push_back(std::move(body));
+      continue;  // a platform with no programs keeps an empty group
+    }
+    std::stable_sort(members.begin(), members.end(),
+                     [](ShaderSubProgram const* a, ShaderSubProgram const* b) {
+                       return a->blobIndex < b->blobIndex;
+                     });
+    for (size_t i = 0; i < members.size(); i++) {
+      if (members[i]->blobIndex != static_cast<int32_t>(i)) {
+        store.message = "platform group " + std::to_string(group) + " has a hole or a duplicate at entry " +
+                        std::to_string(i) + ", so the table would index nothing";
+        return store;
       }
+    }
 
-      size_t const headerSize = 4 + members.size() * entrySize;
-      std::vector<uint8_t> plain;
-      plain.reserve(headerSize);
-      auto putU32 = [&plain](uint32_t value) {
-        plain.push_back(static_cast<uint8_t>(value & 0xff));
-        plain.push_back(static_cast<uint8_t>((value >> 8) & 0xff));
-        plain.push_back(static_cast<uint8_t>((value >> 16) & 0xff));
-        plain.push_back(static_cast<uint8_t>((value >> 24) & 0xff));
-      };
-      putU32(static_cast<uint32_t>(members.size()));
-      size_t cursor = headerSize;
-      for (auto const& body : bodies) {
-        putU32(static_cast<uint32_t>(cursor));
-        putU32(static_cast<uint32_t>(body.size()));
-        if (entrySize == 12) putU32(0);
-        cursor += body.size();
+    int32_t highestSegment = 0;
+    for (auto const* member : members) highestSegment = std::max(highestSegment, member->segment);
+    size_t const entrySize = (layout.entrySize == 12 || members.front()->entrySize == 12) ? 12u : 8u;
+    size_t const chunkCount =
+        std::max<size_t>(static_cast<size_t>(layout.chunkCount), static_cast<size_t>(highestSegment) + 1);
+    if (entrySize == 8 && chunkCount > 1) {
+      store.message = "8-byte table entries cannot name a segment, but the group has " +
+                      std::to_string(chunkCount) + " chunks";
+      return store;
+    }
+
+    size_t const headerSize = 4 + members.size() * entrySize;
+    std::vector<std::vector<uint8_t>> chunks(chunkCount);
+    std::vector<uint8_t> table;
+    table.reserve(headerSize);
+    putU32(table, static_cast<uint32_t>(members.size()));
+    for (auto const* member : members) {
+      std::vector<uint8_t> body;
+      if (member->raw) {
+        body = member->rawBytes;
+      } else {
+        WriteSubProgram(*member, body);
       }
-      for (auto const& body : bodies) plain.insert(plain.end(), body.begin(), body.end());
+      auto& chunk = chunks[static_cast<size_t>(member->segment)];
+      size_t const offset = (member->segment == 0 ? headerSize : 0) + chunk.size();
+      putU32(table, static_cast<uint32_t>(offset));
+      putU32(table, static_cast<uint32_t>(body.size()));
+      if (entrySize == 12) putU32(table, static_cast<uint32_t>(member->segment));
+      chunk.insert(chunk.end(), body.begin(), body.end());
+    }
+    chunks[0].insert(chunks[0].begin(), table.begin(), table.end());
 
+    for (auto& plain : chunks) {
+      // A chunk nothing points into still has to exist -- the length tables
+      // keep their count -- and LZ4 cannot encode zero bytes.
+      if (plain.empty()) plain.push_back(0);
       std::vector<uint8_t> packed(Lz4CompressBound(plain.size()));
-      size_t const written =
-          Lz4CompressBlock(plain.data(), plain.size(), packed.data(), packed.size());
+      size_t const written = Lz4CompressBlock(plain.data(), plain.size(), packed.data(), packed.size());
       if (written == 0) {
-        store.message = "a sub-blob could not be compressed";
+        store.message = "a chunk could not be compressed";
         return store;
       }
-
       store.offsets[group].push_back(static_cast<int32_t>(store.blob.size()));
       store.compressedLengths[group].push_back(static_cast<int32_t>(written));
       store.decompressedLengths[group].push_back(static_cast<int32_t>(plain.size()));
@@ -1082,6 +1425,71 @@ EncodedProgramStore EncodeShaderPrograms(std::vector<int32_t> const& platforms,
   store.ok = true;
   return store;
 }
+
+namespace {
+
+// Which platform group a program of this type is stored in: the group whose
+// platform can run it, or the only group there is.
+int32_t GroupForProgramType(std::vector<int32_t> const& platforms, int32_t programType) {
+  if (platforms.size() == 1) return 0;
+  for (size_t i = 0; i < platforms.size(); i++) {
+    int32_t const platform = platforms[i];
+    bool const dx = programType >= kGpuProgramDX11VertexSM40 && programType <= kGpuProgramDX11DomainSM50;
+    bool const gles = programType >= kGpuProgramGLES31AEP && programType <= kGpuProgramGLES;
+    if (dx && platform == kShaderPlatformD3D11) return static_cast<int32_t>(i);
+    if (gles && (platform == kShaderPlatformGLES3Plus || platform == kShaderPlatformGLES20)) {
+      return static_cast<int32_t>(i);
+    }
+    if (programType == kGpuProgramSPIRV && platform == kShaderPlatformVulkan) return static_cast<int32_t>(i);
+    if ((programType == kGpuProgramMetalVS || programType == kGpuProgramMetalFS) &&
+        platform == kShaderPlatformMetal) {
+      return static_cast<int32_t>(i);
+    }
+  }
+  return -1;
+}
+
+// Reads a group's entry table out of its first chunk, choosing the record width
+// the data supports: every record has to land inside the chunk its segment
+// names, and records in the first chunk have to lie clear of the table itself.
+bool ReadEntryTable(std::vector<std::vector<uint8_t>> const& chunks,
+                    std::vector<std::array<uint32_t, 3>>& entries, int32_t& entrySize) {
+  if (chunks.empty() || chunks[0].size() < 4) return false;
+  auto const& first = chunks[0];
+  auto readU32 = [&first](size_t at) {
+    return static_cast<uint32_t>(first[at]) | (static_cast<uint32_t>(first[at + 1]) << 8) |
+           (static_cast<uint32_t>(first[at + 2]) << 16) | (static_cast<uint32_t>(first[at + 3]) << 24);
+  };
+  uint32_t const count = readU32(0);
+  if (count > first.size() / 8) return false;
+
+  for (size_t width : {size_t(12), size_t(8)}) {
+    size_t const header = 4 + static_cast<size_t>(count) * width;
+    if (header > first.size()) continue;
+    std::vector<std::array<uint32_t, 3>> candidate;
+    candidate.reserve(count);
+    bool good = true;
+    for (uint32_t i = 0; i < count && good; i++) {
+      size_t const at = 4 + static_cast<size_t>(i) * width;
+      uint32_t const offset = readU32(at);
+      uint32_t const length = readU32(at + 4);
+      uint32_t const segment = width == 12 ? readU32(at + 8) : 0u;
+      if (segment >= chunks.size()) { good = false; break; }
+      size_t const chunkSize = chunks[segment].size();
+      if (segment == 0 && offset < header) { good = false; break; }
+      if (offset > chunkSize || length > chunkSize - offset) { good = false; break; }
+      candidate.push_back({offset, length, segment});
+    }
+    if (good) {
+      entries = std::move(candidate);
+      entrySize = static_cast<int32_t>(width);
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
 
 DecodeResult DecodeShaderPrograms(uint8_t const* data, size_t size, ShaderObject const& shader) {
   DecodeResult result;
@@ -1100,6 +1508,17 @@ DecodeResult DecodeShaderPrograms(uint8_t const* data, size_t size, ShaderObject
   uint8_t const* const blob = data + shader.blobFileOffset;
   size_t const blobSize = shader.blobSize;
 
+  // Entries m_ParsedForm names as parameter blobs, per group. Those are not
+  // sub-programs, and parsing one as if it were can "succeed" on garbage.
+  std::vector<std::set<uint32_t>> parameterEntries(shader.offsets.size());
+  for (auto const& ref : shader.programRefs) {
+    if (!ref.hasParameterBlob) continue;
+    int32_t const group = GroupForProgramType(shader.platforms, ref.gpuProgramType);
+    if (group < 0 || static_cast<size_t>(group) >= parameterEntries.size()) continue;
+    parameterEntries[static_cast<size_t>(group)].insert(ref.parameterBlobIndex);
+  }
+
+  result.layouts.resize(shader.offsets.size());
   int decoded = 0;
   int failed = 0;
   for (size_t group = 0; group < shader.offsets.size(); group++) {
@@ -1117,56 +1536,77 @@ DecodeResult DecodeShaderPrograms(uint8_t const* data, size_t size, ShaderObject
       failed++;
       continue;
     }
+    if (groupOffsets.empty()) continue;
 
-    for (size_t entry = 0; entry < groupOffsets.size(); entry++) {
+    std::vector<std::vector<uint8_t>> chunks;
+    bool chunksOk = true;
+    for (size_t entry = 0; entry < groupOffsets.size() && chunksOk; entry++) {
       int32_t const offset = groupOffsets[entry];
       int32_t const compressed = groupCompressed[entry];
       int32_t const decompressedSize = groupDecompressed[entry];
-      if (offset < 0 || compressed <= 0 || decompressedSize <= 0) { failed++; continue; }
-      if (static_cast<size_t>(offset) > blobSize ||
-          static_cast<size_t>(compressed) > blobSize - static_cast<size_t>(offset)) {
-        failed++;
-        continue;
+      if (offset < 0 || compressed <= 0 || decompressedSize <= 0 ||
+          static_cast<size_t>(offset) > blobSize ||
+          static_cast<size_t>(compressed) > blobSize - static_cast<size_t>(offset) ||
+          // A decompressed size a bundle claims is an allocation this code is
+          // about to make on a headset, so it is capped rather than trusted.
+          decompressedSize > 64 * 1024 * 1024) {
+        chunksOk = false;
+        break;
       }
-      // A decompressed size a bundle claims is an allocation this code is about
-      // to make on a headset, so it is capped rather than trusted.
-      if (decompressedSize > 64 * 1024 * 1024) { failed++; continue; }
-
       std::vector<uint8_t> plain(static_cast<size_t>(decompressedSize));
       size_t const written = Lz4DecodeBlock(blob + offset, static_cast<size_t>(compressed),
                                             plain.data(), plain.size());
-      if (written == 0) { failed++; continue; }
+      if (written == 0) { chunksOk = false; break; }
       plain.resize(written);
+      chunks.push_back(std::move(plain));
+    }
+    std::vector<std::array<uint32_t, 3>> entries;
+    int32_t entryWidth = 8;
+    if (!chunksOk || !ReadEntryTable(chunks, entries, entryWidth)) {
+      failed++;
+      continue;
+    }
+    result.layouts[group].entrySize = entryWidth;
+    result.layouts[group].chunkCount = static_cast<int32_t>(chunks.size());
 
-      std::vector<std::pair<uint32_t, uint32_t>> table;
-      int32_t entryWidth = 8;
-      if (!ReadProgramTable(plain.data(), plain.size(), table, entryWidth)) { failed++; continue; }
-
-      for (size_t i = 0; i < table.size(); i++) {
-        ShaderSubProgram program;
+    for (size_t i = 0; i < entries.size(); i++) {
+      auto const& [offset, length, segment] = entries[i];
+      ShaderSubProgram program;
+      program.platform = platform;
+      program.groupIndex = static_cast<int32_t>(group);
+      program.blobIndex = static_cast<int32_t>(i);
+      program.programIndex = static_cast<int32_t>(i);
+      program.segment = static_cast<int32_t>(segment);
+      program.entrySize = entryWidth;
+      uint8_t const* bytes = chunks[segment].data() + offset;
+      bool const isParameters = parameterEntries[group].count(static_cast<uint32_t>(i)) != 0;
+      if (isParameters || !ReadSubProgram(bytes, length, program)) {
+        // Kept verbatim: a parameter blob, or something this code does not
+        // model. Either way its index has to survive, because m_ParsedForm
+        // points at it by number.
+        program = ShaderSubProgram{};
         program.platform = platform;
         program.groupIndex = static_cast<int32_t>(group);
-        program.blobIndex = static_cast<int32_t>(entry);
+        program.blobIndex = static_cast<int32_t>(i);
         program.programIndex = static_cast<int32_t>(i);
+        program.segment = static_cast<int32_t>(segment);
         program.entrySize = entryWidth;
-        if (!ReadSubProgram(plain.data() + table[i].first, table[i].second, program)) {
-          failed++;
-          continue;
-        }
-        result.programs.push_back(std::move(program));
+        program.raw = true;
+        program.rawBytes.assign(bytes, bytes + length);
+      } else {
         decoded++;
       }
+      result.programs.push_back(std::move(program));
     }
   }
 
-  // Nothing decoded and nothing failed means the shader genuinely carries no
-  // programs, which is not an error. Only a shader whose sub-blobs were all
-  // unreadable is a failure.
-  result.ok = failed == 0 || decoded > 0;
-  if (!result.ok && result.message.empty()) result.message = "no programs could be decoded";
+  // A group that could not be read cannot be written back, so the result is
+  // only usable when every group decoded. A shader with no store at all is not
+  // an error.
+  result.ok = failed == 0;
   if (failed > 0) {
     result.message = "decoded " + std::to_string(decoded) + " program(s); " +
-                     std::to_string(failed) + " sub-blob(s) could not be read";
+                     std::to_string(failed) + " platform group(s) could not be read";
   }
   return result;
 }

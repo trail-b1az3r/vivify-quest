@@ -271,6 +271,10 @@ struct GlslResult {
   std::vector<std::string> samplers;
   // The GLSL ES version actually emitted (300, 310 or 320).
   int version = 0;
+  // True for a vertex program built for single-pass instanced stereo: it writes
+  // SV_RenderTargetArrayIndex to pick the eye. With `multiview` set its eye
+  // selection is remapped onto gl_ViewID_OVR.
+  bool stereoInstanced = false;
 };
 
 struct GlslOptions {
@@ -286,6 +290,20 @@ struct GlslOptions {
   int maximumVersion = 320;
   // Name given to the fragment output when the signature has no name for it.
   std::string defaultFragmentOutput = "SV_Target";
+  // Emit for a single-pass multiview eye buffer, which is how the Quest renders
+  // (XRSettings.stereoRenderingMode 3). GL_OVR_multiview makes a draw into a
+  // two-view framebuffer an INVALID_OPERATION unless the vertex shader declares
+  // `layout(num_views = 2)`, so without this every translated program would
+  // compile, link, and then draw nothing at all.
+  //
+  // With it, the vertex stage declares the two views, and a program built for
+  // PC single-pass instanced stereo keeps its own eye selection working: its
+  // instance ID is presented as gl_InstanceID * 2 + gl_ViewID_OVR, which is the
+  // numbering SPI expects (eye = id & 1, instance = id >> 1), and its
+  // SV_RenderTargetArrayIndex is read back as gl_ViewID_OVR in the fragment
+  // stage rather than written as gl_Layer, which GLSL ES has no vertex-stage
+  // form of.
+  bool multiview = false;
 };
 
 // Translates a parsed program to GLSL ES source.

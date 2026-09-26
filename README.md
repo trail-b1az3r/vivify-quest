@@ -33,6 +33,132 @@ port from scratch — see Credits below.
   - Full settings-menu parity: every toggle the runtime already had a config
     key for is now actually exposed in the in-game settings UI.
 
+## 0.11.0 — converted shaders Unity will actually run, in both eyes
+
+Your 0.10.0 session log had every shader in a converted bundle (743Aether)
+still reporting `supported=false`. Nothing else in the log reached gameplay.
+Two defects explain that on their own, and either one would keep a converted
+map black. Neither is visible in the program store the converter rewrites;
+both live in the parts of the Shader object it never touched.
+
+### Unity chooses programs from `m_ParsedForm`, not from the store
+
+Each pass in a Shader lists its keyword variants per stage in `m_ParsedForm`.
+Every variant names a store entry and the `ShaderGpuProgramType` of the program
+in it. When a shader loads, Unity keeps only the variants whose type its
+renderer can run. The converter translated the store's DirectX bytecode to
+GLSL and relabelled the store, but left every variant in `m_ParsedForm`
+saying "Direct3D 11". On a Quest that is a shader with no runnable program at
+all: `isSupported = false`, however good the translation was. That matches
+the log exactly.
+
+Conversion now walks `m_ParsedForm` using the bundle's own type tree. That
+covers the 2021.3.10+ `m_PlayerSubPrograms` layout Beat Saber's Unity version
+writes, and the older `m_SubPrograms` one. Every translated variant is
+relabelled GLES3, GLES3.1 or GLES3.1+AEP, according to the GLSL version it
+needed.
+
+### GLES variants are one linked program, not one program per stage
+
+D3D keeps vertex and fragment programs separate. Unity stores a GLES variant
+as a single GLSL source with `#ifdef VERTEX` / `#ifdef FRAGMENT` (and
+`GEOMETRY`) sections and links it as one program. Each vertex variant is now
+linked with the fragment variant Unity would pair it with, by keyword match.
+The linked source goes into every stage's entry for that variant. Variants
+that share a stored program but link different fragments get separate
+programs.
+
+Linking also fixes two things GLSL ES checks across stages and a
+one-stage-at-a-time translator cannot see:
+- a fragment input's `flat`/`centroid` qualifier is copied onto the matching
+  vertex output;
+- a varying the fragment reads but the vertex never writes is declared on the
+  vertex side.
+
+### The Quest renders both eyes in one multiview pass
+
+The log's `stereoMode=3` is `SinglePassMultiview`. Under GL_OVR_multiview, a
+draw into a two-view framebuffer is an error unless the vertex shader declares
+`layout(num_views = 2)`, so every translated program would have compiled,
+linked, and drawn nothing. All translated programs are now emitted for
+multiview.
+
+The two eyes also need their own projection. PC Vivify bundles are built for
+single-pass *instanced* stereo, so a stereo-aware shader carries a
+`STEREO_INSTANCING_ON` variant that picks its eye from the instance ID and
+reads `unity_StereoMatrixVP[eye]`. That keyword is never on on a Quest, so
+Unity would pick the plain, one-camera variant. Conversion now points each
+plain variant at its instanced twin. The twin is translated with the instance
+ID presented as `gl_InstanceID * 2 + gl_ViewID_OVR`, which is exactly the
+numbering its own maths expects (eye = id & 1). Its eye-index output, which
+GLSL ES has no vertex-stage form of, is discarded, and its fragment reads the
+eye from `gl_ViewID_OVR`. Before, the translator refused any fragment program
+that read the eye at all. That alone threw out every stereo-aware shader that
+samples a screen-space texture.
+
+### The program store was being read with the wrong model
+
+The store for each platform is one entry table, at the start of its first
+LZ4 chunk; each entry names the chunk ("segment") its bytes live in, and
+`m_BlobIndex` is an index into that table. The reader expected a table at the
+start of *every* chunk, which only coincides with Unity's layout for a
+one-chunk store. From 2021.3.10 the table also holds each program's
+parameters (`m_ParameterBlobIndices`). Those were being parsed as programs,
+and dropping an entry shifted every index after it. Entries that are not
+programs are now carried byte for byte, and every entry keeps its index.
+
+### Also fixed
+
+- **Bit-manipulation instructions** (`countbits`, `firstbit_*`, `ubfe`/`ibfe`,
+  `bfi`, `bfrev`) emitted GLSL ES 3.10 built-ins under a `#version 300 es`
+  line, which does not compile. They now raise the version.
+- **Notes going away and coming back (YOU).** A note replacement was judged
+  drawable if *any* of its renderers had a runnable shader, and a particle
+  system counts. A note prefab whose mesh could not draw, but whose particles
+  could, hid the real note and left only particles. That lasted for the
+  stretch of the song that assigned that prefab. A prefab with meshes now
+  needs a drawable mesh before the original is hidden.
+
+### How this was checked
+
+The whole program store, `m_ParsedForm` and conversion path is now tested
+against Unity 2021.3.16's real Shader type tree
+(`tools/bundleconvert/fixtures/`, dumped from UnityPy's type-tree package,
+2304 nodes) instead of a hand-shaped approximation of it.
+
+Every program the translator and converter produce is compiled, and every
+converted shader's stages linked, by **glslang**, the Khronos GLSL ES
+reference front-end, with `GL_OVR_multiview2`. CI installs it.
+
+Suites: converter 59/59, DXBC 146/146, shaderscan 64/64, texture decoder and
+report writer pass, all under ASan/UBSan. The converter fuzz pass now also
+corrupts a 2021.3.16 shader and finds no crashes.
+
+### What this still cannot do
+
+- **Geometry shaders.** They are translated, but GL_OVR_multiview does not
+  allow a geometry stage when rendering to two views, so they will not draw
+  on a Quest.
+- **Fragment-only keyword variants.** When a keyword changes only the
+  fragment stage, every vertex variant links the fragment that best matches
+  *its* keywords. Fragment-only keyword features render in their "off" form.
+- **Screen-space and depth textures.** Their sampling in a multiview eye
+  buffer is untested.
+- **Headset testing.** None of this has run on a headset. The glslang checks
+  prove the programs are valid GLSL ES. They cannot prove Unity binds every
+  uniform the way the translation assumes.
+
+### If you test it
+
+The conversion cache version is now 5, so every PC-bundle map reconverts
+automatically the first time you select it. Two things make the next log more
+useful:
+- turn **Stand-In Shading** back on (your log showed it off, and with it off,
+  anything that still cannot run draws nothing);
+- send `VivifySession.txt` from a session where you actually *played* the map.
+  The level-load lines (shader repair, texture decode, and the new "shader
+  conversion: N of M shader(s) linked" line) are what say what happened.
+
 ## 0.10.0 — white notes, white levels, and features from the other forks
 
 This release is built from `main` (0.9.14), with the build and dependency fixes
