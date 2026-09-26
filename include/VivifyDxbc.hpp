@@ -95,6 +95,13 @@ struct ConstantBufferInfo {
   // for these -- so a flat view of the block reads exactly what the bytecode
   // reads, at the same offsets, dynamic indexing and all.
   bool uniformBlock = false;
+  // For a uniform block holding GPU instancing's per-instance struct array:
+  // where the array starts and how big one element is, both in bytes. Unity
+  // compiles that array with a placeholder length of 2 and, on GLES, sizes it
+  // at load time through UNITY_RUNTIME_INSTANCING_ARRAY_SIZE; the block is
+  // declared the same way. 0 when the buffer has no such array.
+  uint32_t instancedArrayOffset = 0;
+  uint32_t instancedElementSize = 0;
 };
 
 // A bound resource: a texture, a sampler, or a constant buffer's binding.

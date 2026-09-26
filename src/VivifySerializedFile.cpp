@@ -598,6 +598,14 @@ void AddParameterField(std::string const& field, std::vector<Record> const& list
       }
       if (auto it = record.lists.find("m_StructParams"); it != record.lists.end() && !it->second.empty()) {
         buffer.hasStructParams = true;
+        auto const& first = it->second.front();
+        auto get = [&first](char const* key) {
+          auto found = first.ints.find(key);
+          return found == first.ints.end() ? 0 : static_cast<int32_t>(found->second);
+        };
+        buffer.structOffset = get("m_Index");
+        buffer.structSize = get("m_StructSize");
+        buffer.structArraySize = get("m_ArraySize");
       }
       out.constantBuffers.push_back(std::move(buffer));
     }
@@ -2079,6 +2087,11 @@ void ProgramParameters::Merge(ProgramParameters const& other) {
       addMissing(it->vectors, buffer.vectors);
       addMissing(it->matrices, buffer.matrices);
       it->size = std::max(it->size, buffer.size);
+      if (!it->hasStructParams && buffer.hasStructParams) {
+        it->structOffset = buffer.structOffset;
+        it->structSize = buffer.structSize;
+        it->structArraySize = buffer.structArraySize;
+      }
       it->hasStructParams = it->hasStructParams || buffer.hasStructParams;
     }
   }
@@ -2165,7 +2178,14 @@ bool ReadInlineParameters(Reader& reader, bool withPartialFlag, ProgramParameter
     for (uint32_t i = 0; i < structCount; i++) {
       std::string structName;
       if (!readString(structName)) return false;
-      reader.skip(12);  // index, arraySize, structSize
+      int32_t const structOffset = static_cast<int32_t>(reader.u32());
+      int32_t const structArraySize = static_cast<int32_t>(reader.u32());
+      int32_t const structSize = static_cast<int32_t>(reader.u32());
+      if (!buffer.hasStructParams) {
+        buffer.structOffset = structOffset;
+        buffer.structArraySize = structArraySize;
+        buffer.structSize = structSize;
+      }
       uint32_t const memberCount = reader.u32();
       if (!reader.ok() || memberCount > kMaxCount) return false;
       for (uint32_t j = 0; j < memberCount; j++) {

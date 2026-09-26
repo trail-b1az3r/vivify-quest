@@ -223,6 +223,7 @@ DX11_PIXEL_SM50 = 18
 GLES3_PLATFORM = 9
 
 MUL, MAD, ADD, RET, DCL_TEMPS, DCL_INPUT, DCL_OUTPUT, DCL_OUTPUT_SIV = 56, 50, 0, 62, 104, 95, 101, 103
+MOV = 54
 SAMPLE, DCL_SAMPLER, DCL_RESOURCE, DCL_INPUT_PS, MSAD = 69, 90, 88, 98, 213
 
 
@@ -639,6 +640,31 @@ shader_case("a 2019 program's parameter tables stay four-byte aligned after its 
             expect_2019_tables_aligned, [("Custom/Test2019", [4], program_2019)])
 
 
+def split_stages(code):
+    """The per-stage sections of a Unity GLES program ("#ifdef VERTEX" ...
+    "#endif"), matching #if/#endif nesting: a stage can hold conditionals of
+    its own (UNITY_RUNTIME_INSTANCING_ARRAY_SIZE's #ifndef), so the first
+    #endif is not necessarily the stage's."""
+    sections, stage, depth, lines = {}, None, 0, []
+    for line in code.split("\n"):
+        stripped = line.strip()
+        if stage is None:
+            m = re.match(r"#ifdef (VERTEX|FRAGMENT|GEOMETRY)$", stripped)
+            if m:
+                stage, depth, lines = m.group(1), 0, []
+            continue
+        if stripped.startswith("#if"):
+            depth += 1
+        elif stripped.startswith("#endif"):
+            if depth == 0:
+                sections[stage] = "\n".join(lines) + "\n"
+                stage = None
+                continue
+            depth -= 1
+        lines.append(line)
+    return sections
+
+
 GLSLANG = shutil.which("glslangValidator")
 
 
@@ -654,7 +680,7 @@ def glslang_link_problem(dst):
         code = entry["code"].replace("\\n", "\n")
         if not code.startswith("#ifdef VERTEX"):
             continue
-        sections = dict(re.findall(r"#ifdef (VERTEX|FRAGMENT|GEOMETRY)\n(.*?)#endif\n", code, re.S))
+        sections = split_stages(code)
         files = []
         for stage, ext in (("VERTEX", "vert"), ("FRAGMENT", "frag"), ("GEOMETRY", "geom")):
             if stage in sections:
@@ -849,6 +875,56 @@ inline_body, _ = pc_shader_2021(
 
 pc_shader_case("a parameter blob in Unity's inline layout is read for its names",
                inline_body, expect_stripped)
+
+# GPU instancing: Unity compiles a per-instance array at a placeholder length
+# of 2, and on DirectX a read past it still reaches the real buffer. Declared
+# in GLSL at that length, every instance after the second read garbage --
+# which scrambled chords and chains in Burning Sands, since Beat Saber draws
+# notes that appear together as one instanced batch. The array has to be sized
+# by UNITY_RUNTIME_INSTANCING_ARRAY_SIZE, which the engine defines on load.
+def _instanced_vs():
+    inputs = [{"name": "POSITION", "index": 0, "register": 0},
+              {"name": "SV_InstanceID", "index": 0, "register": 1, "sv": SV_INSTANCE_ID,
+               "mask": 0x1, "rw_mask": 0x1, "component_type": 1}]
+    outputs = [{"name": "SV_POSITION", "index": 0, "register": 0, "sv": 1, "rw_mask": 0},
+               {"name": "TEXCOORD", "index": 0, "register": 1, "rw_mask": 0}]
+    code = []
+    code += dx.insn(DCL_INPUT, dx.dest(dx.OPERAND_INPUT, 0))
+    code += dx.insn(DCL_INPUT_SGV, dx.dest(dx.OPERAND_INPUT, 1, 0x1), extra=[SV_INSTANCE_ID])
+    code += dx.insn(DCL_OUTPUT_SIV, dx.dest(dx.OPERAND_OUTPUT, 0), extra=[1])
+    code += dx.insn(DCL_OUTPUT, dx.dest(dx.OPERAND_OUTPUT, 1))
+    code += dx.insn(DCL_TEMPS, extra=[1])
+    code += dx.insn(MOV, dx.dest(dx.OPERAND_TEMP, 0, 0x1), dx.src(dx.OPERAND_INPUT, 1, (0, 0, 0, 0)))
+    code += dx.insn(ADD, dx.dest(dx.OPERAND_OUTPUT, 0), dx.src(dx.OPERAND_INPUT, 0),
+                    dx.src_cb_relative(0, 0, 0))
+    code += dx.insn(ADD, dx.dest(dx.OPERAND_OUTPUT, 1), dx.src(dx.OPERAND_INPUT, 0), dx.src(dx.OPERAND_INPUT, 0))
+    code += dx.insn(RET)
+    return dx.unity_program([dx.signature_chunk(inputs, b"ISGN"), dx.signature_chunk(outputs, b"OSGN"),
+                             dx.shex_chunk([code], stage=1)])
+
+
+instanced_params = mkshader2021.inline_parameter_blob(
+    constant_buffers=[("UnityInstancing_Props", 32, [], [])], bindings=[("UnityInstancing_Props", 0)],
+    struct_arrays={"UnityInstancing_Props": (0, 2, 16)})
+instanced_body, _ = pc_shader_2021(
+    "Notes/Instanced", [(_instanced_vs(), [])], [(_ps(spi=False), [])], keyword_names=(),
+    vertex_params=[instanced_params], fragment_params_blobs=[mkshader2021.inline_parameter_blob()])
+
+
+def expect_runtime_instancing_size(proc, fields, refusals, dst):
+    if fields.get("linked") != "1" or fields.get("variantsRefused") != "0":
+        return f"linked={fields.get('linked')} variantsRefused={fields.get('variantsRefused')} {refusals}"
+    _, refs, entries = inspect_converted(dst)
+    code = entries[int(next(r for r in refs if r["stage"] == "0")["blob"])]["code"]
+    if "vec4 vivify_cb_UnityInstancing_Props[1 * UNITY_RUNTIME_INSTANCING_ARRAY_SIZE]" not in code:
+        return f"the per-instance array is not sized at run time: {code}"
+    if "#ifndef UNITY_RUNTIME_INSTANCING_ARRAY_SIZE\\n#define UNITY_RUNTIME_INSTANCING_ARRAY_SIZE 2" not in code:
+        return "no fallback definition of UNITY_RUNTIME_INSTANCING_ARRAY_SIZE"
+    return None
+
+
+pc_shader_case("an instanced array is sized by UNITY_RUNTIME_INSTANCING_ARRAY_SIZE, not the placeholder 2",
+               instanced_body, expect_runtime_instancing_size)
 
 broken_body, _ = pc_shader_2021("Custom/Broken", [(_vs(spi=False), [])],
                                 [(dxbc_untranslatable(), [])], keyword_names=())

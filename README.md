@@ -33,6 +33,36 @@ port from scratch — see Credits below.
   - Full settings-menu parity: every toggle the runtime already had a config
     key for is now actually exposed in the in-game settings UI.
 
+## 0.13.1 — chords and chains drawn in the wrong place on converted maps
+
+Burning Sands loaded and played after 0.13.0, but notes in chords and chain
+links were drawn in the wrong spots and pointing the wrong way. The map's own
+scenery was misplaced in the same way. Hitting still followed the real notes.
+
+Beat Saber draws notes that are on screen together with one GPU-instanced
+draw call. Each copy reads its own transform (and colour) from a per-instance
+array, indexed by its instance number. Unity compiles that array with a
+placeholder length of 2:
+
+- **On DirectX** this never mattered, because a read past a buffer's
+  declared end still reaches the real buffer bound behind it.
+- **In GLSL** it does not, so the translated shaders declared a two-instance
+  array. Every instance after the second read garbage.
+
+A single note looked right; a chord of three or four did not, and a chain,
+with a dozen links in one batch, came apart completely.
+
+Unity's own GLES shaders size these arrays with
+`UNITY_RUNTIME_INSTANCING_ARRAY_SIZE`, which the engine defines when it loads
+the shader. The translated shaders now do the same.
+
+Checked against 743Aether's real bundle:
+- **Compile check:** all 156 linked programs compile and link under glslang,
+  both at the fallback size and at 128 instances.
+- **New test:** builds an instanced shader and fails without the fix.
+
+Conversion cache version 8: converted maps reconvert by themselves.
+
 ## 0.13.0 — the crash on selecting a converted level, and Dialtone
 
 ### Selecting a converted level crashed the game

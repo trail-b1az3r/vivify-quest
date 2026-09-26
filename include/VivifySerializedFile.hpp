@@ -188,6 +188,12 @@ struct ProgramConstantBuffer {
   // Holds arrays of structs (m_StructParams): GPU instancing's per-instance
   // data. Its members are not listed above.
   bool hasStructParams = false;
+  // The first struct array's placement (GPU instancing keeps exactly one per
+  // buffer): byte offset, element size, and element count. Unity compiles the
+  // count as a placeholder of 2 and sizes the real array at run time.
+  int32_t structOffset = 0;
+  int32_t structSize = 0;
+  int32_t structArraySize = 0;
 };
 
 struct ProgramParameters {
