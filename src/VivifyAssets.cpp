@@ -1709,6 +1709,17 @@ UnityEngine::Shader* Runtime::FindFallbackShader() {
 
 void Runtime::RepairMaterialShader(UnityEngine::Material* material, std::string_view context) {
   if (!IsAlive(material)) return;
+  // No GPU instancing for a converted bundle's materials. Beat Saber draws
+  // notes that are on screen together -- chords, chain links -- as one
+  // instanced batch, and on the Quest the translated instanced variants put
+  // every copy but one in the wrong place, pointing the wrong way. Single
+  // notes, drawn through the plain variant, were right. With instancing off
+  // every object is drawn on its own through that plain variant; notes are
+  // few enough that the extra draw calls cost little.
+  if (_preloadedBundlePath.rfind(ConvertedBundleCacheDir(), 0) == 0 && material->get_enableInstancing()) {
+    material->set_enableInstancing(false);
+    _instancingDisabledMaterials++;
+  }
   if (_repairedMaterials.contains(material)) return;
   auto shader = material->get_shader();
   auto* rawShader = shader.unsafePtr();
@@ -2153,6 +2164,7 @@ void Runtime::RepairLoadedMaterialShaders() {
   _shaderRepairFailed = 0;
   _screenEffectsDeclined = 0;
   _standInsDimmedFromWhite = 0;
+  _instancingDisabledMaterials = 0;
   for (auto const& [path, asset] : _assets) {
     if (!IsAlive(asset)) continue;
     if (auto* material = il2cpp_utils::try_cast<UnityEngine::Material>(asset).value_or(nullptr); IsAlive(material)) {
@@ -2160,6 +2172,11 @@ void Runtime::RepairLoadedMaterialShaders() {
     } else if (auto* gameObject = il2cpp_utils::try_cast<UnityEngine::GameObject>(asset).value_or(nullptr); IsAlive(gameObject)) {
       RepairGameObjectMaterials(gameObject, path);
     }
+  }
+  if (_instancingDisabledMaterials > 0) {
+    PaperLogger.info("Vivify: GPU instancing turned off on {} material(s) of this converted bundle, so "
+                     "notes drawn together (chords, chains) each get their own transform",
+                     _instancingDisabledMaterials);
   }
   if (_shaderRepairAttempts > 0) {
     // Worth logging unconditionally: a bundle whose shaders all had to be
