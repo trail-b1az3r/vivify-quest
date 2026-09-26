@@ -1337,6 +1337,15 @@ Vivify::Dxbc::ExternalReflection ReflectionFrom(SerializedFileParse::ProgramPara
     }
     if (!bound || buffer.name.empty()) continue;
     info.uniformBlock = buffer.hasStructParams;
+    // Only the layout Unity's instancing macros produce: an array of
+    // whole-register structs, compiled at the placeholder length, ending the
+    // buffer.
+    if (buffer.hasStructParams && buffer.structSize > 0 && buffer.structSize % 16 == 0 &&
+        buffer.structOffset >= 0 && buffer.structOffset % 16 == 0 && buffer.structArraySize > 0 &&
+        buffer.structOffset + buffer.structSize * buffer.structArraySize >= buffer.size) {
+      info.instancedArrayOffset = static_cast<uint32_t>(buffer.structOffset);
+      info.instancedElementSize = static_cast<uint32_t>(buffer.structSize);
+    }
     for (auto const& vector : buffer.vectors) {
       if (vector.name.empty()) continue;
       Vivify::Dxbc::ConstantBufferVariable variable;

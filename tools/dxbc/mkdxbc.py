@@ -93,6 +93,16 @@ def src_cb(buffer_index, row, swizzle=(0, 1, 2, 3), modifier=MOD_NONE):
                     modifier=modifier)
 
 
+def src_cb_relative(buffer_index, row, temp, component=0, swizzle=(0, 1, 2, 3)):
+    """cb<buffer_index>[r<temp>.<component> + row]: a constant buffer read at a
+    row picked at run time, the way an instanced shader reads its per-instance
+    array. The second index is an immediate plus a register."""
+    token = _operand(OPERAND_CONSTANT_BUFFER, [buffer_index, row], swizzle=swizzle)[0]
+    token |= 3 << (22 + 3)  # index 1: D3D10_SB_OPERAND_INDEX_IMMEDIATE32_PLUS_RELATIVE
+    relative = 2 | (2 << 2) | ((component & 3) << 4) | (OPERAND_TEMP << 12) | (1 << 20)  # r<temp>.<c>
+    return [token, buffer_index, row, relative, temp]
+
+
 def src_icb(row, swizzle=(0, 1, 2, 3)):
     return _operand(OPERAND_IMMEDIATE_CONSTANT_BUFFER, [row], swizzle=swizzle)
 

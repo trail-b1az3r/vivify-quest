@@ -1250,6 +1250,7 @@ class GlslEmitter {
   std::string _stereoEyeIndexType;  // set when unity_StereoEyeIndex is fed from the view
   bool _writesRTArrayIndex = false;
   bool _stereoInstanced = false;
+  bool _declaredRuntimeInstancingSize = false;
   // Thread-group shared memory, one entry per declared block.
   struct SharedBlock {
     uint32_t index = 0;
@@ -1350,8 +1351,29 @@ bool GlslEmitter::BuildConstantBuffers() {
       entry.isArray = true;
       entry.elementStride = 16;
       entry.componentCount = 4;
-      entry.declaration = "layout(std140) uniform " + buffer.name + " { vec4 " + entry.name + "[" +
-                          std::to_string(rows) + "]; };";
+      std::string length = std::to_string(rows);
+      if (buffer.instancedElementSize > 0) {
+        // Unity compiles an instanced array at a placeholder length of 2.
+        // DirectX reads past a cbuffer's declared end into whatever buffer is
+        // bound, so there that never mattered; GLSL does not, and a block
+        // declared at the placeholder gave every instance past the second
+        // garbage transforms -- which is what scrambled chords and chains,
+        // the notes Beat Saber draws as one instanced batch. Unity's own GLES
+        // shaders size the array with UNITY_RUNTIME_INSTANCING_ARRAY_SIZE,
+        // which the engine defines at load time from the element size and
+        // the device's uniform-block limit.
+        if (!_declaredRuntimeInstancingSize) {
+          _declarations += "#ifndef UNITY_RUNTIME_INSTANCING_ARRAY_SIZE\n"
+                           "#define UNITY_RUNTIME_INSTANCING_ARRAY_SIZE 2\n"
+                           "#endif\n";
+          _declaredRuntimeInstancingSize = true;
+        }
+        uint32_t const prefixRows = buffer.instancedArrayOffset / 16u;
+        uint32_t const elementRows = buffer.instancedElementSize / 16u;
+        length = (prefixRows > 0 ? std::to_string(prefixRows) + " + " : std::string()) + std::to_string(elementRows) +
+                 " * UNITY_RUNTIME_INSTANCING_ARRAY_SIZE";
+      }
+      entry.declaration = "layout(std140) uniform " + buffer.name + " { vec4 " + entry.name + "[" + length + "]; };";
       _declarations += entry.declaration + "\n";
       _uniformNames.push_back(buffer.name);
       mapped.push_back(std::move(entry));

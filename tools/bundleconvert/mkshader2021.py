@@ -169,13 +169,16 @@ def parameter_blob(constant_buffers=(), bindings=(), textures=()):
     return bytes(out)
 
 
-def inline_parameter_blob(constant_buffers=(), bindings=(), version=202012090):
+def inline_parameter_blob(constant_buffers=(), bindings=(), version=202012090, struct_arrays=None):
     """A parameter blob in Unity's inline layout, which some 2021.3 editors
     write in place of the type-tree one: a format version, then parameter
     groups with their names spelled out (group 0 is everything outside a
     constant buffer), each ending in an isPartialCB int, then the bindings.
     constant_buffers: [(name, size, [(name, offset, dim, array_size)],
-    [(name, offset, rows, array_size)])]. bindings: [(name, slot)]."""
+    [(name, offset, rows, array_size)])]. bindings: [(name, slot)].
+    struct_arrays: {buffer name: (offset, count, struct_size)} -- GPU
+    instancing's per-instance array, with no members listed."""
+    struct_arrays = struct_arrays or {}
     out = bytearray(struct.pack('<I', version))
 
     def string(text):
@@ -192,7 +195,14 @@ def inline_parameter_blob(constant_buffers=(), bindings=(), version=202012090):
         for (n, offset, rows, array_size) in matrices:
             string(n)
             out.extend(struct.pack('<iiiiii', 0, rows, 4, 1, array_size, offset))
-        out.extend(struct.pack('<ii', 0, 1 if name else 0))  # no structs; isPartialCB
+        if name in struct_arrays:
+            offset, count, struct_size = struct_arrays[name]
+            out.extend(struct.pack('<i', 1))
+            string(name + "Array")
+            out.extend(struct.pack('<iiii', offset, count, struct_size, 0))  # no members listed
+        else:
+            out.extend(struct.pack('<i', 0))
+        out.extend(struct.pack('<i', 1 if name else 0))  # isPartialCB
 
     out.extend(struct.pack('<I', len(constant_buffers) + 1))
     group("", 0, [], [])

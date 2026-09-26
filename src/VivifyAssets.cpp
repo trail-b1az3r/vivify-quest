@@ -54,7 +54,12 @@ namespace {
 //      after its code; version 6 wrote the translated GLSL without that padding,
 //      Unity read the tables from the wrong offset, and the game crashed as
 //      soon as such a level was selected
-constexpr int kBundleConversionVersion = 7;
+//   8  the same, with GPU instancing's per-instance arrays sized at load time
+//      (UNITY_RUNTIME_INSTANCING_ARRAY_SIZE) instead of at Unity's
+//      placeholder of 2. Version 7 gave every instance after the second in a
+//      batch garbage transforms: chords and chains were drawn in the wrong
+//      places and pointing the wrong way
+constexpr int kBundleConversionVersion = 8;
 
 std::string ConversionMarkerPath(std::string const& destPath) {
   return destPath + ".version";
