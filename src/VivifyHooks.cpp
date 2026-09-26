@@ -1,4 +1,5 @@
 #include "VivifyRuntimeInternal.hpp"
+#include <set>
 #include "VivifyComponents.hpp"
 #include "GlobalNamespace/UserInfo.hpp"
 
@@ -115,7 +116,10 @@ bool ShouldSkipVRCenterAdjust(GlobalNamespace::VRCenterAdjust* self, std::string
     return true;
   }
   if (missingSettingsManager || missingSettingsApplicator) {
-    if (method != "Update"sv || GetVivifyDebugLogging()) {
+    // Update runs every frame, and with debug logging on this line alone was
+    // 21,790 of a 25,005-line session log. Once per method is enough to know.
+    static std::set<std::string_view> sReported;
+    if (sReported.insert(method).second) {
       PaperLogger.warn("VRCenterAdjust.{} skipped: missing _settingsManager={} _settingsApplicator={}",
                        method, BoolText(missingSettingsManager), BoolText(missingSettingsApplicator));
     }

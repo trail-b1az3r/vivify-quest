@@ -491,7 +491,7 @@ SV_RT_ARRAY_INDEX, SV_INSTANCE_ID = 4, 8
 GLES3_TYPE = 4
 
 
-def _vs(spi, texcoord=True):
+def _vs(spi, texcoord=True, rdef=True):
     inputs = [{"name": "POSITION", "index": 0, "register": 0}]
     outputs = [{"name": "SV_POSITION", "index": 0, "register": 0, "sv": 1, "rw_mask": 0}]
     if texcoord:
@@ -526,8 +526,10 @@ def _vs(spi, texcoord=True):
         code += dx.insn(AND_OP, dx.dest(dx.OPERAND_OUTPUT, 2, 0x1),
                         dx.src(dx.OPERAND_INPUT, 1, (0, 0, 0, 0)), dx.imm_int(1, 1, 1, 1))
     code += dx.insn(RET)
-    return dx.unity_program([rdef, dx.signature_chunk(inputs, b"ISGN"),
-                             dx.signature_chunk(outputs, b"OSGN"), dx.shex_chunk([code], stage=1)])
+    chunks = [dx.signature_chunk(inputs, b"ISGN"), dx.signature_chunk(outputs, b"OSGN"),
+              dx.shex_chunk([code], stage=1)]
+    # Unity strips RDEF from the DXBC in a built bundle; rdef=False is that.
+    return dx.unity_program(([rdef] if rdef else []) + chunks)
 
 
 def _ps(spi, flat=True):
@@ -553,29 +555,33 @@ def _ps(spi, flat=True):
 
 
 def pc_shader_2021(name, vertex_programs, fragment_programs, keyword_names=("STEREO_INSTANCING_ON",),
-                   share_vertex=False):
+                   share_vertex=False, vertex_params=None, fragment_params_blobs=None, pass_names=None):
     """A PC (Direct3D 11) shader in 2021.3.16's layout. *_programs: list of
     (dxbc, keyword index list). Every program gets a parameter blob after it,
     as 2021.3.10+ stores them, and fragments live in a second segment. With
     share_vertex, every vertex variant points at the first vertex entry, the
     way Unity dedups identical programs."""
-    entries, vertex_refs, vertex_params, fragment_refs, fragment_params = [], [], [], [], []
+    entries, vertex_refs, vertex_param_list, fragment_refs, fragment_params = [], [], [], [], []
     for code, keywords in vertex_programs:
         blob = 0 if (share_vertex and vertex_refs) else len(entries)
         vertex_refs.append(mkshader2021.player_sub_program(blob, DX11_VERTEX_SM50, keywords))
         entries.append((mkshader.sub_program(DX11_VERTEX_SM50, code), 0))
-        vertex_params.append(len(entries))
-        entries.append((b"\x00\x00\x00\x00PARAMS-VS" + bytes([len(entries)]), 0))
+        vertex_param_list.append(len(entries))
+        blob = (vertex_params[len(vertex_param_list) - 1] if vertex_params
+                else b"\x00\x00\x00\x00PARAMS-VS" + bytes([len(entries)]))
+        entries.append((blob, 0))
     for code, keywords in fragment_programs:
         fragment_refs.append(mkshader2021.player_sub_program(len(entries), DX11_PIXEL_SM50, keywords))
         entries.append((mkshader.sub_program(DX11_PIXEL_SM50, code), 1))
         fragment_params.append(len(entries))
-        entries.append((b"\x00\x00\x00\x00PARAMS-PS" + bytes([len(entries)]), 1))
+        blob = (fragment_params_blobs[len(fragment_params) - 1] if fragment_params_blobs
+                else b"\x00\x00\x00\x00PARAMS-PS" + bytes([len(entries)]))
+        entries.append((blob, 1))
     store = mkshader.build_program_store([mkshader.segmented_chunks(entries)])
     return mkshader2021.shader_body(name, [4], store, [{
-        mkshader2021.VERTEX: {"player": [vertex_refs], "params": [vertex_params]},
+        mkshader2021.VERTEX: {"player": [vertex_refs], "params": [vertex_param_list]},
         mkshader2021.FRAGMENT: {"player": [fragment_refs], "params": [fragment_params]},
-    }], keyword_names), entries
+    }], keyword_names, pass_names=pass_names), entries
 
 
 def inspect_converted(dst):
@@ -611,7 +617,7 @@ def glslang_link_problem(dst):
         return None
     _, _, entries = inspect_converted(dst)
     for blob, entry in entries.items():
-        code = entry["code"].replace("|", "\n")
+        code = entry["code"].replace("\\n", "\n")
         if not code.startswith("#ifdef VERTEX"):
             continue
         sections = dict(re.findall(r"#ifdef (VERTEX|FRAGMENT|GEOMETRY)\n(.*?)#endif\n", code, re.S))
@@ -663,8 +669,8 @@ def expect_linked(proc, fields, refusals, dst):
         return f"every variant should now say GLES3: {refs}"
     by_stage = {(r["stage"], r["keywords"]): r for r in refs}
     plain_vs = entries[int(by_stage[("0", "")]["blob"])]["code"]
-    for needle in ("#ifdef VERTEX|#version 300 es|#extension GL_OVR_multiview2 : require|"
-                   "layout(num_views = 2) in;", "#ifdef FRAGMENT|", "gl_InstanceID * 2 + int(gl_ViewID_OVR)"):
+    for needle in ("#ifdef VERTEX\\n#version 300 es\\n#extension GL_OVR_multiview2 : require\\n"
+                   "layout(num_views = 2) in;", "#ifdef FRAGMENT\\n", "gl_InstanceID * 2 + int(gl_ViewID_OVR)"):
         if needle not in plain_vs:
             return f"the plain vertex variant's program lacks '{needle}': {plain_vs}"
     if "hlslcc_mtx4x4unity_StereoMatrixVP" not in plain_vs:
@@ -683,7 +689,7 @@ def expect_linked(proc, fields, refusals, dst):
             if entry is None or entry["raw"] != "1" or int(entry["rawSize"]) != len(payload):
                 return f"parameter blob {index} did not survive: {entry}"
     frag = entries[int(by_stage[("1", "")]["blob"])]["code"]
-    if not frag.startswith("#ifdef VERTEX|") or "#ifdef FRAGMENT|" not in frag:
+    if not frag.startswith("#ifdef VERTEX\\n") or "#ifdef FRAGMENT\\n" not in frag:
         return f"the fragment variant's entry does not hold a linked program: {frag}"
     if fields.get("stereoRemapped") != "2":
         return f"stereoRemapped={fields.get('stereoRemapped')}"
@@ -757,6 +763,37 @@ def expect_split(proc, fields, refusals, dst):
 
 pc_shader_case("vertex variants that link different fragments get separate programs",
                split_body, expect_split)
+
+# What a real built bundle looks like: Unity strips RDEF out of every DXBC
+# program, and the names of its constant buffers, uniforms and textures live
+# only in m_ParsedForm -- here, 2021.3.10+ parameter blobs plus the pass's
+# m_NameIndices. Every real PC shader failed on this before ("reads constant
+# buffer b0, which its reflection data does not describe").
+names = {"$Globals": 0, "unity_StereoMatrixVP": 1, "unity_MatrixVP": 2}
+mono_params = mkshader2021.parameter_blob(constant_buffers=[(0, 64, [], [(2, 0, 4, 0)])], bindings=[(0, 0)])
+spi_params = mkshader2021.parameter_blob(constant_buffers=[(0, 128, [], [(1, 0, 4, 2)])], bindings=[(0, 0)])
+empty_params = mkshader2021.parameter_blob()
+stripped_body, _ = pc_shader_2021(
+    "Swifter/Stripped",
+    [(_vs(spi=False, rdef=False), []), (_vs(spi=True, rdef=False), [0])],
+    [(_ps(spi=False), []), (_ps(spi=True), [0])],
+    vertex_params=[mono_params, spi_params], fragment_params_blobs=[empty_params, empty_params],
+    pass_names=names)
+
+
+def expect_stripped(proc, fields, refusals, dst):
+    if fields.get("linked") != "1" or fields.get("variantsRefused") != "0":
+        return f"linked={fields.get('linked')} variantsRefused={fields.get('variantsRefused')} {refusals}"
+    _, refs, entries = inspect_converted(dst)
+    vertex = {r["keywords"]: r for r in refs if r["stage"] == "0"}
+    code = entries[int(vertex[""]["blob"])]["code"]
+    if "uniform vec4 hlslcc_mtx4x4unity_StereoMatrixVP[8];" not in code:
+        return f"the parameter blob's matrix did not become the uniform: {code}"
+    return None
+
+
+pc_shader_case("a shader whose DXBC has no RDEF is translated from m_ParsedForm's parameters",
+               stripped_body, expect_stripped)
 
 broken_body, _ = pc_shader_2021("Custom/Broken", [(_vs(spi=False), [])],
                                 [(dxbc_untranslatable(), [])], keyword_names=())

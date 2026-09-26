@@ -34,6 +34,7 @@ constexpr std::string_view kDisableVisualsInMultiplayerConfigKey = "disableVisua
 constexpr std::string_view kDisableVRCenterAdjustConfigKey = "disableVRCenterAdjust";
 constexpr std::string_view kConvertPcBundlesOnDeviceConfigKey = "convertPcBundlesOnDevice";
 constexpr std::string_view kStandInShadingConfigKey = "standInShading";
+constexpr std::string_view kSceneDepthConfigKey = "sceneDepthTexture";
 constexpr std::string_view kSubmitScoresConfigKey = "submitScoresOnVivifyMaps";
 constexpr std::string_view kTranslateShadersConfigKey = "translateShadersOnConversion";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
@@ -61,6 +62,7 @@ bool gConvertPcBundlesOnDevice = true;
 // white. Turning this off leaves such meshes undrawn instead, which also means
 // notes and sabers keep the game's own visuals rather than a white stand-in.
 bool gStandInShading = true;
+bool gSceneDepth = true;
 // Vivify does not change note timing, scoring, or anything else a leaderboard
 // cares about -- it changes how a map looks. Submission was nevertheless being
 // turned off for every map carrying the Vivify requirement, and with it off
@@ -311,6 +313,11 @@ void RegisterModSettings() {
             [](bool value) { SetBoolConfigValue(kStandInShadingConfigKey, value, gStandInShading); });
 
         BSML::Lite::CreateToggle(
+            container->get_transform(), u"Scene Depth For Map Shaders",
+            GetSceneDepthTexture(),
+            [](bool value) { SetBoolConfigValue(kSceneDepthConfigKey, value, gSceneDepth); });
+
+        BSML::Lite::CreateToggle(
             container->get_transform(), u"Translate Shaders On Conversion",
             GetTranslateShadersOnConversion(),
             [](bool value) { SetBoolConfigValue(kTranslateShadersConfigKey, value, gTranslateShaders); });
@@ -439,6 +446,10 @@ bool GetStandInShading() {
   return gStandInShading;
 }
 
+bool GetSceneDepthTexture() {
+  return gSceneDepth;
+}
+
 bool GetSubmitScoresOnVivifyMaps() {
   return gSubmitScores;
 }
@@ -468,6 +479,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kDisableVRCenterAdjustConfigKey, false, gDisableVRCenterAdjust);
   needsWrite |= EnsureBoolConfigValue(kConvertPcBundlesOnDeviceConfigKey, true, gConvertPcBundlesOnDevice);
   needsWrite |= EnsureBoolConfigValue(kStandInShadingConfigKey, true, gStandInShading);
+  needsWrite |= EnsureBoolConfigValue(kSceneDepthConfigKey, true, gSceneDepth);
   needsWrite |= EnsureBoolConfigValue(kSubmitScoresConfigKey, true, gSubmitScores);
   needsWrite |= EnsureBoolConfigValue(kTranslateShadersConfigKey, true, gTranslateShaders);
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),

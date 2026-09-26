@@ -350,6 +350,9 @@ struct VisualReplacement {
 
   std::string appliedFingerprint;
   bool hideOriginal = false;
+  // True when a replacement wears a stand-in shader and so gets its colour
+  // mirrored under _BaseColor/_TintColor/_MainColor as well as _Color.
+  bool tintAliases = false;
 };
 struct ActiveSaberVisual {
   GlobalNamespace::SaberModelController* controller = nullptr;

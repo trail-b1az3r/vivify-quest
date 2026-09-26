@@ -87,6 +87,14 @@ struct ConstantBufferInfo {
   uint32_t size = 0;  // bytes
   uint32_t bindPoint = 0;
   std::vector<ConstantBufferVariable> variables;
+  // Emit the whole buffer as one std140 uniform block named after it, holding
+  // a flat vec4 array over its bytes, instead of one uniform per variable.
+  // Used for GPU instancing's buffers (UnityInstancing_*), which are arrays of
+  // structs indexed by instance: Unity uploads them as uniform blocks laid out
+  // as its parameters describe -- the D3D cbuffer layout, which std140 matches
+  // for these -- so a flat view of the block reads exactly what the bytecode
+  // reads, at the same offsets, dynamic indexing and all.
+  bool uniformBlock = false;
 };
 
 // A bound resource: a texture, a sampler, or a constant buffer's binding.
@@ -277,6 +285,23 @@ struct GlslResult {
   bool stereoInstanced = false;
 };
 
+// Reflection supplied from outside the bytecode.
+//
+// Unity strips the RDEF chunk from the DXBC it writes into a built bundle and
+// keeps the same facts in m_ParsedForm's parameter lists (see
+// SerializedFileParse::ProgramParameters). A program parsed without RDEF has
+// no idea what its constant buffers hold or what its textures are called,
+// which is what made every real PC shader refuse translation. With this, the
+// translator treats these as the program's reflection: constant buffers by
+// bind point, and resources named by register. Texture shape and return type
+// still come from the bytecode's own dcl_resource declarations.
+struct ExternalReflection {
+  std::vector<ConstantBufferInfo> constantBuffers;  // bindPoint set
+  // Named resources by register: type 2 = texture (t#), 5/7 = structured/raw
+  // buffer (t#), 4/6/8 = UAV (u#). Only name, type and bindPoint are read.
+  std::vector<ResourceBinding> resources;
+};
+
 struct GlslOptions {
   // The lowest GLSL ES version to emit. The translator raises this by itself
   // when an instruction needs a later one -- textureGather and uaddCarry are
@@ -304,6 +329,8 @@ struct GlslOptions {
   // stage rather than written as gl_Layer, which GLSL ES has no vertex-stage
   // form of.
   bool multiview = false;
+  // Used only when the program has no RDEF of its own.
+  ExternalReflection const* reflection = nullptr;
 };
 
 // Translates a parsed program to GLSL ES source.

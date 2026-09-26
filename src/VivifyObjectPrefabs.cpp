@@ -938,12 +938,28 @@ UnityEngine::Color Runtime::GetNoteColor(GlobalNamespace::NoteController* noteCo
   return UnityEngine::Color(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
+bool Runtime::UsesStandInShading(std::vector<UnityEngine::Renderer*> const& renderers) const {
+  for (auto* renderer : renderers) {
+    if (!IsAlive(renderer)) continue;
+    auto materials = renderer->get_sharedMaterials();
+    if (!materials) continue;
+    for (int i = 0; i < materials.size(); i++) {
+      if (_fallbackShadedMaterials.contains(materials[i].unsafePtr())) return true;
+    }
+  }
+  return false;
+}
+
 void Runtime::ApplyColorToRenderers(std::vector<UnityEngine::Renderer*> const& renderers, UnityEngine::Color color) {
   if (renderers.empty()) return;
 
   auto* block = UnityEngine::MaterialPropertyBlock::New_ctor();
   if (block == nullptr) return;
-  SetTintColors(block, color);
+  if (UsesStandInShading(renderers)) {
+    SetTintColors(block, color);
+  } else {
+    block->SetColor(ColorPropertyId(), color);
+  }
   for (auto* renderer : renderers) {
     if (IsAlive(renderer)) {
       renderer->SetPropertyBlock(block);
@@ -1242,7 +1258,12 @@ void Runtime::ApplyReplacementRenderersToMaterialBlock(GlobalNamespace::Material
       color = *fallbackColor;
       block->SetColor(ColorPropertyId(), color);
     }
-    if (!unset || fallbackColor.has_value()) {
+    // Only a stand-in needs the aliases. A map's own shader -- from an Android
+    // bundle, or translated -- reads `_Color` exactly as on PC, and may use
+    // `_BaseColor`/`_TintColor` for something of its own (a glass tint, say),
+    // which the note colour must not overwrite.
+    replacement.tintAliases = UsesStandInShading(replacement.replacementRenderers);
+    if ((!unset || fallbackColor.has_value()) && replacement.tintAliases) {
       SetTintColors(block, color);
     }
   }
@@ -1312,7 +1333,7 @@ void Runtime::SyncReplacementTintColors() {
   static int const baseColorId = UnityEngine::Shader::PropertyToID(u"_BaseColor");
   auto sync = [this](VisualReplacement& replacement) {
     auto* mpb = replacement.materialPropertyBlockController;
-    if (!IsAlive(mpb) || replacement.replacementRenderers.empty()) return;
+    if (!replacement.tintAliases || !IsAlive(mpb) || replacement.replacementRenderers.empty()) return;
     auto* block = mpb->get_materialPropertyBlock();
     if (block == nullptr) return;
     auto const color = block->GetColor(ColorPropertyId());

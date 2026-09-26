@@ -129,7 +129,7 @@ void FollowedSaberTrail::Update() {
 
   auto* block = UnityEngine::MaterialPropertyBlock::New_ctor();
   if (block == nullptr) return;
-  SetTintColors(block, ____color);
+  block->SetColor(ColorPropertyId(), ____color);
   trailRenderer->____meshRenderer->SetPropertyBlock(block);
   _lastAppliedColor = ____color;
   _hasLastAppliedColor = true;

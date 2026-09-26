@@ -169,6 +169,9 @@ struct ShaderConversion {
   // purpose: a bundle with two hundred unsupported shaders would otherwise put
   // two hundred lines in a session log, all saying much the same thing.
   std::vector<std::string> refusals;
+  // Why individual keyword variants stayed on DirectX in shaders that did
+  // convert (first few distinct reasons).
+  std::vector<std::string> variantRefusals;
 
   bool ok() const { return status == Status::Success; }
 };

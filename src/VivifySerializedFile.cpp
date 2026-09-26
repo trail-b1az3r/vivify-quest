@@ -172,11 +172,142 @@ struct Layout {
   std::string message;
 };
 
-// Resolves a node's name. Offsets into Unity's built-in common table (high bit
-// set) come back empty: traversal never needs them, and reproducing that table's
-// exact byte offsets from memory would be a guess.
+// Unity's built-in "common string" table, which type trees reference with the
+// high bit set instead of repeating the name in every file. Offsets are byte
+// positions in this buffer. Names like m_Index, m_Type, Array and data are
+// only ever written this way, so without it a walk by name cannot tell a
+// constant-buffer offset from any other int. Unity only appends to the table,
+// so one copy serves every version this reads. (From UnityPy's type-tree
+// package; see tools/bundleconvert/fixtures.)
+constexpr char kCommonStrings[] =
+    "AABB\0"
+    "AnimationClip\0"
+    "AnimationCurve\0"
+    "AnimationState\0"
+    "Array\0"
+    "Base\0"
+    "BitField\0"
+    "bitset\0"
+    "bool\0"
+    "char\0"
+    "ColorRGBA\0"
+    "Component\0"
+    "data\0"
+    "deque\0"
+    "double\0"
+    "dynamic_array\0"
+    "FastPropertyName\0"
+    "first\0"
+    "float\0"
+    "Font\0"
+    "GameObject\0"
+    "Generic Mono\0"
+    "GradientNEW\0"
+    "GUID\0"
+    "GUIStyle\0"
+    "int\0"
+    "list\0"
+    "long long\0"
+    "map\0"
+    "Matrix4x4f\0"
+    "MdFour\0"
+    "MonoBehaviour\0"
+    "MonoScript\0"
+    "m_ByteSize\0"
+    "m_Curve\0"
+    "m_EditorClassIdentifier\0"
+    "m_EditorHideFlags\0"
+    "m_Enabled\0"
+    "m_ExtensionPtr\0"
+    "m_GameObject\0"
+    "m_Index\0"
+    "m_IsArray\0"
+    "m_IsStatic\0"
+    "m_MetaFlag\0"
+    "m_Name\0"
+    "m_ObjectHideFlags\0"
+    "m_PrefabInternal\0"
+    "m_PrefabParentObject\0"
+    "m_Script\0"
+    "m_StaticEditorFlags\0"
+    "m_Type\0"
+    "m_Version\0"
+    "Object\0"
+    "pair\0"
+    "PPtr<Component>\0"
+    "PPtr<GameObject>\0"
+    "PPtr<Material>\0"
+    "PPtr<MonoBehaviour>\0"
+    "PPtr<MonoScript>\0"
+    "PPtr<Object>\0"
+    "PPtr<Prefab>\0"
+    "PPtr<Sprite>\0"
+    "PPtr<TextAsset>\0"
+    "PPtr<Texture>\0"
+    "PPtr<Texture2D>\0"
+    "PPtr<Transform>\0"
+    "Prefab\0"
+    "Quaternionf\0"
+    "Rectf\0"
+    "RectInt\0"
+    "RectOffset\0"
+    "second\0"
+    "set\0"
+    "short\0"
+    "size\0"
+    "SInt16\0"
+    "SInt32\0"
+    "SInt64\0"
+    "SInt8\0"
+    "staticvector\0"
+    "string\0"
+    "TextAsset\0"
+    "TextMesh\0"
+    "Texture\0"
+    "Texture2D\0"
+    "Transform\0"
+    "TypelessData\0"
+    "UInt16\0"
+    "UInt32\0"
+    "UInt64\0"
+    "UInt8\0"
+    "unsigned int\0"
+    "unsigned long long\0"
+    "unsigned short\0"
+    "vector\0"
+    "Vector2f\0"
+    "Vector3f\0"
+    "Vector4f\0"
+    "m_ScriptingClassIdentifier\0"
+    "Gradient\0"
+    "Type*\0"
+    "int2_storage\0"
+    "int3_storage\0"
+    "BoundsInt\0"
+    "m_CorrespondingSourceObject\0"
+    "m_PrefabInstance\0"
+    "m_PrefabAsset\0"
+    "FileSize\0"
+    "Hash128\0"
+    "RenderingLayerMask\0"
+    "fixed_array\0"
+    "EntityId\0"
+    "LoadableObjectId\0"
+    "LoadableSceneId\0";
+
+std::string_view CommonString(uint32_t offset) {
+  constexpr size_t kSize = sizeof(kCommonStrings) - 1;  // the literal's own trailing NUL
+  if (offset >= kSize) return {};
+  char const* base = kCommonStrings + offset;
+  return std::string_view(base, std::strlen(base));
+}
+
+// Resolves a node's name, through the common table when the offset has its high
+// bit set.
 std::string NodeName(SerializedTypeInfo const& type, TypeTreeNode const& node) {
-  if ((node.nameStrOffset & kCommonStringBit) != 0) return {};
+  if ((node.nameStrOffset & kCommonStringBit) != 0) {
+    return std::string(CommonString(node.nameStrOffset & ~kCommonStringBit));
+  }
   if (node.nameStrOffset >= type.stringBuffer.size()) return {};
   char const* base = type.stringBuffer.data() + node.nameStrOffset;
   size_t const maxLen = type.stringBuffer.size() - node.nameStrOffset;
@@ -304,6 +435,175 @@ void WalkNode(Reader& reader, SerializedTypeInfo const& type, size_t nodeIndex,
 }
 
 
+// ---------------------------------------------------------------------------
+// Parameter records
+//
+// Reads a type-tree-described value into a loose record -- ints, strings and
+// lists of sub-records by field name -- which is all SerializedProgramParameters
+// and m_NameIndices need, whichever Unity version laid them out. Consumes
+// exactly the bytes WalkNode would.
+// ---------------------------------------------------------------------------
+
+struct Record {
+  std::map<std::string, int64_t> ints;
+  std::map<std::string, std::string> strings;
+  std::map<std::string, std::vector<Record>> lists;
+};
+
+class RecordReader {
+ public:
+  RecordReader(Reader& reader, std::vector<ParameterSchemaNode> const& nodes,
+               std::vector<std::vector<size_t>> const& children)
+      : _reader(reader), _nodes(nodes), _children(children) {}
+
+  // Reads nodes[index] into `into` under its own field name.
+  void Read(size_t index, Record& into, int depth = 0) {
+    if (!_reader.ok() || index >= _nodes.size()) return;
+    if (depth > 32) { _reader.skip(_reader.remaining()); return; }
+    ParameterSchemaNode const& node = _nodes[index];
+    auto const& kids = _children[index];
+    if ((node.typeFlags & kTypeFlagIsArray) != 0) {
+      ReadArray(index, into.lists[node.name], into, node.name, depth);
+    } else if (kids.empty()) {
+      if (node.byteSize < 0 || static_cast<size_t>(node.byteSize) > _reader.remaining()) {
+        _reader.skip(_reader.remaining());
+        return;
+      }
+      int64_t value = 0;
+      switch (node.byteSize) {
+        case 1: value = static_cast<int8_t>(_reader.u8()); break;
+        case 2: value = static_cast<int16_t>(_reader.u16()); break;
+        case 4: value = static_cast<int32_t>(_reader.u32()); break;
+        case 8: value = static_cast<int64_t>(_reader.u64()); break;
+        default: _reader.skip(static_cast<size_t>(node.byteSize)); break;
+      }
+      into.ints[node.name] = value;
+    } else if (kids.size() == 1 && (_nodes[kids[0]].typeFlags & kTypeFlagIsArray) != 0) {
+      // A vector, map or string: a wrapper round one Array, collected under the
+      // wrapper's name.
+      ReadArray(kids[0], into.lists[node.name], into, node.name, depth);
+    } else {
+      Record sub;
+      for (size_t child : kids) {
+        if (!_reader.ok()) break;
+        Read(child, sub, depth + 1);
+      }
+      into.lists[node.name].push_back(std::move(sub));
+    }
+    if ((node.metaFlag & kMetaFlagAlignBytes) != 0) _reader.align4();
+  }
+
+ private:
+  void ReadArray(size_t arrayIndex, std::vector<Record>& out, Record& owner, std::string const& name, int depth) {
+    auto const& kids = _children[arrayIndex];
+    if (kids.size() < 2) { _reader.skip(_reader.remaining()); return; }
+    uint32_t const count = _reader.u32();
+    if (!_reader.ok()) return;
+    size_t const dataIndex = kids[1];
+    ParameterSchemaNode const& element = _nodes[dataIndex];
+    if (element.byteSize > 0 && _children[dataIndex].empty()) {
+      uint64_t const bytes = static_cast<uint64_t>(count) * static_cast<uint64_t>(element.byteSize);
+      if (bytes > _reader.remaining()) { _reader.skip(_reader.remaining()); return; }
+      if (element.byteSize == 1) {
+        std::string text(count, '\0');
+        if (count > 0) _reader.raw(reinterpret_cast<uint8_t*>(text.data()), count);
+        owner.strings[name] = std::move(text);
+      } else {
+        _reader.skip(static_cast<size_t>(bytes));
+      }
+    } else {
+      if (count > _reader.remaining()) { _reader.skip(_reader.remaining()); return; }
+      for (uint32_t i = 0; i < count && _reader.ok(); i++) {
+        Record element;
+        auto const& elementKids = _children[dataIndex];
+        if (elementKids.empty()) {
+          Read(dataIndex, element, depth + 1);
+        } else {
+          for (size_t child : elementKids) {
+            if (!_reader.ok()) break;
+            Read(child, element, depth + 1);
+          }
+          if ((_nodes[dataIndex].metaFlag & kMetaFlagAlignBytes) != 0) _reader.align4();
+        }
+        out.push_back(std::move(element));
+      }
+    }
+    if ((_nodes[arrayIndex].metaFlag & kMetaFlagAlignBytes) != 0) _reader.align4();
+  }
+
+  Reader& _reader;
+  std::vector<ParameterSchemaNode> const& _nodes;
+  std::vector<std::vector<size_t>> const& _children;
+};
+
+std::vector<std::vector<size_t>> SchemaChildren(std::vector<ParameterSchemaNode> const& nodes) {
+  std::vector<std::vector<size_t>> children(nodes.size());
+  std::vector<size_t> open;
+  for (size_t i = 0; i < nodes.size(); i++) {
+    uint8_t const level = nodes[i].level;
+    while (!open.empty() && nodes[open.back()].level >= level) open.pop_back();
+    if (!open.empty() && nodes[open.back()].level + 1 == level) children[open.back()].push_back(i);
+    open.push_back(i);
+  }
+  return children;
+}
+
+ProgramParameter ParameterFrom(Record const& record, bool matrix) {
+  auto get = [&record](char const* key, int64_t fallback) {
+    auto it = record.ints.find(key);
+    return it == record.ints.end() ? fallback : it->second;
+  };
+  ProgramParameter parameter;
+  parameter.nameIndex = static_cast<int32_t>(get("m_NameIndex", -1));
+  parameter.index = static_cast<int32_t>(get("m_Index", 0));
+  parameter.arraySize = static_cast<int32_t>(get("m_ArraySize", 0));
+  parameter.type = static_cast<int32_t>(get("m_Type", 0));
+  parameter.dim = static_cast<int32_t>(matrix ? get("m_RowCount", 4) : get("m_Dim", 0));
+  parameter.samplerIndex = static_cast<int32_t>(get("m_SamplerIndex", -1));
+  return parameter;
+}
+
+// Is `field` one of SerializedProgramParameters' own vectors?
+bool IsParameterField(std::string_view field) {
+  return field == "m_VectorParams" || field == "m_MatrixParams" || field == "m_TextureParams" ||
+         field == "m_BufferParams" || field == "m_UAVParams" || field == "m_ConstantBuffers" ||
+         field == "m_ConstantBufferBindings";
+}
+
+void AddParameterField(std::string const& field, std::vector<Record> const& list, ProgramParameters& out) {
+  for (auto const& record : list) {
+    if (field == "m_VectorParams") {
+      out.vectors.push_back(ParameterFrom(record, false));
+    } else if (field == "m_MatrixParams") {
+      out.matrices.push_back(ParameterFrom(record, true));
+    } else if (field == "m_TextureParams") {
+      out.textures.push_back(ParameterFrom(record, false));
+    } else if (field == "m_BufferParams") {
+      out.buffers.push_back(ParameterFrom(record, false));
+    } else if (field == "m_UAVParams") {
+      out.uavs.push_back(ParameterFrom(record, false));
+    } else if (field == "m_ConstantBufferBindings") {
+      out.constantBufferBindings.push_back(ParameterFrom(record, false));
+    } else if (field == "m_ConstantBuffers") {
+      ProgramConstantBuffer buffer;
+      auto name = record.ints.find("m_NameIndex");
+      buffer.nameIndex = name == record.ints.end() ? -1 : static_cast<int32_t>(name->second);
+      auto size = record.ints.find("m_Size");
+      buffer.size = size == record.ints.end() ? 0 : static_cast<int32_t>(size->second);
+      if (auto it = record.lists.find("m_VectorParams"); it != record.lists.end()) {
+        for (auto const& v : it->second) buffer.vectors.push_back(ParameterFrom(v, false));
+      }
+      if (auto it = record.lists.find("m_MatrixParams"); it != record.lists.end()) {
+        for (auto const& m : it->second) buffer.matrices.push_back(ParameterFrom(m, true));
+      }
+      if (auto it = record.lists.find("m_StructParams"); it != record.lists.end() && !it->second.empty()) {
+        buffer.hasStructParams = true;
+      }
+      out.constantBuffers.push_back(std::move(buffer));
+    }
+  }
+}
+
 // Direct children of every node, built once per walk. ChildIndices rescans
 // every descendant on each call, which is fine for the handful of top-level
 // fields ReadShaderObject visits and quadratic for m_ParsedForm, where one
@@ -321,7 +621,7 @@ std::vector<std::vector<size_t>> BuildChildLists(std::vector<TypeTreeNode> const
 }
 
 std::string_view NodeNameView(SerializedTypeInfo const& type, TypeTreeNode const& node) {
-  if ((node.nameStrOffset & kCommonStringBit) != 0) return {};
+  if ((node.nameStrOffset & kCommonStringBit) != 0) return CommonString(node.nameStrOffset & ~kCommonStringBit);
   if (node.nameStrOffset >= type.stringBuffer.size()) return {};
   char const* base = type.stringBuffer.data() + node.nameStrOffset;
   size_t const maxLen = type.stringBuffer.size() - node.nameStrOffset;
@@ -357,7 +657,13 @@ class ParsedFormWalker {
   ParsedFormWalker(Reader& reader, SerializedTypeInfo const& type, size_t fileOffset,
                    ShaderObject& shader)
       : _reader(reader), _type(type), _fileOffset(fileOffset), _shader(shader),
-        _children(BuildChildLists(type.nodes)) {}
+        _children(BuildChildLists(type.nodes)) {
+    _schema.reserve(type.nodes.size());
+    for (auto const& node : type.nodes) {
+      _schema.push_back({node.level, node.typeFlags, node.byteSize, node.metaFlag,
+                         std::string(NodeNameView(type, node))});
+    }
+  }
 
   void Walk(size_t nodeIndex) {
     Visit(nodeIndex, 1, -1);
@@ -541,7 +847,17 @@ class ParsedFormWalker {
     if (depth > 64) { _reader.skip(_reader.remaining()); return; }
     TypeTreeNode const& node = _type.nodes[nodeIndex];
     std::vector<size_t> const& children = _children[nodeIndex];
-    _path.push_back({NodeNameView(_type, node), element});
+    std::string_view frameName = NodeNameView(_type, node);
+    // Structural names say nothing about which field this is; element indices
+    // do that job, and treating these as named would break the "no named frame
+    // between the container and the field" checks below.
+    if (frameName == "Array" || frameName == "data") frameName = {};
+    _path.push_back({frameName, element});
+
+    if (Intercept(nodeIndex, frameName)) {
+      _path.pop_back();
+      return;
+    }
 
     if ((node.typeFlags & kTypeFlagIsArray) != 0) {
       if (children.size() < 2) {
@@ -589,6 +905,91 @@ class ParsedFormWalker {
     _path.pop_back();
   }
 
+  // The (subShader, pass) the path is in, whatever else it is inside.
+  bool PassOf(int32_t& subShader, int32_t& pass) const {
+    subShader = pass = -1;
+    int expect = 0;
+    for (auto const& frame : _path) {
+      if (frame.name == "m_SubShaders") expect = 1;
+      else if (frame.name == "m_Passes") expect = 2;
+      if (frame.element < 0) continue;
+      if (expect == 1) { subShader = frame.element; expect = 0; }
+      else if (expect == 2) { pass = frame.element; expect = 0; }
+    }
+    return subShader >= 0 && pass >= 0;
+  }
+
+  // Copies the SerializedProgramParameters subtree rooted at `index` into the
+  // shader's schema, levels rebased so the root is level 0.
+  void CaptureSchema(size_t index) {
+    if (!_shader.parameterSchema.empty()) return;
+    uint8_t const base = _type.nodes[index].level;
+    _shader.parameterSchema.push_back(_schema[index]);
+    _shader.parameterSchema.back().level = 0;
+    for (size_t i = index + 1; i < _type.nodes.size() && _type.nodes[i].level > base; i++) {
+      _shader.parameterSchema.push_back(_schema[i]);
+      _shader.parameterSchema.back().level = static_cast<uint8_t>(_type.nodes[i].level - base);
+    }
+  }
+
+  // Reads the fields that need whole-value decoding -- parameters and the
+  // pass's name table -- instead of walking them leaf by leaf. Returns true
+  // when it consumed the node.
+  bool Intercept(size_t nodeIndex, std::string_view name) {
+    if (name == "m_CommonParameters") CaptureSchema(nodeIndex);
+
+    if (name == "m_NameIndices") {
+      int32_t subShader, pass;
+      if (!PassOf(subShader, pass)) return false;
+      Record record;
+      RecordReader(_reader, _schema, _children).Read(nodeIndex, record);
+      auto& names = _shader.passNames[{subShader, pass}];
+      if (auto it = record.lists.find("m_NameIndices"); it != record.lists.end()) {
+        for (auto const& pair : it->second) {
+          auto first = pair.strings.find("first");
+          auto second = pair.ints.find("second");
+          if (first != pair.strings.end() && second != pair.ints.end()) {
+            names[static_cast<int32_t>(second->second)] = first->second;
+          }
+        }
+      }
+      return true;
+    }
+
+    if (!IsParameterField(name)) return false;
+    Context ctx;
+    ProgramParameters* target = nullptr;
+    // m_CommonParameters of a stage, or a sub-program's own (directly in the
+    // element up to 2020.3, under m_Parameters from then on).
+    bool inCommon = false;
+    for (auto const& frame : _path) {
+      if (frame.name == "m_CommonParameters") inCommon = true;
+    }
+    int32_t subShader, pass;
+    if (inCommon) {
+      int32_t stage = -1;
+      for (auto const& frame : _path) {
+        if (int32_t const s = StageForProgramField(frame.name); s >= 0) stage = s;
+      }
+      if (!PassOf(subShader, pass) || stage < 0) return false;
+      target = &_common[{subShader, pass, stage}];
+    } else if (CurrentContext(ctx) && ctx.container == kSubPrograms && ctx.elements.size() == 1) {
+      // Only m_Parameters may sit between the element and this field.
+      for (size_t i = ctx.containerFrame + 1; i + 1 < _path.size(); i++) {
+        if (!_path[i].name.empty() && _path[i].name != "m_Parameters") return false;
+      }
+      target = &RefFor(ctx)->parameters;
+    } else {
+      return false;
+    }
+    Record record;
+    RecordReader(_reader, _schema, _children).Read(nodeIndex, record);
+    if (auto it = record.lists.find(std::string(name)); it != record.lists.end()) {
+      AddParameterField(std::string(name), it->second, *target);
+    }
+    return true;
+  }
+
   // Joins m_ParameterBlobIndices onto the player sub-programs they belong to:
   // the two are parallel arrays, [list][index] for [list][index].
   void Finish() {
@@ -605,7 +1006,14 @@ class ParsedFormWalker {
     std::vector<ParsedProgramRef> kept;
     kept.reserve(_shader.programRefs.size());
     for (auto& ref : _shader.programRefs) {
-      if (ref.blobIndexFileOffset != 0 && ref.gpuProgramTypeFileOffset != 0) kept.push_back(std::move(ref));
+      if (ref.blobIndexFileOffset == 0 || ref.gpuProgramTypeFileOffset == 0) continue;
+      if (auto common = _common.find({ref.subShader, ref.pass, ref.stage}); common != _common.end()) {
+        ref.parameters.Merge(common->second);
+      }
+      if (auto names = _shader.passNames.find({ref.subShader, ref.pass}); names != _shader.passNames.end()) {
+        ref.parameters.ResolveNames(names->second);
+      }
+      kept.push_back(std::move(ref));
     }
     _shader.programRefs = std::move(kept);
     _shader.parsedFormRead = !_shader.programRefs.empty();
@@ -635,6 +1043,8 @@ class ParsedFormWalker {
   std::vector<Frame> _path;
   std::map<Key, size_t> _refIndex;
   std::vector<ParameterBlob> _parameterBlobs;
+  std::vector<ParameterSchemaNode> _schema;  // the whole type, names resolved
+  std::map<std::tuple<int32_t, int32_t, int32_t>, ProgramParameters> _common;
 };
 
 // Reads a Shader object: walks its top-level fields in order, capturing the one
@@ -700,7 +1110,8 @@ ShaderObject ReadShaderObject(uint8_t const* data, size_t size, size_t fileOffse
       // A real Shader object starts with its NamedObject m_Name, whose field
       // name comes from Unity's common string table and so resolves empty
       // here. It is the only unnamed variable-size field before m_ParsedForm.
-      if (shader.name.empty() && name.empty() && child == ChildIndices(type.nodes, 0).front() &&
+      if (shader.name.empty() && (name.empty() || name == "m_Name") &&
+          child == ChildIndices(type.nodes, 0).front() &&
           type.nodes[child].byteSize < 0 && reader.position() >= before + 4) {
         Reader nameReader(data + before, reader.position() - before);
         uint32_t const length = nameReader.u32();
@@ -1609,6 +2020,70 @@ DecodeResult DecodeShaderPrograms(uint8_t const* data, size_t size, ShaderObject
                      std::to_string(failed) + " platform group(s) could not be read";
   }
   return result;
+}
+
+void ProgramParameters::Merge(ProgramParameters const& other) {
+  auto addMissing = [](std::vector<ProgramParameter>& into, std::vector<ProgramParameter> const& from) {
+    for (auto const& parameter : from) {
+      bool present = false;
+      for (auto const& existing : into) {
+        if (existing.nameIndex == parameter.nameIndex && existing.index == parameter.index) present = true;
+      }
+      if (!present) into.push_back(parameter);
+    }
+  };
+  addMissing(vectors, other.vectors);
+  addMissing(matrices, other.matrices);
+  addMissing(textures, other.textures);
+  addMissing(buffers, other.buffers);
+  addMissing(uavs, other.uavs);
+  addMissing(constantBufferBindings, other.constantBufferBindings);
+  for (auto const& buffer : other.constantBuffers) {
+    auto it = std::find_if(constantBuffers.begin(), constantBuffers.end(),
+                           [&buffer](ProgramConstantBuffer const& b) { return b.nameIndex == buffer.nameIndex; });
+    if (it == constantBuffers.end()) {
+      constantBuffers.push_back(buffer);
+    } else {
+      addMissing(it->vectors, buffer.vectors);
+      addMissing(it->matrices, buffer.matrices);
+      it->size = std::max(it->size, buffer.size);
+      it->hasStructParams = it->hasStructParams || buffer.hasStructParams;
+    }
+  }
+}
+
+void ProgramParameters::ResolveNames(std::map<int32_t, std::string> const& names) {
+  auto resolve = [&names](int32_t index, std::string& name) {
+    if (!name.empty()) return;
+    auto it = names.find(index);
+    if (it != names.end()) name = it->second;
+  };
+  for (auto* list : {&vectors, &matrices, &textures, &buffers, &uavs, &constantBufferBindings}) {
+    for (auto& parameter : *list) resolve(parameter.nameIndex, parameter.name);
+  }
+  for (auto& buffer : constantBuffers) {
+    resolve(buffer.nameIndex, buffer.name);
+    for (auto& parameter : buffer.vectors) resolve(parameter.nameIndex, parameter.name);
+    for (auto& parameter : buffer.matrices) resolve(parameter.nameIndex, parameter.name);
+  }
+}
+
+bool ParseParameterBlob(std::vector<ParameterSchemaNode> const& schema, uint8_t const* data, size_t size,
+                        ProgramParameters& out) {
+  if (schema.empty() || data == nullptr) return false;
+  auto const children = SchemaChildren(schema);
+  Reader reader(data, size);
+  RecordReader records(reader, schema, children);
+  Record root;
+  for (size_t child : children[0]) {
+    if (!reader.ok()) return false;
+    records.Read(child, root);
+  }
+  if (!reader.ok()) return false;
+  for (auto const& [field, list] : root.lists) {
+    if (IsParameterField(field)) AddParameterField(field, list, out);
+  }
+  return true;
 }
 
 bool ShaderPlatformRunsOnQuest(int32_t platform) {
