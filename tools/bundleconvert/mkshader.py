@@ -171,6 +171,25 @@ def program_blob(programs, *, entry_size=8) -> bytes:
     return bytes(out)
 
 
+def segmented_chunks(entries, *, entry_size=12):
+    """One platform group in Unity 2019.3+'s layout: a single entry table at the
+    start of chunk 0 naming [offset, length, segment] per entry, and each
+    entry's bytes in the chunk its segment names (offsets relative to that
+    chunk). entries: list of (bytes, segment). Returns the decompressed chunks,
+    ready for build_program_store."""
+    segments = max(seg for _, seg in entries) + 1
+    header = 4 + len(entries) * entry_size
+    data = [bytearray() for _ in range(segments)]
+    table = bytearray(struct.pack('<I', len(entries)))
+    for body, seg in entries:
+        offset = (header if seg == 0 else 0) + len(data[seg])
+        table += struct.pack('<II', offset, len(body))
+        if entry_size == 12:
+            table += struct.pack('<I', seg)
+        data[seg] += body
+    return [bytes(table + data[0])] + [bytes(d) for d in data[1:]]
+
+
 def _align4(buf: bytearray):
     while len(buf) % 4:
         buf.append(0)
@@ -295,11 +314,13 @@ def texture_object(name="tex", *, width=4, height=4, texture_format=10, mip_coun
 
 def serialized_file_with_shaders(shaders, *, sf_version=21, target=19,
                                  unity="2021.3.16f1", enable_type_tree=True,
-                                 extra_class_id=None, textures=None):
-    """shaders: list of (name, [platform, ...]). textures: list of kwargs for
-    texture_object. Returns the SerializedFile bytes."""
+                                 extra_class_id=None, textures=None, shader_tree=None):
+    """shaders: list of (name, [platform, ...]), or of already-serialized Shader
+    bodies when shader_tree gives the type tree they were written against (see
+    mkshader2021). textures: list of kwargs for texture_object. Returns the
+    SerializedFile bytes."""
     textures = list(textures or [])
-    tree = shader_type_tree(sf_version)
+    tree = shader_tree if shader_tree is not None else shader_type_tree(sf_version)
 
     types = bytearray()
     type_count = 1 + (1 if textures else 0) + (1 if extra_class_id is not None else 0)
@@ -336,8 +357,8 @@ def serialized_file_with_shaders(shaders, *, sf_version=21, target=19,
         types += emit_type(extra_class_id, other)
 
     # A fixture entry is (name, platforms) or (name, platforms, platform_blobs).
-    bodies = [shader_object(entry[0], entry[1],
-                            platform_blobs=entry[2] if len(entry) > 2 else None)
+    bodies = [bytes(entry) if isinstance(entry, (bytes, bytearray)) else
+              shader_object(entry[0], entry[1], platform_blobs=entry[2] if len(entry) > 2 else None)
               for entry in shaders]
     type_indices = [0] * len(bodies)
     for spec in textures:

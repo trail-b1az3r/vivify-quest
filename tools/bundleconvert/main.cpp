@@ -1,7 +1,11 @@
 #include "VivifyBundleConvert.hpp"
+#include "VivifySerializedFile.hpp"
 #include <cstdio>
 #include <cstdlib>
+#include <fstream>
+#include <iterator>
 #include <string>
+#include <vector>
 
 using namespace Vivify::BundleConvert;
 
@@ -9,6 +13,40 @@ int main(int argc, char** argv) {
   if (argc < 3) {
     std::fprintf(stderr, "usage: conv [--repack|--shaders] <src> <dst>\n");
     return 2;
+  }
+  // --inspect <serialized-file> prints every shader's m_ParsedForm program
+  // references and store entries, so the tests can check what conversion wrote
+  // rather than only that it said it succeeded.
+  if (std::string(argv[1]) == "--inspect") {
+    std::ifstream in(argv[2], std::ios::binary);
+    std::vector<uint8_t> bytes((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    auto report = SerializedFileParse::InspectSerializedFile(bytes.data(), bytes.size());
+    for (auto const& shader : report.shaders) {
+      std::printf("shader=%s platforms=", shader.name.c_str());
+      for (size_t i = 0; i < shader.platforms.size(); i++) std::printf("%s%d", i ? "," : "", shader.platforms[i]);
+      std::printf("\n");
+      for (auto const& ref : shader.programRefs) {
+        std::string keywords;
+        for (uint16_t k : ref.keywordIndices) {
+          if (!keywords.empty()) keywords += ",";
+          keywords += k < shader.keywordNames.size() ? shader.keywordNames[k] : std::to_string(k);
+        }
+        std::printf("ref stage=%d list=%d index=%d blob=%u type=%d keywords=%s\n", ref.stage, ref.list,
+                    ref.index, ref.blobIndex, ref.gpuProgramType, keywords.c_str());
+      }
+      auto decoded = SerializedFileParse::DecodeShaderPrograms(bytes.data(), bytes.size(), shader);
+      std::printf("decodeOk=%d\n", decoded.ok ? 1 : 0);
+      for (auto const& program : decoded.programs) {
+        std::string code(program.code.begin(), program.code.end());
+        for (char& c : code) {
+          if (c == '\n') c = '|';
+          else if (c < 0x20 || c > 0x7e) c = '.';
+        }
+        std::printf("entry blob=%d raw=%d rawSize=%zu type=%d code=%s\n", program.blobIndex, program.raw ? 1 : 0,
+                    program.rawBytes.size(), program.programType, code.c_str());
+      }
+    }
+    return 0;
   }
   // --repack runs the bundle through the step-4 rewrite path with no shader
   // edits, which must leave a bundle that reads back the same.
@@ -28,11 +66,13 @@ int main(int argc, char** argv) {
   if (shaders) {
     ShaderConversion c = ConvertShadersToGles(src, dst);
     std::printf("status=%s\nmessage=%s\nseen=%d translated=%d leftAlone=%d refused=%d "
-                "programs=%d outBytes=%llu\ntexSeen=%d texReadable=%d texStreamed=%d\n",
+                "programs=%d outBytes=%llu\ntexSeen=%d texReadable=%d texStreamed=%d\n"
+                "linked=%d variantsLinked=%d variantsRefused=%d stereoRemapped=%d\n",
                 std::string(StatusText(c.status)).c_str(), c.message.c_str(), c.shadersSeen,
                 c.shadersTranslated, c.shadersLeftAlone, c.shadersRefused, c.programsTranslated,
                 (unsigned long long)c.outputBytes, c.texturesSeen, c.texturesMarkedReadable,
-                c.texturesStreamed);
+                c.texturesStreamed, c.shadersLinked, c.variantsLinked, c.variantsRefused,
+                c.stereoVariantsRemapped);
     for (auto const& refusal : c.refusals) std::printf("refusal=%s\n", refusal.c_str());
     return c.ok() ? 0 : 1;
   }

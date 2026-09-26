@@ -9,6 +9,8 @@ the corruption pass matters as much as the happy path.
 """
 import os
 import random
+import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -47,6 +49,39 @@ def check(name, condition, detail=""):
         print("FAIL  %s%s" % (name, ("  -- " + detail) if detail else ""))
 
 
+GLSLANG = shutil.which("glslangValidator")
+glslang_enabled = True  # switched off for the corruption passes, which feed it garbage on purpose
+glslang_checked = 0
+glslang_failures = []
+
+
+def _glslang_stage(source):
+    """Which stage a translated program is, from what it declares."""
+    if "local_size_x" in source:
+        return "comp"
+    if "max_vertices" in source or re.search(r"layout\((points|lines|triangles)[^)]*\) in;", source):
+        return "geom"
+    if "gl_Position" in source or " in_" in source or "num_views" in source:
+        return "vert"
+    return "frag"
+
+
+def glslang_compile(source, label):
+    """Compiles a translated program with the Khronos reference front-end, when
+    it is installed. The string checks below say the translator emitted what was
+    intended; this says a GLSL ES compiler accepts it."""
+    global glslang_checked
+    if GLSLANG is None or not glslang_enabled or not source.startswith("#version"):
+        return
+    path = os.path.join(tmpdir, "check." + _glslang_stage(source))
+    with open(path, "w") as handle:
+        handle.write(source)
+    proc = subprocess.run([GLSLANG, path], capture_output=True, text=True, errors="replace", timeout=60)
+    glslang_checked += 1
+    if proc.returncode != 0:
+        glslang_failures.append((label, (proc.stdout + proc.stderr).strip()[:600], source))
+
+
 def run(mode, data, name="case.dxbc"):
     path = os.path.join(tmpdir, name)
     with open(path, "wb") as handle:
@@ -60,6 +95,8 @@ def run(mode, data, name="case.dxbc"):
         key, _, value = line.partition("=")
         lists.setdefault(key, []).append(value)
         fields.setdefault(key, value)
+    if mode.startswith("glsl") and fields.get("ok") == "1" and not os.environ.get("VIVIFY_SKIP_GLSLANG"):
+        glslang_compile(source, "%s case #%d" % (mode, passed + failed))
     return proc, fields, lists, source
 
 
@@ -690,6 +727,90 @@ check("empty file", run("parse", b"")[1].get("ok") == "0")
 check("short file", run("parse", b"DXBC")[1].get("ok") == "0")
 check("wrong magic", run("parse", b"XXXX" + vertex[4:])[1].get("ok") == "0")
 
+# ---------------------------------------------------------------------------
+# Multiview (the Quest's single-pass stereo)
+# ---------------------------------------------------------------------------
+
+DCL_INPUT_SGV, DCL_INPUT_PS_SGV = 96, 99
+SV_RT_ARRAY_INDEX, SV_INSTANCE_ID = 4, 8
+
+proc, fields, _, source = run("glsl-mv", vertex)
+check("multiview vertex translates", fields.get("ok") == "1", fields.get("error", ""))
+check("multiview vertex declares two views",
+      source.startswith("#version 300 es\n#extension GL_OVR_multiview2 : require\n"
+                        "layout(num_views = 2) in;\n"), source[:120])
+check("mono vertex is not stereo instanced", fields.get("stereoInstanced") == "0",
+      fields.get("stereoInstanced", ""))
+proc, fields, _, source = run("glsl", vertex)
+check("multiview is off by default", "multiview" not in source and "num_views" not in source,
+      source[:120])
+
+
+def spi_vertex():
+    """A PC single-pass instanced vertex program: it reads SV_InstanceID and
+    writes the eye (instance & 1) to SV_RenderTargetArrayIndex."""
+    isgn = m.signature_chunk([
+        {"name": "POSITION", "index": 0, "register": 0},
+        {"name": "SV_InstanceID", "index": 0, "register": 1, "sv": SV_INSTANCE_ID,
+         "mask": 0x1, "rw_mask": 0x1, "component_type": 1},
+    ], b"ISGN")
+    osgn = m.signature_chunk([
+        {"name": "SV_POSITION", "index": 0, "register": 0, "sv": 1, "rw_mask": 0},
+        {"name": "SV_RenderTargetArrayIndex", "index": 0, "register": 1,
+         "sv": SV_RT_ARRAY_INDEX, "mask": 0x1, "rw_mask": 0xE, "component_type": 1},
+    ], b"OSGN")
+    rdef = globals_cbuffer([variable("unity_MatrixVP", 0, 64, MATRIX4)], 64)
+    code = []
+    code += m.insn(DCL_GLOBAL_FLAGS, controls=1)
+    code += m.insn(DCL_CONSTANT_BUFFER, m.src_cb(0, 4))
+    code += m.insn(DCL_INPUT, m.dest(INPUT, 0))
+    code += m.insn(DCL_INPUT_SGV, m.dest(INPUT, 1, 0x1), extra=[SV_INSTANCE_ID])
+    code += m.insn(DCL_OUTPUT_SIV, m.dest(OUTPUT, 0), extra=[1])
+    code += m.insn(DCL_OUTPUT_SIV, m.dest(OUTPUT, 1, 0x1), extra=[SV_RT_ARRAY_INDEX])
+    code += m.insn(DCL_TEMPS, extra=[1])
+    code += m.insn(AND, m.dest(TEMP, 0, 0x1), m.src(INPUT, 1, (X, X, X, X)), m.imm_int(1, 1, 1, 1))
+    code += m.insn(MOV, m.dest(OUTPUT, 1, 0x1), m.src(TEMP, 0, (X, X, X, X)))
+    code += m.insn(MOV, m.dest(OUTPUT, 0), m.src(INPUT, 0))
+    code += m.insn(RET)
+    return m.container([rdef, isgn, osgn, m.shex_chunk([code], stage=1)])
+
+
+spi = spi_vertex()
+proc, fields, _, source = run("glsl-mv", spi)
+check("SPI vertex translates for multiview", fields.get("ok") == "1", fields.get("error", ""))
+check("SPI vertex is recognised", fields.get("stereoInstanced") == "1",
+      fields.get("stereoInstanced", ""))
+check("SPI instance ID carries the view in bit 0",
+      "gl_InstanceID * 2 + int(gl_ViewID_OVR)" in source, source)
+check("SPI vertex writes no gl_Layer", "gl_Layer" not in source, source)
+check("SPI layer write lands in the dummy", "vivify_RTArrayIndexOut.x = " in source, source)
+check("SPI vertex stays at GLSL ES 3.00", source.startswith("#version 300 es\n"), source[:40])
+proc, fields, _, source = run("glsl", spi)
+check("SPI vertex without multiview translates", fields.get("ok") == "1", fields.get("error", ""))
+check("no vertex program writes gl_Layer, which GLSL ES has no vertex form of",
+      "gl_Layer" not in source and "gl_InstanceID * 2" not in source, source)
+
+spi_pixel_inputs = [
+    {"name": "TEXCOORD", "index": 0, "register": 0, "mask": 0x3, "rw_mask": 0x3},
+    {"name": "SV_RenderTargetArrayIndex", "index": 0, "register": 1,
+     "sv": SV_RT_ARRAY_INDEX, "mask": 0x1, "rw_mask": 0x1, "component_type": 1},
+]
+body = []
+body += m.insn(DCL_INPUT_PS_SGV, m.dest(INPUT, 1, 0x1), controls=1, extra=[SV_RT_ARRAY_INDEX])
+body += m.insn(ITOF, m.dest(OUTPUT, 0), m.src(INPUT, 1, (X, X, X, X)))
+eye_pixel = pixel_shader(body, inputs=spi_pixel_inputs, temps=0)
+proc, fields, _, source = run("glsl-mv", eye_pixel)
+check("eye-index pixel translates for multiview", fields.get("ok") == "1", fields.get("error", ""))
+check("eye index reads gl_ViewID_OVR", "int(gl_ViewID_OVR)" in source, source)
+check("pixel enables the multiview extension",
+      "#extension GL_OVR_multiview2 : require" in source and "num_views" not in source, source)
+proc, fields, _, source = run("glsl", eye_pixel)
+check("eye-index pixel translates without multiview", fields.get("ok") == "1",
+      fields.get("error", ""))
+check("eye index is 0 without multiview", "vRTArrayIndex = intBitsToFloat(ivec4(0))" in source,
+      source)
+
+glslang_enabled = False
 truncation_failures = 0
 for length in range(0, len(vertex)):
     proc, fields, _, _ = run("parse", vertex[:length])
@@ -716,6 +837,14 @@ for trial in range(400):
                        proc.stderr.decode("utf-8", errors="replace")[:400]))
 check("corrupted containers never crash", corruption_failures == 0,
       "%d runs crashed" % corruption_failures)
+
+if GLSLANG is None:
+    print("note: glslangValidator not installed; translated programs were not compiled")
+else:
+    for label, log, source in glslang_failures[:int(os.environ.get("GLSLANG_SHOW", "5"))]:
+        print("glslang rejected %s:\n%s\n--- source ---\n%s" % (label, log, source))
+    check("every translated program compiles as GLSL ES (%d compiled)" % glslang_checked,
+          not glslang_failures, "%d rejected" % len(glslang_failures))
 
 print("\n%d passed, %d failed" % (passed, failed))
 sys.exit(1 if failed else 0)

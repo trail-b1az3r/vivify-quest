@@ -1,4 +1,5 @@
 #include "VivifyRuntimeInternal.hpp"
+#include "UnityEngine/SkinnedMeshRenderer.hpp"
 #include "VivifyComponents.hpp"
 #include "GlobalNamespace/ColorNoteVisuals.hpp"
 #include "UnityEngine/AudioSource.hpp"
@@ -391,19 +392,42 @@ bool Runtime::ReplacementIntact(VisualReplacement const& replacement) const {
 // be drawn. If a bundle's shaders cannot run on this GPU and no stand-in could
 // be found, hiding the original would leave nothing on screen at all -- an
 // invisible note is far worse than one wearing the default look.
+// Whether a replacement will actually show something where the original was.
+//
+// Any renderer with a runnable shader used to be enough, and a particle system
+// counts as a renderer. A note prefab whose mesh shader cannot run but whose
+// sparkle particles can therefore passed, the real note was hidden, and what was
+// left was a few particles where a note should be -- notes that "go away" for
+// the stretch of a song that assigns that prefab and "come back" when the map
+// switches to another. So when a prefab has meshes, one of the meshes has to be
+// drawable; only a prefab with no mesh at all (a pure particle or line effect)
+// is judged on its other renderers.
 bool Runtime::ReplacementCanRender(VisualReplacement const& replacement) const {
-  for (auto* renderer : replacement.replacementRenderers) {
-    if (!IsAlive(renderer)) continue;
+  auto drawable = [this](UnityEngine::Renderer* renderer) {
     auto materials = renderer->get_sharedMaterials();
-    if (!materials) continue;
+    if (!materials) return false;
     for (int i = 0; i < materials.size(); i++) {
       auto* material = materials[i].unsafePtr();
       if (!IsAlive(material)) continue;
       auto* shader = material->get_shader().unsafePtr();
       if (IsAlive(shader) && shader->get_isSupported()) return true;
     }
+    return false;
+  };
+  bool hasMesh = false;
+  bool anyDrawable = false;
+  for (auto* renderer : replacement.replacementRenderers) {
+    if (!IsAlive(renderer)) continue;
+    bool const isMesh = il2cpp_utils::try_cast<UnityEngine::MeshRenderer>(renderer).has_value() ||
+                        il2cpp_utils::try_cast<UnityEngine::SkinnedMeshRenderer>(renderer).has_value();
+    bool const canDraw = drawable(renderer);
+    if (isMesh) {
+      hasMesh = true;
+      if (canDraw) return true;
+    }
+    anyDrawable = anyDrawable || canDraw;
   }
-  return false;
+  return !hasMesh && anyDrawable;
 }
 
 void Runtime::ReassertNoteReplacement(GlobalNamespace::NoteController* noteController,

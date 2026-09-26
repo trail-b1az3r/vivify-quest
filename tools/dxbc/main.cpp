@@ -70,7 +70,7 @@ void PrintProgram(Vivify::Dxbc::Program const& program) {
 
 int main(int argc, char** argv) {
   if (argc < 3) {
-    std::cerr << "usage: dxbctool <parse|disasm|glsl> <file>\n";
+    std::cerr << "usage: dxbctool <parse|disasm|glsl|glsl-mv> <file>\n";
     return 2;
   }
   std::string const mode = argv[1];
@@ -89,9 +89,12 @@ int main(int argc, char** argv) {
     if (program.ok) std::cout << Vivify::Dxbc::DisassembleProgram(program);
     return 0;
   }
-  if (mode == "glsl") {
-    Vivify::Dxbc::GlslResult const result = Vivify::Dxbc::TranslateToGlsl(program);
+  if (mode == "glsl" || mode == "glsl-mv") {
+    Vivify::Dxbc::GlslOptions options;
+    options.multiview = mode == "glsl-mv";
+    Vivify::Dxbc::GlslResult const result = Vivify::Dxbc::TranslateToGlsl(program, options);
     std::cout << "ok=" << (result.ok ? 1 : 0) << "\n";
+    std::cout << "stereoInstanced=" << (result.stereoInstanced ? 1 : 0) << "\n";
     if (!result.error.empty()) std::cout << "error=" << result.error << "\n";
     for (auto const& name : result.uniforms) std::cout << "uniform=" << name << "\n";
     for (auto const& name : result.samplers) std::cout << "sampler=" << name << "\n";

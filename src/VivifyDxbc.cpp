@@ -1244,6 +1244,11 @@ class GlslEmitter {
   bool _usedThreadIDInGroup = false;
   bool _usedThreadIDFlattened = false;
   bool _usedGsInstanceID = false;
+  // SV_RenderTargetArrayIndex read by a pixel program (the eye index in PC
+  // single-pass instanced stereo) and written by a vertex one.
+  bool _usedRTArrayIndexIn = false;
+  bool _writesRTArrayIndex = false;
+  bool _stereoInstanced = false;
   // Thread-group shared memory, one entry per declared block.
   struct SharedBlock {
     uint32_t index = 0;
@@ -1623,6 +1628,14 @@ bool GlslEmitter::BuildSignatures() {
       case kSvSampleIndex:
         if (!Require(320, "SV_SampleIndex")) return false;
         continue;
+      case kSvRenderTargetArrayIndex:
+        // The eye index in PC single-pass instanced stereo. It is a built-in
+        // here too -- gl_ViewID_OVR under multiview, eye 0 otherwise -- bound
+        // in the prologue.
+        if (isPixel) continue;
+        Fail("input semantic '" + element.semanticName +
+             "' is SV_RenderTargetArrayIndex outside a pixel program");
+        return false;
       default:
         Fail("input semantic '" + element.semanticName + "' is system value " +
              std::to_string(element.systemValueType) +
@@ -1671,6 +1684,17 @@ bool GlslEmitter::BuildSignatures() {
       case kSvCoverage:
         continue;  // gl_FragDepth / gl_SampleMask, written through operand types
       case kSvRenderTargetArrayIndex:
+        if (isVertex) {
+          // Single-pass instanced stereo routes each instance to an eye by
+          // writing the layer. GLSL ES has no vertex-stage gl_Layer in any
+          // version, so the write always lands in a dummy. Under multiview the
+          // views do the routing, and the instance ID is remapped in the
+          // prologue so the program's eye maths agrees with them.
+          _writesRTArrayIndex = true;
+          _stereoInstanced = true;
+          _declarations += "vec4 vivify_RTArrayIndexOut;\n";
+          continue;
+        }
         if (!Require(320, "SV_RenderTargetArrayIndex")) return false;
         continue;  // gl_Layer
       case kSvClipDistance:
@@ -1859,6 +1883,7 @@ std::string GlslEmitter::RegisterName(Operand const& operand) {
         case kSvInstanceID: _usedInstanceID = true; return "vInstanceID";
         case kSvPrimitiveID: _usedPrimitiveID = true; return "vPrimitiveID";
         case kSvSampleIndex: _usedSampleIndex = true; return "vSampleIndex";
+        case kSvRenderTargetArrayIndex: _usedRTArrayIndexIn = true; return "vRTArrayIndex";
         default: break;
       }
       std::string name = VaryingName(*element, _program.stage == Stage::Vertex);
@@ -1897,7 +1922,8 @@ std::string GlslEmitter::RegisterName(Operand const& operand) {
         case kSvDepth:
         case kSvDepthGreaterEqual:
         case kSvDepthLessEqual: return "gl_FragDepth";
-        case kSvRenderTargetArrayIndex: return "gl_Layer";
+        case kSvRenderTargetArrayIndex:
+          return _writesRTArrayIndex ? "vivify_RTArrayIndexOut" : "gl_Layer";
         case kSvCoverage: return "gl_SampleMask[0]";
         default: break;
       }
@@ -2980,6 +3006,9 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
 
     // ---- bit manipulation ---------------------------------------------------
     case OP_COUNTBITS: {
+      // bitCount and the rest of GLSL's bit-manipulation built-ins arrived in
+      // GLSL ES 3.10; a 3.00 program calling one does not compile.
+      if (!Require(310, "bitCount")) return false;
       // bitCount returns a signed count; D3D's result is an unsigned one, so
       // it is converted rather than bit-cast.
       uint8_t const mask = destMask();
@@ -2990,6 +3019,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       break;
     }
     case OP_BFREV: {
+      if (!Require(310, "bitfieldReverse")) return false;
       uint8_t const mask = destMask();
       WriteDest(instruction, operands[0],
                 "uintBitsToFloat(bitfieldReverse(" + SrcUint(operands[1], mask) + "))");
@@ -2998,6 +3028,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
     case OP_FIRSTBIT_HI:
     case OP_FIRSTBIT_SHI:
     case OP_FIRSTBIT_LO: {
+      if (!Require(310, "findMSB/findLSB")) return false;
       uint8_t const mask = destMask();
       int const count = PopCount4(mask);
       std::string const value = opcode == OP_FIRSTBIT_SHI ? SrcInt(operands[1], mask)
@@ -3017,6 +3048,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
     }
     case OP_UBFE:
     case OP_IBFE: {
+      if (!Require(310, "bitfieldExtract")) return false;
       // D3D takes width and offset as separate operands and masks them to five
       // bits; GLSL's bitfieldExtract takes them as ints in the same order.
       uint8_t const mask = destMask();
@@ -3033,6 +3065,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       break;
     }
     case OP_BFI: {
+      if (!Require(310, "bitfieldInsert")) return false;
       uint8_t const mask = destMask();
       int const count = PopCount4(mask);
       std::string const width = SrcInt(operands[1], mask);
@@ -3601,7 +3634,20 @@ GlslResult GlslEmitter::Run() {
     addPrologue("vec4 vFrontFace = vec4(intBitsToFloat(gl_FrontFacing ? -1 : 0));");
   }
   if (_usedVertexID) addPrologue("vec4 vVertexID = intBitsToFloat(ivec4(gl_VertexID));");
-  if (_usedInstanceID) addPrologue("vec4 vInstanceID = intBitsToFloat(ivec4(gl_InstanceID));");
+  if (_usedInstanceID) {
+    if (_options.multiview && _stereoInstanced) {
+      // One multiview draw per real instance stands in for SPI's two, so the
+      // SPI numbering is rebuilt: eye in bit 0, real instance above it.
+      addPrologue("vec4 vInstanceID = intBitsToFloat(ivec4(gl_InstanceID * 2 + int(gl_ViewID_OVR)));");
+    } else {
+      addPrologue("vec4 vInstanceID = intBitsToFloat(ivec4(gl_InstanceID));");
+    }
+  }
+  if (_usedRTArrayIndexIn) {
+    addPrologue(_options.multiview
+                    ? "vec4 vRTArrayIndex = intBitsToFloat(ivec4(int(gl_ViewID_OVR)));"
+                    : "vec4 vRTArrayIndex = intBitsToFloat(ivec4(0));");
+  }
   if (_usedPrimitiveID) addPrologue("vec4 vPrimitiveID = intBitsToFloat(ivec4(gl_PrimitiveID));");
   if (_usedSampleIndex) addPrologue("vec4 vSampleIndex = intBitsToFloat(ivec4(gl_SampleID));");
   if (_usedGsInstanceID) {
@@ -3643,6 +3689,12 @@ GlslResult GlslEmitter::Run() {
 
   std::string source;
   source += "#version " + std::to_string(_version) + " es\n";
+  bool const needsViewId = _options.multiview && (_program.stage == Stage::Vertex ||
+                                                  (_usedRTArrayIndexIn && _program.stage == Stage::Pixel));
+  if (needsViewId) {
+    source += "#extension GL_OVR_multiview2 : require\n";
+    if (_program.stage == Stage::Vertex) source += "layout(num_views = 2) in;\n";
+  }
   source += "precision highp float;\n";
   source += "precision highp int;\n";
   source += _declarations;
@@ -3668,6 +3720,7 @@ GlslResult GlslEmitter::Run() {
   result.uniforms = _uniformNames;
   result.samplers = _samplerList;
   result.version = _version;
+  result.stereoInstanced = _stereoInstanced;
   return result;
 }
 

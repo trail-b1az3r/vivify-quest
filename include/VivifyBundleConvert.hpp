@@ -149,6 +149,15 @@ struct ShaderConversion {
   int shadersLeftAlone = 0;   // already runnable here, or nothing to translate
   int shadersRefused = 0;     // used something outside the translated subset
   int programsTranslated = 0;
+  // Shaders converted through m_ParsedForm (the path that makes Unity select
+  // the translated programs), keyword variants linked into GLES programs, and
+  // variants left on DirectX because one of their stages did not translate.
+  int shadersLinked = 0;
+  int variantsLinked = 0;
+  int variantsRefused = 0;
+  // Keyword variants pointed at their single-pass instanced twin, which carries
+  // the per-eye stereo maths that multiview needs.
+  int stereoVariantsRemapped = 0;
   // Block-compressed textures seen, and how many had their m_IsReadable flag
   // set so the mod can decode them on device. A texture that is already
   // readable, or in a format a Quest can sample, is not counted as marked.

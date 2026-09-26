@@ -10,6 +10,7 @@ matters as much as the happy path.
 """
 import os
 import random
+import struct
 import subprocess
 import sys
 import tempfile
@@ -254,7 +255,7 @@ _, f, s, p = run(mkshader.serialized_file_with_shaders(
     [("Custom/Both", [mkshader.D3D11, mkshader.GLES3PLUS], [[windows], [android]])]))
 check("both platforms decode", f.get("programs") == "3", f)
 check("each program keeps the platform of its own blob",
-      sorted(x["program"] for x in p) == ["4/0", "9/0", "9/0"], p)
+      sorted(x["program"] for x in p) == ["4/0", "9/0", "9/1"], p)
 check("DirectX program is not claimed to be GLSL source",
       [x["glsl"] for x in p if x["program"] == "4/0"] == ["0"], p)
 
@@ -476,14 +477,44 @@ _, out = reencode(mkshader.serialized_file_with_shaders(
 check("the 2018 format's two keyword tables survive a re-encode",
       out.get("reencodeMatched") == "1" and out.get("reencodeMismatched") == "0", out)
 
-many = mkshader.program_blob([
-    mkshader.sub_program(mkshader.GLES3, GLSL, keywords=["DIRECTIONAL", "FOG_EXP2", "LIGHTPROBE_SH"]),
-    mkshader.sub_program(mkshader.GLES3, b"#version 300 es\nvoid main(){}"),
-    mkshader.sub_program(mkshader.GLES3, GLSL * 8),
+# Unity's own layout for a group with several chunks: one entry table, in the
+# first chunk, whose records name the chunk ("segment") each entry lives in.
+segmented = mkshader.segmented_chunks([
+    (mkshader.sub_program(mkshader.GLES3, GLSL, keywords=["DIRECTIONAL", "FOG_EXP2", "LIGHTPROBE_SH"]), 0),
+    (mkshader.sub_program(mkshader.GLES3, b"#version 300 es\nvoid main(){}"), 1),
+    (mkshader.sub_program(mkshader.GLES3, GLSL * 8), 1),
+    (mkshader.sub_program(mkshader.GLES3, GLSL, keywords=["FOG"]), 0),
 ])
-_, out = reencode(mkshader.serialized_file_with_shaders(
-    [("Custom/Many", [mkshader.GLES3PLUS], [[many, android]])]))
-check("several sub-blobs and keywords survive a re-encode",
+segmented_file = mkshader.serialized_file_with_shaders(
+    [("Custom/Many", [mkshader.GLES3PLUS], [segmented])])
+_, f, s, p = run(segmented_file)
+check("a segmented store decodes every entry through the one table",
+      f.get("decodeOk") == "1" and f.get("programs") == "4", f)
+check("segmented entries keep their table index and bytes",
+      [x.get("program") for x in p] == ["9/0", "9/1", "9/2", "9/3"] and
+      p[1].get("code") == "#version 300 es.void main(){}" and
+      p[2].get("code") == (GLSL * 8).decode().replace("\n", "."), p)
+_, out = reencode(segmented_file)
+check("several segments and keywords survive a re-encode",
+      out.get("reencodeMatched") == "1" and out.get("reencodeMismatched") == "0", out)
+
+# An entry that is not a sub-program -- from 2021.3.10 the table also holds
+# each program's parameters -- is carried as opaque bytes and keeps its index,
+# because m_ParsedForm points at entries by number.
+not_a_program = struct.pack('<IIII', 3, 0, 0, 0) + b"\xff" * 5
+with_raw = mkshader.segmented_chunks([
+    (mkshader.sub_program(mkshader.GLES3, GLSL), 0),
+    (not_a_program, 0),
+    (mkshader.sub_program(mkshader.GLES3, b"#version 300 es\nvoid main(){}"), 0),
+])
+raw_file = mkshader.serialized_file_with_shaders(
+    [("Custom/Params", [mkshader.GLES3PLUS], [with_raw])])
+_, f, s, p = run(raw_file)
+check("an entry that is not a program is kept as raw bytes at its index",
+      f.get("decodeOk") == "1" and [x.get("program") for x in p] == ["9/0", "9/1", "9/2"] and
+      p[1].get("raw") == str(len(not_a_program)), (f, p))
+_, out = reencode(raw_file)
+check("raw entries survive a re-encode byte for byte",
       out.get("reencodeMatched") == "1" and out.get("reencodeMismatched") == "0", out)
 
 print()
