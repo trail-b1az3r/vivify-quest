@@ -1444,10 +1444,13 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
                                                               entry.rawBytes.size(), fromBlob)) {
       continue;
     }
-    fromBlob.Merge(ref.parameters);  // plus the stage's common parameters
+    // Names first: a blob in Unity's inline layout carries only names, so the
+    // stage's common parameters are matched against it by name.
     if (auto names = shader.passNames.find({ref.subShader, ref.pass}); names != shader.passNames.end()) {
+      ref.parameters.ResolveNames(names->second);
       fromBlob.ResolveNames(names->second);
     }
+    fromBlob.Merge(ref.parameters);  // plus the stage's common parameters
     ref.parameters = std::move(fromBlob);
   }
 

@@ -9,6 +9,11 @@
 
 using namespace Vivify::BundleConvert;
 
+static std::string fmt_hex(uint8_t c) {
+  static char const digits[] = "0123456789abcdef";
+  return {digits[c >> 4], digits[c & 15]};
+}
+
 int main(int argc, char** argv) {
   if (argc < 3) {
     std::fprintf(stderr, "usage: conv [--repack|--shaders] <src> <dst>\n");
@@ -45,8 +50,13 @@ int main(int argc, char** argv) {
           else if (c < 0x20 || c > 0x7e || c == '\\') code += '.';
           else code += static_cast<char>(c);
         }
-        std::printf("entry blob=%d raw=%d rawSize=%zu type=%d code=%s\n", program.blobIndex, program.raw ? 1 : 0,
-                    program.rawBytes.size(), program.programType, code.c_str());
+        // What follows the code's alignment padding, as hex ("-" for none),
+        // so a test can see the parameter tables of a 2019 blob survive intact.
+        std::string trailing = program.trailing.empty() ? "-" : "";
+        for (uint8_t c : program.trailing) trailing += fmt_hex(c);
+        std::printf("entry blob=%d raw=%d rawSize=%zu type=%d trailing=%s code=%s\n", program.blobIndex,
+                    program.raw ? 1 : 0, program.rawBytes.size(), program.programType, trailing.c_str(),
+                    code.c_str());
       }
     }
     return 0;

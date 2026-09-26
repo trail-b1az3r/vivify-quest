@@ -112,6 +112,10 @@ private:
   // Gives up on a download that never called back and falls back to conversion.
   void CheckDownloadTimeout();
   void PreloadBundle(std::string const& bundlePath);
+  // Crash guard for on-device converted bundles: a marker file beside the
+  // bundle while it loads and plays its first seconds (see VivifyAssets.cpp).
+  void ArmLoadGuard(std::string const& bundlePath);
+  void DisarmLoadGuard();
   void LoadMainBundle();
   void CacheBundleAssets();
   // True once the watchdog has stood Vivify down for this level.
@@ -455,6 +459,8 @@ private:
   // Source path of a PC->Android bundle conversion currently running on a
   // worker thread, so re-selecting the same level does not start a second one.
   std::string _bundleConversionSource;
+  // Converted bundle whose .loading marker is on disk, or empty.
+  std::string _loadGuardPath;
 
   // In-flight asset download. WebUtils does not guarantee a callback on every
   // failure mode, so the play button is not left waiting on one forever.

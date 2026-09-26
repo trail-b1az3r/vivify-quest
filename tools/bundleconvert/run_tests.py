@@ -502,7 +502,10 @@ def _vs(spi, texcoord=True, rdef=True):
         outputs.append({"name": "SV_RenderTargetArrayIndex", "index": 0, "register": 2,
                         "sv": SV_RT_ARRAY_INDEX, "mask": 0x1, "rw_mask": 0xE, "component_type": 1})
     matrix = "unity_StereoMatrixVP" if spi else "unity_MatrixVP"
-    rdef = dx.rdef_chunk(
+    # Not called rdef: that name is the parameter, and shadowing it made every
+    # "stripped" fixture carry RDEF after all, so the tests meant to prove the
+    # converter works without it never exercised that.
+    rdef_chunk = dx.rdef_chunk(
         constant_buffers=[{"name": "$Globals", "size": 128 if spi else 64, "variables": [
             {"name": matrix, "offset": 0, "size": 128 if spi else 64, "class": 3, "type": 3,
              "rows": 4, "columns": 4, "elements": 2 if spi else 0}]}],
@@ -529,7 +532,7 @@ def _vs(spi, texcoord=True, rdef=True):
     chunks = [dx.signature_chunk(inputs, b"ISGN"), dx.signature_chunk(outputs, b"OSGN"),
               dx.shex_chunk([code], stage=1)]
     # Unity strips RDEF from the DXBC in a built bundle; rdef=False is that.
-    return dx.unity_program(([rdef] if rdef else []) + chunks)
+    return dx.unity_program(([rdef_chunk] if rdef else []) + chunks)
 
 
 def _ps(spi, flat=True):
@@ -603,6 +606,37 @@ def inspect_converted(dst):
             entry["code"] = code
             entries[int(entry["blob"])] = entry
     return platforms, refs, entries
+
+
+# A Unity 2019 program: the parameter tables come after the code, behind four-
+# byte alignment. DXBC is always a whole number of dwords, so the source never
+# has padding there; the translated GLSL is almost never a multiple of four.
+# Version 6 of the on-device conversion copied the tables straight after the
+# GLSL, Unity read them from one to three bytes early, and the game crashed as
+# soon as a converted 2019 level was selected.
+TABLES_2019 = struct.pack("<ii", 0, 0) + struct.pack("<i", 1) + struct.pack("<i", 0) + bytes(8) + \
+    bytes(range(1, 17))
+program_2019 = [[mkshader.program_blob([mkshader.sub_program(
+    DX11_VERTEX_SM50, dxbc_vertex(), blob_version=201806140, trailing=TABLES_2019)])]]
+
+
+def expect_2019_tables_aligned(proc, fields, refusals, dst):
+    problem = expect_translated(proc, fields, refusals, dst)
+    if problem:
+        return problem
+    _, _, entries = inspect_converted(dst)
+    gles = [e for e in entries.values() if e["code"].startswith("#")]
+    if not gles:
+        return "no GLSL entry in the converted bundle"
+    for entry in gles:
+        if entry["trailing"] != TABLES_2019.hex():
+            return (f"parameter tables after {len(entry['code'].replace(chr(92) + 'n', 'x'))}-byte code "
+                    f"read back as {entry['trailing']}, wrote {TABLES_2019.hex()}")
+    return None
+
+
+shader_case("a 2019 program's parameter tables stay four-byte aligned after its GLSL",
+            expect_2019_tables_aligned, [("Custom/Test2019", [4], program_2019)])
 
 
 GLSLANG = shutil.which("glslangValidator")
@@ -794,6 +828,27 @@ def expect_stripped(proc, fields, refusals, dst):
 
 pc_shader_case("a shader whose DXBC has no RDEF is translated from m_ParsedForm's parameters",
                stripped_body, expect_stripped)
+
+# Dialtone (2021.3.16) writes its parameter blobs in Unity's inline layout --
+# names as strings, behind a format version -- rather than through the type
+# tree. Read only the type-tree way, every blob failed to parse, the stereo
+# variants lost the UnityStereoGlobals buffer they read, and all three of its
+# shaders were refused ("reads constant buffer b4, which its reflection data
+# does not describe").
+inline_mono = mkshader2021.inline_parameter_blob(
+    constant_buffers=[("UnityPerFrame", 64, [], [("unity_MatrixVP", 0, 4, 0)])], bindings=[("UnityPerFrame", 0)])
+inline_spi = mkshader2021.inline_parameter_blob(
+    constant_buffers=[("UnityStereoGlobals", 128, [], [("unity_StereoMatrixVP", 0, 4, 2)])],
+    bindings=[("UnityStereoGlobals", 0)])
+inline_empty = mkshader2021.inline_parameter_blob()
+inline_body, _ = pc_shader_2021(
+    "Dialtone/Inline",
+    [(_vs(spi=False, rdef=False), []), (_vs(spi=True, rdef=False), [0])],
+    [(_ps(spi=False), []), (_ps(spi=True), [0])],
+    vertex_params=[inline_mono, inline_spi], fragment_params_blobs=[inline_empty, inline_empty])
+
+pc_shader_case("a parameter blob in Unity's inline layout is read for its names",
+               inline_body, expect_stripped)
 
 broken_body, _ = pc_shader_2021("Custom/Broken", [(_vs(spi=False), [])],
                                 [(dxbc_untranslatable(), [])], keyword_names=())

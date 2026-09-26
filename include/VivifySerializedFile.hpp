@@ -146,7 +146,7 @@ struct ShaderSubProgram {
   std::vector<std::string> keywords;
   std::vector<std::string> localKeywords;  // 2018.06 - 2020.12 only
   std::vector<uint8_t> code;               // GLSL source text for GLES targets; DXBC for D3D11
-  std::vector<uint8_t> trailing;           // padding after the code, kept verbatim
+  std::vector<uint8_t> trailing;           // what follows the code's alignment padding, kept verbatim
 };
 
 // ShaderGpuProgramType is per sub-program in m_ParsedForm; these name the stage

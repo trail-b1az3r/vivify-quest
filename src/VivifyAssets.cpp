@@ -49,7 +49,12 @@ namespace {
 //      shader at all ("reads constant buffer b0, which its reflection data does
 //      not describe" for all 355 in one session) and its caches are no better
 //      than version 4's
-constexpr int kBundleConversionVersion = 6;
+//   7  the same, with the four-byte padding Unity expects after a program's
+//      code. Unity 2019 bundles keep each program's parameter tables right
+//      after its code; version 6 wrote the translated GLSL without that padding,
+//      Unity read the tables from the wrong offset, and the game crashed as
+//      soon as such a level was selected
+constexpr int kBundleConversionVersion = 7;
 
 std::string ConversionMarkerPath(std::string const& destPath) {
   return destPath + ".version";
@@ -74,6 +79,59 @@ void MarkConversionCurrent(std::string const& destPath) {
     return;
   }
   marker << kBundleConversionVersion << "\n";
+}
+
+// CRASH GUARD FOR CONVERTED BUNDLES
+//
+// A translated shader that Unity or the GPU driver cannot cope with does not
+// fail politely: the process dies, with nothing in the log after "bundle
+// preloaded". Left alone that repeats on every launch the moment the level is
+// selected, and the only way out was deleting files by hand.
+//
+// So a converted bundle is loaded behind a marker file. <bundle>.loading is
+// written before Unity touches the bundle and removed once loading, and the
+// first seconds of play, are over. Finding it still there on the next selection
+// means that load never finished. The bundle is then redone without shader
+// translation (the retarget-only conversion, which loads with stand-in shading)
+// and <bundle>.crashed records which converter version crashed, so a later
+// version with a fix gets to try translation again.
+std::string LoadingMarkerPath(std::string const& destPath) {
+  return destPath + ".loading";
+}
+
+std::string CrashedMarkerPath(std::string const& destPath) {
+  return destPath + ".crashed";
+}
+
+bool FileExists(std::string const& path) {
+  std::error_code ec;
+  return std::filesystem::exists(path, ec) && !ec;
+}
+
+// True when this converter version's translated output for destPath has already
+// taken the game down once.
+bool TranslationCrashedBefore(std::string const& destPath) {
+  std::ifstream marker(CrashedMarkerPath(destPath));
+  int version = 0;
+  if (!(marker >> version)) return false;
+  return version == kBundleConversionVersion;
+}
+
+// Turns a leftover .loading marker into a .crashed one and throws away the
+// bundle that caused it, so the next conversion of it is retarget-only.
+// Returns true when that happened.
+bool RecordInterruptedLoad(std::string const& destPath) {
+  if (destPath.empty() || !FileExists(LoadingMarkerPath(destPath))) return false;
+  PaperLogger.error("Vivify: the last load of converted bundle '{}' never finished -- the game most "
+                    "likely crashed loading its translated shaders. Reconverting it without shader "
+                    "translation so the level can be played (stand-in shading)", destPath);
+  std::error_code ec;
+  std::filesystem::remove(destPath, ec);
+  std::filesystem::remove(ConversionMarkerPath(destPath), ec);
+  std::filesystem::remove(LoadingMarkerPath(destPath), ec);
+  std::ofstream crashed(CrashedMarkerPath(destPath), std::ios::out | std::ios::trunc);
+  if (crashed) crashed << kBundleConversionVersion << "\n";
+  return true;
 }
 
 // True for a shader whose job is to cover the view rather than to shade a
@@ -118,6 +176,15 @@ struct BundleConversionOutcome {
 };
 
 BundleConversionOutcome RunBundleConversion(std::string const& source, std::string const& dest) {
+  if (GetTranslateShadersOnConversion() && TranslationCrashedBefore(dest)) {
+    auto const result = BundleConvert::ConvertToAndroid(source, dest);
+    // Marked current, unlike the setting's retarget-only path: this is the
+    // version's answer for this bundle until a newer converter retries it.
+    if (result.status == BundleConvert::Status::Success) MarkConversionCurrent(dest);
+    PaperLogger.warn("Vivify converted '{}' without shader translation, because the translated "
+                     "version crashed the game: {}", source, result.message);
+    return {result.status, result.message};
+  }
   if (!GetTranslateShadersOnConversion()) {
     auto const result = BundleConvert::ConvertToAndroid(source, dest);
     // Deliberately not marked current: a retarget-only bundle is what the
@@ -537,6 +604,8 @@ void RestoreMaterialFallbackState(UnityEngine::Material* material, MaterialFallb
 }
 
 void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEventArgs const& event) {
+  // Getting back to level selection means whatever was loading last is done.
+  DisarmLoadGuard();
 
   std::string incomingLevelPath;
   if (event.isCustom && event.customBeatmapLevel != nullptr) {
@@ -616,6 +685,7 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
   uint32_t const androidChecksum = ReadAndroidChecksumFromInfoDat(_selectedLevelPath);
   std::string const cachedConversion =
       pcBundleFallback.empty() ? std::string() : ConvertedBundlePath(pcBundleFallback);
+  RecordInterruptedLoad(cachedConversion);
   bool const haveCachedConversion =
       !cachedConversion.empty() && CachedConversionIsCurrent(cachedConversion);
 
@@ -741,6 +811,7 @@ void Runtime::ConvertPcBundleAsync(std::string const& levelPath, std::string con
   }
 
   std::string const destPath = ConvertedBundlePath(sourceBundlePath);
+  RecordInterruptedLoad(destPath);
   if (CachedConversionIsCurrent(destPath)) {
     if (GetVivifyDebugLogging()) {
       PaperLogger.info("Vivify using cached converted bundle: '{}'", destPath);
@@ -1130,18 +1201,40 @@ void Runtime::PreloadBundle(std::string const& bundlePath) {
     _mainBundle = nullptr;
   }
   _preloadedBundlePath = bundlePath;
+  ArmLoadGuard(bundlePath);
   _mainBundle = UnityEngine::AssetBundle::LoadFromFile(StringW(bundlePath));
   if (_mainBundle == nullptr) {
     if (GetVivifyDebugLogging()) {
       PaperLogger.warn("Vivify bundle preload failed: '{}'", bundlePath);
     }
     _preloadedBundlePath.clear();
+    DisarmLoadGuard();
     return;
   }
   if (GetVivifyDebugLogging()) {
     PaperLogger.info("Vivify bundle preloaded: '{}'", bundlePath);
   }
   CacheBundleAssets();
+  // Loaded and every asset realised. Play re-arms it, since that is when the
+  // driver first compiles the programs.
+  DisarmLoadGuard();
+}
+
+void Runtime::ArmLoadGuard(std::string const& bundlePath) {
+  DisarmLoadGuard();
+  if (bundlePath.rfind(ConvertedBundleCacheDir(), 0) != 0) return;
+  std::ofstream marker(LoadingMarkerPath(bundlePath), std::ios::out | std::ios::trunc);
+  if (!marker) return;
+  marker << kBundleConversionVersion << "\n";
+  marker.close();
+  _loadGuardPath = bundlePath;
+}
+
+void Runtime::DisarmLoadGuard() {
+  if (_loadGuardPath.empty()) return;
+  std::error_code ec;
+  std::filesystem::remove(LoadingMarkerPath(_loadGuardPath), ec);
+  _loadGuardPath.clear();
 }
 
 void Runtime::LoadMainBundle() {
@@ -1165,6 +1258,9 @@ void Runtime::LoadMainBundle() {
     }
     return;
   }
+  // Held through the first seconds of play (Update disarms it), which is when
+  // the GPU driver compiles the translated programs for the first time.
+  ArmLoadGuard(bundlePath);
   if (!_preloadedBundlePath.empty() && _preloadedBundlePath == bundlePath &&
       _mainBundle != nullptr && UnityEngine::Object::op_Implicit_bool(_mainBundle)) {
     if (GetVivifyDebugLogging()) {
@@ -2148,6 +2244,12 @@ void StartBulkPcBundleConversion(std::function<void(BulkConversionProgress const
         if (source.empty()) continue;
 
         std::string const dest = ConvertedBundlePath(source);
+        // An explicit reconvert gives translation another go.
+        if (force) {
+          std::error_code ec;
+          std::filesystem::remove(CrashedMarkerPath(dest), ec);
+        }
+        RecordInterruptedLoad(dest);
         if (std::filesystem::exists(dest)) {
           if (!force && CachedConversionIsCurrent(dest)) {
             progress.alreadyDone++;
