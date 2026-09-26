@@ -132,10 +132,13 @@ def lz4_block_with_match() -> tuple:
 
 
 def sub_program(program_type: int, code: bytes, *, blob_version=202012090,
-                keywords=()) -> bytes:
+                keywords=(), trailing=b"") -> bytes:
     """One compiled sub-program, in the layout Unity writes: format version,
     ShaderGpuProgramType, three statistics ints, a fourth from 2016.08, then the
-    aligned keyword strings and the program byte array."""
+    aligned keyword strings and the program byte array.
+
+    trailing is what 2018.06 - 2020.12 blobs carry after the code (source map,
+    bind channels, parameter tables); Unity aligns to four bytes before it."""
     out = bytearray()
     out += struct.pack('<ii', blob_version, program_type)
     out += bytes(12)                                  # statistics
@@ -149,6 +152,9 @@ def sub_program(program_type: int, code: bytes, *, blob_version=202012090,
     if 201806140 <= blob_version < 202012090:
         out += struct.pack('<i', 0)                   # local keyword table
     out += struct.pack('<i', len(code)) + code
+    if trailing:
+        _align4(out)
+        out += trailing
     return bytes(out)
 
 

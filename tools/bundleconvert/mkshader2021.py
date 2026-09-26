@@ -169,6 +169,42 @@ def parameter_blob(constant_buffers=(), bindings=(), textures=()):
     return bytes(out)
 
 
+def inline_parameter_blob(constant_buffers=(), bindings=(), version=202012090):
+    """A parameter blob in Unity's inline layout, which some 2021.3 editors
+    write in place of the type-tree one: a format version, then parameter
+    groups with their names spelled out (group 0 is everything outside a
+    constant buffer), each ending in an isPartialCB int, then the bindings.
+    constant_buffers: [(name, size, [(name, offset, dim, array_size)],
+    [(name, offset, rows, array_size)])]. bindings: [(name, slot)]."""
+    out = bytearray(struct.pack('<I', version))
+
+    def string(text):
+        encoded = text.encode()
+        out.extend(struct.pack('<I', len(encoded)) + encoded)
+        _align(out)
+
+    def group(name, size, vectors, matrices):
+        string(name)
+        out.extend(struct.pack('<ii', size, len(vectors) + len(matrices)))
+        for (n, offset, dim, array_size) in vectors:
+            string(n)
+            out.extend(struct.pack('<iiiiii', 0, 1, dim, 0, array_size, offset))
+        for (n, offset, rows, array_size) in matrices:
+            string(n)
+            out.extend(struct.pack('<iiiiii', 0, rows, 4, 1, array_size, offset))
+        out.extend(struct.pack('<ii', 0, 1 if name else 0))  # no structs; isPartialCB
+
+    out.extend(struct.pack('<I', len(constant_buffers) + 1))
+    group("", 0, [], [])
+    for buffer in constant_buffers:
+        group(*buffer)
+    out.extend(struct.pack('<I', len(bindings)))
+    for (n, slot) in bindings:
+        string(n)
+        out.extend(struct.pack('<iii', 1, slot, 0))
+    return bytes(out)
+
+
 def player_sub_program(blob, gpu_type, keywords=()):
     return {"m_BlobIndex": blob, "m_KeywordIndices": list(keywords), "m_ShaderRequirements": 0,
             "m_GpuProgramType": gpu_type}

@@ -1551,8 +1551,23 @@ bool ReadSubProgram(uint8_t const* data, size_t size, ShaderSubProgram& out) {
   out.code.resize(codeLength);
   if (codeLength > 0 && !reader.raw(out.code.data(), codeLength)) return false;
 
-  // Whatever Unity left after the code -- alignment padding, and any trailing
-  // field this code does not model -- travels with the program.
+  // Unity aligns to four bytes after the program bytes, then (in the
+  // 2018.06 - 2020.12 format) writes the source map, bind channels and
+  // parameter tables. That padding belongs to the code, not to what follows:
+  // DXBC is always a whole number of dwords so a PC blob never has any, but
+  // GLSL text almost never is, and a translated program whose tables were
+  // copied across without it had them read one to three bytes early -- a
+  // garbage bind-channel count, and Unity crashed loading the bundle. So the
+  // padding is dropped here and WriteSubProgram puts back whatever the new
+  // code length needs. An entry that simply ends after unpadded code (nothing
+  // else follows) is accepted too.
+  {
+    size_t const pad = (4 - (codeLength % 4)) % 4;
+    reader.skip(std::min(pad, reader.remaining()));
+  }
+
+  // Whatever Unity left after that -- any field this code does not model --
+  // travels with the program.
   size_t const trailing = reader.remaining();
   out.trailing.resize(trailing);
   if (trailing > 0 && !reader.raw(out.trailing.data(), trailing)) return false;
@@ -1592,6 +1607,7 @@ void WriteSubProgram(ShaderSubProgram const& program, std::vector<uint8_t>& out)
 
   putU32(static_cast<uint32_t>(program.code.size()));
   out.insert(out.end(), program.code.begin(), program.code.end());
+  align4();
   out.insert(out.end(), program.trailing.begin(), program.trailing.end());
 }
 
@@ -2022,12 +2038,26 @@ DecodeResult DecodeShaderPrograms(uint8_t const* data, size_t size, ShaderObject
   return result;
 }
 
+namespace {
+// Two parameters name the same thing: by m_NameIndex when both have one, by
+// name otherwise. A parameter blob in Unity's inline format carries names and
+// no indices, while m_CommonParameters carries indices, resolved to names by
+// ResolveNames.
+bool SameName(int32_t aIndex, std::string const& aName, int32_t bIndex, std::string const& bName) {
+  if (aIndex >= 0 && bIndex >= 0) return aIndex == bIndex;
+  return !aName.empty() && aName == bName;
+}
+}  // namespace
+
 void ProgramParameters::Merge(ProgramParameters const& other) {
   auto addMissing = [](std::vector<ProgramParameter>& into, std::vector<ProgramParameter> const& from) {
     for (auto const& parameter : from) {
       bool present = false;
       for (auto const& existing : into) {
-        if (existing.nameIndex == parameter.nameIndex && existing.index == parameter.index) present = true;
+        if (SameName(existing.nameIndex, existing.name, parameter.nameIndex, parameter.name) &&
+            existing.index == parameter.index) {
+          present = true;
+        }
       }
       if (!present) into.push_back(parameter);
     }
@@ -2040,7 +2070,9 @@ void ProgramParameters::Merge(ProgramParameters const& other) {
   addMissing(constantBufferBindings, other.constantBufferBindings);
   for (auto const& buffer : other.constantBuffers) {
     auto it = std::find_if(constantBuffers.begin(), constantBuffers.end(),
-                           [&buffer](ProgramConstantBuffer const& b) { return b.nameIndex == buffer.nameIndex; });
+                           [&buffer](ProgramConstantBuffer const& b) {
+                             return SameName(b.nameIndex, b.name, buffer.nameIndex, buffer.name);
+                           });
     if (it == constantBuffers.end()) {
       constantBuffers.push_back(buffer);
     } else {
@@ -2068,8 +2100,145 @@ void ProgramParameters::ResolveNames(std::map<int32_t, std::string> const& names
   }
 }
 
+namespace {
+
+// Unity's inline parameter layout: the one a 2018.06 - 2020.12 sub-program
+// writes after its bind channels, and the one some 2021.3 editors write for a
+// whole parameter blob behind a format version (202012090). Names are written
+// out as strings rather than as m_NameIndex values.
+//
+//   int groupCount; groups: string name, int usedSize, int paramCount,
+//     params { string name, int type, int rows, int columns, int isMatrix,
+//              int arraySize, int index },
+//     int structCount, structs { string name, int index, int arraySize,
+//              int structSize, int memberCount, members like params },
+//     [int isPartialCB -- the 2020.12 format only]
+//   int bindingCount; bindings: string name, int type, int index, int extra,
+//     [uint textureExtra -- textures only]
+//
+// Group 0 is the parameters outside any constant buffer; the rest are the
+// constant buffers, in order. Binding types: 0 texture, 1 constant buffer
+// slot, 2 buffer, 3 UAV, 4 sampler.
+//
+// withPartialFlag says whether each group ends in the isPartialCB int. Both
+// shapes are tried by the caller, which keeps the one that uses up the bytes.
+bool ReadInlineParameters(Reader& reader, bool withPartialFlag, ProgramParameters& out) {
+  auto readString = [&reader](std::string& into) {
+    uint32_t const length = reader.u32();
+    if (!reader.ok() || length > reader.remaining()) return false;
+    into.assign(length, '\0');
+    if (length > 0 && !reader.raw(reinterpret_cast<uint8_t*>(into.data()), length)) return false;
+    reader.align4();
+    return reader.ok();
+  };
+  auto readParameter = [&](ProgramParameter& parameter, bool& isMatrix) {
+    if (!readString(parameter.name)) return false;
+    parameter.type = static_cast<int32_t>(reader.u32());
+    int32_t const rows = static_cast<int32_t>(reader.u32());
+    int32_t const columns = static_cast<int32_t>(reader.u32());
+    isMatrix = static_cast<int32_t>(reader.u32()) > 0;
+    parameter.arraySize = static_cast<int32_t>(reader.u32());
+    parameter.index = static_cast<int32_t>(reader.u32());
+    parameter.dim = isMatrix ? rows : columns;
+    return reader.ok();
+  };
+  // Nothing real comes near these; a count past them means the bytes are not
+  // this layout.
+  constexpr uint32_t kMaxCount = 4096;
+
+  uint32_t const groupCount = reader.u32();
+  if (!reader.ok() || groupCount == 0 || groupCount > kMaxCount) return false;
+  for (uint32_t group = 0; group < groupCount; group++) {
+    ProgramConstantBuffer buffer;
+    if (!readString(buffer.name)) return false;
+    buffer.size = static_cast<int32_t>(reader.u32());
+    uint32_t const paramCount = reader.u32();
+    if (!reader.ok() || paramCount > kMaxCount) return false;
+    for (uint32_t i = 0; i < paramCount; i++) {
+      ProgramParameter parameter;
+      bool isMatrix = false;
+      if (!readParameter(parameter, isMatrix)) return false;
+      (isMatrix ? buffer.matrices : buffer.vectors).push_back(std::move(parameter));
+    }
+    uint32_t const structCount = reader.u32();
+    if (!reader.ok() || structCount > kMaxCount) return false;
+    for (uint32_t i = 0; i < structCount; i++) {
+      std::string structName;
+      if (!readString(structName)) return false;
+      reader.skip(12);  // index, arraySize, structSize
+      uint32_t const memberCount = reader.u32();
+      if (!reader.ok() || memberCount > kMaxCount) return false;
+      for (uint32_t j = 0; j < memberCount; j++) {
+        ProgramParameter member;
+        bool isMatrix = false;
+        if (!readParameter(member, isMatrix)) return false;
+      }
+      buffer.hasStructParams = true;
+    }
+    if (withPartialFlag) reader.u32();
+    if (!reader.ok()) return false;
+    if (group == 0) {
+      for (auto& v : buffer.vectors) out.vectors.push_back(std::move(v));
+      for (auto& m : buffer.matrices) out.matrices.push_back(std::move(m));
+    } else {
+      out.constantBuffers.push_back(std::move(buffer));
+    }
+  }
+
+  uint32_t const bindingCount = reader.u32();
+  if (!reader.ok() || bindingCount > kMaxCount) return false;
+  for (uint32_t i = 0; i < bindingCount; i++) {
+    ProgramParameter binding;
+    if (!readString(binding.name)) return false;
+    int32_t const type = static_cast<int32_t>(reader.u32());
+    binding.index = static_cast<int32_t>(reader.u32());
+    int32_t const extra = static_cast<int32_t>(reader.u32());
+    if (!reader.ok()) return false;
+    switch (type) {
+      case 0: {
+        uint32_t const textureExtra = reader.u32();
+        binding.samplerIndex = extra;
+        binding.dim = static_cast<int32_t>(textureExtra >> 1);
+        out.textures.push_back(std::move(binding));
+        break;
+      }
+      case 1: out.constantBufferBindings.push_back(std::move(binding)); break;
+      case 2: out.buffers.push_back(std::move(binding)); break;
+      case 3: out.uavs.push_back(std::move(binding)); break;
+      case 4: break;  // a sampler state; nothing here uses them
+      default: return false;
+    }
+  }
+  return reader.ok();
+}
+
+// A parameter blob that opens with a sub-program format version is in the
+// inline layout rather than the type-tree one; a type-tree blob opens with an
+// array length, which is never anywhere near that large.
+bool ParseInlineParameterBlob(uint8_t const* data, size_t size, ProgramParameters& out) {
+  if (data == nullptr || size < 8) return false;
+  uint32_t const version = static_cast<uint32_t>(data[0]) | (static_cast<uint32_t>(data[1]) << 8) |
+                           (static_cast<uint32_t>(data[2]) << 16) | (static_cast<uint32_t>(data[3]) << 24);
+  if (version < 201500000u || version > 209912319u) return false;
+  for (bool withPartialFlag : {version >= 202012090u, version < 202012090u}) {
+    Reader reader(data, size);
+    reader.u32();
+    ProgramParameters parsed;
+    // Only a reading that accounts for every byte (bar alignment) is the
+    // right one.
+    if (ReadInlineParameters(reader, withPartialFlag, parsed) && reader.remaining() < 4) {
+      out = std::move(parsed);
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
+
 bool ParseParameterBlob(std::vector<ParameterSchemaNode> const& schema, uint8_t const* data, size_t size,
                         ProgramParameters& out) {
+  if (ParseInlineParameterBlob(data, size, out)) return true;
   if (schema.empty() || data == nullptr) return false;
   auto const children = SchemaChildren(schema);
   Reader reader(data, size);

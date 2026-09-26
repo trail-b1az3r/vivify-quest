@@ -33,6 +33,83 @@ port from scratch — see Credits below.
   - Full settings-menu parity: every toggle the runtime already had a config
     key for is now actually exposed in the in-game settings UI.
 
+## 0.13.0 — the crash on selecting a converted level, and Dialtone
+
+### Selecting a converted level crashed the game
+
+The 0.12.0 session log ends on `Vivify bundle preloaded:` for the converted
+Burning Sands bundle, so the game died while Unity was reading the bundle's
+shaders.
+
+The cause was in how the converter wrote the translated programs back. Each
+compiled program is a header, the code, and then more fields after the code.
+In Unity 2019 bundles those are the bind channels and every parameter table;
+in 2021 bundles, the bind channels. Unity pads the code to a multiple of four
+bytes before reading them. DXBC is always a multiple of four, so a PC bundle
+never has that padding. Translated GLSL almost never is. The converter copied
+the following fields straight after the new code without padding, so for
+three programs in four Unity read them from one to three bytes too early. It
+got a nonsense bind-channel count and read past the program.
+
+The padding is now worked out from the new code length. A test builds a 2019
+program with parameter tables after its code, converts it, and checks that
+the tables read back byte for byte. The test fails without the fix: 305-byte
+code, tables read 3 bytes early.
+
+### A crash guard, so one bad bundle cannot lock you out of a level
+
+A shader Unity or the GPU driver cannot handle takes the whole game down, and
+nothing gets logged. So a converted bundle is now loaded behind a marker file
+(`<bundle>.loading`) that stays on disk until the bundle has loaded and the
+song has played for 10 seconds.
+
+If the next selection of that level finds the marker still there, the load
+never finished. The log says so, and the bundle is reconverted **without
+shader translation** (stand-in shading, the pre-0.11 behaviour), so the level
+plays instead of crashing again. The fallback is tied to this converter
+version: a later release retries translation by itself. So does
+"Force Reconvert All (ignore cache)" in the settings.
+
+The guard has one false positive: closing the game within the first 10
+seconds of a converted song counts as a crash for that bundle.
+
+### Dialtone: 0 of 3 shaders converted, now 3 of 3
+
+Dialtone was built with Unity 2021.3.16 and its converted bundle still had
+every shader on DirectX. Its parameter blobs are not in the type-tree layout
+the converter read. They use Unity's older inline layout: a format version,
+then groups of parameters with their names written out as strings, the same
+layout 2019 programs keep after their code. Every blob failed to parse. The
+stereo variants lost the `UnityStereoGlobals` buffer they read, and each
+shader was refused with *reads constant buffer b4, which its reflection data
+does not describe*.
+
+Both layouts are read now. Blobs in the inline layout are merged with the
+pass's common parameters by name. On your Dialtone bundle:
+- **Shaders:** 3 of 3 shaders translate, up from 0.
+- **Variants:** 20 variants link, with 0 refused.
+- **Compile check:** every linked program compiles and links under glslang.
+
+### Tests that could not fail
+
+The test fixtures meant to have no RDEF (the reflection chunk Unity strips
+from built bundles) had one anyway: a local variable shadowed the flag that
+removes it. They were fixed, and the new inline-layout test fails, with
+Dialtone's exact message, when the new parser is switched off.
+
+Conversion cache version 7: every converted level reconverts by itself.
+
+### Still not fixed
+
+- Hold My Hand's raymarchers and the glass-note bodies in the RSIH Android
+  bundles. Neither involves the converter, and neither log says why they draw
+  nothing.
+- For the Burning Sands crash I found a real bug that explains it, but I have
+  no Burning Sands bundle to confirm it's the only one. If it still crashes,
+  the guard above makes the second selection playable. Please send the whole
+  `/sdcard/ModData/com.beatgames.beatsaber/logs2/` folder from straight after
+  the crash: it has the native backtrace, which Vivify's own log cannot.
+
 ## 0.12.0 — the converter translates real PC shaders (tested on a real bundle)
 
 The 0.11.0 session log settled why "nothing has been fixed": the converter

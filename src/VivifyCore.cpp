@@ -138,6 +138,9 @@ void Runtime::Update() {
       RefreshCameraComponents(false);
       return;
     }
+    // Ten seconds into the song the converted bundle has loaded and drawn;
+    // whatever happens after that is not what the crash guard is for.
+    if (!_loadGuardPath.empty() && CurrentSongTime() > 10.0f) DisarmLoadGuard();
     UpdateMaterialAnimations();
     UpdateGlobalAnimations();
     UpdateAnimatorAnimations();
