@@ -138,12 +138,43 @@ def write(node, value, out):
         _align(out)
 
 
+def _params_node():
+    stage = ROOT.child("m_ParsedForm").child("m_SubShaders").children[0].child("data") \
+        .child("m_Passes").children[0].child("data").child("progVertex")
+    return stage.child("m_CommonParameters")
+
+
+def parameter_blob(constant_buffers=(), bindings=(), textures=()):
+    """One 2021.3.10+ parameter blob: a SerializedProgramParameters serialized
+    through Unity's own layout for it. constant_buffers: list of
+    (name_index, size, [(name_index, offset, dim, array_size)], [(name_index,
+    offset, rows, array_size)]). bindings: [(name_index, slot)]. textures:
+    [(name_index, t_register, sampler_register, dimension)]."""
+    node = _params_node()
+    value = default(node)
+    value["m_ConstantBuffers"] = [{
+        "m_NameIndex": name, "m_Size": size, "m_IsPartialCB": 0,
+        "m_VectorParams": [{"m_NameIndex": n, "m_Index": o, "m_ArraySize": a, "m_Type": 0, "m_Dim": d}
+                           for (n, o, d, a) in vectors],
+        "m_MatrixParams": [{"m_NameIndex": n, "m_Index": o, "m_ArraySize": a, "m_Type": 0, "m_RowCount": r}
+                           for (n, o, r, a) in matrices],
+        "m_StructParams": [],
+    } for (name, size, vectors, matrices) in constant_buffers]
+    value["m_ConstantBufferBindings"] = [{"m_NameIndex": n, "m_Index": slot, "m_ArraySize": 0}
+                                         for (n, slot) in bindings]
+    value["m_TextureParams"] = [{"m_NameIndex": n, "m_Index": t, "m_SamplerIndex": sm, "m_MultiSampled": 0,
+                                 "m_Dim": dim} for (n, t, sm, dim) in textures]
+    out = bytearray()
+    write(node, value, out)
+    return bytes(out)
+
+
 def player_sub_program(blob, gpu_type, keywords=()):
     return {"m_BlobIndex": blob, "m_KeywordIndices": list(keywords), "m_ShaderRequirements": 0,
             "m_GpuProgramType": gpu_type}
 
 
-def shader_body(name, platforms, store, passes, keyword_names=()):
+def shader_body(name, platforms, store, passes, keyword_names=(), pass_names=None):
     """One 2021.3.16 Shader body.
 
     store: (offsets, compressed_lengths, decompressed_lengths, blob) as
@@ -164,6 +195,8 @@ def shader_body(name, platforms, store, passes, keyword_names=()):
             entry[stage]["m_PlayerSubPrograms"] = programs.get("player", [])
             entry[stage]["m_ParameterBlobIndices"] = programs.get("params", [])
         entry["m_ProgramMask"] = 0
+        if pass_names:
+            entry["m_NameIndices"] = [{"first": k, "second": v} for k, v in pass_names.items()]
         pass_values.append(entry)
     subshader = default(ROOT.child("m_ParsedForm").child("m_SubShaders").children[0].child("data"))
     subshader["m_Passes"] = pass_values

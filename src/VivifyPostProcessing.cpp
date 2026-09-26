@@ -1201,6 +1201,24 @@ void Runtime::RefreshCameraComponents(bool allowCameraApplier) {
       ApplyCameraProperties(mainCamPtr, props->second);
       ApplyCameraGameObjectProperties(mainCamPtr, props->second);
     }
+    // Scene depth, the way PC Beat Saber always has it.
+    //
+    // Raymarchers, black holes, distortion and soft-intersection shaders all
+    // sample _CameraDepthTexture to know where the world is. PC Beat Saber's
+    // camera renders that texture every frame, so maps never ask for it; the
+    // Quest build's camera does not, and a shader sampling it gets Unity's
+    // empty stand-in -- every ray "hits" at once and the effect draws nothing,
+    // which is the Hold My Hand raymarchers and YOU's black hole. It costs a
+    // depth pre-pass, so it is only on while a Vivify map plays, and it can be
+    // turned off in settings.
+    if (GetSceneDepthTexture() && _currentBeatmapData != nullptr && !_isResetting) {
+      int const mode = mainCamPtr->get_depthTextureMode().value__;
+      if ((mode & UnityEngine::DepthTextureMode::Depth.value__) == 0) {
+        CaptureMainCameraOriginals(mainCamPtr, mainCamGO);
+        mainCamPtr->set_depthTextureMode(UnityEngine::DepthTextureMode(mode | UnityEngine::DepthTextureMode::Depth.value__));
+        PaperLogger.info("Vivify main camera: scene depth texture enabled for this map");
+      }
+    }
   }
   _mainCameraPropsDirty = false;
   RefreshCameraApplier(mainCamGO, allowCameraApplier);

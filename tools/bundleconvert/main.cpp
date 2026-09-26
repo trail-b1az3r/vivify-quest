@@ -37,10 +37,13 @@ int main(int argc, char** argv) {
       auto decoded = SerializedFileParse::DecodeShaderPrograms(bytes.data(), bytes.size(), shader);
       std::printf("decodeOk=%d\n", decoded.ok ? 1 : 0);
       for (auto const& program : decoded.programs) {
-        std::string code(program.code.begin(), program.code.end());
-        for (char& c : code) {
-          if (c == '\n') c = '|';
-          else if (c < 0x20 || c > 0x7e) c = '.';
+        // Newlines are written as the two characters \n; GLSL has no other
+        // use for a backslash, and '|' (the old stand-in) is its bitwise or.
+        std::string code;
+        for (uint8_t c : program.code) {
+          if (c == '\n') code += "\\n";
+          else if (c < 0x20 || c > 0x7e || c == '\\') code += '.';
+          else code += static_cast<char>(c);
         }
         std::printf("entry blob=%d raw=%d rawSize=%zu type=%d code=%s\n", program.blobIndex, program.raw ? 1 : 0,
                     program.rawBytes.size(), program.programType, code.c_str());
@@ -74,6 +77,7 @@ int main(int argc, char** argv) {
                 c.texturesStreamed, c.shadersLinked, c.variantsLinked, c.variantsRefused,
                 c.stereoVariantsRemapped);
     for (auto const& refusal : c.refusals) std::printf("refusal=%s\n", refusal.c_str());
+    for (auto const& refusal : c.variantRefusals) std::printf("variantRefusal=%s\n", refusal.c_str());
     return c.ok() ? 0 : 1;
   }
 

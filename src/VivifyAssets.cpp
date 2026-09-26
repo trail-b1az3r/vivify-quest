@@ -44,7 +44,12 @@ namespace {
 //      it could run in any converted shader (isSupported = false throughout),
 //      and its programs could not have drawn into a multiview framebuffer if it
 //      had
-constexpr int kBundleConversionVersion = 5;
+//   6  the same, translated with the reflection Unity keeps in m_ParsedForm.
+//      Built bundles have no RDEF in their DXBC, so version 5 translated no
+//      shader at all ("reads constant buffer b0, which its reflection data does
+//      not describe" for all 355 in one session) and its caches are no better
+//      than version 4's
+constexpr int kBundleConversionVersion = 6;
 
 std::string ConversionMarkerPath(std::string const& destPath) {
   return destPath + ".version";
@@ -127,6 +132,9 @@ BundleConversionOutcome RunBundleConversion(std::string const& source, std::stri
   // own when working out why a converted map still looks wrong.
   for (auto const& refusal : conversion.refusals) {
     PaperLogger.info("Vivify shader translation left a shader as it was -- {}", refusal);
+  }
+  for (auto const& refusal : conversion.variantRefusals) {
+    PaperLogger.info("Vivify shader translation left some variants on DirectX -- {}", refusal);
   }
   if (conversion.shadersRefused > static_cast<int>(conversion.refusals.size())) {
     PaperLogger.info("Vivify shader translation left {} further shader(s) as they were",

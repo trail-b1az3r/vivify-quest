@@ -190,6 +190,17 @@ int main(int argc, char** argv) {
                   ref.subShader, ref.pass, ref.stage, ref.player ? 1 : 0, ref.list, ref.index, ref.blobIndex,
                   ref.gpuProgramType, ref.hardwareTier, ref.hasParameterBlob ? 1 : 0, ref.parameterBlobIndex,
                   keywords.c_str());
+      std::string params;
+      for (auto const& cb : ref.parameters.constantBuffers) {
+        params += " cb:" + cb.name + "/" + std::to_string(cb.size) + "{";
+        for (auto const& v : cb.vectors) params += v.name + "@" + std::to_string(v.index) + "x" + std::to_string(v.dim) + (v.arraySize ? "[" + std::to_string(v.arraySize) + "]" : "") + ",";
+        for (auto const& m : cb.matrices) params += m.name + "@" + std::to_string(m.index) + "m" + std::to_string(m.dim) + (m.arraySize ? "[" + std::to_string(m.arraySize) + "]" : "") + ",";
+        params += "}";
+      }
+      for (auto const& b : ref.parameters.constantBufferBindings) params += " bind:" + b.name + "=" + std::to_string(b.index);
+      for (auto const& t : ref.parameters.textures) params += " tex:" + t.name + "=t" + std::to_string(t.index) + "/s" + std::to_string(t.samplerIndex) + "/d" + std::to_string(t.dim);
+      for (auto const& v : ref.parameters.vectors) params += " vec:" + v.name + "@" + std::to_string(v.index);
+      std::printf("refparams=%s\n", params.c_str());
     }
 
     auto decoded = SerializedFileParse::DecodeShaderPrograms(data.data(), data.size(), shader);

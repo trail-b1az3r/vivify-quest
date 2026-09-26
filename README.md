@@ -33,6 +33,85 @@ port from scratch — see Credits below.
   - Full settings-menu parity: every toggle the runtime already had a config
     key for is now actually exposed in the in-game settings UI.
 
+## 0.12.0 — the converter translates real PC shaders (tested on a real bundle)
+
+The 0.11.0 session log settled why "nothing has been fixed": the converter
+translated **no shader at all**. All 355 that one session reached were refused
+with the same sentence: *the shader reads constant buffer b0, which its
+reflection data does not describe*.
+
+The reason is visible in the converted 743Aether bundle you sent. Unity
+strips the reflection chunk (RDEF) out of every DXBC program when it builds a
+bundle. The bytecode still reads cb0 and samples t2, but nothing in it says
+that cb0 is `$Globals`, that byte 16 is `_Color`, or that t2 is `_MainTex`.
+The translator's fixtures always carried an RDEF, so the tests never saw the
+shape every real bundle has.
+
+Unity keeps the same facts in `m_ParsedForm`: each sub-program's constant
+buffers, their members' byte offsets, the buffers' bind slots, and the
+textures' registers, all named through the pass's `m_NameIndices`. 2021.3.10
+and later keep them in per-program parameter blobs instead. The converter now
+reads all three layouts (2019's, 2020.3–2021.3.9's `m_Parameters`, and the
+blobs) through the file's own type tree and gives them to the translator as
+its reflection. Texture shape and return type come from the bytecode's own
+`dcl_resource` declarations, which Unity does keep.
+
+Resolving those names needs Unity's built-in common-string table (`m_Index`
+and `m_Type` are only ever written through it), which the parser now carries.
+
+**Checked against your real 743Aether bundle** (Unity 2019.4.28), not only
+fixtures:
+- **Shaders:** 34 of its 35 shaders now convert, up from 0.
+- **Variants:** 336 keyword variants link.
+- **Compile check:** all 156 distinct linked programs compile and link under
+  glslang (GLSL ES 3.x with `GL_OVR_multiview2`).
+- **Refused variants:** every one left is a geometry-shader variant, which
+  cannot draw under multiview anyway.
+- **Stereo:** the stereo-instanced vertex programs come out doing exactly what
+  0.11 intended. The eye bit comes from `gl_ViewID_OVR` and indexes
+  `unity_StereoMatrixVP`.
+
+Also in this release:
+
+- **GPU-instanced variants** (`UnityInstancing_*` buffers, arrays of
+  structs) are translated as one std140 uniform block over the buffer's
+  bytes, indexed the way the bytecode indexes it.
+- **2019 bundles:** keyword variants are matched by the keyword names each
+  program carries, since 2019 has no keyword table. Double-wide
+  `UNITY_SINGLE_PASS_STEREO` variants are used like instanced-stereo ones,
+  with `unity_StereoEyeIndex` fed from `gl_ViewID_OVR`.
+- **Arrays of `float3`/`float`** in a constant buffer (for example
+  `unity_StereoWorldSpaceCameraPos`) are no longer refused. HLSL lays them out
+  on 16-byte strides, the same as a `vec4[]`.
+- **Shaders with subroutines** no longer put non-constant initialisers at
+  file scope, which GLSL ES rejects.
+- **Refusal reasons:** a shader or variant left on DirectX now says why in the
+  log, including which buffers the translator did know about.
+- **Scene depth for map shaders** (new setting, on by default). Raymarchers,
+  black holes and distortion effects sample `_CameraDepthTexture`. PC Beat
+  Saber always renders it, so maps never ask for it. On the Quest nothing
+  rendered it, so those effects read an empty texture and drew nothing. This
+  is the most likely reason Hold My Hand's raymarchers (an Android bundle, so
+  conversion was never involved) and YOU's black hole do not show. The camera
+  now renders scene depth while a Vivify map plays. It costs a depth pre-pass,
+  hence the toggle.
+- **Note colour aliases are now stand-in only.** 0.10 wrote the note colour
+  into `_BaseColor`/`_TintColor`/`_MainColor` as well as `_Color` for every
+  replacement. A map's own note shader (the glass and reflective notes in the
+  RSIH maps' Android bundles) can use those names for something else.
+  PC Vivify only ever writes `_Color`, so that is all a map's own shader gets
+  now. The aliases stay for stand-in shading, which is what they were for.
+- **Log spam:** `VRCenterAdjust.Update skipped` was written every frame:
+  21,790 of the 25,005 lines in your log. It is now written once.
+
+Conversion cache version 6: every PC-bundle map converted by 0.11 reconverts
+by itself.
+
+Still not addressed: geometry shaders (multiview forbids them); fragment-only
+keyword variants; screen-space textures in the multiview eye buffer
+(untested); and why the glass-note bodies in the RSIH Android bundles do not
+draw, if the colour change above is not it. The next log will say.
+
 ## 0.11.0 — converted shaders Unity will actually run, in both eyes
 
 Your 0.10.0 session log had every shader in a converted bundle (743Aether)

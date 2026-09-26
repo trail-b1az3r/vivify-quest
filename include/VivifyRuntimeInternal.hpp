@@ -306,6 +306,7 @@ private:
                                                 VisualReplacement& replacement, bool hideOriginal,
                                                 std::optional<UnityEngine::Color> fallbackColor = std::nullopt);
   void SyncReplacementTintColors();
+  bool UsesStandInShading(std::vector<UnityEngine::Renderer*> const& renderers) const;
   void RestoreAllVisualReplacements();
   void PurgeInvalidActiveSabers();
   void ForceGameObjectRenderersOnTop(UnityEngine::GameObject* gameObject);

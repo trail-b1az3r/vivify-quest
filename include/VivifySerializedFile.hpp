@@ -40,6 +40,7 @@
 // Unity-free by design, so it is host-testable.
 
 #include <cstdint>
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -159,6 +160,73 @@ enum : int32_t {
   kProgramStageRayTracing = 5,
 };
 
+// A program's bindings as Unity records them in m_ParsedForm.
+//
+// Unity strips the RDEF (reflection) chunk from the DXBC it puts in a built
+// bundle, so the bytecode alone does not say that cb0 is "$Globals", that
+// offset 16 in it is _Color, or that t2 is _MainTex. Every shader in a real PC
+// bundle therefore failed translation with "reads constant buffer b0, which
+// its reflection data does not describe". Unity keeps the same information in
+// the sub-program's parameters instead, naming everything by an index into
+// the pass's m_NameIndices; this is that, with the names resolved.
+struct ProgramParameter {
+  int32_t nameIndex = -1;
+  std::string name;
+  int32_t index = 0;          // byte offset inside a constant buffer, or the register bound
+  int32_t arraySize = 0;      // 0 = not an array
+  int32_t type = 0;           // ShaderParamType: 0 float, 1 int, 2 bool, 3 half, 4 short, 5 uint
+  int32_t dim = 0;            // vector components / matrix rows / TextureDimension
+  int32_t samplerIndex = -1;  // textures only
+};
+
+struct ProgramConstantBuffer {
+  int32_t nameIndex = -1;
+  std::string name;
+  int32_t size = 0;           // bytes
+  std::vector<ProgramParameter> vectors;
+  std::vector<ProgramParameter> matrices;
+  // Holds arrays of structs (m_StructParams): GPU instancing's per-instance
+  // data. Its members are not listed above.
+  bool hasStructParams = false;
+};
+
+struct ProgramParameters {
+  std::vector<ProgramParameter> vectors;   // outside any constant buffer
+  std::vector<ProgramParameter> matrices;
+  std::vector<ProgramParameter> textures;
+  std::vector<ProgramParameter> buffers;
+  std::vector<ProgramParameter> uavs;
+  std::vector<ProgramConstantBuffer> constantBuffers;
+  std::vector<ProgramParameter> constantBufferBindings;  // name -> cb slot (index)
+
+  bool empty() const {
+    return vectors.empty() && matrices.empty() && textures.empty() && buffers.empty() && uavs.empty() &&
+           constantBuffers.empty() && constantBufferBindings.empty();
+  }
+  // Adds what `other` has that this does not (by name): m_CommonParameters
+  // holds what every sub-program of a stage shares.
+  void Merge(ProgramParameters const& other);
+  // Fills every `name` from the pass's m_NameIndices.
+  void ResolveNames(std::map<int32_t, std::string> const& names);
+};
+
+// One field of the SerializedProgramParameters layout, copied out of the
+// file's type tree so a 2021.3.10+ parameter blob can be read after the file
+// itself has been let go.
+struct ParameterSchemaNode {
+  uint8_t level = 0;
+  uint8_t typeFlags = 0;
+  int32_t byteSize = 0;
+  uint32_t metaFlag = 0;
+  std::string name;
+};
+
+// Reads one 2021.3.10+ parameter blob (a store entry named by
+// m_ParameterBlobIndices) through the shader's own schema. False when the
+// schema is missing or the bytes do not fit it.
+bool ParseParameterBlob(std::vector<ParameterSchemaNode> const& schema, uint8_t const* data, size_t size,
+                        ProgramParameters& out);
+
 // One entry of a pass's program list in m_ParsedForm: which compiled program a
 // keyword variant uses, and what type Unity believes that program is.
 //
@@ -183,6 +251,11 @@ struct ParsedProgramRef {
   std::vector<uint16_t> keywordIndices;  // into ShaderObject::keywordNames
   bool hasParameterBlob = false;         // 2021.3.10+: m_ParameterBlobIndices entry
   uint32_t parameterBlobIndex = 0;
+  // The sub-program's own parameters (2019 through 2021.3.9 keep them in
+  // m_ParsedForm; 2021.3.10+ in the parameter blob), merged with its stage's
+  // m_CommonParameters, names resolved where m_ParsedForm had them.
+  ProgramParameters parameters;
+  bool stereoRemapped = false;  // converter scratch: already pointed at its stereo twin
 };
 
 struct ShaderObject {
@@ -231,6 +304,10 @@ struct ShaderObject {
   bool parsedFormRead = false;
   std::vector<ParsedProgramRef> programRefs;
   std::vector<std::string> keywordNames;
+  // Each pass's m_NameIndices, inverted: (subShader, pass) -> index -> name.
+  std::map<std::pair<int32_t, int32_t>, std::map<int32_t, std::string>> passNames;
+  // The SerializedProgramParameters layout, for ParseParameterBlob.
+  std::vector<ParameterSchemaNode> parameterSchema;
 };
 
 // One Texture2D object, as far as making its pixels reachable on device needs.

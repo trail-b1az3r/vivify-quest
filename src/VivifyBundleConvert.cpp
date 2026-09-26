@@ -1311,6 +1311,76 @@ std::string LinkStages(Vivify::Dxbc::GlslResult const& vertex, Vivify::Dxbc::Gls
   return linked;
 }
 
+// Turns a variant's m_ParsedForm parameters into the reflection its DXBC lost
+// when Unity stripped RDEF out of it.
+Vivify::Dxbc::ExternalReflection ReflectionFrom(SerializedFileParse::ProgramParameters const& parameters) {
+  Vivify::Dxbc::ExternalReflection reflection;
+  auto variableType = [](int32_t unityType) -> uint32_t {
+    switch (unityType) {
+      case 1: case 4: return 2;   // int, short
+      case 2: return 1;           // bool
+      case 5: return 19;          // uint
+      default: return 3;          // float, half
+    }
+  };
+  for (auto const& buffer : parameters.constantBuffers) {
+    Vivify::Dxbc::ConstantBufferInfo info;
+    info.name = buffer.name;
+    info.size = static_cast<uint32_t>(std::max(buffer.size, 0));
+    bool bound = false;
+    for (auto const& binding : parameters.constantBufferBindings) {
+      if (binding.name == buffer.name || (binding.name.empty() && binding.nameIndex == buffer.nameIndex)) {
+        info.bindPoint = static_cast<uint32_t>(binding.index);
+        bound = true;
+        break;
+      }
+    }
+    if (!bound || buffer.name.empty()) continue;
+    info.uniformBlock = buffer.hasStructParams;
+    for (auto const& vector : buffer.vectors) {
+      if (vector.name.empty()) continue;
+      Vivify::Dxbc::ConstantBufferVariable variable;
+      variable.name = vector.name;
+      variable.startOffset = static_cast<uint32_t>(vector.index);
+      variable.rows = 1;
+      variable.columns = static_cast<uint32_t>(std::clamp(vector.dim, 1, 4));
+      variable.elements = static_cast<uint32_t>(std::max(vector.arraySize, 0));
+      variable.variableClass = (variable.elements == 0 && variable.columns == 1) ? 0u : 1u;
+      variable.variableType = variableType(vector.type);
+      variable.size = variable.elements > 0 ? variable.elements * 16u : variable.columns * 4u;
+      info.variables.push_back(std::move(variable));
+    }
+    for (auto const& matrix : buffer.matrices) {
+      if (matrix.name.empty()) continue;
+      Vivify::Dxbc::ConstantBufferVariable variable;
+      variable.name = matrix.name;
+      variable.startOffset = static_cast<uint32_t>(matrix.index);
+      variable.rows = static_cast<uint32_t>(std::clamp(matrix.dim, 1, 4));
+      variable.columns = 4;
+      variable.elements = static_cast<uint32_t>(std::max(matrix.arraySize, 0));
+      variable.variableClass = 3;  // column-major matrix, as HLSL packs a cbuffer
+      variable.variableType = 3;
+      variable.size = 64u * std::max(variable.elements, 1u);
+      info.variables.push_back(std::move(variable));
+    }
+    reflection.constantBuffers.push_back(std::move(info));
+  }
+  auto addResources = [&reflection](std::vector<SerializedFileParse::ProgramParameter> const& list, uint32_t type) {
+    for (auto const& parameter : list) {
+      if (parameter.name.empty() || parameter.index < 0) continue;
+      Vivify::Dxbc::ResourceBinding binding;
+      binding.name = parameter.name;
+      binding.type = type;
+      binding.bindPoint = static_cast<uint32_t>(parameter.index);
+      reflection.resources.push_back(std::move(binding));
+    }
+  };
+  addResources(parameters.textures, 2);
+  addResources(parameters.buffers, 5);
+  addResources(parameters.uavs, 6);
+  return reflection;
+}
+
 struct LinkedShader {
   bool converted = false;
   std::string reason;
@@ -1319,6 +1389,7 @@ struct LinkedShader {
   int variantsRefused = 0;
   int stereoRemapped = 0;
   int programsTranslated = 0;
+  std::set<std::string> variantReasons;  // why individual variants stayed on DirectX
 };
 
 LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
@@ -1362,6 +1433,45 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
     return out;
   }
 
+  // 2021.3.10+ keeps each variant's parameters in a store entry of its own.
+  for (auto& ref : refs) {
+    if (!ref.hasParameterBlob) continue;
+    auto at = entryAt.find(ref.parameterBlobIndex);
+    if (at == entryAt.end()) continue;
+    auto const& entry = decoded.programs[at->second];
+    SerializedFileParse::ProgramParameters fromBlob;
+    if (!entry.raw || !SerializedFileParse::ParseParameterBlob(shader.parameterSchema, entry.rawBytes.data(),
+                                                              entry.rawBytes.size(), fromBlob)) {
+      continue;
+    }
+    fromBlob.Merge(ref.parameters);  // plus the stage's common parameters
+    if (auto names = shader.passNames.find({ref.subShader, ref.pass}); names != shader.passNames.end()) {
+      fromBlob.ResolveNames(names->second);
+    }
+    ref.parameters = std::move(fromBlob);
+  }
+
+  // Unity before 2021.2 has no keyword table in m_ParsedForm; each program
+  // carries its keywords by name instead. They are numbered here so variants
+  // can be matched the same way either way.
+  std::vector<std::string> keywordNames = shader.keywordNames;
+  if (keywordNames.empty()) {
+    std::map<std::string, uint16_t> ids;
+    for (auto& ref : refs) {
+      auto at = entryAt.find(ref.blobIndex);
+      if (at == entryAt.end()) continue;
+      auto const& program = decoded.programs[at->second];
+      ref.keywordIndices.clear();
+      for (auto const* list : {&program.keywords, &program.localKeywords}) {
+        for (auto const& keyword : *list) {
+          auto [it, added] = ids.emplace(keyword, static_cast<uint16_t>(keywordNames.size()));
+          if (added) keywordNames.push_back(keyword);
+          ref.keywordIndices.push_back(it->second);
+        }
+      }
+    }
+  }
+
   std::vector<SerializedFileParse::BytePatch> patches;
   auto patchU32 = [&patches](size_t at, uint32_t value) {
     patches.push_back({at, {static_cast<uint8_t>(value & 0xff), static_cast<uint8_t>((value >> 8) & 0xff),
@@ -1375,12 +1485,18 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
   // STEREO_INSTANCING_ON keyword is never enabled, so Unity picks the plain
   // variant; handing it the SPI code, translated for multiview, is what gives
   // each eye its own projection.
+  //
+  // Bundles built for Unity 2019 (PC Beat Saber before 1.29.4) use double-wide
+  // single-pass stereo instead, keyword UNITY_SINGLE_PASS_STEREO, whose eye
+  // comes from unity_StereoEyeIndex; the translator feeds that from the view.
+  for (char const* stereoKeyword : {"STEREO_INSTANCING_ON", "UNITY_SINGLE_PASS_STEREO"}) {
   int32_t spiKeyword = -1;
-  for (size_t i = 0; i < shader.keywordNames.size(); i++) {
-    if (shader.keywordNames[i] == "STEREO_INSTANCING_ON") spiKeyword = static_cast<int32_t>(i);
+  for (size_t i = 0; i < keywordNames.size(); i++) {
+    if (keywordNames[i] == stereoKeyword) spiKeyword = static_cast<int32_t>(i);
   }
   if (spiKeyword >= 0) {
     for (auto& plain : refs) {
+      if (plain.stereoRemapped) continue;
       if (std::find(plain.keywordIndices.begin(), plain.keywordIndices.end(), spiKeyword) !=
           plain.keywordIndices.end()) {
         continue;
@@ -1404,19 +1520,24 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
         if (without != mine) continue;
         if (plain.blobIndex != spi.blobIndex) {
           plain.blobIndex = spi.blobIndex;
+          // The twin's code reads the twin's parameters.
+          plain.parameters = spi.parameters;
           patchU32(plain.blobIndexFileOffset, spi.blobIndex);
           out.stereoRemapped++;
         }
+        plain.stereoRemapped = true;
         break;
       }
     }
+  }
   }
 
   // Translate each program the variants use, once.
   Vivify::Dxbc::GlslOptions options;
   options.multiview = true;
   std::map<uint32_t, Vivify::Dxbc::GlslResult> translated;
-  auto translate = [&](uint32_t blob) -> Vivify::Dxbc::GlslResult const* {
+  auto translate = [&](ParsedProgramRef const& ref) -> Vivify::Dxbc::GlslResult const* {
+    uint32_t const blob = ref.blobIndex;
     auto cached = translated.find(blob);
     if (cached == translated.end()) {
       Vivify::Dxbc::GlslResult result;
@@ -1428,9 +1549,16 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
         if (program.raw || !IsTranslatableDirectXProgram(program.programType)) {
           result.error = "entry " + std::to_string(blob) + " is not DirectX bytecode";
         } else {
+          auto const reflection = ReflectionFrom(ref.parameters);
+          Vivify::Dxbc::GlslOptions withReflection = options;
+          withReflection.reflection = &reflection;
           result = Vivify::Dxbc::TranslateDxbcToGlsl(program.code.empty() ? nullptr : program.code.data(),
-                                                     program.code.size(), options);
-          if (result.ok) out.programsTranslated++;
+                                                     program.code.size(), withReflection);
+          if (result.ok) {
+            out.programsTranslated++;
+          } else {
+            out.variantReasons.insert(result.error);
+          }
         }
       }
       cached = translated.emplace(blob, std::move(result)).first;
@@ -1486,9 +1614,9 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
 
     auto link = [&](ParsedProgramRef const& vertex, ParsedProgramRef const* fragment,
                     ParsedProgramRef const* geometry, std::string& source, int& version) {
-      auto const* vs = translate(vertex.blobIndex);
-      auto const* fs = fragment != nullptr ? translate(fragment->blobIndex) : nullptr;
-      auto const* gs = geometry != nullptr ? translate(geometry->blobIndex) : nullptr;
+      auto const* vs = translate(vertex);
+      auto const* fs = fragment != nullptr ? translate(*fragment) : nullptr;
+      auto const* gs = geometry != nullptr ? translate(*geometry) : nullptr;
       if (vs == nullptr || (fragment != nullptr && fs == nullptr) || (geometry != nullptr && gs == nullptr)) {
         return false;
       }
@@ -1653,6 +1781,11 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
         conversion.variantsLinked += linked.variantsLinked;
         conversion.variantsRefused += linked.variantsRefused;
         conversion.stereoVariantsRemapped += linked.stereoRemapped;
+        for (auto const& reason : linked.variantReasons) {
+          if (conversion.variantRefusals.size() >= kMaxLoggedRefusals * 2) break;
+          conversion.variantRefusals.push_back(
+              (shader.name.empty() ? ("shader@" + std::to_string(shader.pathID)) : shader.name) + ": " + reason);
+        }
         if (!linked.converted) {
           conversion.shadersRefused++;
           if (conversion.refusals.size() < kMaxLoggedRefusals) {

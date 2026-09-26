@@ -27,6 +27,8 @@ bool GetDisableVisualsInMultiplayer();
 bool GetDisableVRCenterAdjust();
 bool GetConvertPcBundlesOnDevice();
 bool GetStandInShading();
+// Whether the main camera renders _CameraDepthTexture while a Vivify map plays.
+bool GetSceneDepthTexture();
 bool GetTranslateShadersOnConversion();
 // Empty when the stand-in shader should be chosen automatically.
 std::string GetStandInShaderName();
