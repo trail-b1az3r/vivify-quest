@@ -1351,14 +1351,22 @@ Vivify::Dxbc::ExternalReflection ReflectionFrom(SerializedFileParse::ProgramPara
       info.uniformBlock = true;
       info.size = std::max<uint32_t>(info.size, 1088u);
     }
-    // A shader's own named cbuffers (anything but $Globals and Unity's
-    // built-in Unity* buffers) are uniform blocks in Unity's own GLES output,
-    // and have to be here too: they are where shaders put big arrays, and
-    // GLES gives every loose array element a whole vec4 uniform slot. AudioLink
-    // keeps its raw samples in LeftSampleBuffer/RightSampleBuffer -- eight
-    // float[1023] arrays, thousands of slots against Adreno's few hundred --
-    // so as loose uniforms its analysis shader could never link.
-    if (buffer.name != "$Globals" && buffer.name.rfind("Unity", 0) != 0) info.uniformBlock = true;
+    // A shader's own named cbuffer too big for loose uniforms becomes a
+    // uniform block, pinned to the binding its parameters give it -- the way
+    // Unity's own GLES output declares one (layout(binding = N), with a
+    // matching binding entry). GLES gives every loose array element a whole
+    // vec4 slot and Adreno has a few hundred, so AudioLink's LeftSampleBuffer/
+    // RightSampleBuffer (eight float[1023] arrays) cannot be loose.
+    //
+    // Small ones stay loose. 0.14.0 made every named cbuffer a block, without
+    // a binding, so every block in a program sat on binding 0 and read the
+    // same buffer: a non-instanced note shader's colour lives in a small
+    // cbuffer (UNITY_INSTANCING_BUFFER_START(Props) is CBUFFER_START(Props)
+    // without instancing), and converted maps' custom notes came out grey.
+    if (buffer.name != "$Globals" && buffer.name.rfind("Unity", 0) != 0 && buffer.size > 2048) {
+      info.uniformBlock = true;
+      info.explicitBinding = true;
+    }
     // Only the layout Unity's instancing macros produce: an array of
     // whole-register structs, compiled at the placeholder length, ending the
     // buffer.

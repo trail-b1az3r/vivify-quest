@@ -73,7 +73,11 @@ namespace {
 //      variants, which GL refuses in any single-view framebuffer: blits,
 //      render textures and secondary cameras on converted maps flickered or
 //      showed garbage. The marker records which way a bundle was converted
-constexpr int kBundleConversionVersion = 10;
+//  11  small named cbuffers back to loose uniforms, large ones as uniform
+//      blocks with an explicit binding. Version 10 made every named cbuffer a
+//      block with no binding, all on binding 0, and custom notes lost their
+//      colour
+constexpr int kBundleConversionVersion = 11;
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the
@@ -996,7 +1000,27 @@ void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string c
   std::thread([this, generation, levelPath, androidBundlePath]() {
     auto const scan = BundleConvert::ScanShaders(androidBundlePath);
     std::vector<std::string> const empty = scan.emptyShaderNames;
-    std::string const pcBundle = empty.empty() ? std::string() : ResolvePcBundlePath(levelPath);
+    // The PC build: the song folder's own windows bundle, never the Android
+    // bundle being loaded (ResolvePcBundlePath is deliberately permissive and
+    // matched bundleAndroid2021.vivify itself, so 0.14.2 "converted" the Quest
+    // bundle and never went on to download the PC one).
+    std::string pcBundle;
+    if (!empty.empty()) {
+      for (char const* name : {"bundleWindows2021.vivify", "bundleWindows2019.vivify"}) {
+        std::string const candidate = JoinPath(levelPath, name);
+        std::error_code ec;
+        if (std::filesystem::exists(candidate, ec) && !ec) {
+          pcBundle = candidate;
+          break;
+        }
+      }
+      if (pcBundle.empty()) {
+        std::string const found = ResolvePcBundlePath(levelPath);
+        if (!found.empty() && std::filesystem::path(found) != std::filesystem::path(androidBundlePath)) {
+          pcBundle = found;
+        }
+      }
+    }
     BSML::MainThreadScheduler::Schedule([this, generation, levelPath, androidBundlePath, empty, pcBundle]() {
       if (generation != _graftGeneration || levelPath != _selectedLevelPath) return;
       if (empty.empty()) {
