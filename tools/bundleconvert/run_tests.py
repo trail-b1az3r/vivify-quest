@@ -873,8 +873,24 @@ inline_body, _ = pc_shader_2021(
     [(_ps(spi=False), []), (_ps(spi=True), [0])],
     vertex_params=[inline_mono, inline_spi], fragment_params_blobs=[inline_empty, inline_empty])
 
+def expect_stereo_globals_block(proc, fields, refusals, dst):
+    if fields.get("linked") != "1" or fields.get("variantsRefused") != "0":
+        return f"linked={fields.get('linked')} variantsRefused={fields.get('variantsRefused')} {refusals}"
+    _, refs, entries = inspect_converted(dst)
+    vertex = {r["keywords"]: r for r in refs if r["stage"] == "0"}
+    code = entries[int(vertex[""]["blob"])]["code"]
+    # Multiview delivers the per-eye matrices in this block; loose uniforms
+    # of the same names are not kept current, and read stale matrices that
+    # put everything in the wrong place.
+    if "layout(std140) uniform UnityStereoGlobals { vec4 vivify_cb_UnityStereoGlobals[68]; };" not in code:
+        return f"UnityStereoGlobals is not the uniform block multiview fills: {code}"
+    if "uniform vec4 hlslcc_mtx4x4unity_StereoMatrixVP" in code:
+        return "the stereo matrices are still read as loose uniforms"
+    return None
+
+
 pc_shader_case("a parameter blob in Unity's inline layout is read for its names",
-               inline_body, expect_stripped)
+               inline_body, expect_stereo_globals_block)
 
 # GPU instancing: Unity compiles a per-instance array at a placeholder length
 # of 2, and on DirectX a read past it still reaches the real buffer. Declared
