@@ -11,6 +11,23 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.7] - 2026-09-27
+
+### Fixed
+- **Hold My Hand's kaleidoscope still not drawn.** Two causes, both seen in
+  the 0.14.6 log:
+  - **The load-time swap never happened.** It only replaced shaders that
+    Unity reported as unsupported. A shader shipped with no programs reports
+    itself as supported and draws nothing, so no material was ever changed.
+    The swap now goes by the shader's name, and the log names each material
+    it changes.
+  - **The merge was refused.** The song folder only had the Unity 2019 PC
+    bundle, while the Quest bundle is Unity 2021, and a shader can only be
+    merged between bundles of the same version. The mod now picks the PC
+    build that matches the Quest bundle's Unity version, and downloads it by
+    its `Info.dat` checksum when the song folder doesn't have it. A PC bundle
+    of the other version still stands in at load if that download fails.
+
 ## [0.14.6] - 2026-09-27
 
 ### Added
