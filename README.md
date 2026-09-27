@@ -33,6 +33,41 @@ port from scratch — see Credits below.
   - Full settings-menu parity: every toggle the runtime already had a config
     key for is now actually exposed in the in-game settings UI.
 
+## 0.13.3 — converted maps drawn in the wrong place: the stereo matrices
+
+Your tests settled it. With **Translate Shaders** on, everything a translated
+shader draws was in the wrong place: Burning Sands' scenery and its custom
+notes. It was coloured correctly, and chords and chains were only the most
+obvious part. With translation off, everything was in the right place, just
+grey. With only the custom note visuals off, the game's own notes were right
+and the scenery was still wrong. So it was never chords or GPU instancing
+(0.13.1 and 0.13.2); it was how translated shaders place anything at all.
+
+A translated shader works out where something appears from two things: the
+object's own transform, and the camera matrix for the eye being drawn
+(`unity_StereoMatrixVP`). On the Quest both eyes are drawn in one multiview
+pass, and Unity hands the per-eye matrices over in a uniform block named
+`UnityStereoGlobals`, which is how its own multiview shaders read them. The
+converter declared them as loose uniforms instead. Unity does not keep loose
+uniforms of those names current, so translated shaders read another camera's
+matrices, or an earlier frame's. Everything landed somewhere plausible but
+wrong.
+
+Translated shaders now read `UnityStereoGlobals` as that uniform block, over
+Unity's full layout (1088 bytes, the same in 2019 and 2021).
+
+Checked on 743Aether's real bundle:
+- **Compile check:** all 156 linked programs compile and link under glslang.
+- **No loose matrices left:** 336 programs read the matrices from the block,
+  and none reads them as loose uniforms.
+- **Right offsets:** reads land at Unity's offsets, for example
+  `unity_StereoMatrixVP[eye]` at row 24 + 4 × eye.
+
+Conversion cache version 9: every converted map reconverts by itself.
+
+**Not changed:** on 743Aether with translation off, everything is plain grey.
+That is expected: it is the stand-in shading.
+
 ## 0.13.2 — chords and chains, second attempt: no instancing on converted maps
 
 0.13.1 did not fix it: chords and chains on Burning Sands were still drawn in

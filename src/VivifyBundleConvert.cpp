@@ -1337,6 +1337,20 @@ Vivify::Dxbc::ExternalReflection ReflectionFrom(SerializedFileParse::ProgramPara
     }
     if (!bound || buffer.name.empty()) continue;
     info.uniformBlock = buffer.hasStructParams;
+    // The per-eye camera matrices. Under the Quest's multiview rendering
+    // Unity delivers them in a uniform block of this name -- that is how its
+    // own multiview shaders read them -- and nothing keeps loose uniforms of
+    // the same names current. Read as loose uniforms (as in every conversion
+    // before this), they held some other camera's or an earlier frame's
+    // matrices, and everything a translated shader drew landed in a
+    // plausible but wrong place: Burning Sands' scenery and custom notes,
+    // chords and chains included. The block is declared over Unity's full
+    // layout (the same in 2019 and 2021): eight float4x4[2] then two
+    // float4[2], 1088 bytes.
+    if (buffer.name == "UnityStereoGlobals") {
+      info.uniformBlock = true;
+      info.size = std::max<uint32_t>(info.size, 1088u);
+    }
     // Only the layout Unity's instancing macros produce: an array of
     // whole-register structs, compiled at the placeholder length, ending the
     // buffer.

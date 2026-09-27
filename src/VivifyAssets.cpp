@@ -59,7 +59,11 @@ namespace {
 //      placeholder of 2. Version 7 gave every instance after the second in a
 //      batch garbage transforms: chords and chains were drawn in the wrong
 //      places and pointing the wrong way
-constexpr int kBundleConversionVersion = 8;
+//   9  the same, reading the per-eye camera matrices from the UnityStereoGlobals
+//      uniform block that multiview fills. Version 8 read them as loose
+//      uniforms nothing keeps current, and everything a translated shader drew
+//      (scenery, custom notes) landed in the wrong place
+constexpr int kBundleConversionVersion = 9;
 
 std::string ConversionMarkerPath(std::string const& destPath) {
   return destPath + ".version";
