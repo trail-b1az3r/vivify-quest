@@ -1064,28 +1064,34 @@ void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string c
   std::thread([this, generation, levelPath, androidBundlePath]() {
     auto const scan = BundleConvert::ScanShaders(androidBundlePath);
     std::vector<std::string> const empty = scan.emptyShaderNames;
-    // The PC build: the song folder's own windows bundle, never the Android
-    // bundle being loaded (ResolvePcBundlePath is deliberately permissive and
-    // matched bundleAndroid2021.vivify itself, so 0.14.2 "converted" the Quest
-    // bundle and never went on to download the PC one).
-    std::string pcBundle;
+    // The PC build to take the shaders from. The one built by the same Unity
+    // version as the Quest bundle comes first: only its shader bodies can be
+    // merged into the Quest bundle's file. Hold My Hand's song folder had only
+    // the 2019 build beside a 2021 Quest bundle, so 0.14.6 could not merge and
+    // never fetched the 2021 one. Never the Android bundle being loaded
+    // (ResolvePcBundlePath is deliberately permissive and matched
+    // bundleAndroid2021.vivify itself in 0.14.2).
+    bool const quest2019 = scan.unityVersion.rfind("2019", 0) == 0;
+    std::string const wantBuild = quest2019 ? "windows2019" : "windows2021";
+    std::string const otherBuild = quest2019 ? "windows2021" : "windows2019";
+    std::string const preferred =
+        JoinPath(levelPath, quest2019 ? "bundleWindows2019.vivify" : "bundleWindows2021.vivify");
+    std::string const other = JoinPath(levelPath, quest2019 ? "bundleWindows2021.vivify" : "bundleWindows2019.vivify");
+    std::string preferredFound;
+    std::string fallback;
     if (!empty.empty()) {
-      for (char const* name : {"bundleWindows2021.vivify", "bundleWindows2019.vivify"}) {
-        std::string const candidate = JoinPath(levelPath, name);
-        std::error_code ec;
-        if (std::filesystem::exists(candidate, ec) && !ec) {
-          pcBundle = candidate;
-          break;
-        }
-      }
-      if (pcBundle.empty()) {
+      if (FileExists(preferred)) preferredFound = preferred;
+      if (FileExists(other)) fallback = other;
+      if (fallback.empty()) {
         std::string const found = ResolvePcBundlePath(levelPath);
-        if (!found.empty() && std::filesystem::path(found) != std::filesystem::path(androidBundlePath)) {
-          pcBundle = found;
+        if (!found.empty() && std::filesystem::path(found) != std::filesystem::path(androidBundlePath) &&
+            std::filesystem::path(found) != std::filesystem::path(preferred)) {
+          fallback = found;
         }
       }
     }
-    BSML::MainThreadScheduler::Schedule([this, generation, levelPath, androidBundlePath, empty, pcBundle]() {
+    BSML::MainThreadScheduler::Schedule([this, generation, levelPath, androidBundlePath, empty, preferred,
+                                         preferredFound, fallback, wantBuild, otherBuild, other]() {
       if (generation != _graftGeneration || levelPath != _selectedLevelPath) return;
       if (empty.empty()) {
         FinishAndroidBundleLoad(levelPath, androidBundlePath);
@@ -1095,15 +1101,21 @@ void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string c
       for (auto const& name : empty) names += (names.empty() ? "'" : ", '") + name + "'";
       PaperLogger.warn("Vivify: this map's Quest bundle ships {} shader(s) with no programs ({}); looking for "
                        "the map's PC build to stand in for them", empty.size(), names);
-      if (!pcBundle.empty()) {
-        ConvertPcForGraft(levelPath, androidBundlePath, pcBundle, empty);
+      if (!preferredFound.empty()) {
+        ConvertPcForGraft(levelPath, androidBundlePath, preferredFound, empty);
         return;
       }
-      uint32_t checksum = ReadBundleChecksumFromInfoDat(levelPath, "windows2021");
-      std::string destName = "bundleWindows2021.vivify";
+      // Download the matching build; a PC bundle of the other Unity version
+      // can still stand in at load if that fails.
+      uint32_t checksum = ReadBundleChecksumFromInfoDat(levelPath, wantBuild);
+      std::string dest = preferred;
       if (checksum == 0) {
-        checksum = ReadBundleChecksumFromInfoDat(levelPath, "windows2019");
-        destName = "bundleWindows2019.vivify";
+        if (!fallback.empty()) {
+          ConvertPcForGraft(levelPath, androidBundlePath, fallback, empty);
+          return;
+        }
+        checksum = ReadBundleChecksumFromInfoDat(levelPath, otherBuild);
+        dest = other;
       }
       if (checksum == 0) {
         PaperLogger.warn("Vivify: no PC bundle in the song folder and no windows checksum in Info.dat; those "
@@ -1111,22 +1123,27 @@ void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string c
         FinishAndroidBundleLoad(levelPath, androidBundlePath);
         return;
       }
+      PaperLogger.info("Vivify: downloading the map's {} PC bundle for its shaders", dest == preferred ? wantBuild
+                                                                                                        : otherBuild);
       SongCore::API::PlayButton::DisablePlayButton("Vivify", "Downloading PC shaders...");
-      std::string const dest = JoinPath(levelPath, destName);
       // A download that never calls back must not hold the play button:
       // CheckDownloadTimeout loads the Quest bundle as it is when this passes.
       _graftDeadline = UnityEngine::Time::get_realtimeSinceStartup() + 180.0f;  // PC bundles run to tens of MB
       _graftPendingLevel = levelPath;
       _graftPendingAndroid = androidBundlePath;
-      DownloadBundleTo(checksum, dest, [this, generation, levelPath, androidBundlePath, dest, empty](bool ok) {
+      DownloadBundleTo(checksum, dest, [this, generation, levelPath, androidBundlePath, dest, empty,
+                                        fallback](bool ok) {
         if (generation != _graftGeneration || levelPath != _selectedLevelPath) return;
         _graftDeadline = -1.0f;
-        if (!ok) {
+        if (ok) {
+          ConvertPcForGraft(levelPath, androidBundlePath, dest, empty);
+        } else if (!fallback.empty() && fallback != dest) {
+          PaperLogger.warn("Vivify: the map's PC bundle could not be downloaded; using '{}' instead", fallback);
+          ConvertPcForGraft(levelPath, androidBundlePath, fallback, empty);
+        } else {
           PaperLogger.warn("Vivify: the map's PC bundle could not be downloaded; the empty shaders stay undrawn");
           FinishAndroidBundleLoad(levelPath, androidBundlePath);
-          return;
         }
-        ConvertPcForGraft(levelPath, androidBundlePath, dest, empty);
       });
     });
   }).detach();
@@ -2115,9 +2132,11 @@ void Runtime::RepairMaterialShader(UnityEngine::Material* material, std::string_
   // in for it (BeginAndroidBundleLoad).
   if (!_graftedShaders.empty()) {
     auto* current = material->get_shader().unsafePtr();
-    if (IsAlive(current) && !current->get_isSupported()) {
+    // By name, not by isSupported: a shader shipped with no programs reports
+    // itself supported and draws nothing, so 0.14.2-0.14.6 never swapped it.
+    if (IsAlive(current)) {
       auto graft = _graftedShaders.find(ShaderNameForLog(current));
-      if (graft != _graftedShaders.end() && IsAlive(graft->second)) {
+      if (graft != _graftedShaders.end() && IsAlive(graft->second) && graft->second != current) {
         material->set_shader(graft->second);
         _graftApplied++;
         PaperLogger.info("Vivify: material '{}' now uses the PC build of '{}'", ToStdString(material->get_name()),
