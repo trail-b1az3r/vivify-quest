@@ -33,6 +33,166 @@ port from scratch — see Credits below.
   - Full settings-menu parity: every toggle the runtime already had a config
     key for is now actually exposed in the in-game settings UI.
 
+## 0.14.2 — Hold My Hand's raymarcher: the PC build of shaders the Quest bundle shipped empty
+
+With Hold My Hand's Quest bundle in hand, the raymarching effect turned out to
+be `Custom/PoofShaders/Audio_Kaleidoscope/World_AudioLink_2.0`, a raymarched
+AudioLink kaleidoscope (50 steps). Its program store in the Quest bundle is
+empty: four bytes, a count of zero, for both GLES and Vulkan. When the map was
+built, Unity failed to compile it for Android and shipped it with nothing in
+it. It is the only one of the bundle's 26 shaders like that. No runtime could
+draw it from that bundle, which is why no version of this mod ever changed
+anything about it.
+
+The map's PC build has the same shader compiled for DirectX, which this mod
+translates. So now, before a level's Quest bundle loads:
+
+1. Its shaders are scanned for any shipped empty. The scan finds exactly the
+   kaleidoscope in Hold My Hand, and nothing in RSIH or 743Aether.
+2. For each one found, the map's PC bundle is used: the song folder's, or else
+   one downloaded by the `windows2021`/`windows2019` checksum in `Info.dat`
+   from the same repository the Quest bundles come from. It is converted as a
+   PC-only map's would be, and cached.
+3. The converted bundle is loaded, the PC builds of exactly those shaders are
+   kept, and the bundle is unloaded without destroying them. Only then does
+   the Quest bundle load: the two share internal file names, and Unity refuses
+   to have both loaded at once.
+4. Materials whose shader is one of the empty ones are pointed at its PC
+   build. The log names each one.
+
+The play button says "Checking shaders…", "Downloading PC shaders…" or
+"Converting PC shaders…" while this runs. The new setting **PC Shaders For
+Broken Quest Shaders** (on by default) turns the whole thing off. It also
+needs **Convert PC Bundles On Device** and **Translate Shaders On
+Conversion**, both on by default.
+
+The kaleidoscope reads AudioLink, which 0.14.0 supplies.
+
+Shader names now come from `m_ParsedForm.m_Name`. The Shader object's own
+name is empty in bundles built by recent Unity, so until now every shader in
+the converter's logs and scans was nameless.
+
+**Not tested on a headset.** I could not check that the kaleidoscope itself
+translates: I do not have Hold My Hand's PC bundle, and the bundle repository
+is not reachable from here. If it does not, the log says "did not translate
+for this GPU either" and the shader stays undrawn, the same as before.
+
+## 0.14.1 — note bodies missing on RSIH: map realtime shadows are now opt-in
+
+RSIH's notes are completely plain: no custom note model and no note custom
+data. So Vivify never touches them, and "arrows but no body" was not a note
+replacement problem. What the map does do, at time 0, is `SetRenderingSettings`
+with realtime shadows on (`shadows: 1`, two cascades, 150 m, a prefab light as
+the sun), and ambient intensity 0. Hold My Hand sends exactly the same
+settings.
+
+With realtime shadows on, every shader that can receive shadows switches to
+its shadowed variant, which reads the screen-space shadow map. On the Quest's
+multiview rendering that map comes out fully shadowed. The game's note body
+then draws black against a dark scene, while the unlit arrows stay visible.
+It is also a heavy extra rendering pass on a mobile GPU.
+
+The shadow fields of `SetRenderingSettings` (`shadows`, `shadowCascades`,
+`shadowDistance`, `shadowResolution`, `shadowProjection`) are now ignored
+unless the new **Map Realtime Shadows** setting is on. It is off by default.
+Everything else the event sets still applies. The log says once per session
+when it has ignored them.
+
+This is the likeliest cause, but it is not confirmed: I have not seen RSIH's
+bundle. If note bodies are still missing with the setting off, send the
+headset's `bundleAndroid2021.vivify` from the RSIH song folder.
+
+## 0.14.0 — the flicker on converted maps, and AudioLink
+
+### Flicker and garbage on converted maps
+
+Every converted shader was built for two-eye (multiview) rendering only.
+That is right for the eye cameras, but GL refuses to run a multiview program
+into an ordinary single texture, and a lot of rendering is exactly that:
+- Vivify's blits and post-processing
+- render textures and secondary cameras
+- CustomRenderTextures
+
+Those draws silently did nothing, or left stale junk behind: the "occasional
+shader corruption", on converted maps only.
+
+Unity's own Quest shaders avoid this with two programs per variant: a
+single-view one in the plain variant, and a multiview one under the keyword
+`STEREO_MULTIVIEW_ON`, which Unity turns on only while rendering both eyes.
+Converted shaders are now built the same way:
+- **Plain variants** get a single-view translation of the PC plain program.
+- **Stereo variants** get the multiview translation of the PC single-pass
+  stereo program, and their keyword is renamed to `STEREO_MULTIVIEW_ON`:
+  - **2021 bundles:** the entry in the shader's keyword table is rewritten in
+    place. `STEREO_INSTANCING_ON` and `STEREO_MULTIVIEW_ON` take the same 24
+    bytes once aligned.
+  - **2019 bundles:** the keyword is rewritten inside each program.
+
+This depends on the game really using `STEREO_MULTIVIEW_ON`. If it didn't, the
+eye cameras would get single-view programs and draw nothing. So the mod
+checks: at level selection it lists the keywords Unity has registered, and
+splits variants only if `STEREO_MULTIVIEW_ON` is among them. Otherwise it
+keeps converting the old way. The log says which way it went:
+
+    Vivify: the game uses STEREO_MULTIVIEW_ON (...); converted shaders get separate single-view and multiview programs
+
+The cache marker records which way each bundle was converted.
+
+**Checked on 743Aether's real bundle:**
+- **Compile check:** all 313 distinct programs compile and link under glslang.
+- **Single-view programs:** 339, in the plain variants.
+- **Multiview programs:** 336, under `STEREO_MULTIVIEW_ON`.
+- **Left on DirectX:** the 51 geometry-shader variants, as before.
+
+**Also:** a shader's own named constant buffers (anything but `$Globals` and
+Unity's built-in `Unity*` buffers) are now uniform blocks, as in Unity's own
+GLES output. GLES gives every loose array element a whole uniform slot, and
+Adreno only has a few hundred of them.
+
+### AudioLink
+
+Vivify now includes AudioLink for Beat Saber 1.40.8 on Quest, with a new
+**AudioLink** setting that is on by default. It is a port of Aeroluna's
+[BSAudioLink](https://github.com/Aeroluna/BSAudioLink), following RedBrumbler's
+[BSAudioLink-Quest](https://github.com/RedBrumbler/BSAudioLink-Quest) (last
+built for 1.28) where the Quest differs:
+- **Shader:** AudioLink 3.1.2's analysis shader, the same one PC Beat Saber
+  1.40 uses, run through this mod's converter at build time. It translates
+  completely: 24 variants, all compiling.
+- **Update mode:** the CustomRenderTexture is set to update in realtime inside
+  the bundle, because this game build strips the scripting API the PC mod
+  uses to switch it on.
+- **Audio input:** raw audio from the song in a level, or from the song
+  preview in the menu, each frame.
+- **Timing and media state:** time, FPS, and media state (volume, position,
+  playing, looping), as AudioLink.cs sends them.
+- **Theme colours:** the level's environment colours, and its boost colours
+  where it has them, as BSAudioLink does.
+- **`_AudioTexture`:** published globally, so any AudioLink shader in a map
+  bundle (Quest-built or converted) can read it.
+- **Capability:** the mod registers the SongCore `AudioLink` capability, so
+  maps that require AudioLink can be played.
+
+The bundle is built by `tools/audiolink/build_bundle.py` (see
+`assets/audiolink/README.md` for provenance and licences) and linked into
+`libVivify.so`.
+
+**Not ported:** the VRChat/Udon parts (player names, instance-owner sync,
+the GPU readback into a script-side array). Menu theme colours are
+AudioLink's defaults until a level has been played.
+
+### Still waiting on files
+
+**Hold My Hand's raymarchers and the RSIH notes without bodies:** both are
+Quest-built bundles, and I need the bundles themselves. The zip you sent
+contained the map folder without `bundleAndroid2021.vivify` (the mod downloads
+that file on first play, into the song's folder on the headset). Please send:
+
+- `/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/512ae (Hold My Hand - Nugget & Undeceiver)/bundleAndroid2021.vivify`
+- `/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/512c7 (RSIH - Nugget & Serephor)/bundleAndroid2021.vivify`
+
+Conversion cache version 10: converted maps reconvert by themselves.
+
 ## 0.13.3 — converted maps drawn in the wrong place: the stereo matrices
 
 Your tests settled it. With **Translate Shaders** on, everything a translated

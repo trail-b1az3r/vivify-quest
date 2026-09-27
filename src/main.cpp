@@ -37,6 +37,9 @@ constexpr std::string_view kStandInShadingConfigKey = "standInShading";
 constexpr std::string_view kSceneDepthConfigKey = "sceneDepthTexture";
 constexpr std::string_view kSubmitScoresConfigKey = "submitScoresOnVivifyMaps";
 constexpr std::string_view kTranslateShadersConfigKey = "translateShadersOnConversion";
+constexpr std::string_view kAudioLinkConfigKey = "audioLink";
+constexpr std::string_view kMapRealtimeShadowsConfigKey = "mapRealtimeShadows";
+constexpr std::string_view kPcShadersForEmptyConfigKey = "pcShadersForEmptyQuestShaders";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
 bool gMultipassRenderingEnabled = true;
 bool gVivifyDebugLogging = false;
@@ -78,6 +81,9 @@ bool gSubmitScores = true;
 // bundle turns out worse than an unshaded one -- no new build required, just
 // reconvert.
 bool gTranslateShaders = true;
+bool gAudioLink = true;
+bool gMapRealtimeShadows = false;
+bool gPcShadersForEmpty = true;
 // Which shader to use as the stand-in, by name, overriding the automatic pick.
 //
 // Empty means "choose automatically". This exists because the right answer
@@ -323,6 +329,21 @@ void RegisterModSettings() {
             [](bool value) { SetBoolConfigValue(kTranslateShadersConfigKey, value, gTranslateShaders); });
 
         BSML::Lite::CreateToggle(
+            container->get_transform(), u"PC Shaders For Broken Quest Shaders",
+            GetUsePcShadersForEmptyShaders(),
+            [](bool value) { SetBoolConfigValue(kPcShadersForEmptyConfigKey, value, gPcShadersForEmpty); });
+
+        BSML::Lite::CreateToggle(
+            container->get_transform(), u"Map Realtime Shadows",
+            GetMapRealtimeShadows(),
+            [](bool value) { SetBoolConfigValue(kMapRealtimeShadowsConfigKey, value, gMapRealtimeShadows); });
+
+        BSML::Lite::CreateToggle(
+            container->get_transform(), u"AudioLink",
+            GetAudioLinkEnabled(),
+            [](bool value) { SetBoolConfigValue(kAudioLinkConfigKey, value, gAudioLink); });
+
+        BSML::Lite::CreateToggle(
             container->get_transform(), u"Submit Scores On Vivify Maps",
             GetSubmitScoresOnVivifyMaps(),
             [](bool value) { SetBoolConfigValue(kSubmitScoresConfigKey, value, gSubmitScores); });
@@ -458,6 +479,18 @@ bool GetTranslateShadersOnConversion() {
   return gTranslateShaders;
 }
 
+bool GetAudioLinkEnabled() {
+  return gAudioLink;
+}
+
+bool GetMapRealtimeShadows() {
+  return gMapRealtimeShadows;
+}
+
+bool GetUsePcShadersForEmptyShaders() {
+  return gPcShadersForEmpty;
+}
+
 std::string GetStandInShaderName() {
   return gStandInShaderName;
 }
@@ -482,6 +515,9 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kSceneDepthConfigKey, true, gSceneDepth);
   needsWrite |= EnsureBoolConfigValue(kSubmitScoresConfigKey, true, gSubmitScores);
   needsWrite |= EnsureBoolConfigValue(kTranslateShadersConfigKey, true, gTranslateShaders);
+  needsWrite |= EnsureBoolConfigValue(kAudioLinkConfigKey, true, gAudioLink);
+  needsWrite |= EnsureBoolConfigValue(kMapRealtimeShadowsConfigKey, false, gMapRealtimeShadows);
+  needsWrite |= EnsureBoolConfigValue(kPcShadersForEmptyConfigKey, true, gPcShadersForEmpty);
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),
                                         gStandInShaderName);
   if (needsWrite) {

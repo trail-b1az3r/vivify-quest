@@ -731,6 +731,21 @@ void Runtime::HandleSetRenderingSettings(CustomJSONData::CustomEventData* custom
     if (categoryVal == nullptr || !categoryVal->IsObject()) continue;
     for (auto it = categoryVal->MemberBegin(); it != categoryVal->MemberEnd(); ++it) {
       std::string key = it->name.GetString();
+      // Realtime shadows are opt-in on Quest. A map that turns them on (RSIH,
+      // Hold My Hand) puts every shadow-receiving shader on its shadowed
+      // variant, which samples the screen-space shadow map -- and under the
+      // Quest's multiview rendering that comes out fully shadowed, so the
+      // game's note bodies drew black against a dark scene: arrows with no
+      // body. They are also a heavy extra pass on a mobile GPU.
+      if (categoryKey == "qualitySettings"sv && !GetMapRealtimeShadows() && key.rfind("shadow", 0) == 0) {
+        static bool reported = false;
+        if (!reported) {
+          reported = true;
+          PaperLogger.info("Vivify SetRenderingSettings: ignoring the map's realtime shadow settings ('{}' and "
+                           "the rest); turn on 'Map Realtime Shadows' to let maps enable them", key);
+        }
+        continue;
+      }
       ParseAndApplyRenderSetting(key, *categoryVal, it->value, settings, noDuration);
     }
   }

@@ -67,7 +67,9 @@ int main(int argc, char** argv) {
   // GLSL ES and rebuild the archive around the shaders that changed size.
   std::string const first = argv[1];
   bool const repack = first == "--repack";
-  bool const shaders = first == "--shaders";
+  // --shaders-split is --shaders with ShaderConversionOptions::separateStereoVariants.
+  bool const split = first == "--shaders-split";
+  bool const shaders = first == "--shaders" || split;
   bool const flagged = repack || shaders;
   if (flagged && argc < 4) {
     std::fprintf(stderr, "usage: conv %s <src> <dst>\n", first.c_str());
@@ -77,15 +79,17 @@ int main(int argc, char** argv) {
   char const* const dst = flagged ? argv[3] : argv[2];
 
   if (shaders) {
-    ShaderConversion c = ConvertShadersToGles(src, dst);
+    ShaderConversionOptions options;
+    options.separateStereoVariants = split;
+    ShaderConversion c = ConvertShadersToGles(src, dst, options);
     std::printf("status=%s\nmessage=%s\nseen=%d translated=%d leftAlone=%d refused=%d "
                 "programs=%d outBytes=%llu\ntexSeen=%d texReadable=%d texStreamed=%d\n"
-                "linked=%d variantsLinked=%d variantsRefused=%d stereoRemapped=%d\n",
+                "linked=%d variantsLinked=%d variantsRefused=%d stereoRemapped=%d stereoSplit=%d\n",
                 std::string(StatusText(c.status)).c_str(), c.message.c_str(), c.shadersSeen,
                 c.shadersTranslated, c.shadersLeftAlone, c.shadersRefused, c.programsTranslated,
                 (unsigned long long)c.outputBytes, c.texturesSeen, c.texturesMarkedReadable,
                 c.texturesStreamed, c.shadersLinked, c.variantsLinked, c.variantsRefused,
-                c.stereoVariantsRemapped);
+                c.stereoVariantsRemapped, c.stereoVariantsSplit);
     for (auto const& refusal : c.refusals) std::printf("refusal=%s\n", refusal.c_str());
     for (auto const& refusal : c.variantRefusals) std::printf("variantRefusal=%s\n", refusal.c_str());
     return c.ok() ? 0 : 1;

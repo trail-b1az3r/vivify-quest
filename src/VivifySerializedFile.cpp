@@ -829,6 +829,25 @@ class ParsedFormWalker {
     }
 
     if (elementSize == 1) {
+      // m_ParsedForm.m_Name: the shader's real name. The Shader object's own
+      // m_Name is empty in bundles built by recent Unity, so without this
+      // every shader went nameless. Only the one directly under m_ParsedForm
+      // (a pass, a property and a subshader tag all have an m_Name too).
+      {
+        std::vector<std::string_view> named;
+        for (auto const& frame : _path) {
+          if (!frame.name.empty()) named.push_back(frame.name);
+        }
+        if (named.size() == 2 && named[0] == "m_ParsedForm" && named[1] == "m_Name") {
+          std::string candidate(reinterpret_cast<char const*>(at), count);
+          bool printable = !candidate.empty();
+          for (char c : candidate) {
+            if (c < 0x20 || c > 0x7e) printable = false;
+          }
+          if (printable) _shader.parsedFormName = candidate;
+          return;
+        }
+      }
       // m_KeywordNames is vector<string>, and a string is a flat char array.
       // Only the one directly under m_ParsedForm is wanted: [m_KeywordNames,
       // Array, data(i), Array] with no named frame in between.
@@ -845,6 +864,11 @@ class ParsedFormWalker {
           _shader.keywordNames.resize(static_cast<size_t>(element) + 1);
         }
         _shader.keywordNames[static_cast<size_t>(element)].assign(reinterpret_cast<char const*>(at), count);
+        if (_shader.keywordNameFileOffsets.size() <= static_cast<size_t>(element)) {
+          _shader.keywordNameFileOffsets.resize(static_cast<size_t>(element) + 1, 0);
+        }
+        // The string's length field sits just before its characters.
+        _shader.keywordNameFileOffsets[static_cast<size_t>(element)] = _fileOffset + position - 4;
         return;
       }
     }
@@ -1153,6 +1177,8 @@ ShaderObject ReadShaderObject(uint8_t const* data, size_t size, size_t fileOffse
       }
     }
   }
+  // The parsed form's own name is the authoritative one; prefer it.
+  if (!shader.parsedFormName.empty()) shader.name = shader.parsedFormName;
   return shader;
 }
 
