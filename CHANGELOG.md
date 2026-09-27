@@ -11,6 +11,29 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.6] - 2026-09-27
+
+### Added
+- **Broken Quest shaders are merged into the Quest bundle itself.** Hold My
+  Hand's Quest bundle ships its raymarched kaleidoscope with no programs,
+  because the mapper's Unity failed to compile it for Android.
+  - When a Quest bundle has shaders like that, the mod downloads the map's PC
+    bundle if the song folder doesn't have one, and converts it.
+  - It then writes a copy of the Quest bundle with the PC build of each
+    empty shader put in its place. Every material that uses the shader loads
+    with a working one, with no swapping at run time.
+  - The copy is cached in `Mods/Vivify/ConvertedBundles/` and loaded on every
+    later play. The song folder's own bundle is not changed.
+  - The Quest shader keeps its own references (default textures, fallback)
+    when the PC build has the same number of them; otherwise they are
+    cleared, and the log says so.
+  - A shader is only moved between bundles built by the same Unity version.
+    If the merge can't be done, the 0.14.5 run-time stand-in is used.
+  - If the merged bundle crashes the game, the next selection loads the Quest
+    bundle as it shipped.
+- `conv --merge` in the host tool, with tests. The merge was also checked on
+  Hold My Hand's real Quest bundle: the other 25 shaders read back unchanged.
+
 ## [0.14.5] - 2026-09-27
 
 ### Fixed

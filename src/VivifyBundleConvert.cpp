@@ -2007,6 +2007,193 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
   return conversion;
 }
 
+ShaderMerge MergeShadersInto(std::string const& questPath, std::string const& donorPath,
+                             std::vector<std::string> const& names, std::string const& destPath) {
+  ShaderMerge merge;
+  std::set<std::string> const wanted(names.begin(), names.end());
+
+  // The donor's translated shaders, by name: body bytes, where its object
+  // references sit in them, and the Unity version of the file they came from.
+  struct DonorShader {
+    std::vector<uint8_t> body;
+    std::vector<size_t> pptrs;  // body-relative
+    std::string unityVersion;
+  };
+  std::map<std::string, DonorShader> donors;
+  std::map<std::string, std::string> donorProblems;
+  {
+    ArchiveHeader header;
+    std::vector<DirectoryNode> nodes;
+    std::vector<uint8_t> data;
+    std::vector<TargetPlatformField> fields;
+    Result result;
+    if (!LoadAndScan(donorPath, header, nodes, data, fields, result)) {
+      merge.status = result.status;
+      merge.message = "the converted PC bundle could not be read: " + result.message;
+      return merge;
+    }
+    for (auto const& node : nodes) {
+      if (node.offset > data.size() || node.size > data.size() - node.offset) continue;
+      uint8_t const* const nodeData = data.data() + node.offset;
+      size_t const nodeSize = static_cast<size_t>(node.size);
+      auto file = SerializedFileParse::InspectSerializedFile(nodeData, nodeSize);
+      if (!file.isSerializedFile) continue;
+      for (auto const& shader : file.shaders) {
+        if (!wanted.contains(shader.name) || donors.contains(shader.name)) continue;
+        bool runs = false;
+        for (int32_t platform : shader.platforms) {
+          if (SerializedFileParse::ShaderPlatformRunsOnQuest(platform)) runs = true;
+        }
+        if (!runs) {
+          donorProblems[shader.name] = "it did not translate in the PC bundle";
+          continue;
+        }
+        auto const decoded = SerializedFileParse::DecodeShaderPrograms(nodeData, nodeSize, shader);
+        bool hasProgram = false;
+        for (auto const& program : decoded.programs) {
+          if (!program.raw) hasProgram = true;
+        }
+        if (!decoded.ok || !hasProgram) {
+          donorProblems[shader.name] = "it has no programs in the PC bundle either";
+          continue;
+        }
+        if (shader.bodyFileOffset > nodeSize || shader.bodySize > nodeSize - shader.bodyFileOffset) continue;
+        DonorShader donor;
+        donor.unityVersion = file.unityVersion;
+        donor.body.assign(nodeData + shader.bodyFileOffset, nodeData + shader.bodyFileOffset + shader.bodySize);
+        bool fits = true;
+        for (size_t at : shader.pptrFileOffsets) {
+          if (at < shader.bodyFileOffset || at - shader.bodyFileOffset + 12 > donor.body.size()) {
+            fits = false;
+            break;
+          }
+          donor.pptrs.push_back(at - shader.bodyFileOffset);
+        }
+        if (!fits) {
+          donorProblems[shader.name] = "its object references could not be located";
+          continue;
+        }
+        donorProblems.erase(shader.name);
+        donors.emplace(shader.name, std::move(donor));
+      }
+    }
+  }
+
+  ArchiveHeader header;
+  std::vector<DirectoryNode> nodes;
+  std::vector<uint8_t> data;
+  std::vector<TargetPlatformField> fields;
+  Result result;
+  if (!LoadAndScan(questPath, header, nodes, data, fields, result)) {
+    merge.status = result.status;
+    merge.message = "the Quest bundle could not be read: " + result.message;
+    return merge;
+  }
+  std::set<std::string> handled;
+  for (size_t index = 0; index < nodes.size(); index++) {
+    if (nodes[index].offset > data.size() || nodes[index].size > data.size() - nodes[index].offset) continue;
+    uint8_t const* const nodeData = data.data() + nodes[index].offset;
+    size_t const nodeSize = static_cast<size_t>(nodes[index].size);
+    auto file = SerializedFileParse::InspectSerializedFile(nodeData, nodeSize);
+    if (!file.isSerializedFile) continue;
+    std::vector<SerializedFileParse::ObjectEdit> edits;
+    std::vector<std::string> editNames;
+    for (auto const& shader : file.shaders) {
+      if (!wanted.contains(shader.name) || handled.contains(shader.name)) continue;
+      handled.insert(shader.name);
+      auto donor = donors.find(shader.name);
+      if (donor == donors.end()) {
+        auto problem = donorProblems.find(shader.name);
+        merge.skipped.push_back(shader.name + ": " +
+                                (problem != donorProblems.end() ? problem->second : "not in the PC bundle"));
+        continue;
+      }
+      if (donor->second.unityVersion != file.unityVersion) {
+        merge.skipped.push_back(shader.name + ": the PC bundle was built with Unity " +
+                                donor->second.unityVersion + ", the Quest bundle with " + file.unityVersion);
+        continue;
+      }
+      // The donor's references name objects of the PC bundle. Built from the
+      // same source, the Quest shader references the same things (its default
+      // textures, its fallback) in the same order, so when the counts agree
+      // the Quest shader's own references are carried over; otherwise they are
+      // cleared, which loses a default texture but never points at the wrong
+      // object.
+      std::vector<uint8_t> body = donor->second.body;
+      bool const sameReferences = shader.pptrFileOffsets.size() == donor->second.pptrs.size();
+      for (size_t i = 0; i < donor->second.pptrs.size(); i++) {
+        auto const at = body.begin() + static_cast<std::ptrdiff_t>(donor->second.pptrs[i]);
+        size_t const from = sameReferences ? shader.pptrFileOffsets[i] : 0;
+        if (sameReferences && from + 12 <= nodeSize) {
+          std::copy_n(nodeData + from, 12, at);
+        } else {
+          std::fill_n(at, 12, 0);
+        }
+      }
+      if (!sameReferences && !donor->second.pptrs.empty()) {
+        merge.notes.push_back(shader.name + ": merged, but its " + std::to_string(donor->second.pptrs.size()) +
+                                " object reference(s) were cleared (the Quest shader has " +
+                                std::to_string(shader.pptrFileOffsets.size()) + ")");
+      }
+      edits.push_back({shader.pathID, std::move(body)});
+      editNames.push_back(shader.name);
+    }
+    if (edits.empty()) continue;
+    auto rewritten = SerializedFileParse::RewriteSerializedFile(nodeData, nodeSize, edits);
+    if (!rewritten.ok) {
+      merge.status = Status::Corrupt;
+      merge.message = "could not rebuild '" + nodes[index].path + "': " + rewritten.message;
+      return merge;
+    }
+    // Read the merged shaders back through the Quest file's own type tree: a
+    // body that does not fit it must never reach Unity.
+    auto check = SerializedFileParse::InspectSerializedFile(rewritten.data.data(), rewritten.data.size());
+    for (auto const& name : editNames) {
+      bool ok = false;
+      for (auto const& shader : check.shaders) {
+        if (shader.name != name) continue;
+        for (int32_t platform : shader.platforms) {
+          if (SerializedFileParse::ShaderPlatformRunsOnQuest(platform)) ok = true;
+        }
+        if (ok && !SerializedFileParse::DecodeShaderPrograms(rewritten.data.data(), rewritten.data.size(), shader).ok) {
+          ok = false;
+        }
+      }
+      if (!ok) {
+        merge.status = Status::Corrupt;
+        merge.message = "the merged '" + name + "' does not read back from the Quest bundle";
+        return merge;
+      }
+    }
+    if (!ReplaceNodeData(nodes, data, index, rewritten.data)) {
+      merge.status = Status::Corrupt;
+      merge.message = "could not relay the archive around a rebuilt '" + nodes[index].path + "'";
+      return merge;
+    }
+    merge.merged += static_cast<int>(editNames.size());
+    merge.mergedNames.insert(merge.mergedNames.end(), editNames.begin(), editNames.end());
+  }
+  for (auto const& name : wanted) {
+    if (!handled.contains(name)) merge.skipped.push_back(name + ": not in the Quest bundle");
+  }
+
+  if (merge.merged == 0) {
+    merge.status = Status::Corrupt;
+    merge.message = "no shader could be merged";
+    return merge;
+  }
+  if (!WriteConverted(destPath, header, nodes, data, result)) {
+    merge.status = result.status;
+    merge.message = result.message;
+    return merge;
+  }
+  merge.status = Status::Success;
+  merge.outputBytes = result.outputBytes;
+  merge.message = "merged " + std::to_string(merge.merged) + " of " + std::to_string(wanted.size()) +
+                  " shader(s) from the PC bundle into the Quest bundle";
+  return merge;
+}
+
 ShaderScan ScanShaders(std::string const& bundlePath) {
   ShaderScan scan;
   ArchiveHeader header;

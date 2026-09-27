@@ -560,7 +560,7 @@ def _ps(spi, flat=True):
 
 def pc_shader_2021(name, vertex_programs, fragment_programs, keyword_names=("STEREO_INSTANCING_ON",),
                    share_vertex=False, vertex_params=None, fragment_params_blobs=None, pass_names=None,
-                   entry_keywords=None):
+                   entry_keywords=None, dependencies=()):
     """A PC (Direct3D 11) shader in 2021.3.16's layout. *_programs: list of
     (dxbc, keyword index list). Every program gets a parameter blob after it,
     as 2021.3.10+ stores them, and fragments live in a second segment. With
@@ -590,7 +590,7 @@ def pc_shader_2021(name, vertex_programs, fragment_programs, keyword_names=("STE
     return mkshader2021.shader_body(name, [4], store, [{
         mkshader2021.VERTEX: {"player": [vertex_refs], "params": [vertex_param_list]},
         mkshader2021.FRAGMENT: {"player": [fragment_refs], "params": [fragment_params]},
-    }], keyword_names, pass_names=pass_names), entries
+    }], keyword_names, pass_names=pass_names, dependencies=dependencies), entries
 
 
 def inspect_converted(dst):
@@ -1036,6 +1036,78 @@ if p.returncode != 0 and not os.path.exists(os.path.join(TMP, "sh_bad.out")):
     print("ok   shader conversion rejects a non-bundle without leaving output")
 else:
     print("FAIL shader conversion accepted a non-bundle:\n" + p.stdout); fails += 1
+
+# A Quest bundle can ship a shader with nothing in it: the mapper's Unity failed
+# to compile it for Android (Hold My Hand's raymarched kaleidoscope). --merge
+# puts the translated PC build of that shader into the Quest bundle, under the
+# Quest shader's own path ID, so the materials that use it get a working one.
+def merge_case(quest_dependencies, expect_reference, expect_note):
+    global fails, cases
+    cases += 1
+    name = "Custom/PoofShaders/Kaleidoscope"
+    donor_src = os.path.join(TMP, "merge_pc.vivify")
+    donor = os.path.join(TMP, "merge_pc_converted.vivify")
+    quest = os.path.join(TMP, "merge_quest.vivify")
+    merged = os.path.join(TMP, "merge_out.vivify")
+    # The PC shader names a dependency in its own file: it must not survive
+    # into the Quest bundle, where path 4242 is something else or nothing.
+    pc_body, _ = pc_shader_2021(name, [(_vs(spi=False), []), (_vs(spi=True), [0])],
+                                [(_ps(spi=False), []), (_ps(spi=True), [0])], dependencies=[(0, 4242)])
+    pc_sf = mkshader.serialized_file_with_shaders([pc_body], sf_version=22,
+                                                  shader_tree=mkshader2021.RealTypeTree())
+    build(donor_src, sf_bytes=[pc_sf], with_resource=False)
+    proc, fields, refusals = run_shaders(donor_src, donor)
+    if fields.get("linked") != "1":
+        print(f"FAIL merge: the PC donor did not convert: {fields} {refusals}")
+        fails += 1
+        return
+    # The Quest bundle: the same shader with an empty store for GLES3, and a
+    # dependency of its own.
+    empty_store = mkshader.build_program_store([[b"\x00\x00\x00\x00"]])
+    quest_body = mkshader2021.shader_body(name, [9], empty_store, [], dependencies=quest_dependencies)
+    quest_sf = mkshader.serialized_file_with_shaders([quest_body], sf_version=22, target=13,
+                                                     shader_tree=mkshader2021.RealTypeTree())
+    build(quest, sf_bytes=[quest_sf], with_resource=False)
+    if os.path.exists(merged):
+        os.remove(merged)
+    proc = subprocess.run([CONV, "--merge", quest, donor, merged, name, "Custom/NotThere"],
+                          capture_output=True, text=True)
+    out = proc.stdout
+    problem = None
+    if proc.returncode != 0 or "merged=1" not in out:
+        problem = "merge did not succeed"
+    elif "skipped=Custom/NotThere: not in the Quest bundle" not in out:
+        problem = "the missing shader was not reported"
+    else:
+        platforms, refs, entries = inspect_converted(merged)
+        if platforms is None or "9" not in platforms.split(","):
+            problem = f"merged shader platforms are {platforms}"
+        elif not any("num_views" in e["code"] for e in entries.values()):
+            problem = "the merged shader has no translated multiview program"
+    if problem is None:
+        # The dependency in the donor body is cleared: the Quest file's
+        # m_Dependencies entry reads back as a null reference.
+        _, _, _, nodes, data = read_converted(merged)
+        off, size, _, _ = nodes[0]
+        body = data[off:off + size]
+        if struct.pack("<iq", 0, 4242) in body:
+            problem = "the PC shader's dependency was carried into the Quest bundle"
+        elif struct.pack("<ii", 1, *expect_reference[:1]) + struct.pack("<q", expect_reference[1]) not in body:
+            problem = f"the dependency list does not read as one reference to {expect_reference}"
+        elif expect_note != ("note=" in out):
+            problem = "a cleared reference was not noted" if expect_note else "an unexpected note"
+    if problem:
+        print(f"FAIL merge: {problem}\n{out}{proc.stderr}")
+        fails += 1
+    else:
+        print("ok   an empty Quest shader is replaced by its translated PC build"
+              + (", references cleared" if expect_note else ", keeping its own references"))
+
+
+# The Quest shader's own reference replaces the PC one (same count).
+merge_case([(1, 7)], (1, 7), False)
+# Counts differ: the reference is cleared, and the log says so.
+merge_case([], (0, 0), True)
 
 if GLSLANG is None:
     print("note: glslangValidator not installed; linked programs were not compiled")

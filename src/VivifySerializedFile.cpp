@@ -434,6 +434,45 @@ void WalkNode(Reader& reader, SerializedTypeInfo const& type, size_t nodeIndex,
   if ((node.metaFlag & kMetaFlagAlignBytes) != 0) reader.align4();
 }
 
+// Walks one field like WalkNode, recording where each PPtr in it sits: a
+// struct of exactly [m_FileID (4 bytes), m_PathID (8 bytes)]. Offsets are
+// relative to the start of what `reader` reads.
+void WalkForPPtrs(Reader& reader, SerializedTypeInfo const& type, size_t nodeIndex,
+                  std::vector<size_t>& pptrs, int depth) {
+  if (!reader.ok() || nodeIndex >= type.nodes.size()) return;
+  if (depth > 48) { reader.skip(reader.remaining()); return; }
+  TypeTreeNode const& node = type.nodes[nodeIndex];
+  std::vector<size_t> const children = ChildIndices(type.nodes, nodeIndex);
+  if ((node.typeFlags & kTypeFlagIsArray) != 0) {
+    if (children.size() < 2) { reader.skip(reader.remaining()); return; }
+    uint32_t const count = reader.u32();
+    if (!reader.ok()) return;
+    size_t const dataNode = children[1];
+    TypeTreeNode const& element = type.nodes[dataNode];
+    if (element.byteSize > 0 && ChildIndices(type.nodes, dataNode).empty()) {
+      uint64_t const bytes = static_cast<uint64_t>(count) * static_cast<uint64_t>(element.byteSize);
+      if (bytes > reader.remaining()) { reader.skip(reader.remaining()); return; }
+      reader.skip(static_cast<size_t>(bytes));
+    } else {
+      if (count > reader.remaining()) { reader.skip(reader.remaining()); return; }
+      for (uint32_t i = 0; i < count && reader.ok(); i++) WalkForPPtrs(reader, type, dataNode, pptrs, depth + 1);
+    }
+  } else if (children.empty()) {
+    if (node.byteSize < 0) { reader.skip(reader.remaining()); return; }
+    reader.skip(static_cast<size_t>(node.byteSize));
+  } else {
+    if (children.size() == 2 && type.nodes[children[0]].byteSize == 4 && type.nodes[children[1]].byteSize == 8 &&
+        NodeName(type, type.nodes[children[0]]) == "m_FileID" &&
+        NodeName(type, type.nodes[children[1]]) == "m_PathID") {
+      pptrs.push_back(reader.position());
+    }
+    for (size_t child : children) {
+      if (!reader.ok()) return;
+      WalkForPPtrs(reader, type, child, pptrs, depth + 1);
+    }
+  }
+  if ((node.metaFlag & kMetaFlagAlignBytes) != 0) reader.align4();
+}
 
 // ---------------------------------------------------------------------------
 // Parameter records
@@ -1137,7 +1176,9 @@ ShaderObject ReadShaderObject(uint8_t const* data, size_t size, size_t fileOffse
         ParsedFormWalker walker(reader, type, fileOffset, shader);
         walker.Walk(child);
       } else {
-        WalkNode(reader, type, child, nullptr, 1);
+        std::vector<size_t> pptrs;
+        WalkForPPtrs(reader, type, child, pptrs, 1);
+        for (size_t offset : pptrs) shader.pptrFileOffsets.push_back(fileOffset + offset);
       }
       // A real Shader object starts with its NamedObject m_Name, whose field
       // name comes from Unity's common string table and so resolves empty
