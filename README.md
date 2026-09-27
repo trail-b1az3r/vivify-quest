@@ -33,6 +33,26 @@ port from scratch — see Credits below.
   - Full settings-menu parity: every toggle the runtime already had a config
     key for is now actually exposed in the in-game settings UI.
 
+## 0.14.4 — Vivify maps with no Quest assets download their PC bundle; downloads are logged
+
+- **Maps with no Quest assets.** A Vivify map with no Quest bundle, no
+  `android2021` checksum and no PC bundle in its folder used to stop at "No
+  Vivify assets found". It now downloads its PC bundle by the
+  `windows2021`/`windows2019` checksum in `Info.dat` into the song folder
+  ("Downloading PC assets..."), converts it, and plays. The same fallback runs
+  when a Quest bundle download fails or times out and there is no PC bundle
+  on disk. After the first time, the song folder has the bundle and the
+  conversion is cached.
+- **Every download is logged now, not only with debug logging on.** That
+  covers the request, the resolved URL, the bytes written, and on failure the
+  HTTP status and curl code. A `404` means the repository does not have that
+  bundle. If Hold My Hand's graft (0.14.2) still does nothing, the log now
+  says whether its PC bundle downloaded.
+- **Timeout for the PC-shader download.** The download 0.14.2 makes for a
+  Quest bundle's empty shaders now gives up after three minutes and loads the
+  Quest bundle as it is, instead of holding the play button on "Downloading
+  PC shaders..." if the server never answers.
+
 ## 0.14.3 — grey custom notes, and the PC-shader step picking the wrong bundle
 
 ### Burning Sands' custom notes grey

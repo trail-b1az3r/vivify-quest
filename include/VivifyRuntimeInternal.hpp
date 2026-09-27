@@ -105,6 +105,9 @@ private:
   void DownloadBundle(uint32_t checksum, std::string const& levelPath, std::function<void(bool)> callback);
   // The same, saving to destPath instead of the level's Android bundle path.
   void DownloadBundleTo(uint32_t checksum, std::string const& destPath, std::function<void(bool)> callback);
+  // Downloads a Quest-less Vivify map's PC bundle and converts it; false when
+  // Info.dat names none.
+  bool TryDownloadPcBundle(std::string const& levelPath);
   // Loads a level's Android bundle, first standing in the PC build of any of
   // its shaders that were shipped empty (VivifyAssets.cpp, "PC shaders for
   // empty Quest shaders").
@@ -477,6 +480,9 @@ private:
   std::string _graftLevelPath;
   int _graftGeneration = 0;
   int _graftApplied = 0;
+  float _graftDeadline = -1.0f;  // realtime by which the graft's PC download must answer
+  std::string _graftPendingLevel;
+  std::string _graftPendingAndroid;
   // Converted bundle whose .loading marker is on disk, or empty.
   std::string _loadGuardPath;
 
