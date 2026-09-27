@@ -169,5 +169,4 @@ including a glslang compile of every translated program.
 - [Beat Saber Modding Group](https://bsmg.wiki) documentation.
 
 **Testers**
-- Everyone who sent logs and bundles from their headsets. Every fix since
-  0.11 came from a real log.
+- ME
