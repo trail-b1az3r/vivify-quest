@@ -7,6 +7,9 @@
 #include "UnityEngine/AssetBundleRequest.hpp"
 #include "UnityEngine/HideFlags.hpp"
 #include "UnityEngine/Shader.hpp"
+#include "UnityEngine/GameObject.hpp"
+#include "UnityEngine/Renderer.hpp"
+#include "UnityEngine/Material.hpp"
 #include <set>
 #include "UnityEngine/TextureFormat.hpp"
 #include <atomic>
@@ -77,7 +80,11 @@ namespace {
 //      blocks with an explicit binding. Version 10 made every named cbuffer a
 //      block with no binding, all on binding 0, and custom notes lost their
 //      colour
-constexpr int kBundleConversionVersion = 11;
+//  12  Unity 2019 bundles no longer split (see ConvertThroughParsedForm).
+//      Version 10 and 11 renamed the stereo keyword only in the program
+//      entries, which Unity does not select variants by; the eye cameras got
+//      the single-view programs and notes and most visuals were invisible
+constexpr int kBundleConversionVersion = 12;
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the
@@ -1153,30 +1160,64 @@ void Runtime::GraftShadersFrom(std::string const& levelPath, std::string const& 
     return;
   }
   std::set<std::string> const wanted(names.begin(), names.end());
-  // Reading allAssets finishes the load on the spot; the synchronous
-  // LoadAllAssets is stripped from this build.
-  auto* request = bundle->LoadAllAssetsAsync<UnityEngine::Shader*>();
+  std::set<std::string> found;
+  std::set<std::string> seen;
+  auto consider = [&](UnityEngine::Shader* shader) {
+    if (!IsAlive(shader)) return;
+    std::string const name = ShaderNameForLog(shader);
+    seen.insert(name);
+    if (!wanted.contains(name) || !found.insert(name).second) return;
+    if (!shader->get_isSupported()) {
+      PaperLogger.warn("Vivify: the PC build of '{}' did not translate for this GPU either", name);
+      return;
+    }
+    shader->set_hideFlags(UnityEngine::HideFlags::DontUnloadUnusedAsset);
+    _graftedShaders[name] = shader;
+  };
+  auto considerMaterial = [&](UnityEngine::Material* material) {
+    if (IsAlive(material)) consider(material->get_shader().unsafePtr());
+  };
+  // Every asset, not only Shader ones: LoadAllAssets returns what the bundle
+  // lists as its assets, and a map's shader is almost always pulled in
+  // implicitly by the material or prefab that uses it, so asking for shaders
+  // alone found none (0.14.2-0.14.4). Reading allAssets finishes the load on
+  // the spot; the synchronous LoadAllAssets is stripped from this build.
+  auto* request = bundle->LoadAllAssetsAsync();
   auto all = request != nullptr ? request->get_allAssets() : decltype(request->get_allAssets())(nullptr);
-  int found = 0;
   if (all) {
     for (auto object : all) {
-      auto* shader = il2cpp_utils::try_cast<UnityEngine::Shader>(object.unsafePtr()).value_or(nullptr);
-      if (!IsAlive(shader)) continue;
-      std::string const name = ShaderNameForLog(shader);
-      if (!wanted.contains(name)) continue;
-      found++;
-      if (!shader->get_isSupported()) {
-        PaperLogger.warn("Vivify: the PC build of '{}' did not translate for this GPU either", name);
-        continue;
+      auto* ptr = object.unsafePtr();
+      if (!IsAlive(ptr)) continue;
+      if (auto* shader = il2cpp_utils::try_cast<UnityEngine::Shader>(ptr).value_or(nullptr)) {
+        consider(shader);
+      } else if (auto* material = il2cpp_utils::try_cast<UnityEngine::Material>(ptr).value_or(nullptr)) {
+        considerMaterial(material);
+      } else if (auto* gameObject = il2cpp_utils::try_cast<UnityEngine::GameObject>(ptr).value_or(nullptr)) {
+        auto renderers = gameObject->GetComponentsInChildren<UnityEngine::Renderer*>(true);
+        for (int i = 0; i < renderers.size(); i++) {
+          if (!IsAlive(renderers[i])) continue;
+          auto materials = renderers[i]->get_sharedMaterials();
+          if (!materials) continue;
+          for (int j = 0; j < materials.size(); j++) considerMaterial(materials[j].unsafePtr());
+        }
       }
-      shader->set_hideFlags(UnityEngine::HideFlags::DontUnloadUnusedAsset);
-      _graftedShaders[name] = shader;
     }
   }
-  // Keeps the objects already loaded (the kept shaders among them).
+  // Keeps the objects already loaded (the kept shaders among them); the rest
+  // go with the next Resources.UnloadUnusedAssets.
   bundle->Unload(false);
   PaperLogger.info("Vivify: {} of {} empty shader(s) have a working PC build standing in ({} found in the PC "
-                   "bundle)", _graftedShaders.size(), names.size(), found);
+                   "bundle, {} shader(s) seen there)", _graftedShaders.size(), names.size(), found.size(),
+                   seen.size());
+  if (found.size() < wanted.size()) {
+    std::string missing;
+    for (auto const& name : wanted) {
+      if (!found.contains(name)) missing += (missing.empty() ? "'" : ", '") + name + "'";
+    }
+    std::string there;
+    for (auto const& name : seen) there += (there.empty() ? "'" : ", '") + name + "'";
+    PaperLogger.warn("Vivify: not in the PC bundle: {}; it uses: {}", missing, there.empty() ? "none" : there);
+  }
 }
 
 void Runtime::FinishAndroidBundleLoad(std::string const& levelPath, std::string const& androidBundlePath) {

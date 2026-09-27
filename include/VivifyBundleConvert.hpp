@@ -207,6 +207,9 @@ struct ShaderConversionOptions {
   // program in any single-view framebuffer, which is what made offscreen draws
   // on converted maps flicker or show garbage. Only turn this on when the game
   // actually uses STEREO_MULTIVIEW_ON, or the eye cameras draw nothing.
+  // Applies to Unity 2021 bundles only: a 2019 bundle picks variants through
+  // m_NameIndices, which the rename cannot reach, so it keeps the pre-0.14
+  // behaviour.
   bool separateStereoVariants = false;
 };
 
