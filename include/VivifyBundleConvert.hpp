@@ -158,6 +158,7 @@ struct ShaderConversion {
   // Keyword variants pointed at their single-pass instanced twin, which carries
   // the per-eye stereo maths that multiview needs.
   int stereoVariantsRemapped = 0;
+  int stereoVariantsSplit = 0;  // separateStereoVariants: variants renamed to STEREO_MULTIVIEW_ON
   // Block-compressed textures seen, and how many had their m_IsReadable flag
   // set so the mod can decode them on device. A texture that is already
   // readable, or in a format a Quest can sample, is not counted as marked.
@@ -190,8 +191,24 @@ struct ShaderConversion {
 // have done anyway. Success therefore does not mean every shader converted; it
 // means the bundle was rewritten and is loadable, and the counters say how much
 // of it will actually render.
+struct ShaderConversionOptions {
+  // Give each stereo-aware shader separate single-view and multiview programs,
+  // the way Unity builds its own Quest shaders. The plain variants get a
+  // single-view translation of the plain program -- what blits, render
+  // textures and CustomRenderTextures draw with -- and the stereo variants get
+  // the multiview translation of the single-pass-stereo program, with their
+  // keyword renamed to STEREO_MULTIVIEW_ON, which Unity turns on for two-eye
+  // rendering. Off, the multiview program goes into the plain variants (the
+  // pre-0.14 behaviour): right for the eye cameras, but GL refuses a multiview
+  // program in any single-view framebuffer, which is what made offscreen draws
+  // on converted maps flicker or show garbage. Only turn this on when the game
+  // actually uses STEREO_MULTIVIEW_ON, or the eye cameras draw nothing.
+  bool separateStereoVariants = false;
+};
+
 ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
-                                      std::string const& destPath);
+                                      std::string const& destPath,
+                                      ShaderConversionOptions const& options = {});
 
 ShaderScan ScanShaders(std::string const& bundlePath);
 

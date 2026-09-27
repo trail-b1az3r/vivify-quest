@@ -273,10 +273,10 @@ def shader_bundle(path, shaders, sf_version=21, target=19, textures=None):
     return build(path, sf_bytes=[sf], with_resource=False)
 
 
-def run_shaders(src, dst):
+def run_shaders(src, dst, mode="--shaders"):
     if os.path.exists(dst):
         os.remove(dst)
-    proc = subprocess.run([CONV, "--shaders", src, dst], capture_output=True, text=True)
+    proc = subprocess.run([CONV, mode, src, dst], capture_output=True, text=True)
     fields = {}
     refusals = []
     for line in proc.stdout.splitlines():
@@ -694,14 +694,14 @@ def glslang_link_problem(dst):
     return None
 
 
-def pc_shader_case(name, body, check):
+def pc_shader_case(name, body, check, mode="--shaders"):
     global fails, cases
     cases += 1
     src = os.path.join(TMP, "pc_src.vivify")
     dst = os.path.join(TMP, "pc_dst.vivify")
     sf = mkshader.serialized_file_with_shaders([body], sf_version=22, shader_tree=mkshader2021.RealTypeTree())
     build(src, sf_bytes=[sf], with_resource=False)
-    proc, fields, refusals = run_shaders(src, dst)
+    proc, fields, refusals = run_shaders(src, dst, mode)
     try:
         problem = check(proc, fields, refusals, dst) or glslang_link_problem(dst)
     except Exception as e:  # noqa: BLE001 - a crash in a check is a failure, with its reason
@@ -777,6 +777,34 @@ def expect_idempotent_linked(proc, fields, refusals, dst):
 
 
 pc_shader_case("a linked shader is left alone by a second pass", stereo_body, expect_idempotent_linked)
+
+
+# With separate stereo variants, the plain variant gets single-view code --
+# GL refuses a multiview program in the single-view framebuffers blits, render
+# textures and CustomRenderTextures draw into -- and the stereo variant keeps
+# multiview code under the keyword Unity turns on for two-eye rendering.
+def expect_stereo_split(proc, fields, refusals, dst):
+    if fields.get("linked") != "1" or fields.get("variantsRefused") != "0":
+        return f"linked={fields.get('linked')} variantsRefused={fields.get('variantsRefused')} {refusals}"
+    if fields.get("stereoSplit") != "2" or fields.get("stereoRemapped") != "0":
+        return f"stereoSplit={fields.get('stereoSplit')} stereoRemapped={fields.get('stereoRemapped')}"
+    _, refs, entries = inspect_converted(dst)
+    vertex = {r["keywords"]: r for r in refs if r["stage"] == "0"}
+    if set(vertex) != {"", "STEREO_MULTIVIEW_ON"}:
+        return f"vertex variants are {sorted(vertex)}; STEREO_INSTANCING_ON was not renamed"
+    plain = entries[int(vertex[""]["blob"])]["code"]
+    stereo = entries[int(vertex["STEREO_MULTIVIEW_ON"]["blob"])]["code"]
+    if "num_views" in plain or "GL_OVR_multiview" in plain:
+        return "the plain variant is still a multiview program"
+    if "layout(num_views = 2) in;" not in stereo or "gl_InstanceID * 2 + int(gl_ViewID_OVR)" not in stereo:
+        return "the stereo variant is not the multiview translation of the SPI program"
+    if "hlslcc_mtx4x4unity_MatrixVP" not in plain:
+        return "the plain variant is not the plain program's own code"
+    return None
+
+
+pc_shader_case("with separate stereo variants, plain gets single-view code and stereo becomes STEREO_MULTIVIEW_ON",
+               stereo_body, expect_stereo_split, mode="--shaders-split")
 
 mono_body, _ = pc_shader_2021("Custom/Mono", [(_vs(spi=False, texcoord=False), [])],
                               [(_ps(spi=False, flat=False), [])], keyword_names=())

@@ -845,6 +845,11 @@ class ParsedFormWalker {
           _shader.keywordNames.resize(static_cast<size_t>(element) + 1);
         }
         _shader.keywordNames[static_cast<size_t>(element)].assign(reinterpret_cast<char const*>(at), count);
+        if (_shader.keywordNameFileOffsets.size() <= static_cast<size_t>(element)) {
+          _shader.keywordNameFileOffsets.resize(static_cast<size_t>(element) + 1, 0);
+        }
+        // The string's length field sits just before its characters.
+        _shader.keywordNameFileOffsets[static_cast<size_t>(element)] = _fileOffset + position - 4;
         return;
       }
     }

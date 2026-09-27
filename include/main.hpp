@@ -30,6 +30,9 @@ bool GetStandInShading();
 // Whether the main camera renders _CameraDepthTexture while a Vivify map plays.
 bool GetSceneDepthTexture();
 bool GetTranslateShadersOnConversion();
+// Whether the built-in AudioLink port (VivifyAudioLink) runs and publishes
+// _AudioTexture.
+bool GetAudioLinkEnabled();
 // Empty when the stand-in shader should be chosen automatically.
 std::string GetStandInShaderName();
 // Whether a map carrying the Vivify requirement still submits its score.

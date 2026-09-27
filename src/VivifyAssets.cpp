@@ -63,21 +63,62 @@ namespace {
 //      uniform block that multiview fills. Version 8 read them as loose
 //      uniforms nothing keeps current, and everything a translated shader drew
 //      (scenery, custom notes) landed in the wrong place
-constexpr int kBundleConversionVersion = 9;
+//  10  separate single-view and multiview programs (see
+//      ShaderConversionOptions::separateStereoVariants) when the game uses
+//      STEREO_MULTIVIEW_ON. Version 9 put multiview programs in the plain
+//      variants, which GL refuses in any single-view framebuffer: blits,
+//      render textures and secondary cameras on converted maps flickered or
+//      showed garbage. The marker records which way a bundle was converted
+constexpr int kBundleConversionVersion = 10;
+
+// Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
+// 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the
+// game's shaders having been compiled with multiview variants shows up in
+// Shader.GetAllGlobalKeywords(). Read on the main thread (DetectMultiviewKeyword)
+// and used by conversions on worker threads.
+std::atomic<int> gMultiviewKeyword{-1};
+
+void DetectMultiviewKeyword() {
+  if (gMultiviewKeyword.load() >= 0) return;
+  try {
+    auto keywords = UnityEngine::Shader::GetAllGlobalKeywords();
+    if (!keywords || keywords.size() == 0) return;  // too early; look again later
+    bool found = false;
+    for (auto const& keyword : keywords) {
+      if (keyword.m_Name && std::string(keyword.m_Name) == "STEREO_MULTIVIEW_ON") found = true;
+    }
+    gMultiviewKeyword.store(found ? 1 : 0);
+    PaperLogger.info("Vivify: the game {} STEREO_MULTIVIEW_ON ({} global keywords); converted shaders get {}",
+                     found ? "uses" : "does not use", keywords.size(),
+                     found ? "separate single-view and multiview programs"
+                           : "multiview programs in their plain variants");
+  } catch (...) {
+    PaperLogger.warn("Vivify: could not list the game's shader keywords; converted shaders keep multiview "
+                     "programs in their plain variants");
+    gMultiviewKeyword.store(0);
+  }
+}
+
+bool SplitStereoVariants() {
+  return gMultiviewKeyword.load() == 1;
+}
 
 std::string ConversionMarkerPath(std::string const& destPath) {
   return destPath + ".version";
 }
 
-// A cached conversion counts only if it was produced by this converter. A
-// bundle with no marker beside it came from a build that predates them.
+// A cached conversion counts only if it was produced by this converter, the
+// same way this session would produce it. A bundle with no marker beside it
+// came from a build that predates them.
 bool CachedConversionIsCurrent(std::string const& destPath) {
   std::error_code ec;
   if (!std::filesystem::exists(destPath, ec) || ec) return false;
   std::ifstream marker(ConversionMarkerPath(destPath));
   int version = 0;
   if (!(marker >> version)) return false;
-  return version == kBundleConversionVersion;
+  int split = 0;
+  if (!(marker >> split)) split = 0;
+  return version == kBundleConversionVersion && (split != 0) == SplitStereoVariants();
 }
 
 void MarkConversionCurrent(std::string const& destPath) {
@@ -87,7 +128,7 @@ void MarkConversionCurrent(std::string const& destPath) {
                      "be reconverted every launch", destPath);
     return;
   }
-  marker << kBundleConversionVersion << "\n";
+  marker << kBundleConversionVersion << " " << (SplitStereoVariants() ? 1 : 0) << "\n";
 }
 
 // CRASH GUARD FOR CONVERTED BUNDLES
@@ -201,7 +242,9 @@ BundleConversionOutcome RunBundleConversion(std::string const& source, std::stri
     // reconvert rather than reuse this.
     return {result.status, result.message};
   }
-  auto const conversion = BundleConvert::ConvertShadersToGles(source, dest);
+  BundleConvert::ShaderConversionOptions options;
+  options.separateStereoVariants = SplitStereoVariants();
+  auto const conversion = BundleConvert::ConvertShadersToGles(source, dest, options);
   if (conversion.status == BundleConvert::Status::Success) MarkConversionCurrent(dest);
   // Logged here, on the worker, rather than folded into the message: a bundle
   // can refuse several shaders and each reason is a line worth reading on its
@@ -218,9 +261,11 @@ BundleConversionOutcome RunBundleConversion(std::string const& source, std::stri
   }
   PaperLogger.info("Vivify shader conversion: {} of {} shader(s) linked for multiview GLES, {} keyword "
                    "variant(s) linked and {} left on DirectX (one of their stages did not translate), {} "
-                   "variant(s) given their single-pass stereo twin's per-eye code, {} shader(s) refused",
+                   "variant(s) given their single-pass stereo twin's per-eye code, {} stereo variant(s) "
+                   "moved to STEREO_MULTIVIEW_ON beside single-view plain variants, {} shader(s) refused",
                    conversion.shadersLinked, conversion.shadersSeen, conversion.variantsLinked,
-                   conversion.variantsRefused, conversion.stereoVariantsRemapped, conversion.shadersRefused);
+                   conversion.variantsRefused, conversion.stereoVariantsRemapped, conversion.stereoVariantsSplit,
+                   conversion.shadersRefused);
   if (conversion.texturesSeen > 0) {
     PaperLogger.info(
         "Vivify conversion marked {} of {} block-compressed texture(s) readable ({} keep their pixels "
@@ -615,6 +660,8 @@ void RestoreMaterialFallbackState(UnityEngine::Material* material, MaterialFallb
 void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEventArgs const& event) {
   // Getting back to level selection means whatever was loading last is done.
   DisarmLoadGuard();
+  // Before anything here converts a bundle: which way to convert depends on it.
+  DetectMultiviewKeyword();
 
   std::string incomingLevelPath;
   if (event.isCustom && event.customBeatmapLevel != nullptr) {
@@ -2241,6 +2288,7 @@ void StartBulkPcBundleConversion(std::function<void(BulkConversionProgress const
     return;
   }
 
+  DetectMultiviewKeyword();
   // SongCore's level roots are enumerated here, on the caller's (main) thread,
   // rather than inside the worker: a song refresh can rewrite them, and the
   // worker only needs the snapshot.

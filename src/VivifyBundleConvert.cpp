@@ -1351,6 +1351,14 @@ Vivify::Dxbc::ExternalReflection ReflectionFrom(SerializedFileParse::ProgramPara
       info.uniformBlock = true;
       info.size = std::max<uint32_t>(info.size, 1088u);
     }
+    // A shader's own named cbuffers (anything but $Globals and Unity's
+    // built-in Unity* buffers) are uniform blocks in Unity's own GLES output,
+    // and have to be here too: they are where shaders put big arrays, and
+    // GLES gives every loose array element a whole vec4 uniform slot. AudioLink
+    // keeps its raw samples in LeftSampleBuffer/RightSampleBuffer -- eight
+    // float[1023] arrays, thousands of slots against Adreno's few hundred --
+    // so as loose uniforms its analysis shader could never link.
+    if (buffer.name != "$Globals" && buffer.name.rfind("Unity", 0) != 0) info.uniformBlock = true;
     // Only the layout Unity's instancing macros produce: an array of
     // whole-register structs, compiled at the placeholder length, ending the
     // buffer.
@@ -1411,12 +1419,14 @@ struct LinkedShader {
   int variantsLinked = 0;
   int variantsRefused = 0;
   int stereoRemapped = 0;
+  int stereoSplit = 0;
   int programsTranslated = 0;
   std::set<std::string> variantReasons;  // why individual variants stayed on DirectX
 };
 
 LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
-                                      SerializedFileParse::ShaderObject const& shader) {
+                                      SerializedFileParse::ShaderObject const& shader,
+                                      ShaderConversionOptions const& conversionOptions) {
   using SerializedFileParse::ParsedProgramRef;
   LinkedShader out;
 
@@ -1515,56 +1525,128 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
   // Bundles built for Unity 2019 (PC Beat Saber before 1.29.4) use double-wide
   // single-pass stereo instead, keyword UNITY_SINGLE_PASS_STEREO, whose eye
   // comes from unity_StereoEyeIndex; the translator feeds that from the view.
-  for (char const* stereoKeyword : {"STEREO_INSTANCING_ON", "UNITY_SINGLE_PASS_STEREO"}) {
-  int32_t spiKeyword = -1;
-  for (size_t i = 0; i < keywordNames.size(); i++) {
-    if (keywordNames[i] == stereoKeyword) spiKeyword = static_cast<int32_t>(i);
-  }
-  if (spiKeyword >= 0) {
-    for (auto& plain : refs) {
-      if (plain.stereoRemapped) continue;
-      if (std::find(plain.keywordIndices.begin(), plain.keywordIndices.end(), spiKeyword) !=
-          plain.keywordIndices.end()) {
-        continue;
-      }
-      for (auto const& spi : refs) {
-        if (spi.subShader != plain.subShader || spi.pass != plain.pass || spi.stage != plain.stage ||
-            spi.player != plain.player || spi.list != plain.list || spi.hardwareTier != plain.hardwareTier) {
-          continue;
-        }
-        if (std::find(spi.keywordIndices.begin(), spi.keywordIndices.end(), spiKeyword) ==
-            spi.keywordIndices.end()) {
-          continue;
-        }
-        std::vector<uint16_t> without;
-        for (uint16_t k : spi.keywordIndices) {
-          if (static_cast<int32_t>(k) != spiKeyword) without.push_back(k);
-        }
-        std::vector<uint16_t> mine = plain.keywordIndices;
-        std::sort(without.begin(), without.end());
-        std::sort(mine.begin(), mine.end());
-        if (without != mine) continue;
-        if (plain.blobIndex != spi.blobIndex) {
-          plain.blobIndex = spi.blobIndex;
-          // The twin's code reads the twin's parameters.
-          plain.parameters = spi.parameters;
-          patchU32(plain.blobIndexFileOffset, spi.blobIndex);
-          out.stereoRemapped++;
-        }
-        plain.stereoRemapped = true;
-        break;
+  // Which refs get multiview code. Keyed by the ref's position in `refs`.
+  std::vector<bool> multiviewRef(refs.size(), true);
+  // Stereo variants whose keyword is renamed to STEREO_MULTIVIEW_ON: their
+  // entries must not be shared with a plain variant's, since in a 2019 bundle
+  // the keyword names live in the entry itself.
+  std::vector<bool> renamedRef(refs.size(), false);
+
+  // The separate-variants path needs to rename the stereo keyword. In a 2021
+  // bundle that is one entry of m_KeywordNames, rewritten in place, which only
+  // fits for STEREO_INSTANCING_ON: 20 characters against STEREO_MULTIVIEW_ON's
+  // 19, the same 24 bytes once aligned. In a 2019 bundle the names are in the
+  // program entries, which are rewritten anyway.
+  bool const namesInEntries = shader.keywordNames.empty();
+  int32_t splitKeyword = -1;
+  if (conversionOptions.separateStereoVariants) {
+    for (size_t i = 0; i < keywordNames.size() && splitKeyword < 0; i++) {
+      bool const spi = keywordNames[i] == "STEREO_INSTANCING_ON";
+      bool const sps = keywordNames[i] == "UNITY_SINGLE_PASS_STEREO";
+      if (namesInEntries ? (spi || sps)
+                         : (spi && i < shader.keywordNameFileOffsets.size() && shader.keywordNameFileOffsets[i] != 0)) {
+        splitKeyword = static_cast<int32_t>(i);
       }
     }
   }
+  auto hasKeyword = [](ParsedProgramRef const& ref, int32_t keyword) {
+    return std::find(ref.keywordIndices.begin(), ref.keywordIndices.end(), keyword) != ref.keywordIndices.end();
+  };
+  auto twinOf = [&](ParsedProgramRef const& plain, int32_t keyword) -> ParsedProgramRef const* {
+    for (auto const& spi : refs) {
+      if (spi.subShader != plain.subShader || spi.pass != plain.pass || spi.stage != plain.stage ||
+          spi.player != plain.player || spi.list != plain.list || spi.hardwareTier != plain.hardwareTier) {
+        continue;
+      }
+      if (!hasKeyword(spi, keyword)) continue;
+      std::vector<uint16_t> without;
+      for (uint16_t k : spi.keywordIndices) {
+        if (static_cast<int32_t>(k) != keyword) without.push_back(k);
+      }
+      std::vector<uint16_t> mine = plain.keywordIndices;
+      std::sort(without.begin(), without.end());
+      std::sort(mine.begin(), mine.end());
+      if (without == mine) return &spi;
+    }
+    return nullptr;
+  };
+
+  if (splitKeyword >= 0) {
+    // Plain variants that have a stereo twin get single-view code of their
+    // own program; the twins keep theirs, translated for multiview, under
+    // STEREO_MULTIVIEW_ON. A plain variant without a twin still gets multiview
+    // code, as before: it is the only program the eye cameras can use.
+    for (size_t r = 0; r < refs.size(); r++) {
+      if (hasKeyword(refs[r], splitKeyword)) {
+        renamedRef[r] = true;
+        out.stereoSplit++;
+      } else if (twinOf(refs[r], splitKeyword) != nullptr) {
+        multiviewRef[r] = false;
+      }
+    }
+    if (!namesInEntries) {
+      size_t const at = shader.keywordNameFileOffsets[static_cast<size_t>(splitKeyword)];
+      std::vector<uint8_t> name = {19, 0, 0, 0};
+      for (char c : std::string_view("STEREO_MULTIVIEW_ON")) name.push_back(static_cast<uint8_t>(c));
+      name.push_back(0);  // alignment, where STEREO_INSTANCING_ON's last character was
+      patches.push_back({at, std::move(name)});
+    }
+  } else {
+    for (char const* stereoKeyword : {"STEREO_INSTANCING_ON", "UNITY_SINGLE_PASS_STEREO"}) {
+    int32_t spiKeyword = -1;
+    for (size_t i = 0; i < keywordNames.size(); i++) {
+      if (keywordNames[i] == stereoKeyword) spiKeyword = static_cast<int32_t>(i);
+    }
+    if (spiKeyword >= 0) {
+      for (auto& plain : refs) {
+        if (plain.stereoRemapped) continue;
+        if (std::find(plain.keywordIndices.begin(), plain.keywordIndices.end(), spiKeyword) !=
+            plain.keywordIndices.end()) {
+          continue;
+        }
+        for (auto const& spi : refs) {
+          if (spi.subShader != plain.subShader || spi.pass != plain.pass || spi.stage != plain.stage ||
+              spi.player != plain.player || spi.list != plain.list || spi.hardwareTier != plain.hardwareTier) {
+            continue;
+          }
+          if (std::find(spi.keywordIndices.begin(), spi.keywordIndices.end(), spiKeyword) ==
+              spi.keywordIndices.end()) {
+            continue;
+          }
+          std::vector<uint16_t> without;
+          for (uint16_t k : spi.keywordIndices) {
+            if (static_cast<int32_t>(k) != spiKeyword) without.push_back(k);
+          }
+          std::vector<uint16_t> mine = plain.keywordIndices;
+          std::sort(without.begin(), without.end());
+          std::sort(mine.begin(), mine.end());
+          if (without != mine) continue;
+          if (plain.blobIndex != spi.blobIndex) {
+            plain.blobIndex = spi.blobIndex;
+            // The twin's code reads the twin's parameters.
+            plain.parameters = spi.parameters;
+            patchU32(plain.blobIndexFileOffset, spi.blobIndex);
+            out.stereoRemapped++;
+          }
+          plain.stereoRemapped = true;
+          break;
+        }
+      }
+    }
+    }
   }
 
   // Translate each program the variants use, once.
-  Vivify::Dxbc::GlslOptions options;
-  options.multiview = true;
-  std::map<uint32_t, Vivify::Dxbc::GlslResult> translated;
+  auto indexOf = [&](ParsedProgramRef const& ref) { return static_cast<size_t>(&ref - refs.data()); };
+  // Keyed by entry and mode: one entry can be translated both ways when a
+  // plain and a stereo variant share it.
+  std::map<std::pair<uint32_t, bool>, Vivify::Dxbc::GlslResult> translated;
   auto translate = [&](ParsedProgramRef const& ref) -> Vivify::Dxbc::GlslResult const* {
     uint32_t const blob = ref.blobIndex;
-    auto cached = translated.find(blob);
+    bool const multiview = multiviewRef[indexOf(ref)];
+    Vivify::Dxbc::GlslOptions options;
+    options.multiview = multiview;
+    auto cached = translated.find({blob, multiview});
     if (cached == translated.end()) {
       Vivify::Dxbc::GlslResult result;
       auto at = entryAt.find(blob);
@@ -1587,7 +1669,7 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
           }
         }
       }
-      cached = translated.emplace(blob, std::move(result)).first;
+      cached = translated.emplace(std::make_pair(blob, multiview), std::move(result)).first;
     }
     return cached->second.ok ? &cached->second : nullptr;
   };
@@ -1607,8 +1689,16 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
   // that link to different programs is split rather than overwritten.
   std::map<uint32_t, std::string> assigned;
   std::vector<SerializedFileParse::ShaderSubProgram> added;
-  auto place = [&](ParsedProgramRef const& ref, std::string const& source, int version) {
+  // Entries holding a renamed stereo variant (2019 bundles rename the keyword
+  // inside the entry).
+  std::set<uint32_t> renamedEntries;
+  auto place = [&](ParsedProgramRef const& ref, std::string const& linked, int version) {
     uint32_t blob = ref.blobIndex;
+    bool const renamed = renamedRef[indexOf(ref)];
+    // The marker keeps a renamed variant's entry from being shared with a
+    // plain variant's even when their code is identical; it is stripped before
+    // the source is written.
+    std::string const source = renamed && namesInEntries ? linked + std::string(1, '\0') : linked;
     auto existing = assigned.find(blob);
     if (existing != assigned.end() && existing->second != source) {
       // Another variant already wrote a different program here: give this one
@@ -1623,6 +1713,7 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
       patchU32(ref.blobIndexFileOffset, blob);
     }
     assigned[blob] = source;
+    if (renamed && namesInEntries) renamedEntries.insert(blob);
     int32_t const type = GlesProgramTypeForVersion(version);
     patches.push_back({ref.gpuProgramTypeFileOffset, {static_cast<uint8_t>(static_cast<int8_t>(type))}});
     return true;
@@ -1696,7 +1787,18 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
     if (program.groupIndex != group) continue;
     auto it = assigned.find(static_cast<uint32_t>(program.blobIndex));
     if (it == assigned.end()) continue;
-    program.code.assign(it->second.begin(), it->second.end());
+    std::string_view code = it->second;
+    if (!code.empty() && code.back() == '\0') code.remove_suffix(1);
+    program.code.assign(code.begin(), code.end());
+    if (renamedEntries.count(static_cast<uint32_t>(program.blobIndex)) != 0) {
+      for (auto* list : {&program.keywords, &program.localKeywords}) {
+        for (auto& keyword : *list) {
+          if (keyword == "STEREO_INSTANCING_ON" || keyword == "UNITY_SINGLE_PASS_STEREO") {
+            keyword = "STEREO_MULTIVIEW_ON";
+          }
+        }
+      }
+    }
     // The program's own header type follows the linked version, the same way
     // m_ParsedForm's does; the statistics described the DirectX program.
     int version = 300;
@@ -1726,7 +1828,8 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
 }  // namespace
 
 ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
-                                      std::string const& destPath) {
+                                      std::string const& destPath,
+                                      ShaderConversionOptions const& options) {
   ShaderConversion conversion;
   ArchiveHeader header;
   std::vector<DirectoryNode> nodes;
@@ -1803,10 +1906,11 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
       }
 
       if (shader.parsedFormRead) {
-        auto linked = ConvertThroughParsedForm(nodeData, nodeSize, shader);
+        auto linked = ConvertThroughParsedForm(nodeData, nodeSize, shader, options);
         conversion.variantsLinked += linked.variantsLinked;
         conversion.variantsRefused += linked.variantsRefused;
         conversion.stereoVariantsRemapped += linked.stereoRemapped;
+        conversion.stereoVariantsSplit += linked.stereoSplit;
         for (auto const& reason : linked.variantReasons) {
           if (conversion.variantRefusals.size() >= kMaxLoggedRefusals * 2) break;
           conversion.variantRefusals.push_back(

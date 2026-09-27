@@ -310,6 +310,9 @@ struct ShaderObject {
   bool parsedFormRead = false;
   std::vector<ParsedProgramRef> programRefs;
   std::vector<std::string> keywordNames;
+  // Where each keyword name's length field sits in the file, parallel to
+  // keywordNames (0 where not seen), so a name can be rewritten in place.
+  std::vector<size_t> keywordNameFileOffsets;
   // Each pass's m_NameIndices, inverted: (subShader, pass) -> index -> name.
   std::map<std::pair<int32_t, int32_t>, std::map<int32_t, std::string>> passNames;
   // The SerializedProgramParameters layout, for ParseParameterBlob.
