@@ -1535,24 +1535,23 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
   // comes from unity_StereoEyeIndex; the translator feeds that from the view.
   // Which refs get multiview code. Keyed by the ref's position in `refs`.
   std::vector<bool> multiviewRef(refs.size(), true);
-  // Stereo variants whose keyword is renamed to STEREO_MULTIVIEW_ON: their
-  // entries must not be shared with a plain variant's, since in a 2019 bundle
-  // the keyword names live in the entry itself.
-  std::vector<bool> renamedRef(refs.size(), false);
 
   // The separate-variants path needs to rename the stereo keyword. In a 2021
   // bundle that is one entry of m_KeywordNames, rewritten in place, which only
   // fits for STEREO_INSTANCING_ON: 20 characters against STEREO_MULTIVIEW_ON's
-  // 19, the same 24 bytes once aligned. In a 2019 bundle the names are in the
-  // program entries, which are rewritten anyway.
+  // 19, the same 24 bytes once aligned.
+  //
+  // A 2019 bundle is never split. Its variants are chosen through each pass's
+  // m_NameIndices, not the keyword strings in the program entries, so renaming
+  // the keyword in the entries left the stereo variants unreachable: the eye
+  // cameras drew the single-view plain programs, which draw nothing into a
+  // multiview target, and notes and most visuals went invisible (0.14.0-0.14.4).
   bool const namesInEntries = shader.keywordNames.empty();
   int32_t splitKeyword = -1;
-  if (conversionOptions.separateStereoVariants) {
+  if (conversionOptions.separateStereoVariants && !namesInEntries) {
     for (size_t i = 0; i < keywordNames.size() && splitKeyword < 0; i++) {
-      bool const spi = keywordNames[i] == "STEREO_INSTANCING_ON";
-      bool const sps = keywordNames[i] == "UNITY_SINGLE_PASS_STEREO";
-      if (namesInEntries ? (spi || sps)
-                         : (spi && i < shader.keywordNameFileOffsets.size() && shader.keywordNameFileOffsets[i] != 0)) {
+      if (keywordNames[i] == "STEREO_INSTANCING_ON" && i < shader.keywordNameFileOffsets.size() &&
+          shader.keywordNameFileOffsets[i] != 0) {
         splitKeyword = static_cast<int32_t>(i);
       }
     }
@@ -1586,19 +1585,16 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
     // code, as before: it is the only program the eye cameras can use.
     for (size_t r = 0; r < refs.size(); r++) {
       if (hasKeyword(refs[r], splitKeyword)) {
-        renamedRef[r] = true;
         out.stereoSplit++;
       } else if (twinOf(refs[r], splitKeyword) != nullptr) {
         multiviewRef[r] = false;
       }
     }
-    if (!namesInEntries) {
-      size_t const at = shader.keywordNameFileOffsets[static_cast<size_t>(splitKeyword)];
-      std::vector<uint8_t> name = {19, 0, 0, 0};
-      for (char c : std::string_view("STEREO_MULTIVIEW_ON")) name.push_back(static_cast<uint8_t>(c));
-      name.push_back(0);  // alignment, where STEREO_INSTANCING_ON's last character was
-      patches.push_back({at, std::move(name)});
-    }
+    size_t const at = shader.keywordNameFileOffsets[static_cast<size_t>(splitKeyword)];
+    std::vector<uint8_t> name = {19, 0, 0, 0};
+    for (char c : std::string_view("STEREO_MULTIVIEW_ON")) name.push_back(static_cast<uint8_t>(c));
+    name.push_back(0);  // alignment, where STEREO_INSTANCING_ON's last character was
+    patches.push_back({at, std::move(name)});
   } else {
     for (char const* stereoKeyword : {"STEREO_INSTANCING_ON", "UNITY_SINGLE_PASS_STEREO"}) {
     int32_t spiKeyword = -1;
@@ -1697,16 +1693,9 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
   // that link to different programs is split rather than overwritten.
   std::map<uint32_t, std::string> assigned;
   std::vector<SerializedFileParse::ShaderSubProgram> added;
-  // Entries holding a renamed stereo variant (2019 bundles rename the keyword
-  // inside the entry).
-  std::set<uint32_t> renamedEntries;
   auto place = [&](ParsedProgramRef const& ref, std::string const& linked, int version) {
     uint32_t blob = ref.blobIndex;
-    bool const renamed = renamedRef[indexOf(ref)];
-    // The marker keeps a renamed variant's entry from being shared with a
-    // plain variant's even when their code is identical; it is stripped before
-    // the source is written.
-    std::string const source = renamed && namesInEntries ? linked + std::string(1, '\0') : linked;
+    std::string const& source = linked;
     auto existing = assigned.find(blob);
     if (existing != assigned.end() && existing->second != source) {
       // Another variant already wrote a different program here: give this one
@@ -1721,7 +1710,6 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
       patchU32(ref.blobIndexFileOffset, blob);
     }
     assigned[blob] = source;
-    if (renamed && namesInEntries) renamedEntries.insert(blob);
     int32_t const type = GlesProgramTypeForVersion(version);
     patches.push_back({ref.gpuProgramTypeFileOffset, {static_cast<uint8_t>(static_cast<int8_t>(type))}});
     return true;
@@ -1795,18 +1783,7 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
     if (program.groupIndex != group) continue;
     auto it = assigned.find(static_cast<uint32_t>(program.blobIndex));
     if (it == assigned.end()) continue;
-    std::string_view code = it->second;
-    if (!code.empty() && code.back() == '\0') code.remove_suffix(1);
-    program.code.assign(code.begin(), code.end());
-    if (renamedEntries.count(static_cast<uint32_t>(program.blobIndex)) != 0) {
-      for (auto* list : {&program.keywords, &program.localKeywords}) {
-        for (auto& keyword : *list) {
-          if (keyword == "STEREO_INSTANCING_ON" || keyword == "UNITY_SINGLE_PASS_STEREO") {
-            keyword = "STEREO_MULTIVIEW_ON";
-          }
-        }
-      }
-    }
+    program.code.assign(it->second.begin(), it->second.end());
     // The program's own header type follows the linked version, the same way
     // m_ParsedForm's does; the statistics described the DirectX program.
     int version = 300;

@@ -559,24 +559,29 @@ def _ps(spi, flat=True):
 
 
 def pc_shader_2021(name, vertex_programs, fragment_programs, keyword_names=("STEREO_INSTANCING_ON",),
-                   share_vertex=False, vertex_params=None, fragment_params_blobs=None, pass_names=None):
+                   share_vertex=False, vertex_params=None, fragment_params_blobs=None, pass_names=None,
+                   entry_keywords=None):
     """A PC (Direct3D 11) shader in 2021.3.16's layout. *_programs: list of
     (dxbc, keyword index list). Every program gets a parameter blob after it,
     as 2021.3.10+ stores them, and fragments live in a second segment. With
     share_vertex, every vertex variant points at the first vertex entry, the
-    way Unity dedups identical programs."""
+    way Unity dedups identical programs. With entry_keywords (names, indexed
+    like keyword_names), each program entry also carries its keyword names, as
+    a 2019 bundle's do."""
     entries, vertex_refs, vertex_param_list, fragment_refs, fragment_params = [], [], [], [], []
     for code, keywords in vertex_programs:
         blob = 0 if (share_vertex and vertex_refs) else len(entries)
         vertex_refs.append(mkshader2021.player_sub_program(blob, DX11_VERTEX_SM50, keywords))
-        entries.append((mkshader.sub_program(DX11_VERTEX_SM50, code), 0))
+        names = [entry_keywords[k] for k in keywords] if entry_keywords else ()
+        entries.append((mkshader.sub_program(DX11_VERTEX_SM50, code, keywords=names), 0))
         vertex_param_list.append(len(entries))
         blob = (vertex_params[len(vertex_param_list) - 1] if vertex_params
                 else b"\x00\x00\x00\x00PARAMS-VS" + bytes([len(entries)]))
         entries.append((blob, 0))
     for code, keywords in fragment_programs:
         fragment_refs.append(mkshader2021.player_sub_program(len(entries), DX11_PIXEL_SM50, keywords))
-        entries.append((mkshader.sub_program(DX11_PIXEL_SM50, code), 1))
+        names = [entry_keywords[k] for k in keywords] if entry_keywords else ()
+        entries.append((mkshader.sub_program(DX11_PIXEL_SM50, code, keywords=names), 1))
         fragment_params.append(len(entries))
         blob = (fragment_params_blobs[len(fragment_params) - 1] if fragment_params_blobs
                 else b"\x00\x00\x00\x00PARAMS-PS" + bytes([len(entries)]))
@@ -805,6 +810,41 @@ def expect_stereo_split(proc, fields, refusals, dst):
 
 pc_shader_case("with separate stereo variants, plain gets single-view code and stereo becomes STEREO_MULTIVIEW_ON",
                stereo_body, expect_stereo_split, mode="--shaders-split")
+
+# A 2019 bundle keeps its keyword names in the program entries, and Unity
+# picks its variants through the pass's m_NameIndices, which renaming the
+# entries' names does not reach. 0.14.0-0.14.4 split such bundles anyway: the
+# stereo variants stayed under a keyword the Quest never enables, the eye
+# cameras drew the single-view plain programs, and notes and most visuals of
+# downloaded PC maps were invisible. A 2019 bundle keeps the plain variants on
+# their stereo twin's multiview code instead, even in split mode.
+sps_body, _ = pc_shader_2021(
+    "Swifter/Stereo2019",
+    [(_vs(spi=False), []), (_vs(spi=True), [0])],
+    [(_ps(spi=False), []), (_ps(spi=True), [0])],
+    keyword_names=(), entry_keywords=("UNITY_SINGLE_PASS_STEREO",))
+
+
+def expect_2019_not_split(proc, fields, refusals, dst):
+    if fields.get("linked") != "1" or fields.get("variantsRefused") != "0":
+        return f"linked={fields.get('linked')} variantsRefused={fields.get('variantsRefused')} {refusals}"
+    if fields.get("stereoSplit") != "0":
+        return f"stereoSplit={fields.get('stereoSplit')}: a 2019 bundle was split"
+    if fields.get("stereoRemapped") != "2":
+        return f"stereoRemapped={fields.get('stereoRemapped')}: the plain variants did not get their twin's code"
+    _, refs, entries = inspect_converted(dst)
+    for ref in refs:
+        code = entries[int(ref["blob"])]["code"]
+        if ref["stage"] == "0" and "layout(num_views = 2) in;" not in code:
+            return f"vertex variant {ref['keywords']!r} is not a multiview program"
+    for entry in entries.values():
+        if "STEREO_MULTIVIEW_ON" in entry.get("keywords", ""):
+            return "a 2019 entry's keyword was renamed"
+    return None
+
+
+pc_shader_case("a 2019 bundle is not split: plain variants get their stereo twin's multiview code",
+               sps_body, expect_2019_not_split, mode="--shaders-split")
 
 mono_body, _ = pc_shader_2021("Custom/Mono", [(_vs(spi=False, texcoord=False), [])],
                               [(_ps(spi=False, flat=False), [])], keyword_names=())
