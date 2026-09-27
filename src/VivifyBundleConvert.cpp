@@ -2069,6 +2069,11 @@ ShaderScan ScanShaders(std::string const& bundlePath) {
       auto decoded = SerializedFileParse::DecodeShaderPrograms(
           data.data() + node.offset, available, shader);
       if (!decoded.ok) scan.undecodableShaders++;
+      size_t realPrograms = 0;
+      for (auto const& program : decoded.programs) {
+        if (!program.raw) realPrograms++;
+      }
+      if (decoded.ok && realPrograms == 0 && !shader.name.empty()) scan.emptyShaderNames.push_back(shader.name);
       for (auto const& program : decoded.programs) {
         scan.programs++;
         programTypes.insert(program.programType);

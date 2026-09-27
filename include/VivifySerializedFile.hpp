@@ -310,6 +310,9 @@ struct ShaderObject {
   bool parsedFormRead = false;
   std::vector<ParsedProgramRef> programRefs;
   std::vector<std::string> keywordNames;
+  // m_ParsedForm.m_Name, the shader's real name ("Custom/Foo"), when the walk
+  // reached it.
+  std::string parsedFormName;
   // Where each keyword name's length field sits in the file, parallel to
   // keywordNames (0 where not seen), so a name can be rewritten in place.
   std::vector<size_t> keywordNameFileOffsets;

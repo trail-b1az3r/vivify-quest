@@ -33,6 +33,50 @@ port from scratch — see Credits below.
   - Full settings-menu parity: every toggle the runtime already had a config
     key for is now actually exposed in the in-game settings UI.
 
+## 0.14.2 — Hold My Hand's raymarcher: the PC build of shaders the Quest bundle shipped empty
+
+With Hold My Hand's Quest bundle in hand, the raymarching effect turned out to
+be `Custom/PoofShaders/Audio_Kaleidoscope/World_AudioLink_2.0`, a raymarched
+AudioLink kaleidoscope (50 steps). Its program store in the Quest bundle is
+empty: four bytes, a count of zero, for both GLES and Vulkan. When the map was
+built, Unity failed to compile it for Android and shipped it with nothing in
+it. It is the only one of the bundle's 26 shaders like that. No runtime could
+draw it from that bundle, which is why no version of this mod ever changed
+anything about it.
+
+The map's PC build has the same shader compiled for DirectX, which this mod
+translates. So now, before a level's Quest bundle loads:
+
+1. Its shaders are scanned for any shipped empty. The scan finds exactly the
+   kaleidoscope in Hold My Hand, and nothing in RSIH or 743Aether.
+2. For each one found, the map's PC bundle is used: the song folder's, or else
+   one downloaded by the `windows2021`/`windows2019` checksum in `Info.dat`
+   from the same repository the Quest bundles come from. It is converted as a
+   PC-only map's would be, and cached.
+3. The converted bundle is loaded, the PC builds of exactly those shaders are
+   kept, and the bundle is unloaded without destroying them. Only then does
+   the Quest bundle load: the two share internal file names, and Unity refuses
+   to have both loaded at once.
+4. Materials whose shader is one of the empty ones are pointed at its PC
+   build. The log names each one.
+
+The play button says "Checking shaders…", "Downloading PC shaders…" or
+"Converting PC shaders…" while this runs. The new setting **PC Shaders For
+Broken Quest Shaders** (on by default) turns the whole thing off. It also
+needs **Convert PC Bundles On Device** and **Translate Shaders On
+Conversion**, both on by default.
+
+The kaleidoscope reads AudioLink, which 0.14.0 supplies.
+
+Shader names now come from `m_ParsedForm.m_Name`. The Shader object's own
+name is empty in bundles built by recent Unity, so until now every shader in
+the converter's logs and scans was nameless.
+
+**Not tested on a headset.** I could not check that the kaleidoscope itself
+translates: I do not have Hold My Hand's PC bundle, and the bundle repository
+is not reachable from here. If it does not, the log says "did not translate
+for this GPU either" and the shader stays undrawn, the same as before.
+
 ## 0.14.1 — note bodies missing on RSIH: map realtime shadows are now opt-in
 
 RSIH's notes are completely plain: no custom note model and no note custom

@@ -138,6 +138,10 @@ struct ShaderScan {
   int binaryPrograms = 0;
   int undecodableShaders = 0;
   std::vector<int32_t> programTypes;  // union across every program, ascending
+  // Shaders whose program store holds no program at all: Unity failed to
+  // compile them for the bundle's platform and shipped them empty. Nothing can
+  // draw them from this bundle; the PC build of the same map can stand in.
+  std::vector<std::string> emptyShaderNames;
 };
 
 // What a shader-translating conversion did.
