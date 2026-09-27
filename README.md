@@ -170,3 +170,4 @@ including a glslang compile of every translated program.
 
 **Testers**
 - ME
+- people who made issues 
