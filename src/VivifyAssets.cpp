@@ -809,9 +809,39 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
     ConvertPcBundleAsync(_selectedLevelPath, pcBundleFallback);
     return;
   }
-  PaperLogger.warn("Vivify: '{}' has no Android bundle, no PC bundle to convert, and no android2021 checksum",
-                   _selectedLevelPath);
+  if (TryDownloadPcBundle(_selectedLevelPath)) return;
+  PaperLogger.warn("Vivify: '{}' has no Android bundle, no PC bundle to convert, and no bundle checksum in "
+                   "Info.dat to download one by", _selectedLevelPath);
   SongCore::API::PlayButton::DisablePlayButton("Vivify", "No Vivify assets found for this map.");
+}
+
+// A Vivify map with no Quest assets at all: download its PC bundle by the
+// windows checksum in Info.dat (from the same repository the Quest bundles
+// come from) into the song folder, then convert it as usual. Next time the
+// song folder has it, and the conversion is cached. False when Info.dat names
+// no PC bundle.
+bool Runtime::TryDownloadPcBundle(std::string const& levelPath) {
+  if (!GetConvertPcBundlesOnDevice()) return false;
+  uint32_t checksum = ReadBundleChecksumFromInfoDat(levelPath, "windows2021");
+  std::string destName = "bundleWindows2021.vivify";
+  if (checksum == 0) {
+    checksum = ReadBundleChecksumFromInfoDat(levelPath, "windows2019");
+    destName = "bundleWindows2019.vivify";
+  }
+  if (checksum == 0) return false;
+  std::string const dest = JoinPath(levelPath, destName);
+  PaperLogger.info("Vivify: no Quest assets for '{}'; downloading its PC bundle (checksum {}) to convert",
+                   levelPath, checksum);
+  SongCore::API::PlayButton::DisablePlayButton("Vivify", "Downloading PC assets...");
+  DownloadBundleTo(checksum, dest, [this, levelPath, dest](bool ok) {
+    if (levelPath != _selectedLevelPath) return;
+    if (!ok) {
+      SongCore::API::PlayButton::DisablePlayButton("Vivify", "PC asset download failed.");
+      return;
+    }
+    ConvertPcBundleAsync(levelPath, dest);
+  });
+  return true;
 }
 
 void Runtime::CancelPendingDownload() {
@@ -826,6 +856,13 @@ void Runtime::CancelPendingDownload() {
 // play button is waiting on one would stay unplayable for the rest of the
 // session. Time it out and take the conversion path instead.
 void Runtime::CheckDownloadTimeout() {
+  if (_graftDeadline >= 0.0f && UnityEngine::Time::get_realtimeSinceStartup() >= _graftDeadline) {
+    _graftDeadline = -1.0f;
+    _graftGeneration++;  // the late callback, if it ever comes, is ignored
+    PaperLogger.warn("Vivify: the PC bundle download for the empty shaders timed out; loading the Quest bundle "
+                     "as it is");
+    FinishAndroidBundleLoad(_graftPendingLevel, _graftPendingAndroid);
+  }
   if (_downloadDeadline < 0.0f) return;
   if (UnityEngine::Time::get_realtimeSinceStartup() < _downloadDeadline) return;
 
@@ -838,6 +875,7 @@ void Runtime::CheckDownloadTimeout() {
     ConvertPcBundleAsync(levelPath, pcBundleFallback);
     return;
   }
+  if (TryDownloadPcBundle(levelPath)) return;
   SongCore::API::PlayButton::DisablePlayButton("Vivify", "Asset download timed out.");
 }
 
@@ -872,6 +910,7 @@ void Runtime::BeginBundleDownload(uint32_t checksum, std::string const& levelPat
       ConvertPcBundleAsync(levelPath, pcBundleFallback);
       return;
     }
+    if (TryDownloadPcBundle(levelPath)) return;
     SongCore::API::PlayButton::DisablePlayButton("Vivify", "Failed to download assets.");
   });
 }
@@ -1049,8 +1088,14 @@ void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string c
       }
       SongCore::API::PlayButton::DisablePlayButton("Vivify", "Downloading PC shaders...");
       std::string const dest = JoinPath(levelPath, destName);
+      // A download that never calls back must not hold the play button:
+      // CheckDownloadTimeout loads the Quest bundle as it is when this passes.
+      _graftDeadline = UnityEngine::Time::get_realtimeSinceStartup() + 180.0f;  // PC bundles run to tens of MB
+      _graftPendingLevel = levelPath;
+      _graftPendingAndroid = androidBundlePath;
       DownloadBundleTo(checksum, dest, [this, generation, levelPath, androidBundlePath, dest, empty](bool ok) {
         if (generation != _graftGeneration || levelPath != _selectedLevelPath) return;
+        _graftDeadline = -1.0f;
         if (!ok) {
           PaperLogger.warn("Vivify: the map's PC bundle could not be downloaded; the empty shaders stay undrawn");
           FinishAndroidBundleLoad(levelPath, androidBundlePath);
@@ -1148,36 +1193,30 @@ void Runtime::DownloadBundle(uint32_t checksum, std::string const& levelPath, st
 void Runtime::DownloadBundleTo(uint32_t checksum, std::string const& destPath, std::function<void(bool)> callback) {
   std::string url = "https://repo.totalbs.dev/api/v1/bundles/" + std::to_string(checksum);
   std::string bundlePath = destPath;
-  if (GetVivifyDebugLogging()) {
-    PaperLogger.info("Vivify bundle download: android2021={} metadataUrl='{}' cachePath='{}'",
-                     checksum, url, bundlePath);
-  }
+  // Logged unconditionally: whether a bundle downloaded is the first thing
+  // to know about a map that does not work.
+  PaperLogger.info("Vivify bundle download: checksum={} metadataUrl='{}' saving to '{}'", checksum, url,
+                   bundlePath);
   WebUtils::GetAsync<WebUtils::StringResponse>(WebUtils::URLOptions(url), [bundlePath, callback, url](WebUtils::StringResponse res) {
     if (!res.IsSuccessful() || !res.responseData.has_value()) {
-      if (GetVivifyDebugLogging()) {
-        PaperLogger.warn("Vivify bundle download failed: metadata request unsuccessful url='{}'", url);
-      }
+      PaperLogger.warn("Vivify bundle download failed: metadata request unsuccessful url='{}' http={} curl={}",
+                       url, res.get_HttpCode(), res.get_CurlStatus());
       BSML::MainThreadScheduler::Schedule([callback] { callback(false); });
       return;
     }
     rapidjson::Document doc;
     doc.Parse(res.responseData->c_str());
     if (doc.HasParseError() || !doc.HasMember("downloadUrl") || !doc["downloadUrl"].IsString()) {
-      if (GetVivifyDebugLogging()) {
-        PaperLogger.warn("Vivify bundle download failed: metadata response did not contain downloadUrl");
-      }
+      PaperLogger.warn("Vivify bundle download failed: metadata response did not contain downloadUrl");
       BSML::MainThreadScheduler::Schedule([callback] { callback(false); });
       return;
     }
     std::string downloadUrl = doc["downloadUrl"].GetString();
-    if (GetVivifyDebugLogging()) {
-      PaperLogger.info("Vivify bundle download URL resolved: '{}'", downloadUrl);
-    }
+    PaperLogger.info("Vivify bundle download URL resolved: '{}'", downloadUrl);
     WebUtils::GetAsync<WebUtils::DataResponse>(WebUtils::URLOptions(downloadUrl), [bundlePath, callback](WebUtils::DataResponse dataRes) {
       if (!dataRes.IsSuccessful() || !dataRes.responseData.has_value()) {
-        if (GetVivifyDebugLogging()) {
-          PaperLogger.warn("Vivify bundle download failed: data request unsuccessful path='{}'", bundlePath);
-        }
+        PaperLogger.warn("Vivify bundle download failed: data request unsuccessful path='{}' http={} curl={}",
+                         bundlePath, dataRes.get_HttpCode(), dataRes.get_CurlStatus());
         BSML::MainThreadScheduler::Schedule([callback] { callback(false); });
         return;
       }
@@ -1188,10 +1227,8 @@ void Runtime::DownloadBundleTo(uint32_t checksum, std::string const& destPath, s
                  static_cast<std::streamsize>(dataRes.responseData->size()));
         os.close();
       }
-      if (GetVivifyDebugLogging()) {
-        PaperLogger.info("Vivify bundle download complete: path='{}' bytes={} written={}",
+      PaperLogger.info("Vivify bundle download complete: path='{}' bytes={} written={}",
                          bundlePath, dataRes.responseData->size(), BoolText(written));
-      }
       BSML::MainThreadScheduler::Schedule([callback, written] { callback(written); });
     });
   });
