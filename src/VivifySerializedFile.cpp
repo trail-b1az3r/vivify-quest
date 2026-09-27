@@ -1003,6 +1003,37 @@ class ParsedFormWalker {
     }
   }
 
+  // m_NameIndices is map<string, int>. Walks its bytes [start, end) as
+  // aligned keys -- count, then (length, characters, padding to 4, value) per
+  // entry -- and, only if that lands exactly on `end`, records where each
+  // STEREO_INSTANCING_ON key's length field sits, so a converter can rename it
+  // in place (a 2019 bundle picks its variants through these names).
+  void FindAlignedNameKeys(size_t start, size_t end) {
+    if (end <= start || end - start < 4) return;
+    uint8_t const* const base = _data();
+    auto u32 = [base](size_t at) {
+      return static_cast<uint32_t>(base[at]) | (static_cast<uint32_t>(base[at + 1]) << 8) |
+             (static_cast<uint32_t>(base[at + 2]) << 16) | (static_cast<uint32_t>(base[at + 3]) << 24);
+    };
+    uint32_t const count = u32(start);
+    size_t at = start + 4;
+    std::vector<size_t> found;
+    for (uint32_t i = 0; i < count; i++) {
+      if (end - at < 4) return;
+      uint32_t const length = u32(at);
+      if (length > end - at - 4) return;
+      if (std::string_view(reinterpret_cast<char const*>(base + at + 4), length) == "STEREO_INSTANCING_ON") {
+        found.push_back(at);
+      }
+      at += 4 + length;
+      at = (at + 3) & ~static_cast<size_t>(3);
+      if (at > end || end - at < 4) return;
+      at += 4;  // the int value
+    }
+    if (at != end) return;
+    for (size_t offset : found) _shader.stereoNameIndexFileOffsets.push_back(_fileOffset + offset);
+  }
+
   // Reads the fields that need whole-value decoding -- parameters and the
   // pass's name table -- instead of walking them leaf by leaf. Returns true
   // when it consumed the node.
@@ -1013,7 +1044,9 @@ class ParsedFormWalker {
       int32_t subShader, pass;
       if (!PassOf(subShader, pass)) return false;
       Record record;
+      size_t const start = _reader.position();
       RecordReader(_reader, _schema, _children).Read(nodeIndex, record);
+      FindAlignedNameKeys(start, _reader.position());
       auto& names = _shader.passNames[{subShader, pass}];
       if (auto it = record.lists.find("m_NameIndices"); it != record.lists.end()) {
         for (auto const& pair : it->second) {

@@ -39,6 +39,7 @@ constexpr std::string_view kSubmitScoresConfigKey = "submitScoresOnVivifyMaps";
 constexpr std::string_view kTranslateShadersConfigKey = "translateShadersOnConversion";
 constexpr std::string_view kAudioLinkConfigKey = "audioLink";
 constexpr std::string_view kMapRealtimeShadowsConfigKey = "mapRealtimeShadows";
+constexpr std::string_view kSplit2019ConfigKey = "splitUnity2019ShadersForRecording";
 constexpr std::string_view kPcShadersForEmptyConfigKey = "pcShadersForEmptyQuestShaders";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
 bool gMultipassRenderingEnabled = true;
@@ -83,6 +84,7 @@ bool gSubmitScores = true;
 bool gTranslateShaders = true;
 bool gAudioLink = true;
 bool gMapRealtimeShadows = false;
+bool gSplit2019 = true;
 bool gPcShadersForEmpty = true;
 // Which shader to use as the stand-in, by name, overriding the automatic pick.
 //
@@ -338,6 +340,14 @@ void RegisterModSettings() {
             GetMapRealtimeShadows(),
             [](bool value) { SetBoolConfigValue(kMapRealtimeShadowsConfigKey, value, gMapRealtimeShadows); });
 
+        // Converted Unity 2019 maps get separate single-screen programs, so
+        // replay and recording renderers can draw them. Changing it redoes
+        // those conversions.
+        BSML::Lite::CreateToggle(
+            container->get_transform(), u"Recordable 2019 Converted Maps",
+            GetSplitUnity2019Shaders(),
+            [](bool value) { SetBoolConfigValue(kSplit2019ConfigKey, value, gSplit2019); });
+
         BSML::Lite::CreateToggle(
             container->get_transform(), u"AudioLink",
             GetAudioLinkEnabled(),
@@ -487,6 +497,10 @@ bool GetMapRealtimeShadows() {
   return gMapRealtimeShadows;
 }
 
+bool GetSplitUnity2019Shaders() {
+  return gSplit2019;
+}
+
 bool GetUsePcShadersForEmptyShaders() {
   return gPcShadersForEmpty;
 }
@@ -517,6 +531,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kTranslateShadersConfigKey, true, gTranslateShaders);
   needsWrite |= EnsureBoolConfigValue(kAudioLinkConfigKey, true, gAudioLink);
   needsWrite |= EnsureBoolConfigValue(kMapRealtimeShadowsConfigKey, false, gMapRealtimeShadows);
+  needsWrite |= EnsureBoolConfigValue(kSplit2019ConfigKey, true, gSplit2019);
   needsWrite |= EnsureBoolConfigValue(kPcShadersForEmptyConfigKey, true, gPcShadersForEmpty);
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),
                                         gStandInShaderName);

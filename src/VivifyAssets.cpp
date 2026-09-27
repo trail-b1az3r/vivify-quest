@@ -118,6 +118,13 @@ bool SplitStereoVariants() {
   return gMultiviewKeyword.load() == 1;
 }
 
+// What the cache marker records about how stereo variants were converted:
+// 1 = split, 2 = Unity 2019 bundles split too (0.14.8).
+int ConversionSplitMode() {
+  if (!SplitStereoVariants()) return 0;
+  return GetSplitUnity2019Shaders() ? 3 : 1;
+}
+
 std::string ConversionMarkerPath(std::string const& destPath) {
   return destPath + ".version";
 }
@@ -133,7 +140,7 @@ bool CachedConversionIsCurrent(std::string const& destPath) {
   if (!(marker >> version)) return false;
   int split = 0;
   if (!(marker >> split)) split = 0;
-  return version == kBundleConversionVersion && (split != 0) == SplitStereoVariants();
+  return version == kBundleConversionVersion && split == ConversionSplitMode();
 }
 
 void MarkConversionCurrent(std::string const& destPath) {
@@ -143,7 +150,7 @@ void MarkConversionCurrent(std::string const& destPath) {
                      "be reconverted every launch", destPath);
     return;
   }
-  marker << kBundleConversionVersion << " " << (SplitStereoVariants() ? 1 : 0) << "\n";
+  marker << kBundleConversionVersion << " " << ConversionSplitMode() << "\n";
 }
 
 // CRASH GUARD FOR CONVERTED BUNDLES
@@ -259,6 +266,7 @@ BundleConversionOutcome RunBundleConversion(std::string const& source, std::stri
   }
   BundleConvert::ShaderConversionOptions options;
   options.separateStereoVariants = SplitStereoVariants();
+  options.splitUnity2019 = GetSplitUnity2019Shaders();
   auto const conversion = BundleConvert::ConvertShadersToGles(source, dest, options);
   if (conversion.status == BundleConvert::Status::Success) MarkConversionCurrent(dest);
   // Logged here, on the worker, rather than folded into the message: a bundle

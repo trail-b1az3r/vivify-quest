@@ -846,6 +846,49 @@ def expect_2019_not_split(proc, fields, refusals, dst):
 pc_shader_case("a 2019 bundle is not split: plain variants get their stereo twin's multiview code",
                sps_body, expect_2019_not_split, mode="--shaders-split")
 
+# 0.14.8: a 2019 bundle built for single-pass instanced stereo can be split
+# after all, by renaming STEREO_INSTANCING_ON where a 2019 bundle picks its
+# variants: each pass's m_NameIndices key. Its plain variants then get
+# single-view code, which replay and recording cameras need.
+spi2019_body, _ = pc_shader_2021(
+    "Swifter/Stereo2019SPI",
+    [(_vs(spi=False), []), (_vs(spi=True), [0])],
+    [(_ps(spi=False), []), (_ps(spi=True), [0])],
+    keyword_names=(), entry_keywords=("STEREO_INSTANCING_ON",),
+    pass_names={"STEREO_INSTANCING_ON": 7, "_Color": 8})
+
+
+def expect_2019_split(proc, fields, refusals, dst):
+    if fields.get("linked") != "1" or fields.get("variantsRefused") != "0":
+        return f"linked={fields.get('linked')} variantsRefused={fields.get('variantsRefused')} {refusals}"
+    if fields.get("stereoSplit") != "2" or fields.get("stereoRemapped") != "0":
+        return f"stereoSplit={fields.get('stereoSplit')} stereoRemapped={fields.get('stereoRemapped')}"
+    _, _, _, nodes, data = read_converted(dst)
+    off, size, _, _ = nodes[0]
+    body = data[off:off + size]
+    renamed = struct.pack("<i", 19) + b"STEREO_MULTIVIEW_ON\x00" + struct.pack("<i", 7)
+    if renamed not in body:
+        return "m_NameIndices' STEREO_INSTANCING_ON was not renamed in place"
+    if struct.pack("<i", 20) + b"STEREO_INSTANCING_ON" + struct.pack("<i", 7) in body:
+        return "the old m_NameIndices key is still there"
+    if struct.pack("<i", 6) + b"_Color" + b"\x00\x00" + struct.pack("<i", 8) not in body:
+        return "the next m_NameIndices entry moved"
+    _, refs, entries = inspect_converted(dst)
+    vertex = [r for r in refs if r["stage"] == "0"]
+    codes = [entries[int(r["blob"])]["code"] for r in vertex]
+    multiview = [("num_views" in c) for c in codes]
+    if sorted(multiview) != [False, True]:
+        return f"expected one single-view and one multiview vertex program, got {multiview}"
+    return None
+
+
+pc_shader_case("a 2019 SPI bundle split renames m_NameIndices in place: single-view plain, multiview stereo",
+               spi2019_body, expect_2019_split, mode="--shaders-split2019")
+# Without the 2019 option, the same bundle keeps multiview code in its plain variants.
+pc_shader_case("a 2019 SPI bundle is not split unless asked",
+               spi2019_body, lambda proc, fields, refusals, dst: None if fields.get("stereoSplit") == "0"
+               and fields.get("stereoRemapped") == "2" else f"{fields}", mode="--shaders-split")
+
 mono_body, _ = pc_shader_2021("Custom/Mono", [(_vs(spi=False, texcoord=False), [])],
                               [(_ps(spi=False, flat=False), [])], keyword_names=())
 

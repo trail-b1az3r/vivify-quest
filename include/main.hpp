@@ -36,6 +36,8 @@ bool GetAudioLinkEnabled();
 // Whether SetRenderingSettings may turn on realtime shadows (off: the
 // shadow* quality settings in it are ignored).
 bool GetMapRealtimeShadows();
+// Whether converted Unity 2019 bundles get single-view programs too (0.14.8).
+bool GetSplitUnity2019Shaders();
 // Whether a shader a map's Quest bundle shipped empty is replaced by the PC
 // build of it, converted (VivifyAssets.cpp).
 bool GetUsePcShadersForEmptyShaders();

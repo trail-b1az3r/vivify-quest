@@ -59,6 +59,7 @@ All settings are in **Mod Settings → Vivify**.
 | Scene Depth For Map Shaders | on | Renders `_CameraDepthTexture` for raymarchers and distortion effects. |
 | AudioLink | on | Runs AudioLink for maps that use it. |
 | Map Realtime Shadows | off | Lets maps turn on realtime shadows. Expensive; can blacken note bodies. |
+| Recordable 2019 Converted Maps | on | Lets replay and recording renderers draw converted Unity 2019 maps. Turn off if their notes or visuals go invisible in the headset. |
 | Disable Custom Note Visuals | off | Keeps the game's own notes, sabers and debris. |
 | Disable All Blits | off | Turns off post-processing effects. |
 | Disable Beat 0 Filmgrain Blit | off | Skips film-grain blits that start at beat 0. |

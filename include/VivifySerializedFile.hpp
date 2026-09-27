@@ -325,6 +325,11 @@ struct ShaderObject {
   // offset of its m_FileID. A body moved into another file has to have these
   // cleared, since they name objects of the file it came from.
   std::vector<size_t> pptrFileOffsets;
+  // Where each pass's m_NameIndices key "STEREO_INSTANCING_ON" sits (the
+  // offset of its length field), when the keys are 4-byte aligned: a 2019
+  // bundle picks keyword variants through these names, so this is where its
+  // stereo keyword can be renamed in place.
+  std::vector<size_t> stereoNameIndexFileOffsets;
 };
 
 // One Texture2D object, as far as making its pixels reachable on device needs.
