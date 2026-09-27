@@ -15,6 +15,8 @@ What changed in each release is in [CHANGELOG.md](CHANGELOG.md).
 
 ## Features
 
+- FULLY WORKING RAYMARCHING SHADERES IN HOLD MY HAND (only in 0.14.7+)
+
 - **Vivify events on Quest:** custom prefabs, materials, blits, cameras,
   screen textures and rendering settings. Blits run at the right point in the
   frame (before or after the skybox, opaque or transparent geometry), as on
