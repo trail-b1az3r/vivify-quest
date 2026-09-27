@@ -220,13 +220,14 @@ def player_sub_program(blob, gpu_type, keywords=()):
             "m_GpuProgramType": gpu_type}
 
 
-def shader_body(name, platforms, store, passes, keyword_names=(), pass_names=None):
+def shader_body(name, platforms, store, passes, keyword_names=(), pass_names=None, dependencies=()):
     """One 2021.3.16 Shader body.
 
     store: (offsets, compressed_lengths, decompressed_lengths, blob) as
     mkshader.build_program_store returns. passes: one dict per pass, mapping a
     stage field ("progVertex", ...) to {"player": [[player_sub_program, ...]],
-    "params": [[parameter blob index, ...]]} (2021.3.10+ layout)."""
+    "params": [[parameter blob index, ...]]} (2021.3.10+ layout). dependencies:
+    (m_FileID, m_PathID) pairs for m_Dependencies."""
     value = default(ROOT)
     parsed = value["m_ParsedForm"]
     parsed["m_Name"] = name
@@ -255,6 +256,7 @@ def shader_body(name, platforms, store, passes, keyword_names=(), pass_names=Non
     value["decompressedLengths"] = decompressed
     value["compressedBlob"] = list(blob)
     value["stageCounts"] = []
+    value["m_Dependencies"] = [{"m_FileID": f, "m_PathID": p} for f, p in dependencies]
     out = bytearray()
     write(ROOT, value, out)
     return bytes(out)

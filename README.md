@@ -28,7 +28,8 @@ What changed in each release is in [CHANGELOG.md](CHANGELOG.md).
     drawn.
 - **Broken Quest shaders replaced.** A shader that a map's Quest bundle
   shipped empty (the mapper's Unity failed to compile it) is replaced by the
-  PC build of that shader.
+  PC build of that shader. The mod downloads the map's PC bundle if needed,
+  and merges the translated shader into a cached copy of the Quest bundle.
 - **AudioLink:** `_AudioTexture` for any AudioLink shader in a map, and the
   SongCore `AudioLink` capability.
 - **Crash guard:** a converted bundle that crashes the game is automatically

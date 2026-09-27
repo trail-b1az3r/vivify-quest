@@ -1037,6 +1037,24 @@ void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string c
     FinishAndroidBundleLoad(levelPath, androidBundlePath);
     return;
   }
+  // The Quest bundle with the PC builds of its empty shaders merged in
+  // (0.14.6), made once and cached like any converted bundle.
+  std::string const merged = ConvertedBundlePath(androidBundlePath);
+  RecordInterruptedLoad(merged);
+  if (TranslationCrashedBefore(merged)) {
+    // The merged shaders took the game down; standing the same programs in at
+    // run time would too. The Quest bundle loads as it shipped.
+    PaperLogger.warn("Vivify: the Quest bundle with PC shaders merged in crashed the game last time; loading "
+                     "'{}' as it shipped", androidBundlePath);
+    FinishAndroidBundleLoad(levelPath, androidBundlePath);
+    return;
+  }
+  if (CachedConversionIsCurrent(merged)) {
+    PaperLogger.info("Vivify: loading the Quest bundle with its broken shaders replaced by their PC builds: '{}'",
+                     merged);
+    FinishAndroidBundleLoad(levelPath, merged);
+    return;
+  }
   if (_graftLevelPath == levelPath && !_graftedShaders.empty()) {
     // Already stood in for this level this session.
     FinishAndroidBundleLoad(levelPath, androidBundlePath);
@@ -1118,19 +1136,45 @@ void Runtime::ConvertPcForGraft(std::string const& levelPath, std::string const&
                                 std::string const& pcBundlePath, std::vector<std::string> const& names) {
   int const generation = _graftGeneration;
   std::string const converted = ConvertedBundlePath(pcBundlePath);
-  if (CachedConversionIsCurrent(converted)) {
-    GraftShadersFrom(levelPath, converted, names);
-    FinishAndroidBundleLoad(levelPath, androidBundlePath);
-    return;
-  }
-  SongCore::API::PlayButton::DisablePlayButton("Vivify", "Converting PC shaders...");
-  std::thread([this, generation, levelPath, androidBundlePath, pcBundlePath, converted, names]() {
-    auto const result = RunBundleConversion(pcBundlePath, converted);
-    bool const ok = result.status == BundleConvert::Status::Success;
-    std::string const message = result.message;
-    BSML::MainThreadScheduler::Schedule([this, generation, levelPath, androidBundlePath, converted, names, ok,
-                                         message]() {
+  std::string const merged = ConvertedBundlePath(androidBundlePath);
+  bool const cached = CachedConversionIsCurrent(converted);
+  SongCore::API::PlayButton::DisablePlayButton("Vivify", cached ? "Merging PC shaders..." : "Converting PC shaders...");
+  std::thread([this, generation, levelPath, androidBundlePath, pcBundlePath, converted, merged, names, cached]() {
+    bool ok = cached;
+    std::string message;
+    if (!cached) {
+      auto const result = RunBundleConversion(pcBundlePath, converted);
+      ok = result.status == BundleConvert::Status::Success;
+      message = result.message;
+    }
+    // Merge the PC builds into the Quest bundle itself: the materials that use
+    // the empty shaders then load with a working one, with no run-time
+    // swapping, and the result is cached for every later play.
+    bool mergedOk = false;
+    if (ok) {
+      std::error_code ec;
+      std::filesystem::create_directories(std::filesystem::path(merged).parent_path(), ec);
+      auto const merge = BundleConvert::MergeShadersInto(androidBundlePath, converted, names, merged);
+      mergedOk = merge.status == BundleConvert::Status::Success;
+      if (mergedOk) MarkConversionCurrent(merged);
+      std::string skipped;
+      for (auto const& line : merge.skipped) skipped += (skipped.empty() ? "" : "; ") + line;
+      for (auto const& line : merge.notes) skipped += (skipped.empty() ? "" : "; ") + line;
+      if (mergedOk) {
+        PaperLogger.info("Vivify: {} ('{}' -> '{}', {} bytes){}{}", merge.message, androidBundlePath, merged,
+                         merge.outputBytes, skipped.empty() ? "" : "; ", skipped);
+      } else {
+        PaperLogger.warn("Vivify: could not merge the PC shaders into the Quest bundle: {}{}{}; standing them in "
+                         "at load instead", merge.message, skipped.empty() ? "" : "; ", skipped);
+      }
+    }
+    BSML::MainThreadScheduler::Schedule([this, generation, levelPath, androidBundlePath, converted, merged, names,
+                                         ok, mergedOk, message]() {
       if (generation != _graftGeneration || levelPath != _selectedLevelPath) return;
+      if (mergedOk) {
+        FinishAndroidBundleLoad(levelPath, merged);
+        return;
+      }
       if (ok) {
         GraftShadersFrom(levelPath, converted, names);
       } else {
