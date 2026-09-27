@@ -1373,7 +1373,12 @@ bool GlslEmitter::BuildConstantBuffers() {
         length = (prefixRows > 0 ? std::to_string(prefixRows) + " + " : std::string()) + std::to_string(elementRows) +
                  " * UNITY_RUNTIME_INSTANCING_ARRAY_SIZE";
       }
-      entry.declaration = "layout(std140) uniform " + buffer.name + " { vec4 " + entry.name + "[" + length + "]; };";
+      std::string layout = "layout(std140)";
+      if (buffer.explicitBinding) {
+        if (!Require(310, "a uniform block binding")) return false;
+        layout = "layout(std140, binding = " + std::to_string(buffer.bindPoint) + ")";
+      }
+      entry.declaration = layout + " uniform " + buffer.name + " { vec4 " + entry.name + "[" + length + "]; };";
       _declarations += entry.declaration + "\n";
       _uniformNames.push_back(buffer.name);
       mapped.push_back(std::move(entry));

@@ -33,6 +33,52 @@ port from scratch — see Credits below.
   - Full settings-menu parity: every toggle the runtime already had a config
     key for is now actually exposed in the in-game settings UI.
 
+## 0.14.3 — grey custom notes, and the PC-shader step picking the wrong bundle
+
+### Burning Sands' custom notes grey
+
+A non-instanced note shader keeps its colour in a small cbuffer:
+`UNITY_INSTANCING_BUFFER_START(Props)` is `CBUFFER_START(Props)` when
+instancing is off. Burning Sands' `_Color` and `_Cutout` are in `Props`.
+0.14.0 made every named cbuffer a uniform block, to fit AudioLink's
+64 KB sample buffers, but without a binding. Every block in a program then
+sat on binding 0 and read the same buffer, and the colour was lost.
+
+Unity's own Quest build of AudioLink shows how a real GLES program does it:
+- Only its uniform blocks get binding entries (`LeftSampleBuffer` → 0,
+  `RightSampleBuffer` → 1), and `$Globals` stays loose.
+- Its GLSL pins each block with `layout(binding = N)`.
+
+The converter now does the same:
+- **Small named cbuffers** are loose uniforms again, which is how colours
+  worked up to 0.13.
+- **Only ones over 2 KB** become blocks, declared
+  `layout(std140, binding = N)` with N from the program's parameters.
+  That needs GLSL ES 3.10, which Quest supports.
+- **`UnityStereoGlobals`** is unchanged from 0.13.3.
+
+The built-in AudioLink bundle was rebuilt the same way; all 24 of its
+programs compile. Conversion cache version 11: converted maps reconvert by
+themselves.
+
+### Hold My Hand: the PC-shader step used the Quest bundle as "the PC bundle"
+
+The song folder search that 0.14.2 relied on is deliberately permissive, and
+it matched `bundleAndroid2021.vivify` itself. Conversion then failed with
+"already targets Android", and the step never went on to download the real PC
+bundle. It now looks for `bundleWindows2021.vivify` or
+`bundleWindows2019.vivify` specifically. It never takes the bundle being
+loaded, and otherwise it downloads by `Info.dat`'s windows checksum.
+
+### 743Aether's notes
+
+743Aether's note material, `Wireframe Note`
+(`Mawntee/Beat Saber Wireframe 3D-Noise`), is the one shader in that map the
+converter cannot translate. It draws its wireframe in a geometry stage, which
+multiview rendering forbids. So the note is drawn with a stand-in, which
+should take the note colour. It does not, and the log does not say why. That
+is not fixed yet.
+
 ## 0.14.2 — Hold My Hand's raymarcher: the PC build of shaders the Quest bundle shipped empty
 
 With Hold My Hand's Quest bundle in hand, the raymarching effect turned out to

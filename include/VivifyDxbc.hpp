@@ -100,6 +100,9 @@ struct ConstantBufferInfo {
   // compiles that array with a placeholder length of 2 and, on GLES, sizes it
   // at load time through UNITY_RUNTIME_INSTANCING_ARRAY_SIZE; the block is
   // declared the same way. 0 when the buffer has no such array.
+  // Declare the block with layout(binding = bindPoint) (GLSL ES 3.10), as
+  // Unity's own GLES output does for a shader's named uniform blocks.
+  bool explicitBinding = false;
   uint32_t instancedArrayOffset = 0;
   uint32_t instancedElementSize = 0;
 };
