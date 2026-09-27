@@ -207,10 +207,15 @@ struct ShaderConversionOptions {
   // program in any single-view framebuffer, which is what made offscreen draws
   // on converted maps flicker or show garbage. Only turn this on when the game
   // actually uses STEREO_MULTIVIEW_ON, or the eye cameras draw nothing.
-  // Applies to Unity 2021 bundles only: a 2019 bundle picks variants through
-  // m_NameIndices, which the rename cannot reach, so it keeps the pre-0.14
-  // behaviour.
+  // A 2021 bundle's keyword is renamed in m_ParsedForm.m_KeywordNames.
   bool separateStereoVariants = false;
+  // Also split Unity 2019 bundles, renaming STEREO_INSTANCING_ON in each
+  // pass's m_NameIndices, which is what a 2019 bundle picks variants by.
+  // (0.14.0-0.14.4 renamed it in the program entries instead, which Unity
+  // does not read, and the eye cameras drew nothing.) Without it a 2019
+  // bundle's plain variants hold multiview programs: right for the headset,
+  // invisible to single-screen cameras such as replay renderers.
+  bool splitUnity2019 = false;
 };
 
 ShaderConversion ConvertShadersToGles(std::string const& sourcePath,

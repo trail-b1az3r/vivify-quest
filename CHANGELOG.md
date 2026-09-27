@@ -11,6 +11,35 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.8] - 2026-09-27
+
+### Fixed
+- **Converted Unity 2019 maps missing 3D assets, or showing grey stand-ins,
+  in replay and recording renderers.** Those renderers draw through a
+  single-screen camera. Since 0.14.5, a 2019 map's converted shaders only
+  had two-eye (multiview) programs, which a single-screen camera can't run.
+  - 2019 shaders now get separate single-screen and two-eye programs, as
+    2021 ones already did.
+  - What makes this work: a 2019 bundle picks its keyword variants through
+    each pass's `m_NameIndices`. The stereo keyword `STEREO_INSTANCING_ON` is
+    now renamed to `STEREO_MULTIVIEW_ON` there, in place. 0.14.0–0.14.4
+    renamed it inside the programs, which Unity doesn't read.
+  - Checked on 743Aether's real 2019 bundle:
+    - 40 of its 41 keyword entries renamed (the 41st is in the one shader
+      that can't be translated);
+    - 387 stereo variants split;
+    - all 313 distinct programs compile and link under glslang (157
+      single-screen, 156 two-eye).
+
+### Added
+- **Recordable 2019 Converted Maps** setting (on by default). If converted
+  2019 maps lose their notes or visuals in the headset, turn it off: that
+  would mean the headset doesn't pick up the renamed keyword.
+
+### Changed
+- The cache marker records this setting, so every converted map reconverts
+  once, and again whenever the setting changes.
+
 ## [0.14.7] - 2026-09-27
 
 ### Fixed

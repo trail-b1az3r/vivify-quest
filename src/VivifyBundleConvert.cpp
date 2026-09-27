@@ -1546,6 +1546,12 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
   // the keyword in the entries left the stereo variants unreachable: the eye
   // cameras drew the single-view plain programs, which draw nothing into a
   // multiview target, and notes and most visuals went invisible (0.14.0-0.14.4).
+  //
+  // 0.14.8 renames it where a 2019 bundle does keep it: each pass's
+  // m_NameIndices key, aligned the same way, so the same in-place rewrite
+  // fits. Without it single-screen cameras (replay and recording renderers,
+  // spectator cameras) drew nothing of a converted 2019 map, since its plain
+  // variants held multiview programs.
   bool const namesInEntries = shader.keywordNames.empty();
   int32_t splitKeyword = -1;
   if (conversionOptions.separateStereoVariants && !namesInEntries) {
@@ -1554,6 +1560,12 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
           shader.keywordNameFileOffsets[i] != 0) {
         splitKeyword = static_cast<int32_t>(i);
       }
+    }
+  }
+  if (conversionOptions.separateStereoVariants && conversionOptions.splitUnity2019 && namesInEntries &&
+      !shader.stereoNameIndexFileOffsets.empty()) {
+    for (size_t i = 0; i < keywordNames.size() && splitKeyword < 0; i++) {
+      if (keywordNames[i] == "STEREO_INSTANCING_ON") splitKeyword = static_cast<int32_t>(i);
     }
   }
   auto hasKeyword = [](ParsedProgramRef const& ref, int32_t keyword) {
@@ -1590,11 +1602,14 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
         multiviewRef[r] = false;
       }
     }
-    size_t const at = shader.keywordNameFileOffsets[static_cast<size_t>(splitKeyword)];
     std::vector<uint8_t> name = {19, 0, 0, 0};
     for (char c : std::string_view("STEREO_MULTIVIEW_ON")) name.push_back(static_cast<uint8_t>(c));
     name.push_back(0);  // alignment, where STEREO_INSTANCING_ON's last character was
-    patches.push_back({at, std::move(name)});
+    if (namesInEntries) {
+      for (size_t at : shader.stereoNameIndexFileOffsets) patches.push_back({at, name});
+    } else {
+      patches.push_back({shader.keywordNameFileOffsets[static_cast<size_t>(splitKeyword)], name});
+    }
   } else {
     for (char const* stereoKeyword : {"STEREO_INSTANCING_ON", "UNITY_SINGLE_PASS_STEREO"}) {
     int32_t spiKeyword = -1;

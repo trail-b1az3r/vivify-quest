@@ -85,7 +85,9 @@ int main(int argc, char** argv) {
   std::string const first = argv[1];
   bool const repack = first == "--repack";
   // --shaders-split is --shaders with ShaderConversionOptions::separateStereoVariants.
-  bool const split = first == "--shaders-split";
+  // --shaders-split2019 also splits Unity 2019 bundles (splitUnity2019).
+  bool const split2019 = first == "--shaders-split2019";
+  bool const split = first == "--shaders-split" || split2019;
   bool const shaders = first == "--shaders" || split;
   bool const flagged = repack || shaders;
   if (flagged && argc < 4) {
@@ -98,6 +100,7 @@ int main(int argc, char** argv) {
   if (shaders) {
     ShaderConversionOptions options;
     options.separateStereoVariants = split;
+    options.splitUnity2019 = split2019;
     ShaderConversion c = ConvertShadersToGles(src, dst, options);
     std::printf("status=%s\nmessage=%s\nseen=%d translated=%d leftAlone=%d refused=%d "
                 "programs=%d outBytes=%llu\ntexSeen=%d texReadable=%d texStreamed=%d\n"
