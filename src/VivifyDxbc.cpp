@@ -1244,6 +1244,13 @@ class GlslEmitter {
   bool _usedThreadIDInGroup = false;
   bool _usedThreadIDFlattened = false;
   bool _usedGsInstanceID = false;
+  // SV_RenderTargetArrayIndex read by a pixel program (the eye index in PC
+  // single-pass instanced stereo) and written by a vertex one.
+  bool _usedRTArrayIndexIn = false;
+  std::string _stereoEyeIndexType;  // set when unity_StereoEyeIndex is fed from the view
+  bool _writesRTArrayIndex = false;
+  bool _stereoInstanced = false;
+  bool _declaredRuntimeInstancingSize = false;
   // Thread-group shared memory, one entry per declared block.
   struct SharedBlock {
     uint32_t index = 0;
@@ -1325,6 +1332,53 @@ bool GlslEmitter::BuildConstantBuffers() {
 
   for (auto const& buffer : _program.constantBuffers) {
     auto& mapped = _constantBuffers[buffer.bindPoint];
+    if (buffer.uniformBlock) {
+      bool identifier = !buffer.name.empty() && !(buffer.name[0] >= '0' && buffer.name[0] <= '9');
+      for (char c : buffer.name) {
+        if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_')) {
+          identifier = false;
+        }
+      }
+      uint32_t const rows = (buffer.size + 15u) / 16u;
+      if (!identifier || rows == 0 || rows > 4096) {
+        Fail("constant buffer '" + buffer.name + "' cannot be declared as a uniform block");
+        return false;
+      }
+      MappedVariable entry;
+      entry.name = "vivify_cb_" + buffer.name;
+      entry.startOffset = 0;
+      entry.size = rows * 16u;
+      entry.isArray = true;
+      entry.elementStride = 16;
+      entry.componentCount = 4;
+      std::string length = std::to_string(rows);
+      if (buffer.instancedElementSize > 0) {
+        // Unity compiles an instanced array at a placeholder length of 2.
+        // DirectX reads past a cbuffer's declared end into whatever buffer is
+        // bound, so there that never mattered; GLSL does not, and a block
+        // declared at the placeholder gave every instance past the second
+        // garbage transforms -- which is what scrambled chords and chains,
+        // the notes Beat Saber draws as one instanced batch. Unity's own GLES
+        // shaders size the array with UNITY_RUNTIME_INSTANCING_ARRAY_SIZE,
+        // which the engine defines at load time from the element size and
+        // the device's uniform-block limit.
+        if (!_declaredRuntimeInstancingSize) {
+          _declarations += "#ifndef UNITY_RUNTIME_INSTANCING_ARRAY_SIZE\n"
+                           "#define UNITY_RUNTIME_INSTANCING_ARRAY_SIZE 2\n"
+                           "#endif\n";
+          _declaredRuntimeInstancingSize = true;
+        }
+        uint32_t const prefixRows = buffer.instancedArrayOffset / 16u;
+        uint32_t const elementRows = buffer.instancedElementSize / 16u;
+        length = (prefixRows > 0 ? std::to_string(prefixRows) + " + " : std::string()) + std::to_string(elementRows) +
+                 " * UNITY_RUNTIME_INSTANCING_ARRAY_SIZE";
+      }
+      entry.declaration = "layout(std140) uniform " + buffer.name + " { vec4 " + entry.name + "[" + length + "]; };";
+      _declarations += entry.declaration + "\n";
+      _uniformNames.push_back(buffer.name);
+      mapped.push_back(std::move(entry));
+      continue;
+    }
     for (auto const& variable : buffer.variables) {
       MappedVariable entry;
       entry.startOffset = variable.startOffset;
@@ -1367,8 +1421,15 @@ bool GlslEmitter::BuildConstantBuffers() {
         // boundary, so anything narrower than a float4 would be declared in
         // GLSL with a stride the engine does not use. Refusing is the honest
         // answer; guessing would bind the wrong rows.
-        if (variable.columns != 4 || variable.rows > 1) {
-          Fail("constant buffer array '" + variable.name + "' is not an array of float4");
+        // Every element of an HLSL cbuffer array starts on a 16-byte boundary,
+        // so a float3[] or float[] is laid out exactly like a float4[] whose
+        // tail components go unused. It is declared that way: the offsets
+        // line up, reads take the components they always took, and Unity binds
+        // array uniforms through GL's own reflection of the declared type.
+        // (unity_StereoWorldSpaceCameraPos is a float3[2], so refusing these
+        // refused every single-pass stereo shader that reads the camera.)
+        if (variable.rows > 1 || variable.columns > 4) {
+          Fail("constant buffer array '" + variable.name + "' is not an array of vectors");
           return false;
         }
         if (variable.elements > 65536) {
@@ -1393,6 +1454,15 @@ bool GlslEmitter::BuildConstantBuffers() {
         entry.scalarDeclaration = columns == 1;
         entry.declaration = "uniform " + VecType(static_cast<int>(columns), prefix) + " " +
                             entry.name + ";";
+        if (_options.multiview && variable.name == "unity_StereoEyeIndex" && columns == 1) {
+          // Single-pass (double-wide) stereo, what PC Beat Saber used before
+          // 1.29.4, draws each eye separately and tells the shader which one
+          // through this uniform. Under multiview both eyes are one draw and
+          // the eye is the view, so the "uniform" becomes a variable set from
+          // gl_ViewID_OVR at the top of main().
+          _stereoEyeIndexType = VecType(1, prefix);
+          entry.declaration = _stereoEyeIndexType + " " + entry.name + ";";
+        }
       }
       entry.elementStride = entry.elementStride == 0 ? 16 : entry.elementStride;
       entry.componentCount = entry.componentCount == 0 ? 1 : entry.componentCount;
@@ -1623,6 +1693,14 @@ bool GlslEmitter::BuildSignatures() {
       case kSvSampleIndex:
         if (!Require(320, "SV_SampleIndex")) return false;
         continue;
+      case kSvRenderTargetArrayIndex:
+        // The eye index in PC single-pass instanced stereo. It is a built-in
+        // here too -- gl_ViewID_OVR under multiview, eye 0 otherwise -- bound
+        // in the prologue.
+        if (isPixel) continue;
+        Fail("input semantic '" + element.semanticName +
+             "' is SV_RenderTargetArrayIndex outside a pixel program");
+        return false;
       default:
         Fail("input semantic '" + element.semanticName + "' is system value " +
              std::to_string(element.systemValueType) +
@@ -1671,6 +1749,17 @@ bool GlslEmitter::BuildSignatures() {
       case kSvCoverage:
         continue;  // gl_FragDepth / gl_SampleMask, written through operand types
       case kSvRenderTargetArrayIndex:
+        if (isVertex) {
+          // Single-pass instanced stereo routes each instance to an eye by
+          // writing the layer. GLSL ES has no vertex-stage gl_Layer in any
+          // version, so the write always lands in a dummy. Under multiview the
+          // views do the routing, and the instance ID is remapped in the
+          // prologue so the program's eye maths agrees with them.
+          _writesRTArrayIndex = true;
+          _stereoInstanced = true;
+          _declarations += "vec4 vivify_RTArrayIndexOut;\n";
+          continue;
+        }
         if (!Require(320, "SV_RenderTargetArrayIndex")) return false;
         continue;  // gl_Layer
       case kSvClipDistance:
@@ -1859,6 +1948,7 @@ std::string GlslEmitter::RegisterName(Operand const& operand) {
         case kSvInstanceID: _usedInstanceID = true; return "vInstanceID";
         case kSvPrimitiveID: _usedPrimitiveID = true; return "vPrimitiveID";
         case kSvSampleIndex: _usedSampleIndex = true; return "vSampleIndex";
+        case kSvRenderTargetArrayIndex: _usedRTArrayIndexIn = true; return "vRTArrayIndex";
         default: break;
       }
       std::string name = VaryingName(*element, _program.stage == Stage::Vertex);
@@ -1897,7 +1987,8 @@ std::string GlslEmitter::RegisterName(Operand const& operand) {
         case kSvDepth:
         case kSvDepthGreaterEqual:
         case kSvDepthLessEqual: return "gl_FragDepth";
-        case kSvRenderTargetArrayIndex: return "gl_Layer";
+        case kSvRenderTargetArrayIndex:
+          return _writesRTArrayIndex ? "vivify_RTArrayIndexOut" : "gl_Layer";
         case kSvCoverage: return "gl_SampleMask[0]";
         default: break;
       }
@@ -1975,8 +2066,14 @@ std::string GlslEmitter::ConstantComponent(Operand const& operand, int component
   }
   uint32_t const bindPoint = static_cast<uint32_t>(operand.indices[0].immediate);
   if (bindPoint >= _constantBuffers.size() || _constantBuffers[bindPoint].empty()) {
+    std::string described;
+    for (auto const& buffer : _program.constantBuffers) {
+      described += (described.empty() ? "" : ", ") + std::string("b") + std::to_string(buffer.bindPoint) + " " +
+                   buffer.name;
+    }
     Fail("the shader reads constant buffer b" + std::to_string(bindPoint) +
-         ", which its reflection data does not describe");
+         ", which its reflection data does not describe (it describes: " +
+         (described.empty() ? std::string("nothing") : described) + ")");
     return {};
   }
   auto const& variables = _constantBuffers[bindPoint];
@@ -2980,6 +3077,9 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
 
     // ---- bit manipulation ---------------------------------------------------
     case OP_COUNTBITS: {
+      // bitCount and the rest of GLSL's bit-manipulation built-ins arrived in
+      // GLSL ES 3.10; a 3.00 program calling one does not compile.
+      if (!Require(310, "bitCount")) return false;
       // bitCount returns a signed count; D3D's result is an unsigned one, so
       // it is converted rather than bit-cast.
       uint8_t const mask = destMask();
@@ -2990,6 +3090,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       break;
     }
     case OP_BFREV: {
+      if (!Require(310, "bitfieldReverse")) return false;
       uint8_t const mask = destMask();
       WriteDest(instruction, operands[0],
                 "uintBitsToFloat(bitfieldReverse(" + SrcUint(operands[1], mask) + "))");
@@ -2998,6 +3099,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
     case OP_FIRSTBIT_HI:
     case OP_FIRSTBIT_SHI:
     case OP_FIRSTBIT_LO: {
+      if (!Require(310, "findMSB/findLSB")) return false;
       uint8_t const mask = destMask();
       int const count = PopCount4(mask);
       std::string const value = opcode == OP_FIRSTBIT_SHI ? SrcInt(operands[1], mask)
@@ -3017,6 +3119,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
     }
     case OP_UBFE:
     case OP_IBFE: {
+      if (!Require(310, "bitfieldExtract")) return false;
       // D3D takes width and offset as separate operands and masks them to five
       // bits; GLSL's bitfieldExtract takes them as ints in the same order.
       uint8_t const mask = destMask();
@@ -3033,6 +3136,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       break;
     }
     case OP_BFI: {
+      if (!Require(310, "bitfieldInsert")) return false;
       uint8_t const mask = destMask();
       int const count = PopCount4(mask);
       std::string const width = SrcInt(operands[1], mask);
@@ -3601,7 +3705,23 @@ GlslResult GlslEmitter::Run() {
     addPrologue("vec4 vFrontFace = vec4(intBitsToFloat(gl_FrontFacing ? -1 : 0));");
   }
   if (_usedVertexID) addPrologue("vec4 vVertexID = intBitsToFloat(ivec4(gl_VertexID));");
-  if (_usedInstanceID) addPrologue("vec4 vInstanceID = intBitsToFloat(ivec4(gl_InstanceID));");
+  if (_usedInstanceID) {
+    if (_options.multiview && _stereoInstanced) {
+      // One multiview draw per real instance stands in for SPI's two, so the
+      // SPI numbering is rebuilt: eye in bit 0, real instance above it.
+      addPrologue("vec4 vInstanceID = intBitsToFloat(ivec4(gl_InstanceID * 2 + int(gl_ViewID_OVR)));");
+    } else {
+      addPrologue("vec4 vInstanceID = intBitsToFloat(ivec4(gl_InstanceID));");
+    }
+  }
+  if (!_stereoEyeIndexType.empty()) {
+    addPrologue("unity_StereoEyeIndex = " + _stereoEyeIndexType + "(gl_ViewID_OVR);");
+  }
+  if (_usedRTArrayIndexIn) {
+    addPrologue(_options.multiview
+                    ? "vec4 vRTArrayIndex = intBitsToFloat(ivec4(int(gl_ViewID_OVR)));"
+                    : "vec4 vRTArrayIndex = intBitsToFloat(ivec4(0));");
+  }
   if (_usedPrimitiveID) addPrologue("vec4 vPrimitiveID = intBitsToFloat(ivec4(gl_PrimitiveID));");
   if (_usedSampleIndex) addPrologue("vec4 vSampleIndex = intBitsToFloat(ivec4(gl_SampleID));");
   if (_usedGsInstanceID) {
@@ -3643,6 +3763,12 @@ GlslResult GlslEmitter::Run() {
 
   std::string source;
   source += "#version " + std::to_string(_version) + " es\n";
+  bool const needsViewId = _options.multiview && (_program.stage == Stage::Vertex || _usedRTArrayIndexIn ||
+                                                  !_stereoEyeIndexType.empty());
+  if (needsViewId) {
+    source += "#extension GL_OVR_multiview2 : require\n";
+    if (_program.stage == Stage::Vertex) source += "layout(num_views = 2) in;\n";
+  }
   source += "precision highp float;\n";
   source += "precision highp int;\n";
   source += _declarations;
@@ -3651,9 +3777,39 @@ GlslResult GlslEmitter::Run() {
   // shared register file rather than a stack frame, so the registers are file
   // scope and main() only initialises what needs initialising.
   if (!_functions.empty()) {
-    source += prologue;
+    // The registers have to be at file scope so the subroutines can reach
+    // them, but GLSL ES only allows constant initialisers there. Each
+    // "type name = value;" is split: the declaration stays global and the
+    // assignment moves to the top of main().
+    std::string globals;
+    std::string initialisers;
+    size_t start = 0;
+    while (start < prologue.size()) {
+      size_t end = prologue.find('\n', start);
+      if (end == std::string::npos) end = prologue.size();
+      std::string line = prologue.substr(start, end - start);
+      start = end + 1;
+      size_t const first = line.find_first_not_of(' ');
+      if (first == std::string::npos) continue;
+      line = line.substr(first);
+      size_t const assign = line.find(" = ");
+      if (assign == std::string::npos) {
+        globals += line + "\n";
+        continue;
+      }
+      std::string const target = line.substr(0, assign);
+      size_t const space = target.rfind(' ');
+      if (space == std::string::npos) {
+        initialisers += "  " + line + "\n";  // an assignment to an existing variable
+      } else {
+        globals += target + ";\n";
+        initialisers += "  " + target.substr(space + 1) + line.substr(assign) + "\n";
+      }
+    }
+    source += globals;
     source += _functions;
     source += "void main() {\n";
+    source += initialisers;
     source += _body;
     source += "}\n";
   } else {
@@ -3668,12 +3824,108 @@ GlslResult GlslEmitter::Run() {
   result.uniforms = _uniformNames;
   result.samplers = _samplerList;
   result.version = _version;
+  result.stereoInstanced = _stereoInstanced;
   return result;
 }
 
 }  // namespace
 
+namespace {
+
+// D3D10_SB_RESOURCE_DIMENSION (a dcl's opcode controls) -> D3D_SRV_DIMENSION
+// (what RDEF would have said).
+uint32_t SrvDimension(uint32_t declared) {
+  switch (declared) {
+    case 1: return 1;    // buffer
+    case 2: return 2;    // 1D
+    case 3: return 4;    // 2D
+    case 4: return 6;    // 2DMS
+    case 5: return 8;    // 3D
+    case 6: return 9;    // cube
+    case 7: return 3;    // 1D array
+    case 8: return 5;    // 2D array
+    case 9: return 7;    // 2DMS array
+    case 10: return 10;  // cube array
+    default: return 0;
+  }
+}
+
+// Gives a program with no RDEF the reflection it would have had: constant
+// buffers from `reflection`, and one resource binding per resource the
+// bytecode declares, named from `reflection` by register.
+Program WithReflection(Program const& program, ExternalReflection const& reflection) {
+  Program patched = program;
+  patched.constantBuffers = reflection.constantBuffers;
+  for (auto const& buffer : patched.constantBuffers) {
+    ResourceBinding binding;
+    binding.name = buffer.name;
+    binding.type = 0;
+    binding.bindPoint = buffer.bindPoint;
+    binding.bindCount = 1;
+    patched.resourceBindings.push_back(binding);
+  }
+  auto nameFor = [&reflection](std::initializer_list<uint32_t> types, uint32_t bindPoint, char const* prefix) {
+    for (auto const& resource : reflection.resources) {
+      if (resource.bindPoint != bindPoint) continue;
+      for (uint32_t type : types) {
+        if (resource.type == type) return resource.name;
+      }
+    }
+    // A resource the parameters do not name still has to be declared; Unity
+    // will bind nothing to it, which is what it would get on PC too.
+    return std::string(prefix) + std::to_string(bindPoint);
+  };
+  for (auto const& instruction : program.instructions) {
+    if (instruction.operands.empty() || instruction.operands[0].indices.empty()) continue;
+    uint32_t const bindPoint = static_cast<uint32_t>(instruction.operands[0].indices.back().immediate);
+    ResourceBinding binding;
+    binding.bindPoint = bindPoint;
+    binding.bindCount = 1;
+    switch (instruction.opcode) {
+      case OP_DCL_RESOURCE:
+        binding.type = 2;
+        binding.dimension = SrvDimension(instruction.controls & 0x1fu);
+        binding.returnType = instruction.extra.empty() ? 5u : (instruction.extra[0] & 0xfu);
+        binding.name = nameFor({2}, bindPoint, "vivify_t");
+        break;
+      case OP_DCL_RESOURCE_RAW:
+        binding.type = 7;
+        binding.name = nameFor({7, 5}, bindPoint, "vivify_t");
+        break;
+      case OP_DCL_RESOURCE_STRUCTURED:
+        binding.type = 5;
+        binding.name = nameFor({5, 7}, bindPoint, "vivify_t");
+        break;
+      case OP_DCL_UAV_TYPED:
+        binding.type = 4;
+        binding.dimension = SrvDimension(instruction.controls & 0x1fu);
+        binding.returnType = instruction.extra.empty() ? 5u : (instruction.extra[0] & 0xfu);
+        binding.name = nameFor({4, 6, 8, 11}, bindPoint, "vivify_u");
+        break;
+      case OP_DCL_UAV_RAW:
+        binding.type = 8;
+        binding.name = nameFor({8, 4, 6, 11}, bindPoint, "vivify_u");
+        break;
+      case OP_DCL_UAV_STRUCTURED:
+        binding.type = 6;
+        binding.name = nameFor({6, 11, 4, 8}, bindPoint, "vivify_u");
+        break;
+      default:
+        continue;
+    }
+    patched.resourceBindings.push_back(std::move(binding));
+  }
+  return patched;
+}
+
+}  // namespace
+
 GlslResult TranslateToGlsl(Program const& program, GlslOptions const& options) {
+  if (options.reflection != nullptr && program.constantBuffers.empty() && program.resourceBindings.empty()) {
+    Program const patched = WithReflection(program, *options.reflection);
+    GlslEmitter emitter(patched, options);
+    return emitter.Run();
+  }
   GlslEmitter emitter(program, options);
   return emitter.Run();
 }

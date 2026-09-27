@@ -1,6 +1,11 @@
 #include "VivifyBundleConvert.hpp"
+#include "VivifySerializedFile.hpp"
+#include "VivifyDxbc.hpp"
 
 #include <algorithm>
+#include <map>
+#include <set>
+#include <tuple>
 #include <cstdio>
 #include <cstring>
 #include <filesystem>
@@ -862,6 +867,59 @@ TargetPlatformField FindTargetPlatform(uint8_t const* data, size_t dataSize, siz
 // Repacking.
 // ---------------------------------------------------------------------------
 
+// Replaces one directory node's contents inside an unpacked archive.
+//
+// A node whose length changes moves every node stored after it, and the
+// directory table records absolute offsets into the unpacked data, so both the
+// bytes and the table have to be rebuilt together. This is the outer half of
+// conversion step 4: RewriteSerializedFile fixes the object offsets inside one
+// file, and this fixes the node offsets around it.
+//
+// The gap that preceded each node in the original is preserved, so replacing a
+// node with exactly the bytes it already had reproduces the buffer it started
+// as.
+bool ReplaceNodeData(std::vector<DirectoryNode>& nodes, std::vector<uint8_t>& data,
+                     size_t nodeIndex, std::vector<uint8_t> const& replacement) {
+  if (nodeIndex >= nodes.size()) return false;
+
+  std::vector<size_t> order(nodes.size());
+  for (size_t i = 0; i < order.size(); i++) order[i] = i;
+  std::stable_sort(order.begin(), order.end(), [&nodes](size_t a, size_t b) {
+    return nodes[a].offset < nodes[b].offset;
+  });
+
+  std::vector<uint8_t> rebuilt;
+  uint64_t previousEnd = 0;
+  for (size_t index : order) {
+    DirectoryNode& node = nodes[index];
+    if (node.offset < previousEnd) return false;  // overlapping nodes: refuse rather than guess
+    if (node.offset > data.size() || node.size > data.size() - node.offset) return false;
+
+    uint64_t const gap = node.offset - previousEnd;
+    previousEnd = node.offset + node.size;
+    rebuilt.insert(rebuilt.end(), static_cast<size_t>(gap), 0);
+
+    uint8_t const* source = data.data() + node.offset;
+    size_t const sourceSize = static_cast<size_t>(node.size);
+    node.offset = rebuilt.size();
+    if (index == nodeIndex) {
+      node.size = replacement.size();
+      rebuilt.insert(rebuilt.end(), replacement.begin(), replacement.end());
+    } else {
+      rebuilt.insert(rebuilt.end(), source, source + sourceSize);
+    }
+  }
+
+  // Anything past the last node -- Unity does not write it, but a bundle is
+  // untrusted input -- is carried over rather than dropped.
+  if (previousEnd < data.size()) {
+    rebuilt.insert(rebuilt.end(), data.begin() + static_cast<long>(previousEnd), data.end());
+  }
+
+  data = std::move(rebuilt);
+  return true;
+}
+
 bool WriteConverted(std::string const& destPath, ArchiveHeader const& header,
                     std::vector<DirectoryNode> const& nodes, std::vector<uint8_t> const& data, Result& result) {
   // Blocks/directory table for the uncompressed output.
@@ -1024,6 +1082,983 @@ bool IsUnityBundleFile(std::string const& path) {
   char signature[8] = {};
   if (!in.read(signature, sizeof(signature))) return false;
   return std::memcmp(signature, "UnityFS\0", sizeof(signature)) == 0;
+}
+
+namespace {
+
+// True for a ShaderGpuProgramType that carries DirectX bytecode.
+//
+// Every DirectX stage is offered to the translator rather than filtered by
+// stage here. Which stages it can actually handle is its own business and it
+// says so by name -- a hull program comes back with "tessellation programs are
+// not translated" -- and keeping the decision in one place stops this list
+// drifting out of step with what the translator grew to support.
+bool IsTranslatableDirectXProgram(int32_t programType) {
+  switch (programType) {
+    case SerializedFileParse::kGpuProgramDX11VertexSM40:
+    case SerializedFileParse::kGpuProgramDX11VertexSM50:
+    case SerializedFileParse::kGpuProgramDX11PixelSM40:
+    case SerializedFileParse::kGpuProgramDX11PixelSM50:
+    case SerializedFileParse::kGpuProgramDX11GeometrySM40:
+    case SerializedFileParse::kGpuProgramDX11GeometrySM50:
+    case SerializedFileParse::kGpuProgramDX11HullSM50:
+    case SerializedFileParse::kGpuProgramDX11DomainSM50:
+      return true;
+    default:
+      return false;
+  }
+}
+
+// Translates one shader's programs in place. Returns false, with a reason, if
+// any program in it could not be translated: a shader is converted whole or
+// not at all, because a program store holding half GLSL and half DirectX would
+// leave Unity picking whichever it found first.
+bool TranslateShaderPrograms(std::vector<SerializedFileParse::ShaderSubProgram>& programs,
+                             int& programsTranslated, std::string& reason) {
+  int translated = 0;
+  for (auto& program : programs) {
+    if (SerializedFileParse::GpuProgramIsGlslSource(program.programType)) continue;
+    if (!IsTranslatableDirectXProgram(program.programType)) {
+      reason = "carries a " + std::string(SerializedFileParse::GpuProgramTypeName(program.programType)) +
+               " program, which is not DirectX bytecode";
+      return false;
+    }
+    auto const result = Vivify::Dxbc::TranslateDxbcToGlsl(
+        program.code.empty() ? nullptr : program.code.data(), program.code.size());
+    if (!result.ok) {
+      reason = result.error;
+      return false;
+    }
+    program.code.assign(result.source.begin(), result.source.end());
+    // Unity's GLES program types do not distinguish vertex from fragment; which
+    // stage a program is comes from the sub-program list that points at its
+    // blob index, and those are left exactly where they were.
+    program.programType = SerializedFileParse::kGpuProgramGLES3;
+    // The statistics block describes register and instruction counts for a
+    // program that no longer exists. Unity does not need it to link a GLES
+    // shader, and leaving DirectX numbers in it would be a lie in the one place
+    // a reader would go looking.
+    program.stats.assign(program.stats.size(), 0u);
+    translated++;
+  }
+  if (translated == 0) {
+    reason = "has no DirectX programs to translate";
+    return false;
+  }
+  programsTranslated += translated;
+  return true;
+}
+
+
+// ---------------------------------------------------------------------------
+// Conversion through m_ParsedForm
+//
+// Translating each program's bytecode is only half of converting a shader.
+// Unity decides what runs from m_ParsedForm, not from the store: every pass
+// lists its keyword variants per stage, each naming a store entry and the
+// ShaderGpuProgramType of the program there. Unity keeps only the entries whose
+// type its renderer can run, so a store full of GLSL behind a program list that
+// still says "Direct3D 11" is a shader with no programs at all on a Quest --
+// isSupported = false, which is what every converted shader reported.
+//
+// GLES also does not take stages one at a time the way D3D does. Unity stores a
+// GLES variant as one GLSL source holding every stage between #ifdef VERTEX /
+// #ifdef FRAGMENT / #ifdef GEOMETRY sections and compiles it into a linked
+// program; the vertex entry carries that source. So each vertex variant is
+// linked here with the fragment (and geometry) variant Unity would pair it
+// with, and the same linked source is written to every stage's entry, so
+// whichever entry Unity reads a GLES program from holds a complete one.
+//
+// Everything is emitted for multiview (see Dxbc::GlslOptions::multiview): the
+// Quest renders both eyes in one pass, and a program that does not declare two
+// views cannot draw into that framebuffer at all.
+// ---------------------------------------------------------------------------
+
+struct VariantKey {
+  int32_t subShader, pass;
+  bool player;
+  int32_t list;
+  bool operator<(VariantKey const& o) const {
+    return std::tie(subShader, pass, player, list) < std::tie(o.subShader, o.pass, o.player, o.list);
+  }
+};
+
+int32_t GlesProgramTypeForVersion(int version) {
+  if (version >= 320) return SerializedFileParse::kGpuProgramGLES31AEP;
+  if (version >= 310) return SerializedFileParse::kGpuProgramGLES31;
+  return SerializedFileParse::kGpuProgramGLES3;
+}
+
+bool IsDirectXProgramType(int32_t type) {
+  return type >= SerializedFileParse::kGpuProgramDX11VertexSM40 &&
+         type <= SerializedFileParse::kGpuProgramDX11DomainSM50;
+}
+
+// How well a candidate's keyword set matches the one wanted: every shared
+// keyword counts for it, every keyword only one side has counts against it.
+int KeywordMatchScore(std::vector<uint16_t> const& want, std::vector<uint16_t> const& have) {
+  int score = 0;
+  for (uint16_t k : want) {
+    score += std::find(have.begin(), have.end(), k) != have.end() ? 4 : -1;
+  }
+  for (uint16_t k : have) {
+    if (std::find(want.begin(), want.end(), k) == want.end()) score -= 2;
+  }
+  return score;
+}
+
+SerializedFileParse::ParsedProgramRef const* BestMatch(
+    std::vector<SerializedFileParse::ParsedProgramRef const*> const& candidates,
+    SerializedFileParse::ParsedProgramRef const& to) {
+  SerializedFileParse::ParsedProgramRef const* best = nullptr;
+  int bestScore = 0;
+  for (auto const* candidate : candidates) {
+    int score = KeywordMatchScore(to.keywordIndices, candidate->keywordIndices);
+    if (candidate->hardwareTier != to.hardwareTier) score -= 1;
+    if (best == nullptr || score > bestScore) {
+      best = candidate;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
+// Replaces a translated stage's "#version N es" line with the version the
+// whole program links at. GLSL ES will not link stages of different versions.
+std::string WithVersion(std::string const& source, int version) {
+  size_t const end = source.find('\n');
+  if (source.rfind("#version ", 0) != 0 || end == std::string::npos) return source;
+  return "#version " + std::to_string(version) + " es" + source.substr(end);
+}
+
+// Inserts declarations after a stage's preamble (#version, #extension,
+// layout(num_views), precision), where GLSL ES allows them.
+std::string InsertDeclarations(std::string const& source, std::string const& declarations) {
+  if (declarations.empty()) return source;
+  size_t at = source.find("precision highp int;\n");
+  if (at != std::string::npos) {
+    at += std::string("precision highp int;\n").size();
+  } else {
+    at = source.find('\n');
+    at = at == std::string::npos ? source.size() : at + 1;
+  }
+  return source.substr(0, at) + declarations + source.substr(at);
+}
+
+// Every "<qualifiers>in vec4 vs_X;" a stage declares, with its qualifiers.
+std::map<std::string, std::string> DeclaredVaryings(std::string const& source, std::string const& storage) {
+  std::map<std::string, std::string> out;
+  size_t pos = 0;
+  std::string const needle = storage + " vec4 vs_";
+  while ((pos = source.find(needle, pos)) != std::string::npos) {
+    size_t const lineStart = source.rfind('\n', pos);
+    size_t const begin = lineStart == std::string::npos ? 0 : lineStart + 1;
+    size_t const nameStart = pos + needle.size() - 3;  // at "vs_"
+    size_t const nameEnd = source.find(';', nameStart);
+    if (nameEnd == std::string::npos) break;
+    // Only a whole declaration line counts, not a use of the name.
+    if (source.find('\n', begin) > nameEnd) {
+      out[source.substr(nameStart, nameEnd - nameStart)] = source.substr(begin, pos - begin);
+    }
+    pos = nameEnd;
+  }
+  return out;
+}
+
+// Links a vertex, a fragment and (optionally) a geometry stage into the single
+// source Unity stores for a GLES variant.
+//
+// Two things GLSL ES checks at link time that stages translated one at a time
+// cannot know about each other: an interpolation qualifier on a varying must
+// match on both sides, and every varying the next stage reads must be written
+// by the one before it. A fragment's `flat`/`centroid` is copied onto the
+// vertex (or geometry) output, and a varying the fragment reads but nothing
+// writes is declared on the writing side, where it is simply undefined -- which
+// is also what D3D gives a pixel shader for an input the vertex shader skipped.
+std::string LinkStages(Vivify::Dxbc::GlslResult const& vertex, Vivify::Dxbc::GlslResult const* fragment,
+                       Vivify::Dxbc::GlslResult const* geometry, int& version) {
+  version = vertex.version;
+  if (fragment != nullptr) version = std::max(version, fragment->version);
+  if (geometry != nullptr) version = std::max(version, geometry->version);
+
+  std::string vs = WithVersion(vertex.source, version);
+  std::string fs = fragment != nullptr ? WithVersion(fragment->source, version) : std::string();
+  std::string gs = geometry != nullptr ? WithVersion(geometry->source, version) : std::string();
+
+  if (fragment != nullptr) {
+    std::string& feeder = geometry != nullptr ? gs : vs;
+    auto const reads = DeclaredVaryings(fs, "in");
+    auto const writes = DeclaredVaryings(feeder, "out");
+    std::string missing;
+    for (auto const& [name, qualifiers] : reads) {
+      auto it = writes.find(name);
+      if (it == writes.end()) {
+        missing += qualifiers + "out vec4 " + name + ";\n";
+        continue;
+      }
+      if (it->second == qualifiers) continue;
+      std::string const from = it->second + "out vec4 " + name + ";";
+      std::string const to = qualifiers + "out vec4 " + name + ";";
+      size_t const at = feeder.find(from);
+      if (at != std::string::npos) feeder.replace(at, from.size(), to);
+    }
+    feeder = InsertDeclarations(feeder, missing);
+  }
+
+  std::string linked = "#ifdef VERTEX\n" + vs + "#endif\n";
+  if (fragment != nullptr) linked += "#ifdef FRAGMENT\n" + fs + "#endif\n";
+  if (geometry != nullptr) linked += "#ifdef GEOMETRY\n" + gs + "#endif\n";
+  return linked;
+}
+
+// Turns a variant's m_ParsedForm parameters into the reflection its DXBC lost
+// when Unity stripped RDEF out of it.
+Vivify::Dxbc::ExternalReflection ReflectionFrom(SerializedFileParse::ProgramParameters const& parameters) {
+  Vivify::Dxbc::ExternalReflection reflection;
+  auto variableType = [](int32_t unityType) -> uint32_t {
+    switch (unityType) {
+      case 1: case 4: return 2;   // int, short
+      case 2: return 1;           // bool
+      case 5: return 19;          // uint
+      default: return 3;          // float, half
+    }
+  };
+  for (auto const& buffer : parameters.constantBuffers) {
+    Vivify::Dxbc::ConstantBufferInfo info;
+    info.name = buffer.name;
+    info.size = static_cast<uint32_t>(std::max(buffer.size, 0));
+    bool bound = false;
+    for (auto const& binding : parameters.constantBufferBindings) {
+      if (binding.name == buffer.name || (binding.name.empty() && binding.nameIndex == buffer.nameIndex)) {
+        info.bindPoint = static_cast<uint32_t>(binding.index);
+        bound = true;
+        break;
+      }
+    }
+    if (!bound || buffer.name.empty()) continue;
+    info.uniformBlock = buffer.hasStructParams;
+    // The per-eye camera matrices. Under the Quest's multiview rendering
+    // Unity delivers them in a uniform block of this name -- that is how its
+    // own multiview shaders read them -- and nothing keeps loose uniforms of
+    // the same names current. Read as loose uniforms (as in every conversion
+    // before this), they held some other camera's or an earlier frame's
+    // matrices, and everything a translated shader drew landed in a
+    // plausible but wrong place: Burning Sands' scenery and custom notes,
+    // chords and chains included. The block is declared over Unity's full
+    // layout (the same in 2019 and 2021): eight float4x4[2] then two
+    // float4[2], 1088 bytes.
+    if (buffer.name == "UnityStereoGlobals") {
+      info.uniformBlock = true;
+      info.size = std::max<uint32_t>(info.size, 1088u);
+    }
+    // Only the layout Unity's instancing macros produce: an array of
+    // whole-register structs, compiled at the placeholder length, ending the
+    // buffer.
+    if (buffer.hasStructParams && buffer.structSize > 0 && buffer.structSize % 16 == 0 &&
+        buffer.structOffset >= 0 && buffer.structOffset % 16 == 0 && buffer.structArraySize > 0 &&
+        buffer.structOffset + buffer.structSize * buffer.structArraySize >= buffer.size) {
+      info.instancedArrayOffset = static_cast<uint32_t>(buffer.structOffset);
+      info.instancedElementSize = static_cast<uint32_t>(buffer.structSize);
+    }
+    for (auto const& vector : buffer.vectors) {
+      if (vector.name.empty()) continue;
+      Vivify::Dxbc::ConstantBufferVariable variable;
+      variable.name = vector.name;
+      variable.startOffset = static_cast<uint32_t>(vector.index);
+      variable.rows = 1;
+      variable.columns = static_cast<uint32_t>(std::clamp(vector.dim, 1, 4));
+      variable.elements = static_cast<uint32_t>(std::max(vector.arraySize, 0));
+      variable.variableClass = (variable.elements == 0 && variable.columns == 1) ? 0u : 1u;
+      variable.variableType = variableType(vector.type);
+      variable.size = variable.elements > 0 ? variable.elements * 16u : variable.columns * 4u;
+      info.variables.push_back(std::move(variable));
+    }
+    for (auto const& matrix : buffer.matrices) {
+      if (matrix.name.empty()) continue;
+      Vivify::Dxbc::ConstantBufferVariable variable;
+      variable.name = matrix.name;
+      variable.startOffset = static_cast<uint32_t>(matrix.index);
+      variable.rows = static_cast<uint32_t>(std::clamp(matrix.dim, 1, 4));
+      variable.columns = 4;
+      variable.elements = static_cast<uint32_t>(std::max(matrix.arraySize, 0));
+      variable.variableClass = 3;  // column-major matrix, as HLSL packs a cbuffer
+      variable.variableType = 3;
+      variable.size = 64u * std::max(variable.elements, 1u);
+      info.variables.push_back(std::move(variable));
+    }
+    reflection.constantBuffers.push_back(std::move(info));
+  }
+  auto addResources = [&reflection](std::vector<SerializedFileParse::ProgramParameter> const& list, uint32_t type) {
+    for (auto const& parameter : list) {
+      if (parameter.name.empty() || parameter.index < 0) continue;
+      Vivify::Dxbc::ResourceBinding binding;
+      binding.name = parameter.name;
+      binding.type = type;
+      binding.bindPoint = static_cast<uint32_t>(parameter.index);
+      reflection.resources.push_back(std::move(binding));
+    }
+  };
+  addResources(parameters.textures, 2);
+  addResources(parameters.buffers, 5);
+  addResources(parameters.uavs, 6);
+  return reflection;
+}
+
+struct LinkedShader {
+  bool converted = false;
+  std::string reason;
+  std::vector<uint8_t> body;
+  int variantsLinked = 0;
+  int variantsRefused = 0;
+  int stereoRemapped = 0;
+  int programsTranslated = 0;
+  std::set<std::string> variantReasons;  // why individual variants stayed on DirectX
+};
+
+LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
+                                      SerializedFileParse::ShaderObject const& shader) {
+  using SerializedFileParse::ParsedProgramRef;
+  LinkedShader out;
+
+  auto decoded = SerializedFileParse::DecodeShaderPrograms(nodeData, nodeSize, shader);
+  if (!decoded.ok) {
+    out.reason = decoded.message.empty() ? "its program store could not be read" : decoded.message;
+    return out;
+  }
+
+  // Only a Direct3D 11 store is converted, and only its one group.
+  int32_t group = -1;
+  for (size_t i = 0; i < shader.platforms.size(); i++) {
+    if (shader.platforms[i] == SerializedFileParse::kShaderPlatformD3D11) group = static_cast<int32_t>(i);
+  }
+  if (group < 0) {
+    out.reason = "it has no Direct3D 11 programs";
+    return out;
+  }
+
+  std::map<uint32_t, size_t> entryAt;  // blob index -> position in decoded.programs
+  int32_t entryCount = 0;
+  for (size_t i = 0; i < decoded.programs.size(); i++) {
+    if (decoded.programs[i].groupIndex != group) continue;
+    entryAt[static_cast<uint32_t>(decoded.programs[i].blobIndex)] = i;
+    entryCount++;
+  }
+
+  // Working copies: blob indices may be repointed below.
+  std::vector<ParsedProgramRef> refs;
+  for (auto const& ref : shader.programRefs) {
+    if (!IsDirectXProgramType(ref.gpuProgramType)) continue;
+    if (ref.stage == SerializedFileParse::kProgramStageRayTracing) continue;
+    refs.push_back(ref);
+  }
+  if (refs.empty()) {
+    out.reason = "m_ParsedForm lists no Direct3D 11 programs";
+    return out;
+  }
+
+  // 2021.3.10+ keeps each variant's parameters in a store entry of its own.
+  for (auto& ref : refs) {
+    if (!ref.hasParameterBlob) continue;
+    auto at = entryAt.find(ref.parameterBlobIndex);
+    if (at == entryAt.end()) continue;
+    auto const& entry = decoded.programs[at->second];
+    SerializedFileParse::ProgramParameters fromBlob;
+    if (!entry.raw || !SerializedFileParse::ParseParameterBlob(shader.parameterSchema, entry.rawBytes.data(),
+                                                              entry.rawBytes.size(), fromBlob)) {
+      continue;
+    }
+    // Names first: a blob in Unity's inline layout carries only names, so the
+    // stage's common parameters are matched against it by name.
+    if (auto names = shader.passNames.find({ref.subShader, ref.pass}); names != shader.passNames.end()) {
+      ref.parameters.ResolveNames(names->second);
+      fromBlob.ResolveNames(names->second);
+    }
+    fromBlob.Merge(ref.parameters);  // plus the stage's common parameters
+    ref.parameters = std::move(fromBlob);
+  }
+
+  // Unity before 2021.2 has no keyword table in m_ParsedForm; each program
+  // carries its keywords by name instead. They are numbered here so variants
+  // can be matched the same way either way.
+  std::vector<std::string> keywordNames = shader.keywordNames;
+  if (keywordNames.empty()) {
+    std::map<std::string, uint16_t> ids;
+    for (auto& ref : refs) {
+      auto at = entryAt.find(ref.blobIndex);
+      if (at == entryAt.end()) continue;
+      auto const& program = decoded.programs[at->second];
+      ref.keywordIndices.clear();
+      for (auto const* list : {&program.keywords, &program.localKeywords}) {
+        for (auto const& keyword : *list) {
+          auto [it, added] = ids.emplace(keyword, static_cast<uint16_t>(keywordNames.size()));
+          if (added) keywordNames.push_back(keyword);
+          ref.keywordIndices.push_back(it->second);
+        }
+      }
+    }
+  }
+
+  std::vector<SerializedFileParse::BytePatch> patches;
+  auto patchU32 = [&patches](size_t at, uint32_t value) {
+    patches.push_back({at, {static_cast<uint8_t>(value & 0xff), static_cast<uint8_t>((value >> 8) & 0xff),
+                            static_cast<uint8_t>((value >> 16) & 0xff), static_cast<uint8_t>((value >> 24) & 0xff)}});
+  };
+
+  // Point each plain variant at its single-pass instanced twin. PC Vivify
+  // bundles are built for SPI, so a stereo-aware shader carries both: the
+  // plain one reads unity_MatrixVP -- one camera -- and the SPI one indexes
+  // unity_StereoMatrixVP by an eye taken from the instance ID. On the Quest the
+  // STEREO_INSTANCING_ON keyword is never enabled, so Unity picks the plain
+  // variant; handing it the SPI code, translated for multiview, is what gives
+  // each eye its own projection.
+  //
+  // Bundles built for Unity 2019 (PC Beat Saber before 1.29.4) use double-wide
+  // single-pass stereo instead, keyword UNITY_SINGLE_PASS_STEREO, whose eye
+  // comes from unity_StereoEyeIndex; the translator feeds that from the view.
+  for (char const* stereoKeyword : {"STEREO_INSTANCING_ON", "UNITY_SINGLE_PASS_STEREO"}) {
+  int32_t spiKeyword = -1;
+  for (size_t i = 0; i < keywordNames.size(); i++) {
+    if (keywordNames[i] == stereoKeyword) spiKeyword = static_cast<int32_t>(i);
+  }
+  if (spiKeyword >= 0) {
+    for (auto& plain : refs) {
+      if (plain.stereoRemapped) continue;
+      if (std::find(plain.keywordIndices.begin(), plain.keywordIndices.end(), spiKeyword) !=
+          plain.keywordIndices.end()) {
+        continue;
+      }
+      for (auto const& spi : refs) {
+        if (spi.subShader != plain.subShader || spi.pass != plain.pass || spi.stage != plain.stage ||
+            spi.player != plain.player || spi.list != plain.list || spi.hardwareTier != plain.hardwareTier) {
+          continue;
+        }
+        if (std::find(spi.keywordIndices.begin(), spi.keywordIndices.end(), spiKeyword) ==
+            spi.keywordIndices.end()) {
+          continue;
+        }
+        std::vector<uint16_t> without;
+        for (uint16_t k : spi.keywordIndices) {
+          if (static_cast<int32_t>(k) != spiKeyword) without.push_back(k);
+        }
+        std::vector<uint16_t> mine = plain.keywordIndices;
+        std::sort(without.begin(), without.end());
+        std::sort(mine.begin(), mine.end());
+        if (without != mine) continue;
+        if (plain.blobIndex != spi.blobIndex) {
+          plain.blobIndex = spi.blobIndex;
+          // The twin's code reads the twin's parameters.
+          plain.parameters = spi.parameters;
+          patchU32(plain.blobIndexFileOffset, spi.blobIndex);
+          out.stereoRemapped++;
+        }
+        plain.stereoRemapped = true;
+        break;
+      }
+    }
+  }
+  }
+
+  // Translate each program the variants use, once.
+  Vivify::Dxbc::GlslOptions options;
+  options.multiview = true;
+  std::map<uint32_t, Vivify::Dxbc::GlslResult> translated;
+  auto translate = [&](ParsedProgramRef const& ref) -> Vivify::Dxbc::GlslResult const* {
+    uint32_t const blob = ref.blobIndex;
+    auto cached = translated.find(blob);
+    if (cached == translated.end()) {
+      Vivify::Dxbc::GlslResult result;
+      auto at = entryAt.find(blob);
+      if (at == entryAt.end()) {
+        result.error = "entry " + std::to_string(blob) + " is not in the store";
+      } else {
+        auto const& program = decoded.programs[at->second];
+        if (program.raw || !IsTranslatableDirectXProgram(program.programType)) {
+          result.error = "entry " + std::to_string(blob) + " is not DirectX bytecode";
+        } else {
+          auto const reflection = ReflectionFrom(ref.parameters);
+          Vivify::Dxbc::GlslOptions withReflection = options;
+          withReflection.reflection = &reflection;
+          result = Vivify::Dxbc::TranslateDxbcToGlsl(program.code.empty() ? nullptr : program.code.data(),
+                                                     program.code.size(), withReflection);
+          if (result.ok) {
+            out.programsTranslated++;
+          } else {
+            out.variantReasons.insert(result.error);
+          }
+        }
+      }
+      cached = translated.emplace(blob, std::move(result)).first;
+    }
+    return cached->second.ok ? &cached->second : nullptr;
+  };
+
+  std::map<VariantKey, std::vector<ParsedProgramRef const*>> byStage[3];
+  bool tessellation = false;
+  for (auto const& ref : refs) {
+    VariantKey const key{ref.subShader, ref.pass, ref.player, ref.list};
+    if (ref.stage == SerializedFileParse::kProgramStageHull || ref.stage == SerializedFileParse::kProgramStageDomain) {
+      tessellation = true;
+      continue;
+    }
+    if (ref.stage >= 0 && ref.stage <= 2) byStage[ref.stage][key].push_back(&ref);
+  }
+
+  // What each store entry has been assigned, so an entry shared by variants
+  // that link to different programs is split rather than overwritten.
+  std::map<uint32_t, std::string> assigned;
+  std::vector<SerializedFileParse::ShaderSubProgram> added;
+  auto place = [&](ParsedProgramRef const& ref, std::string const& source, int version) {
+    uint32_t blob = ref.blobIndex;
+    auto existing = assigned.find(blob);
+    if (existing != assigned.end() && existing->second != source) {
+      // Another variant already wrote a different program here: give this one
+      // its own entry, cloned from the original so it keeps its keywords.
+      auto base = entryAt.find(ref.blobIndex);
+      if (base == entryAt.end()) return false;
+      SerializedFileParse::ShaderSubProgram copy = decoded.programs[base->second];
+      copy.blobIndex = copy.programIndex = entryCount + static_cast<int32_t>(added.size());
+      copy.segment = 0;
+      blob = static_cast<uint32_t>(copy.blobIndex);
+      added.push_back(std::move(copy));
+      patchU32(ref.blobIndexFileOffset, blob);
+    }
+    assigned[blob] = source;
+    int32_t const type = GlesProgramTypeForVersion(version);
+    patches.push_back({ref.gpuProgramTypeFileOffset, {static_cast<uint8_t>(static_cast<int8_t>(type))}});
+    return true;
+  };
+
+  std::set<VariantKey> keys;
+  for (auto const& stage : byStage) {
+    for (auto const& [key, _] : stage) keys.insert(key);
+  }
+  for (auto const& key : keys) {
+    auto const& vertices = byStage[0][key];
+    auto const& fragments = byStage[1][key];
+    auto const& geometries = byStage[2][key];
+    if (vertices.empty()) continue;
+
+    auto link = [&](ParsedProgramRef const& vertex, ParsedProgramRef const* fragment,
+                    ParsedProgramRef const* geometry, std::string& source, int& version) {
+      auto const* vs = translate(vertex);
+      auto const* fs = fragment != nullptr ? translate(*fragment) : nullptr;
+      auto const* gs = geometry != nullptr ? translate(*geometry) : nullptr;
+      if (vs == nullptr || (fragment != nullptr && fs == nullptr) || (geometry != nullptr && gs == nullptr)) {
+        return false;
+      }
+      source = LinkStages(*vs, fs, gs, version);
+      return true;
+    };
+
+    for (auto const* vertex : vertices) {
+      std::string source;
+      int version = 300;
+      auto const* fragment = BestMatch(fragments, *vertex);
+      auto const* geometry = BestMatch(geometries, *vertex);
+      if (!link(*vertex, fragment, geometry, source, version) || !place(*vertex, source, version)) {
+        out.variantsRefused++;
+        continue;
+      }
+      out.variantsLinked++;
+    }
+    for (auto const* stageList : {&fragments, &geometries}) {
+      for (auto const* ref : *stageList) {
+        std::string source;
+        int version = 300;
+        auto const* vertex = BestMatch(vertices, *ref);
+        ParsedProgramRef const* fragment = stageList == &fragments ? ref : BestMatch(fragments, *ref);
+        ParsedProgramRef const* geometry = stageList == &geometries ? ref : BestMatch(geometries, *ref);
+        if (vertex == nullptr || !link(*vertex, fragment, geometry, source, version) ||
+            !place(*ref, source, version)) {
+          out.variantsRefused++;
+        }
+      }
+    }
+  }
+
+  if (assigned.empty()) {
+    // Nothing linked. Report the first translation failure, which is the
+    // useful thing to know about a shader that stays on its stand-in.
+    for (auto const& [blob, result] : translated) {
+      if (!result.ok) {
+        out.reason = result.error;
+        break;
+      }
+    }
+    if (out.reason.empty()) out.reason = tessellation ? "it uses tessellation" : "no variant could be linked";
+    return out;
+  }
+
+  // Write the linked sources into the store.
+  std::vector<SerializedFileParse::ShaderSubProgram> programs = std::move(decoded.programs);
+  for (auto& program : added) programs.push_back(std::move(program));
+  for (auto& program : programs) {
+    if (program.groupIndex != group) continue;
+    auto it = assigned.find(static_cast<uint32_t>(program.blobIndex));
+    if (it == assigned.end()) continue;
+    program.code.assign(it->second.begin(), it->second.end());
+    // The program's own header type follows the linked version, the same way
+    // m_ParsedForm's does; the statistics described the DirectX program.
+    int version = 300;
+    if (it->second.find("#version 320 es") != std::string::npos) version = 320;
+    else if (it->second.find("#version 310 es") != std::string::npos) version = 310;
+    program.programType = GlesProgramTypeForVersion(version);
+    program.stats.assign(program.stats.size(), 0u);
+  }
+
+  std::vector<int32_t> platforms = shader.platforms;
+  platforms[static_cast<size_t>(group)] = SerializedFileParse::kShaderPlatformGLES3Plus;
+  auto store = SerializedFileParse::EncodeShaderPrograms(platforms, programs, decoded.layouts);
+  if (!store.ok) {
+    out.reason = store.message;
+    return out;
+  }
+  auto rebuilt = SerializedFileParse::BuildShaderObjectBody(nodeData, nodeSize, shader, platforms, store, patches);
+  if (!rebuilt.ok) {
+    out.reason = rebuilt.message;
+    return out;
+  }
+  out.converted = true;
+  out.body = std::move(rebuilt.body);
+  return out;
+}
+
+}  // namespace
+
+ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
+                                      std::string const& destPath) {
+  ShaderConversion conversion;
+  ArchiveHeader header;
+  std::vector<DirectoryNode> nodes;
+  std::vector<uint8_t> data;
+  std::vector<TargetPlatformField> fields;
+  Result result;
+  if (!LoadAndScan(sourcePath, header, nodes, data, fields, result)) {
+    conversion.status = result.status;
+    conversion.message = result.message;
+    return conversion;
+  }
+
+  // Retarget first: the platform field is a fixed-width int inside each file's
+  // header, so it can be written before anything moves, and doing it here means
+  // a bundle whose shaders all refuse still comes out loadable.
+  int retargeted = 0;
+  for (auto const& field : fields) {
+    if (field.value == kBuildTargetAndroid) continue;
+    WriteU32(data.data() + field.offset, static_cast<uint32_t>(kBuildTargetAndroid),
+             field.bigEndian);
+    retargeted++;
+  }
+
+  constexpr size_t kMaxLoggedRefusals = 8;
+  int filesRewritten = 0;
+  for (size_t index = 0; index < nodes.size(); index++) {
+    if (nodes[index].offset > data.size() ||
+        nodes[index].size > data.size() - nodes[index].offset) {
+      conversion.status = Status::Corrupt;
+      conversion.message = "directory node '" + nodes[index].path + "' points outside the data";
+      return conversion;
+    }
+    uint8_t const* const nodeData = data.data() + nodes[index].offset;
+    size_t const nodeSize = static_cast<size_t>(nodes[index].size);
+
+    auto file = SerializedFileParse::InspectSerializedFile(nodeData, nodeSize);
+    if (!file.isSerializedFile) continue;
+
+    // Make the block-compressed textures readable before anything moves.
+    //
+    // m_IsReadable is a single serialized byte in a fixed-width field, so it is
+    // written where it sits: the object does not change size, nothing after it
+    // moves, and a bundle whose shaders all refuse still comes out with usable
+    // textures. Without the flag Unity drops each texture's CPU copy after
+    // upload, and the mod's on-device decoder is left asking for bytes that are
+    // no longer there -- which is how converted levels came to render black.
+    for (auto const& texture : file.textures) {
+      if (!SerializedFileParse::TextureFormatNeedsDecodingOnQuest(texture.textureFormat)) continue;
+      conversion.texturesSeen++;
+      if (texture.streamed) conversion.texturesStreamed++;
+      if (!texture.isReadablePresent || texture.isReadable) continue;
+      size_t const at = nodes[index].offset + texture.isReadableFileOffset;
+      if (at >= data.size()) continue;
+      // Only a byte that currently reads as a bool is touched. Anything else
+      // means the field was not where the type tree said it was, and writing
+      // over it would corrupt the texture.
+      if (data[at] > 1) continue;
+      data[at] = 1;
+      conversion.texturesMarkedReadable++;
+    }
+
+    if (file.shaders.empty()) continue;
+
+    std::vector<SerializedFileParse::ObjectEdit> edits;
+    for (auto const& shader : file.shaders) {
+      conversion.shadersSeen++;
+      bool alreadyRuns = false;
+      for (int32_t platform : shader.platforms) {
+        if (SerializedFileParse::ShaderPlatformRunsOnQuest(platform)) alreadyRuns = true;
+      }
+      if (alreadyRuns) {
+        conversion.shadersLeftAlone++;
+        continue;
+      }
+
+      if (shader.parsedFormRead) {
+        auto linked = ConvertThroughParsedForm(nodeData, nodeSize, shader);
+        conversion.variantsLinked += linked.variantsLinked;
+        conversion.variantsRefused += linked.variantsRefused;
+        conversion.stereoVariantsRemapped += linked.stereoRemapped;
+        for (auto const& reason : linked.variantReasons) {
+          if (conversion.variantRefusals.size() >= kMaxLoggedRefusals * 2) break;
+          conversion.variantRefusals.push_back(
+              (shader.name.empty() ? ("shader@" + std::to_string(shader.pathID)) : shader.name) + ": " + reason);
+        }
+        if (!linked.converted) {
+          conversion.shadersRefused++;
+          if (conversion.refusals.size() < kMaxLoggedRefusals) {
+            conversion.refusals.push_back(
+                (shader.name.empty() ? ("shader@" + std::to_string(shader.pathID)) : shader.name) + ": " +
+                linked.reason);
+          }
+          continue;
+        }
+        edits.push_back({shader.pathID, std::move(linked.body)});
+        conversion.shadersTranslated++;
+        conversion.shadersLinked++;
+        conversion.programsTranslated += linked.programsTranslated;
+        continue;
+      }
+
+      auto decoded = SerializedFileParse::DecodeShaderPrograms(nodeData, nodeSize, shader);
+      if (!decoded.ok || decoded.programs.empty()) {
+        conversion.shadersRefused++;
+        if (conversion.refusals.size() < kMaxLoggedRefusals) {
+          conversion.refusals.push_back(
+              (shader.name.empty() ? ("shader@" + std::to_string(shader.pathID)) : shader.name) + ": " +
+              (decoded.message.empty() ? "no programs decoded" : decoded.message));
+        }
+        continue;
+      }
+
+      std::string reason;
+      int translatedHere = 0;
+      if (!TranslateShaderPrograms(decoded.programs, translatedHere, reason)) {
+        conversion.shadersRefused++;
+        if (conversion.refusals.size() < kMaxLoggedRefusals) {
+          conversion.refusals.push_back(
+              (shader.name.empty() ? ("shader@" + std::to_string(shader.pathID)) : shader.name) + ": " + reason);
+        }
+        continue;
+      }
+
+      std::vector<int32_t> platforms(shader.platforms.size(),
+                                     SerializedFileParse::kShaderPlatformGLES3Plus);
+      auto store = SerializedFileParse::EncodeShaderPrograms(platforms, decoded.programs, decoded.layouts);
+      auto rebuilt = SerializedFileParse::BuildShaderObjectBody(nodeData, nodeSize, shader,
+                                                                platforms, store);
+      if (!rebuilt.ok) {
+        conversion.shadersRefused++;
+        if (conversion.refusals.size() < kMaxLoggedRefusals) {
+          conversion.refusals.push_back(
+              (shader.name.empty() ? ("shader@" + std::to_string(shader.pathID)) : shader.name) + ": " +
+              rebuilt.message);
+        }
+        continue;
+      }
+      edits.push_back({shader.pathID, std::move(rebuilt.body)});
+      conversion.shadersTranslated++;
+      conversion.programsTranslated += translatedHere;
+    }
+
+    if (edits.empty()) continue;
+    auto rewritten = SerializedFileParse::RewriteSerializedFile(nodeData, nodeSize, edits);
+    if (!rewritten.ok) {
+      conversion.status = Status::Corrupt;
+      conversion.message = "could not rebuild '" + nodes[index].path + "': " + rewritten.message;
+      return conversion;
+    }
+    if (!ReplaceNodeData(nodes, data, index, rewritten.data)) {
+      conversion.status = Status::Corrupt;
+      conversion.message = "could not relay the archive around a rebuilt '" + nodes[index].path + "'";
+      return conversion;
+    }
+    filesRewritten++;
+  }
+
+  // Nothing to retarget and nothing translated means the bundle already runs
+  // here; writing a byte-for-byte copy of it would only cost storage on the
+  // headset and hide that fact from the caller.
+  if (retargeted == 0 && conversion.shadersTranslated == 0 && conversion.texturesMarkedReadable == 0) {
+    conversion.status = Status::AlreadyAndroid;
+    conversion.message =
+        conversion.shadersRefused > 0
+            ? "already targets Android; " + std::to_string(conversion.shadersRefused) +
+                  " shader(s) could not be translated and were left as they were"
+            : "already targets Android and has no DirectX shaders to translate";
+    return conversion;
+  }
+
+  if (!WriteConverted(destPath, header, nodes, data, result)) {
+    conversion.status = result.status;
+    conversion.message = result.message;
+    return conversion;
+  }
+
+  conversion.status = Status::Success;
+  conversion.outputBytes = result.outputBytes;
+  conversion.message = "translated " + std::to_string(conversion.shadersTranslated) + " of " +
+                       std::to_string(conversion.shadersSeen) + " shader(s) (" +
+                       std::to_string(conversion.programsTranslated) + " program(s)) across " +
+                       std::to_string(filesRewritten) + " serialized file(s); " +
+                       std::to_string(conversion.shadersLeftAlone) + " already ran here, " +
+                       std::to_string(conversion.shadersRefused) + " left as they were; " +
+                       std::to_string(conversion.texturesMarkedReadable) + " of " +
+                       std::to_string(conversion.texturesSeen) +
+                       " block-compressed texture(s) marked readable (" +
+                       std::to_string(conversion.texturesStreamed) + " streamed)";
+  return conversion;
+}
+
+ShaderScan ScanShaders(std::string const& bundlePath) {
+  ShaderScan scan;
+  ArchiveHeader header;
+  std::vector<DirectoryNode> nodes;
+  std::vector<uint8_t> data;
+  Result result;
+
+  FileSource source;
+  if (!source.Open(bundlePath, result)) {
+    scan.message = result.message.empty() ? "bundle unreadable" : result.message;
+    return scan;
+  }
+  std::vector<StorageBlock> blocks;
+  if (!ParseArchive(source, header, blocks, nodes, result) ||
+      !ReadBlocks(source, header, blocks, data, result)) {
+    scan.message = result.message.empty() ? "bundle could not be unpacked" : result.message;
+    return scan;
+  }
+
+  std::set<int32_t> platforms;
+  std::set<int32_t> programTypes;
+  for (auto const& node : nodes) {
+    if (node.offset >= data.size()) continue;
+    size_t const available = static_cast<size_t>(
+        std::min<uint64_t>(node.size, data.size() - node.offset));
+    auto file = SerializedFileParse::InspectSerializedFile(data.data() + node.offset, available);
+    if (!file.isSerializedFile) continue;  // raw .resS payload node, not an error
+    scan.serializedFiles++;
+    if (scan.unityVersion.empty()) scan.unityVersion = file.unityVersion;
+    if (!file.typeTreePresent) scan.typeTreeStripped = true;
+    scan.shaderObjects += file.shaderObjectCount;
+    for (auto const& shader : file.shaders) {
+      if (!shader.name.empty()) scan.shaderNames.push_back(shader.name);
+      bool runsHere = false;
+      for (int32_t platform : shader.platforms) {
+        platforms.insert(platform);
+        if (SerializedFileParse::ShaderPlatformRunsOnQuest(platform)) runsHere = true;
+      }
+      if (runsHere) scan.shadersRunnableOnQuest++;
+
+      // Decompress and split the shader's program store. This is what turns
+      // "the platform field says Direct3D" into "here are the N programs, and
+      // here is what each one is" -- the difference between knowing conversion
+      // is needed and being able to do it.
+      auto decoded = SerializedFileParse::DecodeShaderPrograms(
+          data.data() + node.offset, available, shader);
+      if (!decoded.ok) scan.undecodableShaders++;
+      for (auto const& program : decoded.programs) {
+        scan.programs++;
+        programTypes.insert(program.programType);
+        if (SerializedFileParse::GpuProgramIsGlslSource(program.programType)) {
+          scan.glslSourcePrograms++;
+        } else {
+          scan.binaryPrograms++;
+        }
+      }
+    }
+    if (scan.message.empty() && !file.message.empty()) scan.message = file.message;
+  }
+
+  scan.parsed = scan.serializedFiles > 0;
+  scan.platforms.assign(platforms.begin(), platforms.end());
+  scan.programTypes.assign(programTypes.begin(), programTypes.end());
+  if (!scan.parsed && scan.message.empty()) {
+    scan.message = "no SerializedFile found inside the archive";
+  }
+  return scan;
+}
+
+std::string DescribeShaderScan(ShaderScan const& scan) {
+  if (!scan.parsed) return "shader scan failed: " + scan.message;
+  std::string text = "unity=" + (scan.unityVersion.empty() ? std::string("?") : scan.unityVersion) +
+                     " serializedFiles=" + std::to_string(scan.serializedFiles) +
+                     " shaders=" + std::to_string(scan.shaderObjects) +
+                     " runnableOnQuest=" + std::to_string(scan.shadersRunnableOnQuest) +
+                     " platforms=[";
+  for (size_t i = 0; i < scan.platforms.size(); i++) {
+    if (i != 0) text += ", ";
+    text += std::string(SerializedFileParse::ShaderPlatformName(scan.platforms[i])) + "(" +
+            std::to_string(scan.platforms[i]) + ")";
+  }
+  text += "]";
+  text += " programs=" + std::to_string(scan.programs) +
+          " glslSource=" + std::to_string(scan.glslSourcePrograms) +
+          " binary=" + std::to_string(scan.binaryPrograms);
+  if (!scan.programTypes.empty()) {
+    text += " programTypes=[";
+    for (size_t i = 0; i < scan.programTypes.size(); i++) {
+      if (i != 0) text += ", ";
+      text += std::string(SerializedFileParse::GpuProgramTypeName(scan.programTypes[i]));
+    }
+    text += "]";
+  }
+  if (scan.undecodableShaders > 0) {
+    text += " undecodableShaders=" + std::to_string(scan.undecodableShaders);
+  }
+  if (scan.typeTreeStripped) text += " typeTree=stripped";
+  if (!scan.message.empty()) text += " note='" + scan.message + "'";
+  return text;
+}
+
+Result RepackBundle(std::string const& sourcePath, std::string const& destPath) {
+  Result result;
+  ArchiveHeader header;
+  std::vector<DirectoryNode> nodes;
+  std::vector<uint8_t> data;
+  std::vector<TargetPlatformField> fields;
+  if (!LoadAndScan(sourcePath, header, nodes, data, fields, result)) return result;
+
+  int rebuilt = 0;
+  for (size_t i = 0; i < nodes.size(); i++) {
+    if (nodes[i].offset > data.size() || nodes[i].size > data.size() - nodes[i].offset) {
+      result.status = Status::Corrupt;
+      result.message = "directory node '" + nodes[i].path + "' points outside the unpacked data";
+      return result;
+    }
+    size_t const available = static_cast<size_t>(nodes[i].size);
+    auto rewritten = SerializedFileParse::RewriteSerializedFile(
+        data.data() + nodes[i].offset, available, {});
+    // A node that is not a serialized file is a raw .resS payload; leave it be.
+    if (!rewritten.ok) continue;
+
+    if (!ReplaceNodeData(nodes, data, i, rewritten.data)) {
+      result.status = Status::Corrupt;
+      result.message = "could not relay the archive around a rebuilt '" + nodes[i].path + "'";
+      return result;
+    }
+    rebuilt++;
+  }
+
+  if (rebuilt == 0) {
+    result.status = Status::Corrupt;
+    result.message = "no SerializedFile inside the archive could be rebuilt";
+    return result;
+  }
+
+  if (!WriteConverted(destPath, header, nodes, data, result)) return result;
+  result.status = Status::Success;
+  result.serializedFilesRetargeted = rebuilt;
+  result.message = "rebuilt " + std::to_string(rebuilt) + " serialized file(s) through the rewriter";
+  return result;
 }
 
 Result ConvertToAndroid(std::string const& sourcePath, std::string const& destPath) {

@@ -58,7 +58,8 @@ int main(int argc, char** argv) {
       if (first.programs.empty()) continue;
       shaders++;
 
-      auto store = SerializedFileParse::EncodeShaderPrograms(shader.platforms, first.programs);
+      auto store = SerializedFileParse::EncodeShaderPrograms(shader.platforms, first.programs,
+                                                             first.layouts);
       if (!store.ok) {
         std::printf("encodeMessage=%s\n", store.message.c_str());
         mismatched++;
@@ -84,7 +85,8 @@ int main(int argc, char** argv) {
                a.blobIndex == b.blobIndex && a.programIndex == b.programIndex &&
                a.blobVersion == b.blobVersion && a.programType == b.programType &&
                a.entrySize == b.entrySize && a.stats == b.stats && a.keywords == b.keywords &&
-               a.localKeywords == b.localKeywords && a.code == b.code && a.trailing == b.trailing;
+               a.localKeywords == b.localKeywords && a.code == b.code && a.trailing == b.trailing &&
+               a.segment == b.segment && a.raw == b.raw && a.rawBytes == b.rawBytes;
       }
       if (same) matched++; else mismatched++;
     }
@@ -176,6 +178,30 @@ int main(int argc, char** argv) {
     std::printf("blob=%d\n", shader.blobPresent ? 1 : 0);
     std::printf("blobSize=%zu\n", shader.blobSize);
     std::printf("groups=%zu\n", shader.offsets.size());
+    std::printf("parsedForm=%d\n", shader.parsedFormRead ? 1 : 0);
+    std::printf("keywordNames=%zu\n", shader.keywordNames.size());
+    for (auto const& ref : shader.programRefs) {
+      std::string keywords;
+      for (uint16_t index : ref.keywordIndices) {
+        if (!keywords.empty()) keywords += ",";
+        keywords += index < shader.keywordNames.size() ? shader.keywordNames[index] : std::to_string(index);
+      }
+      std::printf("ref=%d/%d/%d player=%d list=%d index=%d blob=%u type=%d tier=%d params=%d/%u keywords=%s\n",
+                  ref.subShader, ref.pass, ref.stage, ref.player ? 1 : 0, ref.list, ref.index, ref.blobIndex,
+                  ref.gpuProgramType, ref.hardwareTier, ref.hasParameterBlob ? 1 : 0, ref.parameterBlobIndex,
+                  keywords.c_str());
+      std::string params;
+      for (auto const& cb : ref.parameters.constantBuffers) {
+        params += " cb:" + cb.name + "/" + std::to_string(cb.size) + "{";
+        for (auto const& v : cb.vectors) params += v.name + "@" + std::to_string(v.index) + "x" + std::to_string(v.dim) + (v.arraySize ? "[" + std::to_string(v.arraySize) + "]" : "") + ",";
+        for (auto const& m : cb.matrices) params += m.name + "@" + std::to_string(m.index) + "m" + std::to_string(m.dim) + (m.arraySize ? "[" + std::to_string(m.arraySize) + "]" : "") + ",";
+        params += "}";
+      }
+      for (auto const& b : ref.parameters.constantBufferBindings) params += " bind:" + b.name + "=" + std::to_string(b.index);
+      for (auto const& t : ref.parameters.textures) params += " tex:" + t.name + "=t" + std::to_string(t.index) + "/s" + std::to_string(t.samplerIndex) + "/d" + std::to_string(t.dim);
+      for (auto const& v : ref.parameters.vectors) params += " vec:" + v.name + "@" + std::to_string(v.index);
+      std::printf("refparams=%s\n", params.c_str());
+    }
 
     auto decoded = SerializedFileParse::DecodeShaderPrograms(data.data(), data.size(), shader);
     std::printf("decodeOk=%d\n", decoded.ok ? 1 : 0);
@@ -191,6 +217,10 @@ int main(int argc, char** argv) {
       }
       // code= is printed last and may contain spaces, so the harness takes
       // everything after it as the value.
+      if (program.raw) {
+        std::printf("program=%d/%d raw=%zu\n", program.platform, program.blobIndex, program.rawBytes.size());
+        continue;
+      }
       std::printf("program=%d/%d type=%d glsl=%d keywords=%zu code=%s\n", program.platform,
                   program.blobIndex, program.programType,
                   SerializedFileParse::GpuProgramIsGlslSource(program.programType) ? 1 : 0,

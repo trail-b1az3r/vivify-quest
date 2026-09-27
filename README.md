@@ -33,6 +33,584 @@ port from scratch — see Credits below.
   - Full settings-menu parity: every toggle the runtime already had a config
     key for is now actually exposed in the in-game settings UI.
 
+## 0.13.3 — converted maps drawn in the wrong place: the stereo matrices
+
+Your tests settled it. With **Translate Shaders** on, everything a translated
+shader draws was in the wrong place: Burning Sands' scenery and its custom
+notes. It was coloured correctly, and chords and chains were only the most
+obvious part. With translation off, everything was in the right place, just
+grey. With only the custom note visuals off, the game's own notes were right
+and the scenery was still wrong. So it was never chords or GPU instancing
+(0.13.1 and 0.13.2); it was how translated shaders place anything at all.
+
+A translated shader works out where something appears from two things: the
+object's own transform, and the camera matrix for the eye being drawn
+(`unity_StereoMatrixVP`). On the Quest both eyes are drawn in one multiview
+pass, and Unity hands the per-eye matrices over in a uniform block named
+`UnityStereoGlobals`, which is how its own multiview shaders read them. The
+converter declared them as loose uniforms instead. Unity does not keep loose
+uniforms of those names current, so translated shaders read another camera's
+matrices, or an earlier frame's. Everything landed somewhere plausible but
+wrong.
+
+Translated shaders now read `UnityStereoGlobals` as that uniform block, over
+Unity's full layout (1088 bytes, the same in 2019 and 2021).
+
+Checked on 743Aether's real bundle:
+- **Compile check:** all 156 linked programs compile and link under glslang.
+- **No loose matrices left:** 336 programs read the matrices from the block,
+  and none reads them as loose uniforms.
+- **Right offsets:** reads land at Unity's offsets, for example
+  `unity_StereoMatrixVP[eye]` at row 24 + 4 × eye.
+
+Conversion cache version 9: every converted map reconverts by itself.
+
+**Not changed:** on 743Aether with translation off, everything is plain grey.
+That is expected: it is the stand-in shading.
+
+## 0.13.2 — chords and chains, second attempt: no instancing on converted maps
+
+0.13.1 did not fix it: chords and chains on Burning Sands were still drawn in
+the wrong place. This time the log included the converted bundle, and its note
+shader came out as 0.13.1 intended, with the instanced array sized at run
+time. So the array size was not the whole problem.
+
+The pattern still holds. Single notes are right; anything Beat Saber draws as
+one instanced batch (chords, chain links) is wrong. So on the Quest, something
+in the instanced path of a translated shader still fails. Two candidates:
+- **The per-instance block:** how Unity's GLES renderer fills it.
+- **`unity_BaseInstanceID`:** the engine may not set it.
+
+I cannot reproduce either off the headset.
+
+What already works is the plain, non-instanced variant. So GPU instancing is
+now turned off on every material of a converted bundle when it loads, and
+each note is drawn on its own through that variant. Notes are few enough that
+the extra draw calls cost very little. The log says how many materials this
+applied to:
+
+    Vivify: GPU instancing turned off on N material(s) of this converted bundle
+
+This happens at load, not in conversion, so nothing reconverts.
+
+## 0.13.1 — chords and chains drawn in the wrong place on converted maps
+
+Burning Sands loaded and played after 0.13.0, but notes in chords and chain
+links were drawn in the wrong spots and pointing the wrong way. The map's own
+scenery was misplaced in the same way. Hitting still followed the real notes.
+
+Beat Saber draws notes that are on screen together with one GPU-instanced
+draw call. Each copy reads its own transform (and colour) from a per-instance
+array, indexed by its instance number. Unity compiles that array with a
+placeholder length of 2:
+
+- **On DirectX** this never mattered, because a read past a buffer's
+  declared end still reaches the real buffer bound behind it.
+- **In GLSL** it does not, so the translated shaders declared a two-instance
+  array. Every instance after the second read garbage.
+
+A single note looked right; a chord of three or four did not, and a chain,
+with a dozen links in one batch, came apart completely.
+
+Unity's own GLES shaders size these arrays with
+`UNITY_RUNTIME_INSTANCING_ARRAY_SIZE`, which the engine defines when it loads
+the shader. The translated shaders now do the same.
+
+Checked against 743Aether's real bundle:
+- **Compile check:** all 156 linked programs compile and link under glslang,
+  both at the fallback size and at 128 instances.
+- **New test:** builds an instanced shader and fails without the fix.
+
+Conversion cache version 8: converted maps reconvert by themselves.
+
+## 0.13.0 — the crash on selecting a converted level, and Dialtone
+
+### Selecting a converted level crashed the game
+
+The 0.12.0 session log ends on `Vivify bundle preloaded:` for the converted
+Burning Sands bundle, so the game died while Unity was reading the bundle's
+shaders.
+
+The cause was in how the converter wrote the translated programs back. Each
+compiled program is a header, the code, and then more fields after the code.
+In Unity 2019 bundles those are the bind channels and every parameter table;
+in 2021 bundles, the bind channels. Unity pads the code to a multiple of four
+bytes before reading them. DXBC is always a multiple of four, so a PC bundle
+never has that padding. Translated GLSL almost never is. The converter copied
+the following fields straight after the new code without padding, so for
+three programs in four Unity read them from one to three bytes too early. It
+got a nonsense bind-channel count and read past the program.
+
+The padding is now worked out from the new code length. A test builds a 2019
+program with parameter tables after its code, converts it, and checks that
+the tables read back byte for byte. The test fails without the fix: 305-byte
+code, tables read 3 bytes early.
+
+### A crash guard, so one bad bundle cannot lock you out of a level
+
+A shader Unity or the GPU driver cannot handle takes the whole game down, and
+nothing gets logged. So a converted bundle is now loaded behind a marker file
+(`<bundle>.loading`) that stays on disk until the bundle has loaded and the
+song has played for 10 seconds.
+
+If the next selection of that level finds the marker still there, the load
+never finished. The log says so, and the bundle is reconverted **without
+shader translation** (stand-in shading, the pre-0.11 behaviour), so the level
+plays instead of crashing again. The fallback is tied to this converter
+version: a later release retries translation by itself. So does
+"Force Reconvert All (ignore cache)" in the settings.
+
+The guard has one false positive: closing the game within the first 10
+seconds of a converted song counts as a crash for that bundle.
+
+### Dialtone: 0 of 3 shaders converted, now 3 of 3
+
+Dialtone was built with Unity 2021.3.16 and its converted bundle still had
+every shader on DirectX. Its parameter blobs are not in the type-tree layout
+the converter read. They use Unity's older inline layout: a format version,
+then groups of parameters with their names written out as strings, the same
+layout 2019 programs keep after their code. Every blob failed to parse. The
+stereo variants lost the `UnityStereoGlobals` buffer they read, and each
+shader was refused with *reads constant buffer b4, which its reflection data
+does not describe*.
+
+Both layouts are read now. Blobs in the inline layout are merged with the
+pass's common parameters by name. On your Dialtone bundle:
+- **Shaders:** 3 of 3 shaders translate, up from 0.
+- **Variants:** 20 variants link, with 0 refused.
+- **Compile check:** every linked program compiles and links under glslang.
+
+### Tests that could not fail
+
+The test fixtures meant to have no RDEF (the reflection chunk Unity strips
+from built bundles) had one anyway: a local variable shadowed the flag that
+removes it. They were fixed, and the new inline-layout test fails, with
+Dialtone's exact message, when the new parser is switched off.
+
+Conversion cache version 7: every converted level reconverts by itself.
+
+### Still not fixed
+
+- Hold My Hand's raymarchers and the glass-note bodies in the RSIH Android
+  bundles. Neither involves the converter, and neither log says why they draw
+  nothing.
+- For the Burning Sands crash I found a real bug that explains it, but I have
+  no Burning Sands bundle to confirm it's the only one. If it still crashes,
+  the guard above makes the second selection playable. Please send the whole
+  `/sdcard/ModData/com.beatgames.beatsaber/logs2/` folder from straight after
+  the crash: it has the native backtrace, which Vivify's own log cannot.
+
+## 0.12.0 — the converter translates real PC shaders (tested on a real bundle)
+
+The 0.11.0 session log settled why "nothing has been fixed": the converter
+translated **no shader at all**. All 355 that one session reached were refused
+with the same sentence: *the shader reads constant buffer b0, which its
+reflection data does not describe*.
+
+The reason is visible in the converted 743Aether bundle you sent. Unity
+strips the reflection chunk (RDEF) out of every DXBC program when it builds a
+bundle. The bytecode still reads cb0 and samples t2, but nothing in it says
+that cb0 is `$Globals`, that byte 16 is `_Color`, or that t2 is `_MainTex`.
+The translator's fixtures always carried an RDEF, so the tests never saw the
+shape every real bundle has.
+
+Unity keeps the same facts in `m_ParsedForm`: each sub-program's constant
+buffers, their members' byte offsets, the buffers' bind slots, and the
+textures' registers, all named through the pass's `m_NameIndices`. 2021.3.10
+and later keep them in per-program parameter blobs instead. The converter now
+reads all three layouts (2019's, 2020.3–2021.3.9's `m_Parameters`, and the
+blobs) through the file's own type tree and gives them to the translator as
+its reflection. Texture shape and return type come from the bytecode's own
+`dcl_resource` declarations, which Unity does keep.
+
+Resolving those names needs Unity's built-in common-string table (`m_Index`
+and `m_Type` are only ever written through it), which the parser now carries.
+
+**Checked against your real 743Aether bundle** (Unity 2019.4.28), not only
+fixtures:
+- **Shaders:** 34 of its 35 shaders now convert, up from 0.
+- **Variants:** 336 keyword variants link.
+- **Compile check:** all 156 distinct linked programs compile and link under
+  glslang (GLSL ES 3.x with `GL_OVR_multiview2`).
+- **Refused variants:** every one left is a geometry-shader variant, which
+  cannot draw under multiview anyway.
+- **Stereo:** the stereo-instanced vertex programs come out doing exactly what
+  0.11 intended. The eye bit comes from `gl_ViewID_OVR` and indexes
+  `unity_StereoMatrixVP`.
+
+Also in this release:
+
+- **GPU-instanced variants** (`UnityInstancing_*` buffers, arrays of
+  structs) are translated as one std140 uniform block over the buffer's
+  bytes, indexed the way the bytecode indexes it.
+- **2019 bundles:** keyword variants are matched by the keyword names each
+  program carries, since 2019 has no keyword table. Double-wide
+  `UNITY_SINGLE_PASS_STEREO` variants are used like instanced-stereo ones,
+  with `unity_StereoEyeIndex` fed from `gl_ViewID_OVR`.
+- **Arrays of `float3`/`float`** in a constant buffer (for example
+  `unity_StereoWorldSpaceCameraPos`) are no longer refused. HLSL lays them out
+  on 16-byte strides, the same as a `vec4[]`.
+- **Shaders with subroutines** no longer put non-constant initialisers at
+  file scope, which GLSL ES rejects.
+- **Refusal reasons:** a shader or variant left on DirectX now says why in the
+  log, including which buffers the translator did know about.
+- **Scene depth for map shaders** (new setting, on by default). Raymarchers,
+  black holes and distortion effects sample `_CameraDepthTexture`. PC Beat
+  Saber always renders it, so maps never ask for it. On the Quest nothing
+  rendered it, so those effects read an empty texture and drew nothing. This
+  is the most likely reason Hold My Hand's raymarchers (an Android bundle, so
+  conversion was never involved) and YOU's black hole do not show. The camera
+  now renders scene depth while a Vivify map plays. It costs a depth pre-pass,
+  hence the toggle.
+- **Note colour aliases are now stand-in only.** 0.10 wrote the note colour
+  into `_BaseColor`/`_TintColor`/`_MainColor` as well as `_Color` for every
+  replacement. A map's own note shader (the glass and reflective notes in the
+  RSIH maps' Android bundles) can use those names for something else.
+  PC Vivify only ever writes `_Color`, so that is all a map's own shader gets
+  now. The aliases stay for stand-in shading, which is what they were for.
+- **Log spam:** `VRCenterAdjust.Update skipped` was written every frame:
+  21,790 of the 25,005 lines in your log. It is now written once.
+
+Conversion cache version 6: every PC-bundle map converted by 0.11 reconverts
+by itself.
+
+Still not addressed: geometry shaders (multiview forbids them); fragment-only
+keyword variants; screen-space textures in the multiview eye buffer
+(untested); and why the glass-note bodies in the RSIH Android bundles do not
+draw, if the colour change above is not it. The next log will say.
+
+## 0.11.0 — converted shaders Unity will actually run, in both eyes
+
+Your 0.10.0 session log had every shader in a converted bundle (743Aether)
+still reporting `supported=false`. Nothing else in the log reached gameplay.
+Two defects explain that on their own, and either one would keep a converted
+map black. Neither is visible in the program store the converter rewrites;
+both live in the parts of the Shader object it never touched.
+
+### Unity chooses programs from `m_ParsedForm`, not from the store
+
+Each pass in a Shader lists its keyword variants per stage in `m_ParsedForm`.
+Every variant names a store entry and the `ShaderGpuProgramType` of the program
+in it. When a shader loads, Unity keeps only the variants whose type its
+renderer can run. The converter translated the store's DirectX bytecode to
+GLSL and relabelled the store, but left every variant in `m_ParsedForm`
+saying "Direct3D 11". On a Quest that is a shader with no runnable program at
+all: `isSupported = false`, however good the translation was. That matches
+the log exactly.
+
+Conversion now walks `m_ParsedForm` using the bundle's own type tree. That
+covers the 2021.3.10+ `m_PlayerSubPrograms` layout Beat Saber's Unity version
+writes, and the older `m_SubPrograms` one. Every translated variant is
+relabelled GLES3, GLES3.1 or GLES3.1+AEP, according to the GLSL version it
+needed.
+
+### GLES variants are one linked program, not one program per stage
+
+D3D keeps vertex and fragment programs separate. Unity stores a GLES variant
+as a single GLSL source with `#ifdef VERTEX` / `#ifdef FRAGMENT` (and
+`GEOMETRY`) sections and links it as one program. Each vertex variant is now
+linked with the fragment variant Unity would pair it with, by keyword match.
+The linked source goes into every stage's entry for that variant. Variants
+that share a stored program but link different fragments get separate
+programs.
+
+Linking also fixes two things GLSL ES checks across stages and a
+one-stage-at-a-time translator cannot see:
+- a fragment input's `flat`/`centroid` qualifier is copied onto the matching
+  vertex output;
+- a varying the fragment reads but the vertex never writes is declared on the
+  vertex side.
+
+### The Quest renders both eyes in one multiview pass
+
+The log's `stereoMode=3` is `SinglePassMultiview`. Under GL_OVR_multiview, a
+draw into a two-view framebuffer is an error unless the vertex shader declares
+`layout(num_views = 2)`, so every translated program would have compiled,
+linked, and drawn nothing. All translated programs are now emitted for
+multiview.
+
+The two eyes also need their own projection. PC Vivify bundles are built for
+single-pass *instanced* stereo, so a stereo-aware shader carries a
+`STEREO_INSTANCING_ON` variant that picks its eye from the instance ID and
+reads `unity_StereoMatrixVP[eye]`. That keyword is never on on a Quest, so
+Unity would pick the plain, one-camera variant. Conversion now points each
+plain variant at its instanced twin. The twin is translated with the instance
+ID presented as `gl_InstanceID * 2 + gl_ViewID_OVR`, which is exactly the
+numbering its own maths expects (eye = id & 1). Its eye-index output, which
+GLSL ES has no vertex-stage form of, is discarded, and its fragment reads the
+eye from `gl_ViewID_OVR`. Before, the translator refused any fragment program
+that read the eye at all. That alone threw out every stereo-aware shader that
+samples a screen-space texture.
+
+### The program store was being read with the wrong model
+
+The store for each platform is one entry table, at the start of its first
+LZ4 chunk; each entry names the chunk ("segment") its bytes live in, and
+`m_BlobIndex` is an index into that table. The reader expected a table at the
+start of *every* chunk, which only coincides with Unity's layout for a
+one-chunk store. From 2021.3.10 the table also holds each program's
+parameters (`m_ParameterBlobIndices`). Those were being parsed as programs,
+and dropping an entry shifted every index after it. Entries that are not
+programs are now carried byte for byte, and every entry keeps its index.
+
+### Also fixed
+
+- **Bit-manipulation instructions** (`countbits`, `firstbit_*`, `ubfe`/`ibfe`,
+  `bfi`, `bfrev`) emitted GLSL ES 3.10 built-ins under a `#version 300 es`
+  line, which does not compile. They now raise the version.
+- **Notes going away and coming back (YOU).** A note replacement was judged
+  drawable if *any* of its renderers had a runnable shader, and a particle
+  system counts. A note prefab whose mesh could not draw, but whose particles
+  could, hid the real note and left only particles. That lasted for the
+  stretch of the song that assigned that prefab. A prefab with meshes now
+  needs a drawable mesh before the original is hidden.
+
+### How this was checked
+
+The whole program store, `m_ParsedForm` and conversion path is now tested
+against Unity 2021.3.16's real Shader type tree
+(`tools/bundleconvert/fixtures/`, dumped from UnityPy's type-tree package,
+2304 nodes) instead of a hand-shaped approximation of it.
+
+Every program the translator and converter produce is compiled, and every
+converted shader's stages linked, by **glslang**, the Khronos GLSL ES
+reference front-end, with `GL_OVR_multiview2`. CI installs it.
+
+Suites: converter 59/59, DXBC 146/146, shaderscan 64/64, texture decoder and
+report writer pass, all under ASan/UBSan. The converter fuzz pass now also
+corrupts a 2021.3.16 shader and finds no crashes.
+
+### What this still cannot do
+
+- **Geometry shaders.** They are translated, but GL_OVR_multiview does not
+  allow a geometry stage when rendering to two views, so they will not draw
+  on a Quest.
+- **Fragment-only keyword variants.** When a keyword changes only the
+  fragment stage, every vertex variant links the fragment that best matches
+  *its* keywords. Fragment-only keyword features render in their "off" form.
+- **Screen-space and depth textures.** Their sampling in a multiview eye
+  buffer is untested.
+- **Headset testing.** None of this has run on a headset. The glslang checks
+  prove the programs are valid GLSL ES. They cannot prove Unity binds every
+  uniform the way the translation assumes.
+
+### If you test it
+
+The conversion cache version is now 5, so every PC-bundle map reconverts
+automatically the first time you select it. Two things make the next log more
+useful:
+- turn **Stand-In Shading** back on (your log showed it off, and with it off,
+  anything that still cannot run draws nothing);
+- send `VivifySession.txt` from a session where you actually *played* the map.
+  The level-load lines (shader repair, texture decode, and the new "shader
+  conversion: N of M shader(s) linked" line) are what say what happened.
+
+## 0.10.0 — white notes, white levels, and features from the other forks
+
+This release is built from `main` (0.9.14), with the build and dependency fixes
+from the `stable` branch kept. `stable` was a rollback to roughly 0.7, the last
+build whose converted maps drew their models. That rollback brought back 0.7's
+two visible problems: **blocks are white** and **levels come out white**. Both
+are fixed here without going back to 0.8's black levels. 0.9.13's gates and
+0.9.14's readable-texture flag stay in place.
+
+### Blocks (notes) drawn pure white
+
+A note replacement gets its colour from the game. Beat Saber writes the note
+colour into the note's `MaterialPropertyBlock` as `_Color`, and Vivify on PC
+relies on exactly that. On a converted bundle the replacement's own shader
+cannot run, so it wears a stand-in. The stand-in is chosen for having *a*
+colour property, `_Color` **or** `_BaseColor`. One that reads `_BaseColor`
+never receives the note colour. It draws in its material's own colour, which
+for a note material, authored to be tinted at runtime, is the default white.
+
+- The note colour is now mirrored into `_Color`, `_BaseColor`, `_TintColor` and
+  `_MainColor` in the same block, so whichever name the shader declares gets
+  it. Sabers, saber trails and debris get the same treatment.
+- If a note has no `MaterialPropertyBlockController` to borrow, or its block has
+  no colour yet, the colour is looked up from the `ColorManager` and written
+  directly. Before, those replacements were never coloured at all.
+- Colours that change after spawn (Chroma, colour-scheme events) are picked up:
+  each frame, any replaced note or debris whose `_Color` has moved gets its
+  aliases rewritten. That costs two property reads per replaced object per
+  frame, plus a write only when the colour changed.
+
+### Levels coming out white (or black)
+
+The colour carried from a material onto its stand-in was being picked badly in
+four ways:
+
+- **HDR colours clamped to white.** PC maps author glow as HDR colours, such as
+  `(6, 0.8, 0.3)`, and let bloom turn the overflow into a halo. The Quest renders
+  LDR with no bloom, so that colour clamps to `(1, 0.8, 0.3)`, and anything
+  brighter comes out white. Carried colours are now scaled so the brightest
+  channel is 1, which keeps the hue.
+- **Black emission counted as the colour.** `_EmissionColor` was checked before
+  `_Color`, and every Standard material has emission at its default of black. A
+  black emission is now ignored, and emission is only used, last, when it
+  actually glows.
+- **Rim/outline/shadow colours tinting whole meshes.** The name scan took any
+  property with "col" in it. It now skips secondary colours (rim, outline,
+  shadow, specular, fog, fresnel and similar). A material with a real albedo
+  texture keeps its primary colour even if that is white, because then the
+  texture carries the look.
+- **Unsampleable textures.** A texture still in a BC/DXT format after the
+  decode pass has no pixels this GPU can use. It samples as flat white, and it
+  also made the colour search think the texture carried the look. It is no
+  longer carried onto the stand-in, so the colour search can find the real tint.
+
+When all a stand-in has left is untextured default white, it is drawn in soft
+grey (`0.55`) instead of glaring white. A converted level is mostly geometry
+like that, which is why whole maps read as white. Notes, sabers and debris are
+unaffected, because their colour arrives through the property block. The level
+log reports how many stand-ins were dimmed this way.
+
+**What this cannot fix:** a texture whose pixels are not available on the
+device still draws untextured. Re-convert maps converted by an older build
+(0.9.14's conversion cache version already forces this), so that 0.9.14's
+readable-texture flag is applied.
+
+### Features merged from the other Quest forks
+
+Most of what [webbs7524-wq/Vivify-Quest-2](https://github.com/webbs7524-wq/Vivify-Quest-2)
+and [PATTT160/Vivify-Quest3.0fork](https://github.com/PATTT160/Vivify-Quest3.0fork)
+add was already in `main`: `PostProcess`/`PostProcessing`/`ScreenEffect`
+aliases, screen textures sized from the camera, `depthTextureMode` arrays,
+`SolidColor` clear flags, track-scoped non-additive `AssignObjectPrefab`, and
+track matching straight from note custom data. New in this build:
+
+- **Blit material aliases**: `material`, `effect`, `postProcessMaterial` and
+  `postProcessingMaterial` are accepted where `asset` is.
+- **Blit order spellings**: `phase`/`timing` as synonyms for `order`, `before`/
+  `pre`/`beforeMain` as values, and boolean `beforeMainEffect`/`afterMainEffect`.
+- **Clearing a Blit**: `"clear": true`, `"remove": true` or `"enabled": false`
+  stops matching running effects instead of starting one. Each of `asset`,
+  `source`, `destination`, `priority` and `pass` that the event names narrows
+  the match; naming none clears that order's whole list.
+- **Persistent Blits**: `"duration": -1` keeps an effect running until it is
+  cleared.
+
+From [gamesbeash-art/Vivify-Quest_enabled-Play](https://github.com/gamesbeash-art/Vivify-Quest_enabled-Play):
+
+- **Named enum values in `SetRenderingSettings`**, for example `"fogMode":
+  "ExponentialSquared"`, `"ambientMode": "Flat"` or `"shadows": "HardOnly"`,
+  not just numbers. Case-insensitive.
+- **The rest of `RenderTextureFormat`** for `CreateScreenTexture`: `RInt`,
+  `RGInt`, `ARGBInt`, `RGHalf`, `ARGB64`, `ARGB2101010`, `RGB111110Float`,
+  `BGRA32`, `RG32`, `RG16`, `R16`, `RGBAUShort`. Before, these fell back to
+  ARGB32, which quantises the data such textures exist to hold. A format the
+  GPU cannot render is still downgraded.
+
+Deliberately **not** merged: those forks' gameplay overlay camera, which draws
+notes over everything. It is the "blocks render on top of everything" behaviour
+this port's per-`CameraEvent` rendering exists to avoid.
+
+### Verified / unverified
+
+The host syntax check passes for every source file. The converter (54/54),
+DXBC (128/128), shader-scan (60/60), texture-decoder and report suites pass
+under ASan/UBSan, and the converter fuzz pass finds no crashes. As with every
+build here, none of this has run on a headset yet.
+
+## 0.9.14 — giving the decoder something to decode
+
+0.9.13 stops a texture whose pixels are gone from being turned into a black one.
+It does not get the pixels back, and a texture left undecoded still draws
+untextured — 0.7's "some levels are white" defect, which is where this port was
+before any of this existed.
+
+The pixels are gone because Unity drops a texture's CPU copy after upload unless
+its `m_IsReadable` flag is set, and a map author has no reason to set it: on PC
+the GPU samples the BC data directly and nothing ever needs a CPU copy. On a
+Quest nothing can sample it, so the CPU copy is the only route there is.
+
+Conversion sets the flag. `m_IsReadable` is a single serialized byte in a
+fixed-width field, so it is written where it sits: the object does not change
+size, nothing after it moves, and it happens before the shader rewrite so a
+bundle whose shaders all refuse still comes out with usable textures.
+
+Finding that byte is the part worth being careful about. Unity has moved
+Texture2D's fields around repeatedly — `m_MipsStripped`,
+`m_IsAlphaChannelOptional` and `m_IgnoreMipmapLimit` all arrived in different
+versions — so nothing here is positional. The parser walks the object through
+the file's own type tree and takes each field by the name the tree gives it,
+skipping anything it does not recognise to stay in step. It writes only a byte
+the tree calls a one-byte bool and that currently reads as 0 or 1; anything else
+means the field was not where the tree said, and the texture is left alone.
+
+Recompressing to ETC2 or ASTC would be the other way to do this, and it is not
+realistic on a headset: it is an encode, not a decode, and it would have to
+happen for every texture in the map. Inlining the decoded RGBA32 into the bundle
+instead is worse — RGBA32 is four to eight times the size of the BC data, which
+turns a 60MB bundle into a 400MB one. Keeping the BC bytes in the bundle and
+decoding at load costs the RAM of the textures a map actually uses, and nothing
+on disk.
+
+The conversion cache version goes to 4, so bundles converted by any earlier
+build are redone rather than reused. `tools/bundleconvert/` gained a Texture2D
+fixture and nine cases: each BC format marked, an RGBA32 texture left alone, an
+already-readable one counted but not rewritten, a streamed one reported as
+streamed, several textures in one file, SerializedFile v22, the flag surviving
+the shader rebuild beside it, and the flag read back out of the converted bundle
+rather than trusted from a counter. 54 checks, green under ASan/UBSan.
+
+If a map's textures still come through unreadable after this, the level report
+says so by count, and that is the number to bring back.
+
+## 0.9.13 — why every converted level went black
+
+0.7 rendered converted maps. Everything from 0.8.0 onwards rendered them black,
+with only the particles still visible. The whole functional difference between
+those two builds is one feature: the on-device BC/DXT texture decode added in
+0.8.0. Nothing else changed — 0.8.1 through 0.8.3 are a diagnostic log line and
+two build fixes.
+
+Here is how a decoder makes a level black.
+
+A Quest's Adreno GPU cannot sample the BC1/BC3/BC7 textures a PC-built
+AssetBundle carries, so 0.8.0 decoded them to RGBA32 on the CPU using the
+texture's own bytes, fetched with `GetRawTextureData`. But a texture loaded from
+an AssetBundle only still *has* its bytes if the map author ticked Read/Write
+Enabled in Unity, which almost nobody does: the pixels go to the GPU and the CPU
+copy is dropped. Ask that texture for its data anyway and you do not necessarily
+get an error. You can get an array of exactly the right length with nothing in
+it.
+
+That array decodes. It decodes *correctly*: an all-zero BC1 block is a valid
+block and it means opaque black. So the pass did precisely what it was written
+to do, on data that was not there, and handed every material in the map a black
+texture in place of one that had merely been unsampleable. An unsampleable
+texture reads as flat white, which is why 0.7's defects were "some levels are
+white, and the blocks are white" — and why 0.8.0 turned those same levels black.
+The particles survived because their materials are untextured, so there was
+nothing for the decoder to replace.
+
+The decoder was never wrong; its test suite passes and still does. What was
+missing was any check that the bytes it was handed were real. There are three
+now, and every one of them leaves the texture exactly as it was:
+
+- the texture must report `isReadable`, or there is no CPU copy to decode;
+- the raw bytes must not be uniformly zero, which is the signature of a copy
+  that has already been dropped;
+- the decoded result must have something visible in it — some colour and some
+  opacity.
+
+A texture that fails any of them draws untextured, the way it did in 0.7 and the
+way it did before this pass existed. `tools/texturedecode/` gained the cases
+that pin this down, including the one that matters: an all-zero BC1 block
+decoding without complaint into a texture that is recognised as blank.
+
+The session log now says how many textures each level refused and why, and the
+same two counts are in the report file. That is the number to read next: a map
+whose textures are all "not readable on CPU" is one whose textures have to be
+made available at conversion time instead, which is the next piece of work
+rather than something the device can fix on its own.
+
+Everything else in this build stays as it was. The stand-in shader ordering, the
+shader index that resolves a map's shaders to the real ones, the DXBC translator
+and the conversion cache versioning are all unchanged — the only thing 0.7 did
+better was not turning the textures black, and that is what this restores.
+
 ## 0.5.0 — visibility fixes and the on-device bundle converter
 
 Four defects, all found by reading the code rather than by reproducing them
@@ -151,7 +729,7 @@ and repacks it uncompressed. Unity then accepts and enumerates the bundle.
 - Every path that leaves the play button disabled now names its own reason
   ("Convert failed: unsupported bundle compression", "Asset download timed
   out", "PC bundle found; enable Convert PC Bundles On Device in settings",
-  …), and level selection always logs one line to `Vivify.log` recording the
+  …), and level selection always logs one line to `VivifySession.txt` recording the
   Android bundle, PC bundle, checksum, cache path and decision taken.
 
 **Convert All PC Bundles Now.** Per-level conversion runs on level *selection*,
@@ -205,9 +783,24 @@ properties, skipping normal/mask/metallic-style maps that would look wrong as an
 albedo, and writes the result to whichever of `_MainTex`/`_BaseMap` the stand-in
 declares.
 
-Textures whose *pixel data* is BC/DXT-compressed still cannot be decoded by an
-Adreno GPU — that part is unfixable on device — but colour now comes through,
-which is the difference between a white mesh and a correctly tinted one.
+**Textures are decoded on the CPU.** Quest's Adreno GPUs support ETC2 and ASTC
+but not S3TC/BC, and a PC-built AssetBundle stores its textures as BC1/BC3/BC7.
+Unity hands back the `Texture2D` quite happily; nothing can sample it. Vivify
+now decodes those blocks to RGBA32 on load, using the vendored
+[`bcdec.h`](include/third_party/) (single header, no includes of its own,
+MIT/public-domain), and swaps the decoded copy into every material that
+referenced the original. It costs memory — BC1 is 4 bits per pixel, RGBA32 is
+32 — but it is the difference between an untextured mesh and a textured one.
+
+This needs the source texture's raw bytes to still be around. A texture
+imported without read/write enabled may have had its CPU copy dropped after
+upload, and there is then nothing to decode; that case is logged per texture
+and the original is left alone rather than guessed at.
+
+`src/VivifyTextureDecode.cpp` has no Unity dependency and is covered by a host
+test suite (`tools/texturedecode/`) that decodes hand-built BC1/BC3 blocks and
+checks the resulting pixels, including non-multiple-of-four sizes, full mip
+chains and every refusal path — run in CI under ASan/UBSan.
 
 **Stand-ins can only carry so much.** A stand-in shader is a trade: "invisible"
 becomes "visible but wrong", and for a converted PC bundle "wrong" is often flat
@@ -264,6 +857,38 @@ reason in a comment at the top of its controller: assigning a target texture
 disables stereo on the camera. Capture now happens per-eye in `OnRenderImage`,
 matching upstream.
 
+### Geometry shaders
+
+Not something this port can enable, and worth being clear about rather than
+leaving as an open request.
+
+Whether a geometry stage can run at all is decided by the graphics API the game
+was built against, which is baked into the APK — there is no runtime switch a
+mod can flip. Adreno exposes `GL_EXT_geometry_shader` under OpenGL ES 3.2, but
+reports `VkPhysicalDeviceFeatures.geometryShader` as false under Vulkan;
+Qualcomm has never supported geometry or tessellation stages in their Vulkan
+driver. So under Vulkan a geometry shader cannot execute on this hardware no
+matter what a bundle contains.
+
+Vivify now logs the answer on the first level load, unconditionally:
+
+```
+Vivify graphics: api=Vulkan (21) shaderLevel=45 (SM4.5) geometryShaderStagePossible=false
+```
+
+(`SystemInfo.supportsGeometryShaders` cannot be used for this — Unity removed it,
+and it is absent from the codegen headers this port builds against. The graphics
+API plus shader level is the reliable substitute: a geometry stage needs SM4.0,
+so below 40 rules it out outright, and at or above 40 it comes down to the API.)
+
+Even where the API allows it, a *converted* PC bundle still cannot supply one:
+its shaders are DirectX bytecode, and no geometry stage can be recovered from
+that or recompiled on device. A map relying on geometry shaders needs a bundle
+built for Android by the mapper, on a build of the game using an API that
+supports them. Where neither holds, the shader reports itself unsupported and
+the stand-in path takes over, so the level stays playable with wrong visuals
+rather than failing outright.
+
 **Converted PC bundles cannot raymarch.** Worth stating plainly: none of the
 above rescues a screen effect from a converted Windows bundle, because the
 shader is DirectX bytecode with no GLES program and cannot be recompiled on
@@ -277,9 +902,379 @@ hierarchies, animations, animator controllers, audio, text assets and material
 *definitions* are stored platform-independently and come through intact.
 Shaders and block-compressed textures do not: a Windows bundle carries DirectX
 shader bytecode and BC/DXT texture data, neither of which an Adreno GPU can
-consume. Converted bundles therefore fall back to Vivify's replacement-shader
+consume. (Textures are now decoded on device; see the BC/DXT section. Shaders
+are not -- see "Converting shaders PC -> Quest" below for why that is a project
+rather than an impossibility.) Converted bundles therefore fall back to Vivify's replacement-shader
 path rather than the mapper's intended shading. It is a rescue path for maps
 that have no Android bundle yet — not a substitute for one.
+
+## 0.8.8 — the mod would not load at all
+
+`libVivify.so` failed to `dlopen` on device, so nothing in the mod ran. The
+cause was a regression from the move off qpackages.com, in this repo, not in any
+dependency.
+
+`config-utils` is a **headers-only** dependency: qpm resolves it with
+`headersOnly: true` and links no library for it. Its GitHub release does publish
+a `.so` — `libconfig-utils_test.so`, the repo's *test* binary, which is also what
+`overrideSoName` names in `qpm.shared.json`. `scripts/dependencies.json` copied
+that `overrideSoName` across and gave the entry a `soLink`, so
+`restore-deps.py` downloaded it into `extern/libs/`.
+
+`extern.cmake` links **every** `.so` in `extern/libs`, so the mod picked up
+`DT_NEEDED[libconfig-utils_test.so]`. It linked cleanly and built a perfectly
+valid library that no Quest can load, because no Quest has that file. The
+failure surfaces only as "libVivify.so failed", with no indication of which
+library was missing.
+
+Three guards now stand between that mistake and a shipped build:
+
+- `restore-deps.py` refuses to place a library for a dependency marked
+  `headersOnly`, and says so.
+- After a restore it compares `extern/libs` against the manifest in both
+  directions — a missing library is a link error, and a stray one is a load
+  failure, so both fail loudly.
+- `scripts/check-so-dependencies.py` reads the built `libVivify.so`'s actual
+  `DT_NEEDED` list and checks every entry is an Android system library, provided
+  by the modloader, or installed by a real qpm dependency. It runs in the build
+  workflow between compiling and packaging, so a mod that cannot load never
+  becomes a `.qmod`. Libraries that arrive transitively (`libtinyxml2.so` comes
+  with BSML) are reported as notes rather than failures.
+
+## 0.8.9 — freezes, and a watchdog so they cannot happen again
+
+Every level froze on start and the game had to be force-quit. 0.8.8 was the
+first build that ran on device since 0.5.1, so the cause could be anything in
+that window; rather than guess, this release makes a freeze impossible and makes
+the next report decisive.
+
+**Vivify now stands down instead of hanging the game.** Per-frame work is timed.
+Thirty consecutive frames over 50ms (a frame is 11-14ms at 72-90Hz) and Vivify
+disables itself for the rest of the level, logging the worst frame time. The map
+loses its Vivify visuals, which is bad, but the game keeps running and you do
+not have to restart it. A new beatmap clears the flag.
+
+**Level-load phases are timed unconditionally.** All of this runs on the main
+thread while the level loads:
+
+```
+Vivify level load: cache bundle assets took 120ms
+Vivify level load: decode textures took 3400ms
+Vivify level load: repair shaders took 80ms
+Vivify level load: 3600ms total
+```
+
+Whichever number is large is the cause. Please send these lines.
+
+Two concrete hazards found while looking, both real regardless of whether they
+caused this:
+
+- **`FindFallbackShader` never cached a failed search.** It walks every shader
+  object loaded in the process — thousands, in Beat Saber — calling
+  `isSupported`, `name` and `FindPropertyIndex` on each. `RepairMaterialShader`
+  calls it for every material it cannot fix, and prefab instances bring fresh
+  materials each spawn, so one bundle with no usable stand-in meant a full
+  shader-database scan per material per spawn. That is not a slow frame, it is a
+  stopped game. The failure is now remembered.
+
+- **Texture decoding was unbounded on the main thread.** A 2048x2048 BC7 texture
+  is four million pixels and a bundle can hold dozens. There is now a 2-second
+  budget per level; textures past it keep their original format and render
+  untextured, and the count is logged. Already-decoded textures are cache hits
+  and do not consume budget.
+
+## Force reconvert
+
+The settings menu has a second button, **Force Reconvert All (ignore cache)**.
+
+A converted bundle is cached under a key derived from the *source* bundle's
+identity, so once a map has been converted the cached file is reused forever —
+including a conversion produced by an older or buggier converter. Short of
+deleting the cache directory by hand there was no way to pick up converter
+fixes. The forced pass removes each cached file before reconverting. Conversion
+writes through a `.part` file and renames, so a failure mid-pass leaves no
+cached bundle rather than a truncated one.
+
+## 0.9.1 — both diagnostic files are .txt, in one folder
+
+The full session log was at `Logs/Vivify.log`. A `.log` file has no default
+handler on Android or Windows, so tapping it does nothing and it looks like no
+log exists at all -- and it lived in a different directory from the per-level
+report, so there were two places to look. Both files are now plain `.txt` in the
+mod's own folder, and both paths are shown in the settings menu:
+
+```
+/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt    per-level report
+/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt   full session log
+```
+
+Two things about the session log were worth fixing while renaming it:
+
+- **It flushed on every line.** That is an sdcard write per log line, on
+  whichever thread logged -- including the main thread during gameplay, where
+  Vivify can be noisy. Warnings and errors still flush immediately, since those
+  are the lines that matter if the game stops before the buffer reaches disk;
+  ordinary lines are now flushed at most a few times a second.
+- **It had no size limit.** Capped at 8MB per session, after which lines go to
+  logcat only and the file says so. It is truncated at launch, so this only has
+  to bound a single play session.
+
+## 0.9.0 — a report file you can actually find
+
+paperlog output lives where a player cannot reach it without adb, so "send me
+the log" was never a reasonable thing to ask. Vivify now writes its own
+plain-text report to a fixed path under its own data directory, visible to any
+file browser or over MTP:
+
+```
+/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+```
+
+The path is also shown in the Vivify settings menu.
+
+**Two blocks per level.** One when the level starts, one when it ends. The
+start block is written at load, before gameplay, *specifically* so that a level
+which then freezes still leaves its diagnostics on disk — a frozen game never
+reaches the end-of-level write, so anything recorded only at the end would be
+lost exactly when it matters most.
+
+Each block carries the mod version, the graphics API and GPU name, the level
+and bundle paths, whether the bundle was converted, the main-thread level-load
+timings, the frame watchdog's worst frame and whether it stood down, the shader
+audit (how many shaders are runnable, DirectX-only, or refused by this GPU, with
+the refused ones named), shader-repair counts, texture decode counts, and the
+source bundle's shader platforms.
+
+The end block records why the level ended — quit or finished, song restarted, or
+left — along with how far into the song it got. It reports the song position
+rather than guessing "quit" versus "beaten", because by the time the reset runs
+the `AudioTimeSyncController` is usually already gone.
+
+The file is capped at 512KB and trimmed to the newest 256KB on a line boundary,
+so leaving the mod installed cannot fill a headset. A write failure is swallowed
+entirely: a diagnostic file must never be the reason the game breaks.
+
+Covered by `tools/report/` — missing directories, appending rather than
+overwriting, bodies without trailing newlines, the size cap and its trim notice,
+and an unwritable path that must not throw. Ten checks under ASan/UBSan.
+
+## Converting shaders PC -> Quest
+
+Earlier versions of this README said conversion "cannot translate" DirectX
+bytecode, which overstated it. It is not impossible; it is a substantial project
+that has not been done. The honest state of it:
+
+**Why it is possible in principle.** Unity's own DXBC cross-compiler,
+[HLSLcc](https://github.com/Unity-Technologies/HLSLcc), turns DirectX bytecode
+into GLSL, GLSL ES, Metal and Vulkan GLSL -- it is the tool Unity uses to build
+GLES shaders in the first place. And for OpenGL ES targets Unity does not store
+a binary at all: the shader blob holds **GLSL source text**. So the output format
+is writable, not a proprietary binary blob.
+
+**Why it has not been done here.** Four pieces are needed, and only the first
+exists today:
+
+1. **Locate and decode Shader assets in the bundle.** Done --
+   `VivifySerializedFile.cpp` parses the SerializedFile object table and walks
+   Shader objects through the embedded type tree. Covered by `tools/shaderscan/`.
+2. **Decode Unity's shader blob.** Done -- `DecodeShaderPrograms` in
+   `VivifySerializedFile.cpp`. `offsets`/`compressedLengths`/
+   `decompressedLengths` are read out of the type tree as the nested tables
+   Unity 2019.3+ writes (one group per platform), each sub-blob is
+   LZ4-decompressed, and its `[offset, length]` program table is split into
+   individual sub-programs -- format version, `ShaderGpuProgramType`, keyword
+   tables and program bytes.
+
+   The LZ4 block decoder is written out here rather than vendored: it is small,
+   it runs on a headset, and it is fed untrusted bundle bytes, so every read and
+   write is bounds-checked. Unity has used both 8-byte and 12-byte program-table
+   entries; the entry size is determined from the data (only one of the two lays
+   every program inside the blob and clear of the table) rather than from a
+   version rule.
+
+   This is also where the size of step 3 gets settled per bundle, because the
+   scan now reports what the programs *are*:
+
+   ```
+   Vivify source bundle shaders: unity=2021.3.16f1 serializedFiles=1 shaders=24
+     runnableOnQuest=0 platforms=[Direct3D 11(4)] programs=61 glslSource=0
+     binary=61 programTypes=[D3D11 vertex sm5.0, D3D11 pixel sm5.0]
+   ```
+
+   `glslSource` counts programs stored as GLSL text, which are writable by
+   string manipulation. `binary` counts the ones that need a real
+   cross-compiler.
+3. **Cross-compile** each DXBC program to GLSL ES. Done -- `VivifyDxbc.cpp`.
+
+   HLSLcc was the obvious route and is not the one taken. It is roughly 30k
+   lines built around Unity's own build system, and it would still have needed
+   the reflection-to-uniform mapping below bolted on afterwards. What is here
+   instead is a direct translator for the subset of Shader Model 4/5 that
+   Unity's compiler emits for the unlit, effect, raymarch and blit shaders a
+   Vivify map ships: the DXBC container (RDEF, ISGN/OSGN/OSG5, SHDR/SHEX), the
+   token stream, and a GLSL ES 3.00 emitter.
+
+   Two decisions carry most of the weight.
+
+   *Registers are typeless, so the translation is too.* Every temp becomes a
+   vec4 and integer work round-trips through `floatBitsToInt`/`intBitsToFloat`.
+   The same four bytes are read as float by one instruction and as int by the
+   next, so any model that infers a type per register has to be right every
+   time or it silently miscompiles. The bit-cast form is always right and the
+   driver's optimiser removes the casts.
+
+   *Constant buffers are rebuilt as named uniforms.* Unity binds material
+   properties by uniform name, so a shader that kept D3D's flat array of
+   float4s would link and then receive nothing. Every `cb0[k].c` is resolved
+   through the reflection data back to the variable covering that byte --
+   `_Color.y`, `_Points[3].x`, `hlslcc_mtx4x4unity_ObjectToWorld[2]` -- and the
+   components of one register are put back together as a swizzle when they all
+   land in the same variable. Matrices keep HLSLcc's `hlslcc_mtxRxC` prefix and
+   attributes and varyings are named `in_SEMANTIC#`/`vs_SEMANTIC#` for the same
+   reason: those are the names Unity's own GLES shaders use and the ones the
+   engine matches against.
+
+   *Coverage.* Vertex, fragment, geometry and compute programs; every Shader
+   Model 4/5 arithmetic, bit-manipulation and control-flow instruction,
+   including subroutines (`label`/`call`), `switch`, and the two-destination
+   forms (`sincos`, `imul`, `udiv`, `uaddc`, `swapc`); the whole sampling
+   family -- `sample`, `_l`, `_b`, `_d`, `_c`, `_c_lz`, `gather4`, `ld`,
+   `ld_ms`, `resinfo`, `bufinfo` -- with compile-time texel offsets, shadow
+   samplers and integer samplers; structured, raw and read/write buffers with
+   their atomics; thread-group shared memory and barriers.
+
+   The output version is not fixed. A plain vertex or fragment shader stays at
+   GLSL ES 3.00; `textureGather`, `uaddCarry`, `imulExtended`, multisample
+   fetches and storage buffers raise it to 3.10, geometry shaders and
+   `textureGatherOffset` to 3.20. Quest's Adreno parts expose 3.2 and Unity
+   compiles the source on the device, so this costs nothing where it is not
+   needed.
+
+   What is deliberately *not* translated, in each case because a wrong answer
+   would be worse than none: tessellation (a hull program is several
+   instruction streams with their own register spaces); double precision, which
+   GLSL ES does not have; per-sample evaluation (`eval_*`, `sample_pos`);
+   `msad`; append/consume buffers; and a geometry shader that passes a semantic
+   straight through, which would need one varying name to be both an input and
+   an output -- programs are translated one at a time, so the pipeline-wide
+   rename that needs is not available.
+
+   Anything outside the subset fails by name -- "instruction 'msad' is outside
+   the translated subset" -- rather than emitting plausible wrong GLSL, and a
+   shader that does not translate is left exactly as it was. It keeps its
+   DirectX programs, does not run here, and falls to the stand-in path, which
+   is what it would have done anyway.
+
+   `ConvertShadersToGles` is the whole thing end to end, and it is what the
+   on-device conversion runs (settings: "Translate Shaders On Conversion").
+
+   A D3D11 sub-program is *not* a bare DXBC container: Unity writes its own
+   binding header in front of the bytecode, so the container is located by its
+   header rather than assumed to be at offset zero. Getting that wrong made the
+   first version of this reject every shader in every bundle before decoding a
+   single instruction, and it is why the fixtures carry the prefix too.
+
+   Tested by `tools/dxbc/`: 128 checks under ASan/UBSan against hand-assembled
+   containers, plus five end-to-end cases in `tools/bundleconvert/`. There is
+   no DirectX compiler on a Linux host and no Quest here, so the fixtures are
+   written from the format documentation rather than captured from fxc. That
+   proves the decoder reads what the format *says*, not what Microsoft's
+   compiler happens to emit -- a real limit, and the reason the setting has an
+   off position.
+4. **Re-serialize.** Done, both halves.
+
+   `RewriteSerializedFile` rebuilds one file with objects' bodies replaced. The
+   metadata is copied verbatim -- type tree, externals, script types, user
+   information, padding -- and only the object table's `byteStart`/`byteSize`
+   fields are patched, because nothing about an object's *body* changes any of
+   the rest. Anything the parser does not understand survives untouched, and a
+   file whose object table is empty or unfamiliar keeps its whole payload rather
+   than rebuilding to nothing.
+
+   `ReplaceNodeData` does the same one level out: a SerializedFile that changes
+   length moves every archive node stored after it, and the directory table
+   records absolute offsets into the unpacked data.
+
+   Both preserve the gaps around what they move, so a rewrite with no edits
+   reproduces its input byte for byte -- which is the only property that can be
+   checked before there is a real converted shader to write. `conv --repack`
+   runs a whole bundle through the path and the tests require the payload back
+   unchanged.
+
+All four steps are now written. What cannot be claimed is that the output is
+*correct*: the only way to know whether a translated shader draws what the
+mapper intended is to run a converted map on a headset. The parts that can be
+checked from here are checked -- every framing and bounds path, every
+truncation, hundreds of corruption trials, and the requirement that a converted
+bundle still parses and converts to nothing on a second pass -- and the parts
+that cannot are behind a setting that turns the translation off again.
+
+**What to check on a real map.** Every conversion now logs what the source
+bundle's shaders were actually built for:
+
+```
+Vivify source bundle shaders: unity=2021.3.16f1 serializedFiles=1 shaders=24 runnableOnQuest=0 platforms=[Direct3D 11(4)]
+```
+
+`runnableOnQuest` counts shaders carrying a GLES3 or Vulkan program. If it is 0
+and `platforms` is Direct3D-only, the map's own shading -- raymarching included
+-- cannot run until steps 2-4 exist or the mapper ships an Android bundle. If it
+is non-zero, the shaders are present and something else is wrong, which is a
+different and much smaller problem.
+
+## Geometry shaders
+
+Short answer: a geometry shader can run on Quest only if the map ships a bundle
+built for **Android**, and only if the game's graphics API exposes a geometry
+stage. Neither is something this mod can arrange.
+
+Two separate walls stand between a Vivify map and a working geometry shader, and
+they need completely different fixes:
+
+1. **No Android program exists.** Upstream Vivify only ever builds one bundle
+   per map: `VivifyController.BUNDLE_FILE` is `$"bundle{BUNDLE_SUFFIX}.vivify"`
+   and `BUNDLE_SUFFIX` is `Windows2021` (or `Windows2019` on 1.29.1) — there is
+   no Android suffix in the upstream source at all. So a PC-authored map's
+   shader programs are DirectX bytecode. The on-device converter rewrites the
+   archive's target platform, which is what makes the meshes, prefabs, materials
+   and property values load; it cannot invent GLES or Vulkan programs that were
+   never compiled. Every shader in a converted bundle is dead on arrival, and a
+   geometry shader is no more or less dead than a plain one. The only real fix
+   is an Android bundle — built by the mapper, or fetched from the community
+   bundle repo when someone has published one for that map's checksum.
+
+2. **The device has no geometry stage.** Even with real Android programs, a
+   geometry stage is only available under OpenGL ES 3.2, via
+   `GL_EXT_geometry_shader`. Adreno's Vulkan driver reports
+   `VkPhysicalDeviceFeatures.geometryShader` as false and always has — Qualcomm
+   has never shipped geometry or tessellation stages on Vulkan. Which API Beat
+   Saber uses is baked into its APK at build time, so no mod can switch it.
+   Unity's `SystemInfo` in this build exposes no `supportsGeometryShaders` to
+   ask directly, so the mod logs `Vivify graphics: api=… geometryShaderStagePossible=…`
+   once per session instead.
+
+Unity picks the highest-LOD subshader whose hardware requirements the device
+meets. A shader that ships a geometry-shader subshader **and** a plain fallback
+subshader therefore already works — Unity selects the fallback silently. Only a
+shader whose every subshader needs a stage the device lacks actually fails.
+
+### Reading the audit
+
+Because those two walls look identical from the outside ("the map is invisible"),
+every bundle load now logs which one it hit:
+
+```
+Vivify shaders: bundle='…' converted=true total=24 runnable=0 noAndroidProgram=24 deviceRejected=0
+```
+
+- `noAndroidProgram` — the shader has zero subshaders for this platform. Wall 1.
+  Expect this to equal `total` for any converted bundle.
+- `deviceRejected` — subshaders exist, so the bundle *was* built for Android, and
+  this GPU turned every one of them down. Wall 2, and the bucket a geometry
+  shader lands in. Each such shader is logged by name with its subshader count,
+  pass count and maximum LOD, so a mapper can see exactly what to add a fallback
+  subshader for.
+- `runnable` — shaders that will actually draw.
 
 ## What's unverified
 

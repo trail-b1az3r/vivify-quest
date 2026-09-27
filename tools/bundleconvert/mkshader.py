@@ -132,10 +132,13 @@ def lz4_block_with_match() -> tuple:
 
 
 def sub_program(program_type: int, code: bytes, *, blob_version=202012090,
-                keywords=()) -> bytes:
+                keywords=(), trailing=b"") -> bytes:
     """One compiled sub-program, in the layout Unity writes: format version,
     ShaderGpuProgramType, three statistics ints, a fourth from 2016.08, then the
-    aligned keyword strings and the program byte array."""
+    aligned keyword strings and the program byte array.
+
+    trailing is what 2018.06 - 2020.12 blobs carry after the code (source map,
+    bind channels, parameter tables); Unity aligns to four bytes before it."""
     out = bytearray()
     out += struct.pack('<ii', blob_version, program_type)
     out += bytes(12)                                  # statistics
@@ -149,6 +152,9 @@ def sub_program(program_type: int, code: bytes, *, blob_version=202012090,
     if 201806140 <= blob_version < 202012090:
         out += struct.pack('<i', 0)                   # local keyword table
     out += struct.pack('<i', len(code)) + code
+    if trailing:
+        _align4(out)
+        out += trailing
     return bytes(out)
 
 
@@ -169,6 +175,25 @@ def program_blob(programs, *, entry_size=8) -> bytes:
             out += struct.pack('<I', 0)
     out += body
     return bytes(out)
+
+
+def segmented_chunks(entries, *, entry_size=12):
+    """One platform group in Unity 2019.3+'s layout: a single entry table at the
+    start of chunk 0 naming [offset, length, segment] per entry, and each
+    entry's bytes in the chunk its segment names (offsets relative to that
+    chunk). entries: list of (bytes, segment). Returns the decompressed chunks,
+    ready for build_program_store."""
+    segments = max(seg for _, seg in entries) + 1
+    header = 4 + len(entries) * entry_size
+    data = [bytearray() for _ in range(segments)]
+    table = bytearray(struct.pack('<I', len(entries)))
+    for body, seg in entries:
+        offset = (header if seg == 0 else 0) + len(data[seg])
+        table += struct.pack('<II', offset, len(body))
+        if entry_size == 12:
+            table += struct.pack('<I', seg)
+        data[seg] += body
+    return [bytes(table + data[0])] + [bytes(d) for d in data[1:]]
 
 
 def _align4(buf: bytearray):
@@ -235,14 +260,76 @@ def shader_object(name: str, platforms, blob=b"\x01\x02\x03", *,
     return bytes(out)
 
 
+def texture_type_tree(sf_version: int) -> TypeTree:
+    """Mirrors the shape of UnityEngine.Texture2D as far as the converter reads
+    it: a string name, the size/format ints, the m_IsReadable bool, the
+    StreamingInfo struct and the inline image data.
+
+    Field order and presence differ between Unity versions, which is exactly why
+    the parser finds every one of them by the name the tree gives it. A fixture
+    that matched the parser's assumptions positionally would prove nothing.
+    """
+    t = TypeTree()
+    t.add(0, "Texture2D", "Base", -1)
+    t.add(1, "string", "m_Name", -1, align=True)
+    t.add(2, "Array", "Array", -1, is_array=True)
+    t.add(3, "int", "size", 4)
+    t.add(3, "char", "data", 1)
+    t.add(1, "int", "m_Width", 4)
+    t.add(1, "int", "m_Height", 4)
+    t.add(1, "int", "m_CompleteImageSize", 4)
+    t.add(1, "int", "m_TextureFormat", 4)
+    t.add(1, "int", "m_MipCount", 4)
+    t.add(1, "bool", "m_IsReadable", 1)
+    t.add(1, "bool", "m_IsPreProcessed", 1, align=True)
+    t.add(1, "StreamingInfo", "m_StreamData", -1)
+    t.add(2, "unsigned int", "offset", 4)
+    t.add(2, "unsigned int", "size", 4)
+    t.add(2, "string", "path", -1, align=True)
+    t.add(3, "Array", "Array", -1, is_array=True)
+    t.add(4, "int", "size", 4)
+    t.add(4, "char", "data", 1)
+    t.add(1, "TypelessData", "image data", -1, is_array=True)
+    t.add(2, "int", "size", 4)
+    t.add(2, "UInt8", "data", 1)
+    return t
+
+
+def texture_object(name="tex", *, width=4, height=4, texture_format=10, mip_count=1,
+                   is_readable=False, image_data=b"", stream_size=0, stream_path=""):
+    """One serialized Texture2D body, laid out to match texture_type_tree."""
+    body = bytearray()
+
+    def put_string(text: bytes):
+        body.extend(struct.pack('<i', len(text)))
+        body.extend(text)
+        _align4(body)
+
+    put_string(name.encode())
+    body.extend(struct.pack('<iiiii', width, height,
+                            len(image_data) or stream_size, texture_format, mip_count))
+    body.append(1 if is_readable else 0)
+    body.append(0)                                   # m_IsPreProcessed
+    _align4(body)
+    body.extend(struct.pack('<II', 0, stream_size))  # StreamingInfo offset, size
+    put_string(stream_path.encode())
+    body.extend(struct.pack('<i', len(image_data)))
+    body.extend(image_data)
+    return bytes(body)
+
+
 def serialized_file_with_shaders(shaders, *, sf_version=21, target=19,
                                  unity="2021.3.16f1", enable_type_tree=True,
-                                 extra_class_id=None):
-    """shaders: list of (name, [platform, ...]). Returns the SerializedFile bytes."""
-    tree = shader_type_tree(sf_version)
+                                 extra_class_id=None, textures=None, shader_tree=None):
+    """shaders: list of (name, [platform, ...]), or of already-serialized Shader
+    bodies when shader_tree gives the type tree they were written against (see
+    mkshader2021). textures: list of kwargs for texture_object. Returns the
+    SerializedFile bytes."""
+    textures = list(textures or [])
+    tree = shader_tree if shader_tree is not None else shader_type_tree(sf_version)
 
     types = bytearray()
-    type_count = 1 + (1 if extra_class_id is not None else 0)
+    type_count = 1 + (1 if textures else 0) + (1 if extra_class_id is not None else 0)
     types += struct.pack('<i', type_count)
 
     def emit_type(class_id, with_tree):
@@ -263,18 +350,29 @@ def serialized_file_with_shaders(shaders, *, sf_version=21, target=19,
         return bytes(buf)
 
     types += emit_type(48, tree)
+    texture_type_index = None
+    if textures:
+        texture_type_index = 1
+        types += emit_type(28, texture_type_tree(sf_version))
+    extra_type_index = None
     if extra_class_id is not None:
+        extra_type_index = 1 + (1 if textures else 0)
         other = TypeTree()
         other.add(0, "Mesh", "Base", -1)
         other.add(1, "unsigned int", "m_Dummy", 4)
         types += emit_type(extra_class_id, other)
 
     # A fixture entry is (name, platforms) or (name, platforms, platform_blobs).
-    bodies = [shader_object(entry[0], entry[1],
-                            platform_blobs=entry[2] if len(entry) > 2 else None)
+    bodies = [bytes(entry) if isinstance(entry, (bytes, bytearray)) else
+              shader_object(entry[0], entry[1], platform_blobs=entry[2] if len(entry) > 2 else None)
               for entry in shaders]
+    type_indices = [0] * len(bodies)
+    for spec in textures:
+        bodies.append(texture_object(**spec))
+        type_indices.append(texture_type_index)
     if extra_class_id is not None:
         bodies.append(struct.pack('<I', 0xDEADBEEF))
+        type_indices.append(extra_type_index)
 
     cursor = 0
     placements = []
@@ -303,8 +401,7 @@ def serialized_file_with_shaders(shaders, *, sf_version=21, target=19,
         else:
             meta += struct.pack('<i', start)
         meta += struct.pack('<I', size)
-        type_index = 1 if (extra_class_id is not None and i == len(bodies) - 1) else 0
-        meta += struct.pack('<i', type_index)
+        meta += struct.pack('<i', type_indices[i])
     meta += struct.pack('<i', 0)                     # script types
     meta += struct.pack('<i', 0)                     # externals
     meta += struct.pack('<i', 0)                     # ref types
