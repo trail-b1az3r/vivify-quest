@@ -33,6 +33,31 @@ port from scratch — see Credits below.
   - Full settings-menu parity: every toggle the runtime already had a config
     key for is now actually exposed in the in-game settings UI.
 
+## 0.14.1 — note bodies missing on RSIH: map realtime shadows are now opt-in
+
+RSIH's notes are completely plain: no custom note model and no note custom
+data. So Vivify never touches them, and "arrows but no body" was not a note
+replacement problem. What the map does do, at time 0, is `SetRenderingSettings`
+with realtime shadows on (`shadows: 1`, two cascades, 150 m, a prefab light as
+the sun), and ambient intensity 0. Hold My Hand sends exactly the same
+settings.
+
+With realtime shadows on, every shader that can receive shadows switches to
+its shadowed variant, which reads the screen-space shadow map. On the Quest's
+multiview rendering that map comes out fully shadowed. The game's note body
+then draws black against a dark scene, while the unlit arrows stay visible.
+It is also a heavy extra rendering pass on a mobile GPU.
+
+The shadow fields of `SetRenderingSettings` (`shadows`, `shadowCascades`,
+`shadowDistance`, `shadowResolution`, `shadowProjection`) are now ignored
+unless the new **Map Realtime Shadows** setting is on. It is off by default.
+Everything else the event sets still applies. The log says once per session
+when it has ignored them.
+
+This is the likeliest cause, but it is not confirmed: I have not seen RSIH's
+bundle. If note bodies are still missing with the setting off, send the
+headset's `bundleAndroid2021.vivify` from the RSIH song folder.
+
 ## 0.14.0 — the flicker on converted maps, and AudioLink
 
 ### Flicker and garbage on converted maps

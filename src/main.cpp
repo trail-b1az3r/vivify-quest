@@ -38,6 +38,7 @@ constexpr std::string_view kSceneDepthConfigKey = "sceneDepthTexture";
 constexpr std::string_view kSubmitScoresConfigKey = "submitScoresOnVivifyMaps";
 constexpr std::string_view kTranslateShadersConfigKey = "translateShadersOnConversion";
 constexpr std::string_view kAudioLinkConfigKey = "audioLink";
+constexpr std::string_view kMapRealtimeShadowsConfigKey = "mapRealtimeShadows";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
 bool gMultipassRenderingEnabled = true;
 bool gVivifyDebugLogging = false;
@@ -80,6 +81,7 @@ bool gSubmitScores = true;
 // reconvert.
 bool gTranslateShaders = true;
 bool gAudioLink = true;
+bool gMapRealtimeShadows = false;
 // Which shader to use as the stand-in, by name, overriding the automatic pick.
 //
 // Empty means "choose automatically". This exists because the right answer
@@ -325,6 +327,11 @@ void RegisterModSettings() {
             [](bool value) { SetBoolConfigValue(kTranslateShadersConfigKey, value, gTranslateShaders); });
 
         BSML::Lite::CreateToggle(
+            container->get_transform(), u"Map Realtime Shadows",
+            GetMapRealtimeShadows(),
+            [](bool value) { SetBoolConfigValue(kMapRealtimeShadowsConfigKey, value, gMapRealtimeShadows); });
+
+        BSML::Lite::CreateToggle(
             container->get_transform(), u"AudioLink",
             GetAudioLinkEnabled(),
             [](bool value) { SetBoolConfigValue(kAudioLinkConfigKey, value, gAudioLink); });
@@ -469,6 +476,10 @@ bool GetAudioLinkEnabled() {
   return gAudioLink;
 }
 
+bool GetMapRealtimeShadows() {
+  return gMapRealtimeShadows;
+}
+
 std::string GetStandInShaderName() {
   return gStandInShaderName;
 }
@@ -494,6 +505,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kSubmitScoresConfigKey, true, gSubmitScores);
   needsWrite |= EnsureBoolConfigValue(kTranslateShadersConfigKey, true, gTranslateShaders);
   needsWrite |= EnsureBoolConfigValue(kAudioLinkConfigKey, true, gAudioLink);
+  needsWrite |= EnsureBoolConfigValue(kMapRealtimeShadowsConfigKey, false, gMapRealtimeShadows);
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),
                                         gStandInShaderName);
   if (needsWrite) {
