@@ -310,10 +310,21 @@ struct ShaderObject {
   bool parsedFormRead = false;
   std::vector<ParsedProgramRef> programRefs;
   std::vector<std::string> keywordNames;
+  // m_ParsedForm.m_Name, the shader's real name ("Custom/Foo"), when the walk
+  // reached it.
+  std::string parsedFormName;
+  // Where each keyword name's length field sits in the file, parallel to
+  // keywordNames (0 where not seen), so a name can be rewritten in place.
+  std::vector<size_t> keywordNameFileOffsets;
   // Each pass's m_NameIndices, inverted: (subShader, pass) -> index -> name.
   std::map<std::pair<int32_t, int32_t>, std::map<int32_t, std::string>> passNames;
   // The SerializedProgramParameters layout, for ParseParameterBlob.
   std::vector<ParameterSchemaNode> parameterSchema;
+  // Every object reference (PPtr: m_FileID then m_PathID) outside
+  // m_ParsedForm -- m_Dependencies, m_NonModifiableTextures -- as the file
+  // offset of its m_FileID. A body moved into another file has to have these
+  // cleared, since they name objects of the file it came from.
+  std::vector<size_t> pptrFileOffsets;
 };
 
 // One Texture2D object, as far as making its pixels reachable on device needs.

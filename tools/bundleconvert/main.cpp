@@ -30,6 +30,7 @@ int main(int argc, char** argv) {
       std::printf("shader=%s platforms=", shader.name.c_str());
       for (size_t i = 0; i < shader.platforms.size(); i++) std::printf("%s%d", i ? "," : "", shader.platforms[i]);
       std::printf("\n");
+      std::printf("pptrs=%zu\n", shader.pptrFileOffsets.size());
       for (auto const& ref : shader.programRefs) {
         std::string keywords;
         for (uint16_t k : ref.keywordIndices) {
@@ -61,13 +62,31 @@ int main(int argc, char** argv) {
     }
     return 0;
   }
+  // --merge <quest> <converted-pc> <dst> <name>... puts the named shaders of
+  // a converted PC bundle into a Quest bundle that shipped them empty.
+  if (std::string(argv[1]) == "--merge") {
+    if (argc < 6) {
+      std::fprintf(stderr, "usage: conv --merge <quest> <converted-pc> <dst> <shader-name>...\n");
+      return 2;
+    }
+    std::vector<std::string> names(argv + 5, argv + argc);
+    ShaderMerge m = MergeShadersInto(argv[2], argv[3], names, argv[4]);
+    std::printf("status=%s\nmessage=%s\nmerged=%d outBytes=%llu\n", std::string(StatusText(m.status)).c_str(),
+                m.message.c_str(), m.merged, (unsigned long long)m.outputBytes);
+    for (auto const& name : m.mergedNames) std::printf("mergedName=%s\n", name.c_str());
+    for (auto const& skip : m.skipped) std::printf("skipped=%s\n", skip.c_str());
+    for (auto const& note : m.notes) std::printf("note=%s\n", note.c_str());
+    return m.status == Status::Success ? 0 : 1;
+  }
   // --repack runs the bundle through the step-4 rewrite path with no shader
   // edits, which must leave a bundle that reads back the same.
   // --shaders runs the whole conversion: translate the DirectX programs to
   // GLSL ES and rebuild the archive around the shaders that changed size.
   std::string const first = argv[1];
   bool const repack = first == "--repack";
-  bool const shaders = first == "--shaders";
+  // --shaders-split is --shaders with ShaderConversionOptions::separateStereoVariants.
+  bool const split = first == "--shaders-split";
+  bool const shaders = first == "--shaders" || split;
   bool const flagged = repack || shaders;
   if (flagged && argc < 4) {
     std::fprintf(stderr, "usage: conv %s <src> <dst>\n", first.c_str());
@@ -77,15 +96,17 @@ int main(int argc, char** argv) {
   char const* const dst = flagged ? argv[3] : argv[2];
 
   if (shaders) {
-    ShaderConversion c = ConvertShadersToGles(src, dst);
+    ShaderConversionOptions options;
+    options.separateStereoVariants = split;
+    ShaderConversion c = ConvertShadersToGles(src, dst, options);
     std::printf("status=%s\nmessage=%s\nseen=%d translated=%d leftAlone=%d refused=%d "
                 "programs=%d outBytes=%llu\ntexSeen=%d texReadable=%d texStreamed=%d\n"
-                "linked=%d variantsLinked=%d variantsRefused=%d stereoRemapped=%d\n",
+                "linked=%d variantsLinked=%d variantsRefused=%d stereoRemapped=%d stereoSplit=%d\n",
                 std::string(StatusText(c.status)).c_str(), c.message.c_str(), c.shadersSeen,
                 c.shadersTranslated, c.shadersLeftAlone, c.shadersRefused, c.programsTranslated,
                 (unsigned long long)c.outputBytes, c.texturesSeen, c.texturesMarkedReadable,
                 c.texturesStreamed, c.shadersLinked, c.variantsLinked, c.variantsRefused,
-                c.stereoVariantsRemapped);
+                c.stereoVariantsRemapped, c.stereoVariantsSplit);
     for (auto const& refusal : c.refusals) std::printf("refusal=%s\n", refusal.c_str());
     for (auto const& refusal : c.variantRefusals) std::printf("variantRefusal=%s\n", refusal.c_str());
     return c.ok() ? 0 : 1;

@@ -1,5 +1,6 @@
 #include "VivifyRuntimeInternal.hpp"
 #include "VivifyComponents.hpp"
+#include "VivifyAudioLink.hpp"
 #include "UnityEngine/Renderer.hpp"
 #include "UnityEngine/Matrix4x4.hpp"
 
@@ -394,6 +395,17 @@ void MultipassKeywordController::OnDisable() {
 }
 
 void RuntimeBehaviour::Update() {
+  // Before the runtime's own update, which returns early in the menu and when
+  // its watchdog stands down; AudioLink has to run regardless (song previews).
+  try {
+    AudioLink::Tick();
+  } catch (std::exception const& ex) {
+    static int reported = 0;
+    if (reported++ < 3) PaperLogger.error("Vivify AudioLink update threw: {}", ex.what());
+  } catch (...) {
+    static int reported = 0;
+    if (reported++ < 3) PaperLogger.error("Vivify AudioLink update threw a non-std exception");
+  }
   Runtime::Instance().Update();
 }
 

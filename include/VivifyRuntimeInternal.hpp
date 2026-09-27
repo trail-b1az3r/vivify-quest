@@ -103,6 +103,20 @@ private:
 
   void HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEventArgs const& event);
   void DownloadBundle(uint32_t checksum, std::string const& levelPath, std::function<void(bool)> callback);
+  // The same, saving to destPath instead of the level's Android bundle path.
+  void DownloadBundleTo(uint32_t checksum, std::string const& destPath, std::function<void(bool)> callback);
+  // Downloads a Quest-less Vivify map's PC bundle and converts it; false when
+  // Info.dat names none.
+  bool TryDownloadPcBundle(std::string const& levelPath);
+  // Loads a level's Android bundle, first standing in the PC build of any of
+  // its shaders that were shipped empty (VivifyAssets.cpp, "PC shaders for
+  // empty Quest shaders").
+  void BeginAndroidBundleLoad(std::string const& levelPath, std::string const& androidBundlePath);
+  void FinishAndroidBundleLoad(std::string const& levelPath, std::string const& androidBundlePath);
+  void GraftShadersFrom(std::string const& levelPath, std::string const& convertedPath,
+                        std::vector<std::string> const& names);
+  void ConvertPcForGraft(std::string const& levelPath, std::string const& androidBundlePath,
+                         std::string const& pcBundlePath, std::vector<std::string> const& names);
   // Kicks off an off-thread PC->Android bundle conversion for the currently
   // selected level and re-enables the play button when it lands.
   void ConvertPcBundleAsync(std::string const& levelPath, std::string const& sourceBundlePath);
@@ -459,6 +473,16 @@ private:
   // Source path of a PC->Android bundle conversion currently running on a
   // worker thread, so re-selecting the same level does not start a second one.
   std::string _bundleConversionSource;
+  // PC-built shaders standing in for shaders a level's Android bundle shipped
+  // empty, by shader name, for _graftLevelPath. Kept alive with
+  // DontUnloadUnusedAsset; replaced when another level needs them.
+  std::unordered_map<std::string, UnityEngine::Shader*> _graftedShaders;
+  std::string _graftLevelPath;
+  int _graftGeneration = 0;
+  int _graftApplied = 0;
+  float _graftDeadline = -1.0f;  // realtime by which the graft's PC download must answer
+  std::string _graftPendingLevel;
+  std::string _graftPendingAndroid;
   // Converted bundle whose .loading marker is on disk, or empty.
   std::string _loadGuardPath;
 

@@ -4,6 +4,13 @@
 #include "VivifyTextureDecode.hpp"
 #include "VivifyReport.hpp"
 #include "UnityEngine/Texture2D.hpp"
+#include "UnityEngine/AssetBundleRequest.hpp"
+#include "UnityEngine/HideFlags.hpp"
+#include "UnityEngine/Shader.hpp"
+#include "UnityEngine/GameObject.hpp"
+#include "UnityEngine/Renderer.hpp"
+#include "UnityEngine/Material.hpp"
+#include <set>
 #include "UnityEngine/TextureFormat.hpp"
 #include <atomic>
 #include <chrono>
@@ -63,21 +70,70 @@ namespace {
 //      uniform block that multiview fills. Version 8 read them as loose
 //      uniforms nothing keeps current, and everything a translated shader drew
 //      (scenery, custom notes) landed in the wrong place
-constexpr int kBundleConversionVersion = 9;
+//  10  separate single-view and multiview programs (see
+//      ShaderConversionOptions::separateStereoVariants) when the game uses
+//      STEREO_MULTIVIEW_ON. Version 9 put multiview programs in the plain
+//      variants, which GL refuses in any single-view framebuffer: blits,
+//      render textures and secondary cameras on converted maps flickered or
+//      showed garbage. The marker records which way a bundle was converted
+//  11  small named cbuffers back to loose uniforms, large ones as uniform
+//      blocks with an explicit binding. Version 10 made every named cbuffer a
+//      block with no binding, all on binding 0, and custom notes lost their
+//      colour
+//  12  Unity 2019 bundles no longer split (see ConvertThroughParsedForm).
+//      Version 10 and 11 renamed the stereo keyword only in the program
+//      entries, which Unity does not select variants by; the eye cameras got
+//      the single-view programs and notes and most visuals were invisible
+constexpr int kBundleConversionVersion = 12;
+
+// Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
+// 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the
+// game's shaders having been compiled with multiview variants shows up in
+// Shader.GetAllGlobalKeywords(). Read on the main thread (DetectMultiviewKeyword)
+// and used by conversions on worker threads.
+std::atomic<int> gMultiviewKeyword{-1};
+
+void DetectMultiviewKeyword() {
+  if (gMultiviewKeyword.load() >= 0) return;
+  try {
+    auto keywords = UnityEngine::Shader::GetAllGlobalKeywords();
+    if (!keywords || keywords.size() == 0) return;  // too early; look again later
+    bool found = false;
+    for (auto const& keyword : keywords) {
+      if (keyword.m_Name && std::string(keyword.m_Name) == "STEREO_MULTIVIEW_ON") found = true;
+    }
+    gMultiviewKeyword.store(found ? 1 : 0);
+    PaperLogger.info("Vivify: the game {} STEREO_MULTIVIEW_ON ({} global keywords); converted shaders get {}",
+                     found ? "uses" : "does not use", keywords.size(),
+                     found ? "separate single-view and multiview programs"
+                           : "multiview programs in their plain variants");
+  } catch (...) {
+    PaperLogger.warn("Vivify: could not list the game's shader keywords; converted shaders keep multiview "
+                     "programs in their plain variants");
+    gMultiviewKeyword.store(0);
+  }
+}
+
+bool SplitStereoVariants() {
+  return gMultiviewKeyword.load() == 1;
+}
 
 std::string ConversionMarkerPath(std::string const& destPath) {
   return destPath + ".version";
 }
 
-// A cached conversion counts only if it was produced by this converter. A
-// bundle with no marker beside it came from a build that predates them.
+// A cached conversion counts only if it was produced by this converter, the
+// same way this session would produce it. A bundle with no marker beside it
+// came from a build that predates them.
 bool CachedConversionIsCurrent(std::string const& destPath) {
   std::error_code ec;
   if (!std::filesystem::exists(destPath, ec) || ec) return false;
   std::ifstream marker(ConversionMarkerPath(destPath));
   int version = 0;
   if (!(marker >> version)) return false;
-  return version == kBundleConversionVersion;
+  int split = 0;
+  if (!(marker >> split)) split = 0;
+  return version == kBundleConversionVersion && (split != 0) == SplitStereoVariants();
 }
 
 void MarkConversionCurrent(std::string const& destPath) {
@@ -87,7 +143,7 @@ void MarkConversionCurrent(std::string const& destPath) {
                      "be reconverted every launch", destPath);
     return;
   }
-  marker << kBundleConversionVersion << "\n";
+  marker << kBundleConversionVersion << " " << (SplitStereoVariants() ? 1 : 0) << "\n";
 }
 
 // CRASH GUARD FOR CONVERTED BUNDLES
@@ -201,7 +257,9 @@ BundleConversionOutcome RunBundleConversion(std::string const& source, std::stri
     // reconvert rather than reuse this.
     return {result.status, result.message};
   }
-  auto const conversion = BundleConvert::ConvertShadersToGles(source, dest);
+  BundleConvert::ShaderConversionOptions options;
+  options.separateStereoVariants = SplitStereoVariants();
+  auto const conversion = BundleConvert::ConvertShadersToGles(source, dest, options);
   if (conversion.status == BundleConvert::Status::Success) MarkConversionCurrent(dest);
   // Logged here, on the worker, rather than folded into the message: a bundle
   // can refuse several shaders and each reason is a line worth reading on its
@@ -218,9 +276,11 @@ BundleConversionOutcome RunBundleConversion(std::string const& source, std::stri
   }
   PaperLogger.info("Vivify shader conversion: {} of {} shader(s) linked for multiview GLES, {} keyword "
                    "variant(s) linked and {} left on DirectX (one of their stages did not translate), {} "
-                   "variant(s) given their single-pass stereo twin's per-eye code, {} shader(s) refused",
+                   "variant(s) given their single-pass stereo twin's per-eye code, {} stereo variant(s) "
+                   "moved to STEREO_MULTIVIEW_ON beside single-view plain variants, {} shader(s) refused",
                    conversion.shadersLinked, conversion.shadersSeen, conversion.variantsLinked,
-                   conversion.variantsRefused, conversion.stereoVariantsRemapped, conversion.shadersRefused);
+                   conversion.variantsRefused, conversion.stereoVariantsRemapped, conversion.stereoVariantsSplit,
+                   conversion.shadersRefused);
   if (conversion.texturesSeen > 0) {
     PaperLogger.info(
         "Vivify conversion marked {} of {} block-compressed texture(s) readable ({} keep their pixels "
@@ -367,6 +427,33 @@ std::string ConvertedBundlePath(std::string const& sourceBundlePath) {
   char suffix[32];
   std::snprintf(suffix, sizeof(suffix), "_%016llx.vivify", static_cast<unsigned long long>(hash));
   return JoinPath(ConvertedBundleCacheDir(), prefix + suffix);
+}
+
+// Info.dat's assetBundle checksum for one build ("android2021", "windows2021",
+// "windows2019"), under either the v2 (_underscored) or v4 spelling. 0 when absent.
+uint32_t ReadBundleChecksumFromInfoDat(std::string const& levelPath, std::string const& build) {
+  std::string infoPath = JoinPath(levelPath, "Info.dat");
+  if (!std::filesystem::exists(infoPath)) infoPath = JoinPath(levelPath, "info.dat");
+  if (!std::filesystem::exists(infoPath)) return 0;
+  std::ifstream ifs(infoPath);
+  if (!ifs.is_open()) return 0;
+  std::string str((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+  rapidjson::Document doc;
+  doc.Parse(str.c_str());
+  if (doc.HasParseError() || !doc.IsObject()) return 0;
+  rapidjson::Value const* customData = nullptr;
+  if (doc.HasMember("_customData")) customData = &doc["_customData"];
+  else if (doc.HasMember("customData")) customData = &doc["customData"];
+  if (customData == nullptr || !customData->IsObject()) return 0;
+  rapidjson::Value const* assetBundle = nullptr;
+  if (customData->HasMember("_assetBundle")) assetBundle = &(*customData)["_assetBundle"];
+  else if (customData->HasMember("assetBundle")) assetBundle = &(*customData)["assetBundle"];
+  if (assetBundle == nullptr || !assetBundle->IsObject()) return 0;
+  for (std::string const key : {"_" + build, build}) {
+    auto it = assetBundle->FindMember(key.c_str());
+    if (it != assetBundle->MemberEnd() && it->value.IsUint()) return it->value.GetUint();
+  }
+  return 0;
 }
 
 uint32_t ReadAndroidChecksumFromInfoDat(std::string const& levelPath) {
@@ -615,6 +702,8 @@ void RestoreMaterialFallbackState(UnityEngine::Material* material, MaterialFallb
 void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEventArgs const& event) {
   // Getting back to level selection means whatever was loading last is done.
   DisarmLoadGuard();
+  // Before anything here converts a bundle: which way to convert depends on it.
+  DetectMultiviewKeyword();
 
   std::string incomingLevelPath;
   if (event.isCustom && event.customBeatmapLevel != nullptr) {
@@ -681,9 +770,7 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
     if (GetVivifyDebugLogging()) {
       PaperLogger.info("Vivify bundle selection: using local Android bundle '{}'", androidBundlePath);
     }
-    _selectedBundlePath = androidBundlePath;
-    SongCore::API::PlayButton::EnablePlayButton("Vivify");
-    PreloadBundle(androidBundlePath);
+    BeginAndroidBundleLoad(_selectedLevelPath, androidBundlePath);
     return;
   }
 
@@ -729,9 +816,39 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
     ConvertPcBundleAsync(_selectedLevelPath, pcBundleFallback);
     return;
   }
-  PaperLogger.warn("Vivify: '{}' has no Android bundle, no PC bundle to convert, and no android2021 checksum",
-                   _selectedLevelPath);
+  if (TryDownloadPcBundle(_selectedLevelPath)) return;
+  PaperLogger.warn("Vivify: '{}' has no Android bundle, no PC bundle to convert, and no bundle checksum in "
+                   "Info.dat to download one by", _selectedLevelPath);
   SongCore::API::PlayButton::DisablePlayButton("Vivify", "No Vivify assets found for this map.");
+}
+
+// A Vivify map with no Quest assets at all: download its PC bundle by the
+// windows checksum in Info.dat (from the same repository the Quest bundles
+// come from) into the song folder, then convert it as usual. Next time the
+// song folder has it, and the conversion is cached. False when Info.dat names
+// no PC bundle.
+bool Runtime::TryDownloadPcBundle(std::string const& levelPath) {
+  if (!GetConvertPcBundlesOnDevice()) return false;
+  uint32_t checksum = ReadBundleChecksumFromInfoDat(levelPath, "windows2021");
+  std::string destName = "bundleWindows2021.vivify";
+  if (checksum == 0) {
+    checksum = ReadBundleChecksumFromInfoDat(levelPath, "windows2019");
+    destName = "bundleWindows2019.vivify";
+  }
+  if (checksum == 0) return false;
+  std::string const dest = JoinPath(levelPath, destName);
+  PaperLogger.info("Vivify: no Quest assets for '{}'; downloading its PC bundle (checksum {}) to convert",
+                   levelPath, checksum);
+  SongCore::API::PlayButton::DisablePlayButton("Vivify", "Downloading PC assets...");
+  DownloadBundleTo(checksum, dest, [this, levelPath, dest](bool ok) {
+    if (levelPath != _selectedLevelPath) return;
+    if (!ok) {
+      SongCore::API::PlayButton::DisablePlayButton("Vivify", "PC asset download failed.");
+      return;
+    }
+    ConvertPcBundleAsync(levelPath, dest);
+  });
+  return true;
 }
 
 void Runtime::CancelPendingDownload() {
@@ -746,6 +863,13 @@ void Runtime::CancelPendingDownload() {
 // play button is waiting on one would stay unplayable for the rest of the
 // session. Time it out and take the conversion path instead.
 void Runtime::CheckDownloadTimeout() {
+  if (_graftDeadline >= 0.0f && UnityEngine::Time::get_realtimeSinceStartup() >= _graftDeadline) {
+    _graftDeadline = -1.0f;
+    _graftGeneration++;  // the late callback, if it ever comes, is ignored
+    PaperLogger.warn("Vivify: the PC bundle download for the empty shaders timed out; loading the Quest bundle "
+                     "as it is");
+    FinishAndroidBundleLoad(_graftPendingLevel, _graftPendingAndroid);
+  }
   if (_downloadDeadline < 0.0f) return;
   if (UnityEngine::Time::get_realtimeSinceStartup() < _downloadDeadline) return;
 
@@ -758,6 +882,7 @@ void Runtime::CheckDownloadTimeout() {
     ConvertPcBundleAsync(levelPath, pcBundleFallback);
     return;
   }
+  if (TryDownloadPcBundle(levelPath)) return;
   SongCore::API::PlayButton::DisablePlayButton("Vivify", "Asset download timed out.");
 }
 
@@ -778,8 +903,8 @@ void Runtime::BeginBundleDownload(uint32_t checksum, std::string const& levelPat
     if (success) {
       std::string downloaded = ResolveBundlePath(levelPath);
       if (!downloaded.empty()) {
-        _selectedBundlePath = downloaded;
-        PreloadBundle(downloaded);
+        BeginAndroidBundleLoad(levelPath, downloaded);
+        return;
       }
       SongCore::API::PlayButton::EnablePlayButton("Vivify");
       return;
@@ -792,6 +917,7 @@ void Runtime::BeginBundleDownload(uint32_t checksum, std::string const& levelPat
       ConvertPcBundleAsync(levelPath, pcBundleFallback);
       return;
     }
+    if (TryDownloadPcBundle(levelPath)) return;
     SongCore::API::PlayButton::DisablePlayButton("Vivify", "Failed to download assets.");
   });
 }
@@ -881,39 +1007,318 @@ void Runtime::ConvertPcBundleAsync(std::string const& levelPath, std::string con
   }).detach();
 }
 
-void Runtime::DownloadBundle(uint32_t checksum, std::string const& levelPath, std::function<void(bool)> callback) {
-  std::string url = "https://repo.totalbs.dev/api/v1/bundles/" + std::to_string(checksum);
-  std::string bundlePath = JoinPath(levelPath, kBundleFile);
-  if (GetVivifyDebugLogging()) {
-    PaperLogger.info("Vivify bundle download: android2021={} metadataUrl='{}' cachePath='{}'",
-                     checksum, url, bundlePath);
+// ---------------------------------------------------------------------------
+// PC shaders for empty Quest shaders
+//
+// Unity sometimes fails to compile a shader for Android and ships it in the
+// map's Quest bundle with no programs at all. Hold My Hand's raymarched
+// AudioLink kaleidoscope (Custom/PoofShaders/Audio_Kaleidoscope/
+// World_AudioLink_2.0) is one: its program store is four bytes, a count of
+// zero, for both GLES and Vulkan, and no runtime can draw it from that bundle.
+//
+// The map's PC build has the same shader compiled for DirectX, which this mod
+// translates. So before a level's Android bundle loads, its shaders are
+// scanned; for any that shipped empty, the PC bundle (the song folder's, or
+// downloaded by Info.dat's windows checksum) is converted as a PC-only map's
+// would be, the PC versions of exactly those shaders are taken out of it, and
+// materials whose shader is one of them are pointed at the PC version
+// (RepairMaterialShader).
+//
+// The two bundles share their internal file names, and Unity refuses to have
+// both loaded at once, so the converted PC bundle is loaded first, its shaders
+// kept (DontUnloadUnusedAsset) and the bundle unloaded without destroying
+// them, and only then is the Android bundle loaded.
+// ---------------------------------------------------------------------------
+
+void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string const& androidBundlePath) {
+  _selectedBundlePath = androidBundlePath;
+  int const generation = ++_graftGeneration;
+  if (!GetUsePcShadersForEmptyShaders() || !GetConvertPcBundlesOnDevice() || !GetTranslateShadersOnConversion()) {
+    FinishAndroidBundleLoad(levelPath, androidBundlePath);
+    return;
   }
+  // The Quest bundle with the PC builds of its empty shaders merged in
+  // (0.14.6), made once and cached like any converted bundle.
+  std::string const merged = ConvertedBundlePath(androidBundlePath);
+  RecordInterruptedLoad(merged);
+  if (TranslationCrashedBefore(merged)) {
+    // The merged shaders took the game down; standing the same programs in at
+    // run time would too. The Quest bundle loads as it shipped.
+    PaperLogger.warn("Vivify: the Quest bundle with PC shaders merged in crashed the game last time; loading "
+                     "'{}' as it shipped", androidBundlePath);
+    FinishAndroidBundleLoad(levelPath, androidBundlePath);
+    return;
+  }
+  if (CachedConversionIsCurrent(merged)) {
+    PaperLogger.info("Vivify: loading the Quest bundle with its broken shaders replaced by their PC builds: '{}'",
+                     merged);
+    FinishAndroidBundleLoad(levelPath, merged);
+    return;
+  }
+  if (_graftLevelPath == levelPath && !_graftedShaders.empty()) {
+    // Already stood in for this level this session.
+    FinishAndroidBundleLoad(levelPath, androidBundlePath);
+    return;
+  }
+  SongCore::API::PlayButton::DisablePlayButton("Vivify", "Checking shaders...");
+  std::thread([this, generation, levelPath, androidBundlePath]() {
+    auto const scan = BundleConvert::ScanShaders(androidBundlePath);
+    std::vector<std::string> const empty = scan.emptyShaderNames;
+    // The PC build to take the shaders from. The one built by the same Unity
+    // version as the Quest bundle comes first: only its shader bodies can be
+    // merged into the Quest bundle's file. Hold My Hand's song folder had only
+    // the 2019 build beside a 2021 Quest bundle, so 0.14.6 could not merge and
+    // never fetched the 2021 one. Never the Android bundle being loaded
+    // (ResolvePcBundlePath is deliberately permissive and matched
+    // bundleAndroid2021.vivify itself in 0.14.2).
+    bool const quest2019 = scan.unityVersion.rfind("2019", 0) == 0;
+    std::string const wantBuild = quest2019 ? "windows2019" : "windows2021";
+    std::string const otherBuild = quest2019 ? "windows2021" : "windows2019";
+    std::string const preferred =
+        JoinPath(levelPath, quest2019 ? "bundleWindows2019.vivify" : "bundleWindows2021.vivify");
+    std::string const other = JoinPath(levelPath, quest2019 ? "bundleWindows2021.vivify" : "bundleWindows2019.vivify");
+    std::string preferredFound;
+    std::string fallback;
+    if (!empty.empty()) {
+      if (FileExists(preferred)) preferredFound = preferred;
+      if (FileExists(other)) fallback = other;
+      if (fallback.empty()) {
+        std::string const found = ResolvePcBundlePath(levelPath);
+        if (!found.empty() && std::filesystem::path(found) != std::filesystem::path(androidBundlePath) &&
+            std::filesystem::path(found) != std::filesystem::path(preferred)) {
+          fallback = found;
+        }
+      }
+    }
+    BSML::MainThreadScheduler::Schedule([this, generation, levelPath, androidBundlePath, empty, preferred,
+                                         preferredFound, fallback, wantBuild, otherBuild, other]() {
+      if (generation != _graftGeneration || levelPath != _selectedLevelPath) return;
+      if (empty.empty()) {
+        FinishAndroidBundleLoad(levelPath, androidBundlePath);
+        return;
+      }
+      std::string names;
+      for (auto const& name : empty) names += (names.empty() ? "'" : ", '") + name + "'";
+      PaperLogger.warn("Vivify: this map's Quest bundle ships {} shader(s) with no programs ({}); looking for "
+                       "the map's PC build to stand in for them", empty.size(), names);
+      if (!preferredFound.empty()) {
+        ConvertPcForGraft(levelPath, androidBundlePath, preferredFound, empty);
+        return;
+      }
+      // Download the matching build; a PC bundle of the other Unity version
+      // can still stand in at load if that fails.
+      uint32_t checksum = ReadBundleChecksumFromInfoDat(levelPath, wantBuild);
+      std::string dest = preferred;
+      if (checksum == 0) {
+        if (!fallback.empty()) {
+          ConvertPcForGraft(levelPath, androidBundlePath, fallback, empty);
+          return;
+        }
+        checksum = ReadBundleChecksumFromInfoDat(levelPath, otherBuild);
+        dest = other;
+      }
+      if (checksum == 0) {
+        PaperLogger.warn("Vivify: no PC bundle in the song folder and no windows checksum in Info.dat; those "
+                         "shaders stay undrawn");
+        FinishAndroidBundleLoad(levelPath, androidBundlePath);
+        return;
+      }
+      PaperLogger.info("Vivify: downloading the map's {} PC bundle for its shaders", dest == preferred ? wantBuild
+                                                                                                        : otherBuild);
+      SongCore::API::PlayButton::DisablePlayButton("Vivify", "Downloading PC shaders...");
+      // A download that never calls back must not hold the play button:
+      // CheckDownloadTimeout loads the Quest bundle as it is when this passes.
+      _graftDeadline = UnityEngine::Time::get_realtimeSinceStartup() + 180.0f;  // PC bundles run to tens of MB
+      _graftPendingLevel = levelPath;
+      _graftPendingAndroid = androidBundlePath;
+      DownloadBundleTo(checksum, dest, [this, generation, levelPath, androidBundlePath, dest, empty,
+                                        fallback](bool ok) {
+        if (generation != _graftGeneration || levelPath != _selectedLevelPath) return;
+        _graftDeadline = -1.0f;
+        if (ok) {
+          ConvertPcForGraft(levelPath, androidBundlePath, dest, empty);
+        } else if (!fallback.empty() && fallback != dest) {
+          PaperLogger.warn("Vivify: the map's PC bundle could not be downloaded; using '{}' instead", fallback);
+          ConvertPcForGraft(levelPath, androidBundlePath, fallback, empty);
+        } else {
+          PaperLogger.warn("Vivify: the map's PC bundle could not be downloaded; the empty shaders stay undrawn");
+          FinishAndroidBundleLoad(levelPath, androidBundlePath);
+        }
+      });
+    });
+  }).detach();
+}
+
+void Runtime::ConvertPcForGraft(std::string const& levelPath, std::string const& androidBundlePath,
+                                std::string const& pcBundlePath, std::vector<std::string> const& names) {
+  int const generation = _graftGeneration;
+  std::string const converted = ConvertedBundlePath(pcBundlePath);
+  std::string const merged = ConvertedBundlePath(androidBundlePath);
+  bool const cached = CachedConversionIsCurrent(converted);
+  SongCore::API::PlayButton::DisablePlayButton("Vivify", cached ? "Merging PC shaders..." : "Converting PC shaders...");
+  std::thread([this, generation, levelPath, androidBundlePath, pcBundlePath, converted, merged, names, cached]() {
+    bool ok = cached;
+    std::string message;
+    if (!cached) {
+      auto const result = RunBundleConversion(pcBundlePath, converted);
+      ok = result.status == BundleConvert::Status::Success;
+      message = result.message;
+    }
+    // Merge the PC builds into the Quest bundle itself: the materials that use
+    // the empty shaders then load with a working one, with no run-time
+    // swapping, and the result is cached for every later play.
+    bool mergedOk = false;
+    if (ok) {
+      std::error_code ec;
+      std::filesystem::create_directories(std::filesystem::path(merged).parent_path(), ec);
+      auto const merge = BundleConvert::MergeShadersInto(androidBundlePath, converted, names, merged);
+      mergedOk = merge.status == BundleConvert::Status::Success;
+      if (mergedOk) MarkConversionCurrent(merged);
+      std::string skipped;
+      for (auto const& line : merge.skipped) skipped += (skipped.empty() ? "" : "; ") + line;
+      for (auto const& line : merge.notes) skipped += (skipped.empty() ? "" : "; ") + line;
+      if (mergedOk) {
+        PaperLogger.info("Vivify: {} ('{}' -> '{}', {} bytes){}{}", merge.message, androidBundlePath, merged,
+                         merge.outputBytes, skipped.empty() ? "" : "; ", skipped);
+      } else {
+        PaperLogger.warn("Vivify: could not merge the PC shaders into the Quest bundle: {}{}{}; standing them in "
+                         "at load instead", merge.message, skipped.empty() ? "" : "; ", skipped);
+      }
+    }
+    BSML::MainThreadScheduler::Schedule([this, generation, levelPath, androidBundlePath, converted, merged, names,
+                                         ok, mergedOk, message]() {
+      if (generation != _graftGeneration || levelPath != _selectedLevelPath) return;
+      if (mergedOk) {
+        FinishAndroidBundleLoad(levelPath, merged);
+        return;
+      }
+      if (ok) {
+        GraftShadersFrom(levelPath, converted, names);
+      } else {
+        PaperLogger.warn("Vivify: converting the map's PC bundle for its shaders failed: {}", message);
+      }
+      FinishAndroidBundleLoad(levelPath, androidBundlePath);
+    });
+  }).detach();
+}
+
+void Runtime::GraftShadersFrom(std::string const& levelPath, std::string const& convertedPath,
+                               std::vector<std::string> const& names) {
+  // Whatever bundle is loaded may share the converted one's internal names.
+  if (_mainBundle != nullptr && UnityEngine::Object::op_Implicit_bool(_mainBundle)) {
+    _mainBundle->Unload(true);
+    _mainBundle = nullptr;
+  }
+  _preloadedBundlePath.clear();
+  _graftedShaders.clear();
+  _graftLevelPath = levelPath;
+  _graftApplied = 0;
+
+  auto bundle = UnityEngine::AssetBundle::LoadFromFile(StringW(convertedPath));
+  if (!IsAlive(bundle.unsafePtr())) {
+    PaperLogger.warn("Vivify: the converted PC bundle '{}' did not load; the empty shaders stay undrawn",
+                     convertedPath);
+    return;
+  }
+  std::set<std::string> const wanted(names.begin(), names.end());
+  std::set<std::string> found;
+  std::set<std::string> seen;
+  auto consider = [&](UnityEngine::Shader* shader) {
+    if (!IsAlive(shader)) return;
+    std::string const name = ShaderNameForLog(shader);
+    seen.insert(name);
+    if (!wanted.contains(name) || !found.insert(name).second) return;
+    if (!shader->get_isSupported()) {
+      PaperLogger.warn("Vivify: the PC build of '{}' did not translate for this GPU either", name);
+      return;
+    }
+    shader->set_hideFlags(UnityEngine::HideFlags::DontUnloadUnusedAsset);
+    _graftedShaders[name] = shader;
+  };
+  auto considerMaterial = [&](UnityEngine::Material* material) {
+    if (IsAlive(material)) consider(material->get_shader().unsafePtr());
+  };
+  // Every asset, not only Shader ones: LoadAllAssets returns what the bundle
+  // lists as its assets, and a map's shader is almost always pulled in
+  // implicitly by the material or prefab that uses it, so asking for shaders
+  // alone found none (0.14.2-0.14.4). Reading allAssets finishes the load on
+  // the spot; the synchronous LoadAllAssets is stripped from this build.
+  auto* request = bundle->LoadAllAssetsAsync();
+  auto all = request != nullptr ? request->get_allAssets() : decltype(request->get_allAssets())(nullptr);
+  if (all) {
+    for (auto object : all) {
+      auto* ptr = object.unsafePtr();
+      if (!IsAlive(ptr)) continue;
+      if (auto* shader = il2cpp_utils::try_cast<UnityEngine::Shader>(ptr).value_or(nullptr)) {
+        consider(shader);
+      } else if (auto* material = il2cpp_utils::try_cast<UnityEngine::Material>(ptr).value_or(nullptr)) {
+        considerMaterial(material);
+      } else if (auto* gameObject = il2cpp_utils::try_cast<UnityEngine::GameObject>(ptr).value_or(nullptr)) {
+        auto renderers = gameObject->GetComponentsInChildren<UnityEngine::Renderer*>(true);
+        for (int i = 0; i < renderers.size(); i++) {
+          if (!IsAlive(renderers[i])) continue;
+          auto materials = renderers[i]->get_sharedMaterials();
+          if (!materials) continue;
+          for (int j = 0; j < materials.size(); j++) considerMaterial(materials[j].unsafePtr());
+        }
+      }
+    }
+  }
+  // Keeps the objects already loaded (the kept shaders among them); the rest
+  // go with the next Resources.UnloadUnusedAssets.
+  bundle->Unload(false);
+  PaperLogger.info("Vivify: {} of {} empty shader(s) have a working PC build standing in ({} found in the PC "
+                   "bundle, {} shader(s) seen there)", _graftedShaders.size(), names.size(), found.size(),
+                   seen.size());
+  if (found.size() < wanted.size()) {
+    std::string missing;
+    for (auto const& name : wanted) {
+      if (!found.contains(name)) missing += (missing.empty() ? "'" : ", '") + name + "'";
+    }
+    std::string there;
+    for (auto const& name : seen) there += (there.empty() ? "'" : ", '") + name + "'";
+    PaperLogger.warn("Vivify: not in the PC bundle: {}; it uses: {}", missing, there.empty() ? "none" : there);
+  }
+}
+
+void Runtime::FinishAndroidBundleLoad(std::string const& levelPath, std::string const& androidBundlePath) {
+  if (levelPath != _selectedLevelPath) return;
+  _selectedBundlePath = androidBundlePath;
+  SongCore::API::PlayButton::EnablePlayButton("Vivify");
+  PreloadBundle(androidBundlePath);
+}
+
+void Runtime::DownloadBundle(uint32_t checksum, std::string const& levelPath, std::function<void(bool)> callback) {
+  DownloadBundleTo(checksum, JoinPath(levelPath, kBundleFile), std::move(callback));
+}
+
+void Runtime::DownloadBundleTo(uint32_t checksum, std::string const& destPath, std::function<void(bool)> callback) {
+  std::string url = "https://repo.totalbs.dev/api/v1/bundles/" + std::to_string(checksum);
+  std::string bundlePath = destPath;
+  // Logged unconditionally: whether a bundle downloaded is the first thing
+  // to know about a map that does not work.
+  PaperLogger.info("Vivify bundle download: checksum={} metadataUrl='{}' saving to '{}'", checksum, url,
+                   bundlePath);
   WebUtils::GetAsync<WebUtils::StringResponse>(WebUtils::URLOptions(url), [bundlePath, callback, url](WebUtils::StringResponse res) {
     if (!res.IsSuccessful() || !res.responseData.has_value()) {
-      if (GetVivifyDebugLogging()) {
-        PaperLogger.warn("Vivify bundle download failed: metadata request unsuccessful url='{}'", url);
-      }
+      PaperLogger.warn("Vivify bundle download failed: metadata request unsuccessful url='{}' http={} curl={}",
+                       url, res.get_HttpCode(), res.get_CurlStatus());
       BSML::MainThreadScheduler::Schedule([callback] { callback(false); });
       return;
     }
     rapidjson::Document doc;
     doc.Parse(res.responseData->c_str());
     if (doc.HasParseError() || !doc.HasMember("downloadUrl") || !doc["downloadUrl"].IsString()) {
-      if (GetVivifyDebugLogging()) {
-        PaperLogger.warn("Vivify bundle download failed: metadata response did not contain downloadUrl");
-      }
+      PaperLogger.warn("Vivify bundle download failed: metadata response did not contain downloadUrl");
       BSML::MainThreadScheduler::Schedule([callback] { callback(false); });
       return;
     }
     std::string downloadUrl = doc["downloadUrl"].GetString();
-    if (GetVivifyDebugLogging()) {
-      PaperLogger.info("Vivify bundle download URL resolved: '{}'", downloadUrl);
-    }
+    PaperLogger.info("Vivify bundle download URL resolved: '{}'", downloadUrl);
     WebUtils::GetAsync<WebUtils::DataResponse>(WebUtils::URLOptions(downloadUrl), [bundlePath, callback](WebUtils::DataResponse dataRes) {
       if (!dataRes.IsSuccessful() || !dataRes.responseData.has_value()) {
-        if (GetVivifyDebugLogging()) {
-          PaperLogger.warn("Vivify bundle download failed: data request unsuccessful path='{}'", bundlePath);
-        }
+        PaperLogger.warn("Vivify bundle download failed: data request unsuccessful path='{}' http={} curl={}",
+                         bundlePath, dataRes.get_HttpCode(), dataRes.get_CurlStatus());
         BSML::MainThreadScheduler::Schedule([callback] { callback(false); });
         return;
       }
@@ -924,10 +1329,8 @@ void Runtime::DownloadBundle(uint32_t checksum, std::string const& levelPath, st
                  static_cast<std::streamsize>(dataRes.responseData->size()));
         os.close();
       }
-      if (GetVivifyDebugLogging()) {
-        PaperLogger.info("Vivify bundle download complete: path='{}' bytes={} written={}",
+      PaperLogger.info("Vivify bundle download complete: path='{}' bytes={} written={}",
                          bundlePath, dataRes.responseData->size(), BoolText(written));
-      }
       BSML::MainThreadScheduler::Schedule([callback, written] { callback(written); });
     });
   });
@@ -1725,6 +2128,24 @@ void Runtime::RepairMaterialShader(UnityEngine::Material* material, std::string_
     _instancingDisabledMaterials++;
   }
   if (_repairedMaterials.contains(material)) return;
+  // A shader the level's Quest bundle shipped empty, with a PC build standing
+  // in for it (BeginAndroidBundleLoad).
+  if (!_graftedShaders.empty()) {
+    auto* current = material->get_shader().unsafePtr();
+    // By name, not by isSupported: a shader shipped with no programs reports
+    // itself supported and draws nothing, so 0.14.2-0.14.6 never swapped it.
+    if (IsAlive(current)) {
+      auto graft = _graftedShaders.find(ShaderNameForLog(current));
+      if (graft != _graftedShaders.end() && IsAlive(graft->second) && graft->second != current) {
+        material->set_shader(graft->second);
+        _graftApplied++;
+        PaperLogger.info("Vivify: material '{}' now uses the PC build of '{}'", ToStdString(material->get_name()),
+                         graft->first);
+        _repairedMaterials.insert(material);
+        return;
+      }
+    }
+  }
   auto shader = material->get_shader();
   auto* rawShader = shader.unsafePtr();
   auto originalShaderName = ShaderNameForLog(rawShader);
@@ -2241,6 +2662,7 @@ void StartBulkPcBundleConversion(std::function<void(BulkConversionProgress const
     return;
   }
 
+  DetectMultiviewKeyword();
   // SongCore's level roots are enumerated here, on the caller's (main) thread,
   // rather than inside the worker: a song refresh can rewrite them, and the
   // worker only needs the snapshot.

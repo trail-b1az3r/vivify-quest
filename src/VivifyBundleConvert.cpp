@@ -1351,6 +1351,22 @@ Vivify::Dxbc::ExternalReflection ReflectionFrom(SerializedFileParse::ProgramPara
       info.uniformBlock = true;
       info.size = std::max<uint32_t>(info.size, 1088u);
     }
+    // A shader's own named cbuffer too big for loose uniforms becomes a
+    // uniform block, pinned to the binding its parameters give it -- the way
+    // Unity's own GLES output declares one (layout(binding = N), with a
+    // matching binding entry). GLES gives every loose array element a whole
+    // vec4 slot and Adreno has a few hundred, so AudioLink's LeftSampleBuffer/
+    // RightSampleBuffer (eight float[1023] arrays) cannot be loose.
+    //
+    // Small ones stay loose. 0.14.0 made every named cbuffer a block, without
+    // a binding, so every block in a program sat on binding 0 and read the
+    // same buffer: a non-instanced note shader's colour lives in a small
+    // cbuffer (UNITY_INSTANCING_BUFFER_START(Props) is CBUFFER_START(Props)
+    // without instancing), and converted maps' custom notes came out grey.
+    if (buffer.name != "$Globals" && buffer.name.rfind("Unity", 0) != 0 && buffer.size > 2048) {
+      info.uniformBlock = true;
+      info.explicitBinding = true;
+    }
     // Only the layout Unity's instancing macros produce: an array of
     // whole-register structs, compiled at the placeholder length, ending the
     // buffer.
@@ -1411,12 +1427,14 @@ struct LinkedShader {
   int variantsLinked = 0;
   int variantsRefused = 0;
   int stereoRemapped = 0;
+  int stereoSplit = 0;
   int programsTranslated = 0;
   std::set<std::string> variantReasons;  // why individual variants stayed on DirectX
 };
 
 LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
-                                      SerializedFileParse::ShaderObject const& shader) {
+                                      SerializedFileParse::ShaderObject const& shader,
+                                      ShaderConversionOptions const& conversionOptions) {
   using SerializedFileParse::ParsedProgramRef;
   LinkedShader out;
 
@@ -1515,56 +1533,124 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
   // Bundles built for Unity 2019 (PC Beat Saber before 1.29.4) use double-wide
   // single-pass stereo instead, keyword UNITY_SINGLE_PASS_STEREO, whose eye
   // comes from unity_StereoEyeIndex; the translator feeds that from the view.
-  for (char const* stereoKeyword : {"STEREO_INSTANCING_ON", "UNITY_SINGLE_PASS_STEREO"}) {
-  int32_t spiKeyword = -1;
-  for (size_t i = 0; i < keywordNames.size(); i++) {
-    if (keywordNames[i] == stereoKeyword) spiKeyword = static_cast<int32_t>(i);
-  }
-  if (spiKeyword >= 0) {
-    for (auto& plain : refs) {
-      if (plain.stereoRemapped) continue;
-      if (std::find(plain.keywordIndices.begin(), plain.keywordIndices.end(), spiKeyword) !=
-          plain.keywordIndices.end()) {
-        continue;
-      }
-      for (auto const& spi : refs) {
-        if (spi.subShader != plain.subShader || spi.pass != plain.pass || spi.stage != plain.stage ||
-            spi.player != plain.player || spi.list != plain.list || spi.hardwareTier != plain.hardwareTier) {
-          continue;
-        }
-        if (std::find(spi.keywordIndices.begin(), spi.keywordIndices.end(), spiKeyword) ==
-            spi.keywordIndices.end()) {
-          continue;
-        }
-        std::vector<uint16_t> without;
-        for (uint16_t k : spi.keywordIndices) {
-          if (static_cast<int32_t>(k) != spiKeyword) without.push_back(k);
-        }
-        std::vector<uint16_t> mine = plain.keywordIndices;
-        std::sort(without.begin(), without.end());
-        std::sort(mine.begin(), mine.end());
-        if (without != mine) continue;
-        if (plain.blobIndex != spi.blobIndex) {
-          plain.blobIndex = spi.blobIndex;
-          // The twin's code reads the twin's parameters.
-          plain.parameters = spi.parameters;
-          patchU32(plain.blobIndexFileOffset, spi.blobIndex);
-          out.stereoRemapped++;
-        }
-        plain.stereoRemapped = true;
-        break;
+  // Which refs get multiview code. Keyed by the ref's position in `refs`.
+  std::vector<bool> multiviewRef(refs.size(), true);
+
+  // The separate-variants path needs to rename the stereo keyword. In a 2021
+  // bundle that is one entry of m_KeywordNames, rewritten in place, which only
+  // fits for STEREO_INSTANCING_ON: 20 characters against STEREO_MULTIVIEW_ON's
+  // 19, the same 24 bytes once aligned.
+  //
+  // A 2019 bundle is never split. Its variants are chosen through each pass's
+  // m_NameIndices, not the keyword strings in the program entries, so renaming
+  // the keyword in the entries left the stereo variants unreachable: the eye
+  // cameras drew the single-view plain programs, which draw nothing into a
+  // multiview target, and notes and most visuals went invisible (0.14.0-0.14.4).
+  bool const namesInEntries = shader.keywordNames.empty();
+  int32_t splitKeyword = -1;
+  if (conversionOptions.separateStereoVariants && !namesInEntries) {
+    for (size_t i = 0; i < keywordNames.size() && splitKeyword < 0; i++) {
+      if (keywordNames[i] == "STEREO_INSTANCING_ON" && i < shader.keywordNameFileOffsets.size() &&
+          shader.keywordNameFileOffsets[i] != 0) {
+        splitKeyword = static_cast<int32_t>(i);
       }
     }
   }
+  auto hasKeyword = [](ParsedProgramRef const& ref, int32_t keyword) {
+    return std::find(ref.keywordIndices.begin(), ref.keywordIndices.end(), keyword) != ref.keywordIndices.end();
+  };
+  auto twinOf = [&](ParsedProgramRef const& plain, int32_t keyword) -> ParsedProgramRef const* {
+    for (auto const& spi : refs) {
+      if (spi.subShader != plain.subShader || spi.pass != plain.pass || spi.stage != plain.stage ||
+          spi.player != plain.player || spi.list != plain.list || spi.hardwareTier != plain.hardwareTier) {
+        continue;
+      }
+      if (!hasKeyword(spi, keyword)) continue;
+      std::vector<uint16_t> without;
+      for (uint16_t k : spi.keywordIndices) {
+        if (static_cast<int32_t>(k) != keyword) without.push_back(k);
+      }
+      std::vector<uint16_t> mine = plain.keywordIndices;
+      std::sort(without.begin(), without.end());
+      std::sort(mine.begin(), mine.end());
+      if (without == mine) return &spi;
+    }
+    return nullptr;
+  };
+
+  if (splitKeyword >= 0) {
+    // Plain variants that have a stereo twin get single-view code of their
+    // own program; the twins keep theirs, translated for multiview, under
+    // STEREO_MULTIVIEW_ON. A plain variant without a twin still gets multiview
+    // code, as before: it is the only program the eye cameras can use.
+    for (size_t r = 0; r < refs.size(); r++) {
+      if (hasKeyword(refs[r], splitKeyword)) {
+        out.stereoSplit++;
+      } else if (twinOf(refs[r], splitKeyword) != nullptr) {
+        multiviewRef[r] = false;
+      }
+    }
+    size_t const at = shader.keywordNameFileOffsets[static_cast<size_t>(splitKeyword)];
+    std::vector<uint8_t> name = {19, 0, 0, 0};
+    for (char c : std::string_view("STEREO_MULTIVIEW_ON")) name.push_back(static_cast<uint8_t>(c));
+    name.push_back(0);  // alignment, where STEREO_INSTANCING_ON's last character was
+    patches.push_back({at, std::move(name)});
+  } else {
+    for (char const* stereoKeyword : {"STEREO_INSTANCING_ON", "UNITY_SINGLE_PASS_STEREO"}) {
+    int32_t spiKeyword = -1;
+    for (size_t i = 0; i < keywordNames.size(); i++) {
+      if (keywordNames[i] == stereoKeyword) spiKeyword = static_cast<int32_t>(i);
+    }
+    if (spiKeyword >= 0) {
+      for (auto& plain : refs) {
+        if (plain.stereoRemapped) continue;
+        if (std::find(plain.keywordIndices.begin(), plain.keywordIndices.end(), spiKeyword) !=
+            plain.keywordIndices.end()) {
+          continue;
+        }
+        for (auto const& spi : refs) {
+          if (spi.subShader != plain.subShader || spi.pass != plain.pass || spi.stage != plain.stage ||
+              spi.player != plain.player || spi.list != plain.list || spi.hardwareTier != plain.hardwareTier) {
+            continue;
+          }
+          if (std::find(spi.keywordIndices.begin(), spi.keywordIndices.end(), spiKeyword) ==
+              spi.keywordIndices.end()) {
+            continue;
+          }
+          std::vector<uint16_t> without;
+          for (uint16_t k : spi.keywordIndices) {
+            if (static_cast<int32_t>(k) != spiKeyword) without.push_back(k);
+          }
+          std::vector<uint16_t> mine = plain.keywordIndices;
+          std::sort(without.begin(), without.end());
+          std::sort(mine.begin(), mine.end());
+          if (without != mine) continue;
+          if (plain.blobIndex != spi.blobIndex) {
+            plain.blobIndex = spi.blobIndex;
+            // The twin's code reads the twin's parameters.
+            plain.parameters = spi.parameters;
+            patchU32(plain.blobIndexFileOffset, spi.blobIndex);
+            out.stereoRemapped++;
+          }
+          plain.stereoRemapped = true;
+          break;
+        }
+      }
+    }
+    }
   }
 
   // Translate each program the variants use, once.
-  Vivify::Dxbc::GlslOptions options;
-  options.multiview = true;
-  std::map<uint32_t, Vivify::Dxbc::GlslResult> translated;
+  auto indexOf = [&](ParsedProgramRef const& ref) { return static_cast<size_t>(&ref - refs.data()); };
+  // Keyed by entry and mode: one entry can be translated both ways when a
+  // plain and a stereo variant share it.
+  std::map<std::pair<uint32_t, bool>, Vivify::Dxbc::GlslResult> translated;
   auto translate = [&](ParsedProgramRef const& ref) -> Vivify::Dxbc::GlslResult const* {
     uint32_t const blob = ref.blobIndex;
-    auto cached = translated.find(blob);
+    bool const multiview = multiviewRef[indexOf(ref)];
+    Vivify::Dxbc::GlslOptions options;
+    options.multiview = multiview;
+    auto cached = translated.find({blob, multiview});
     if (cached == translated.end()) {
       Vivify::Dxbc::GlslResult result;
       auto at = entryAt.find(blob);
@@ -1587,7 +1673,7 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
           }
         }
       }
-      cached = translated.emplace(blob, std::move(result)).first;
+      cached = translated.emplace(std::make_pair(blob, multiview), std::move(result)).first;
     }
     return cached->second.ok ? &cached->second : nullptr;
   };
@@ -1607,8 +1693,9 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
   // that link to different programs is split rather than overwritten.
   std::map<uint32_t, std::string> assigned;
   std::vector<SerializedFileParse::ShaderSubProgram> added;
-  auto place = [&](ParsedProgramRef const& ref, std::string const& source, int version) {
+  auto place = [&](ParsedProgramRef const& ref, std::string const& linked, int version) {
     uint32_t blob = ref.blobIndex;
+    std::string const& source = linked;
     auto existing = assigned.find(blob);
     if (existing != assigned.end() && existing->second != source) {
       // Another variant already wrote a different program here: give this one
@@ -1726,7 +1813,8 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
 }  // namespace
 
 ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
-                                      std::string const& destPath) {
+                                      std::string const& destPath,
+                                      ShaderConversionOptions const& options) {
   ShaderConversion conversion;
   ArchiveHeader header;
   std::vector<DirectoryNode> nodes;
@@ -1803,10 +1891,11 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
       }
 
       if (shader.parsedFormRead) {
-        auto linked = ConvertThroughParsedForm(nodeData, nodeSize, shader);
+        auto linked = ConvertThroughParsedForm(nodeData, nodeSize, shader, options);
         conversion.variantsLinked += linked.variantsLinked;
         conversion.variantsRefused += linked.variantsRefused;
         conversion.stereoVariantsRemapped += linked.stereoRemapped;
+        conversion.stereoVariantsSplit += linked.stereoSplit;
         for (auto const& reason : linked.variantReasons) {
           if (conversion.variantRefusals.size() >= kMaxLoggedRefusals * 2) break;
           conversion.variantRefusals.push_back(
@@ -1918,6 +2007,193 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
   return conversion;
 }
 
+ShaderMerge MergeShadersInto(std::string const& questPath, std::string const& donorPath,
+                             std::vector<std::string> const& names, std::string const& destPath) {
+  ShaderMerge merge;
+  std::set<std::string> const wanted(names.begin(), names.end());
+
+  // The donor's translated shaders, by name: body bytes, where its object
+  // references sit in them, and the Unity version of the file they came from.
+  struct DonorShader {
+    std::vector<uint8_t> body;
+    std::vector<size_t> pptrs;  // body-relative
+    std::string unityVersion;
+  };
+  std::map<std::string, DonorShader> donors;
+  std::map<std::string, std::string> donorProblems;
+  {
+    ArchiveHeader header;
+    std::vector<DirectoryNode> nodes;
+    std::vector<uint8_t> data;
+    std::vector<TargetPlatformField> fields;
+    Result result;
+    if (!LoadAndScan(donorPath, header, nodes, data, fields, result)) {
+      merge.status = result.status;
+      merge.message = "the converted PC bundle could not be read: " + result.message;
+      return merge;
+    }
+    for (auto const& node : nodes) {
+      if (node.offset > data.size() || node.size > data.size() - node.offset) continue;
+      uint8_t const* const nodeData = data.data() + node.offset;
+      size_t const nodeSize = static_cast<size_t>(node.size);
+      auto file = SerializedFileParse::InspectSerializedFile(nodeData, nodeSize);
+      if (!file.isSerializedFile) continue;
+      for (auto const& shader : file.shaders) {
+        if (!wanted.contains(shader.name) || donors.contains(shader.name)) continue;
+        bool runs = false;
+        for (int32_t platform : shader.platforms) {
+          if (SerializedFileParse::ShaderPlatformRunsOnQuest(platform)) runs = true;
+        }
+        if (!runs) {
+          donorProblems[shader.name] = "it did not translate in the PC bundle";
+          continue;
+        }
+        auto const decoded = SerializedFileParse::DecodeShaderPrograms(nodeData, nodeSize, shader);
+        bool hasProgram = false;
+        for (auto const& program : decoded.programs) {
+          if (!program.raw) hasProgram = true;
+        }
+        if (!decoded.ok || !hasProgram) {
+          donorProblems[shader.name] = "it has no programs in the PC bundle either";
+          continue;
+        }
+        if (shader.bodyFileOffset > nodeSize || shader.bodySize > nodeSize - shader.bodyFileOffset) continue;
+        DonorShader donor;
+        donor.unityVersion = file.unityVersion;
+        donor.body.assign(nodeData + shader.bodyFileOffset, nodeData + shader.bodyFileOffset + shader.bodySize);
+        bool fits = true;
+        for (size_t at : shader.pptrFileOffsets) {
+          if (at < shader.bodyFileOffset || at - shader.bodyFileOffset + 12 > donor.body.size()) {
+            fits = false;
+            break;
+          }
+          donor.pptrs.push_back(at - shader.bodyFileOffset);
+        }
+        if (!fits) {
+          donorProblems[shader.name] = "its object references could not be located";
+          continue;
+        }
+        donorProblems.erase(shader.name);
+        donors.emplace(shader.name, std::move(donor));
+      }
+    }
+  }
+
+  ArchiveHeader header;
+  std::vector<DirectoryNode> nodes;
+  std::vector<uint8_t> data;
+  std::vector<TargetPlatformField> fields;
+  Result result;
+  if (!LoadAndScan(questPath, header, nodes, data, fields, result)) {
+    merge.status = result.status;
+    merge.message = "the Quest bundle could not be read: " + result.message;
+    return merge;
+  }
+  std::set<std::string> handled;
+  for (size_t index = 0; index < nodes.size(); index++) {
+    if (nodes[index].offset > data.size() || nodes[index].size > data.size() - nodes[index].offset) continue;
+    uint8_t const* const nodeData = data.data() + nodes[index].offset;
+    size_t const nodeSize = static_cast<size_t>(nodes[index].size);
+    auto file = SerializedFileParse::InspectSerializedFile(nodeData, nodeSize);
+    if (!file.isSerializedFile) continue;
+    std::vector<SerializedFileParse::ObjectEdit> edits;
+    std::vector<std::string> editNames;
+    for (auto const& shader : file.shaders) {
+      if (!wanted.contains(shader.name) || handled.contains(shader.name)) continue;
+      handled.insert(shader.name);
+      auto donor = donors.find(shader.name);
+      if (donor == donors.end()) {
+        auto problem = donorProblems.find(shader.name);
+        merge.skipped.push_back(shader.name + ": " +
+                                (problem != donorProblems.end() ? problem->second : "not in the PC bundle"));
+        continue;
+      }
+      if (donor->second.unityVersion != file.unityVersion) {
+        merge.skipped.push_back(shader.name + ": the PC bundle was built with Unity " +
+                                donor->second.unityVersion + ", the Quest bundle with " + file.unityVersion);
+        continue;
+      }
+      // The donor's references name objects of the PC bundle. Built from the
+      // same source, the Quest shader references the same things (its default
+      // textures, its fallback) in the same order, so when the counts agree
+      // the Quest shader's own references are carried over; otherwise they are
+      // cleared, which loses a default texture but never points at the wrong
+      // object.
+      std::vector<uint8_t> body = donor->second.body;
+      bool const sameReferences = shader.pptrFileOffsets.size() == donor->second.pptrs.size();
+      for (size_t i = 0; i < donor->second.pptrs.size(); i++) {
+        auto const at = body.begin() + static_cast<std::ptrdiff_t>(donor->second.pptrs[i]);
+        size_t const from = sameReferences ? shader.pptrFileOffsets[i] : 0;
+        if (sameReferences && from + 12 <= nodeSize) {
+          std::copy_n(nodeData + from, 12, at);
+        } else {
+          std::fill_n(at, 12, 0);
+        }
+      }
+      if (!sameReferences && !donor->second.pptrs.empty()) {
+        merge.notes.push_back(shader.name + ": merged, but its " + std::to_string(donor->second.pptrs.size()) +
+                                " object reference(s) were cleared (the Quest shader has " +
+                                std::to_string(shader.pptrFileOffsets.size()) + ")");
+      }
+      edits.push_back({shader.pathID, std::move(body)});
+      editNames.push_back(shader.name);
+    }
+    if (edits.empty()) continue;
+    auto rewritten = SerializedFileParse::RewriteSerializedFile(nodeData, nodeSize, edits);
+    if (!rewritten.ok) {
+      merge.status = Status::Corrupt;
+      merge.message = "could not rebuild '" + nodes[index].path + "': " + rewritten.message;
+      return merge;
+    }
+    // Read the merged shaders back through the Quest file's own type tree: a
+    // body that does not fit it must never reach Unity.
+    auto check = SerializedFileParse::InspectSerializedFile(rewritten.data.data(), rewritten.data.size());
+    for (auto const& name : editNames) {
+      bool ok = false;
+      for (auto const& shader : check.shaders) {
+        if (shader.name != name) continue;
+        for (int32_t platform : shader.platforms) {
+          if (SerializedFileParse::ShaderPlatformRunsOnQuest(platform)) ok = true;
+        }
+        if (ok && !SerializedFileParse::DecodeShaderPrograms(rewritten.data.data(), rewritten.data.size(), shader).ok) {
+          ok = false;
+        }
+      }
+      if (!ok) {
+        merge.status = Status::Corrupt;
+        merge.message = "the merged '" + name + "' does not read back from the Quest bundle";
+        return merge;
+      }
+    }
+    if (!ReplaceNodeData(nodes, data, index, rewritten.data)) {
+      merge.status = Status::Corrupt;
+      merge.message = "could not relay the archive around a rebuilt '" + nodes[index].path + "'";
+      return merge;
+    }
+    merge.merged += static_cast<int>(editNames.size());
+    merge.mergedNames.insert(merge.mergedNames.end(), editNames.begin(), editNames.end());
+  }
+  for (auto const& name : wanted) {
+    if (!handled.contains(name)) merge.skipped.push_back(name + ": not in the Quest bundle");
+  }
+
+  if (merge.merged == 0) {
+    merge.status = Status::Corrupt;
+    merge.message = "no shader could be merged";
+    return merge;
+  }
+  if (!WriteConverted(destPath, header, nodes, data, result)) {
+    merge.status = result.status;
+    merge.message = result.message;
+    return merge;
+  }
+  merge.status = Status::Success;
+  merge.outputBytes = result.outputBytes;
+  merge.message = "merged " + std::to_string(merge.merged) + " of " + std::to_string(wanted.size()) +
+                  " shader(s) from the PC bundle into the Quest bundle";
+  return merge;
+}
+
 ShaderScan ScanShaders(std::string const& bundlePath) {
   ShaderScan scan;
   ArchiveHeader header;
@@ -1965,6 +2241,11 @@ ShaderScan ScanShaders(std::string const& bundlePath) {
       auto decoded = SerializedFileParse::DecodeShaderPrograms(
           data.data() + node.offset, available, shader);
       if (!decoded.ok) scan.undecodableShaders++;
+      size_t realPrograms = 0;
+      for (auto const& program : decoded.programs) {
+        if (!program.raw) realPrograms++;
+      }
+      if (decoded.ok && realPrograms == 0 && !shader.name.empty()) scan.emptyShaderNames.push_back(shader.name);
       for (auto const& program : decoded.programs) {
         scan.programs++;
         programTypes.insert(program.programType);

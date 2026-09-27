@@ -138,6 +138,10 @@ struct ShaderScan {
   int binaryPrograms = 0;
   int undecodableShaders = 0;
   std::vector<int32_t> programTypes;  // union across every program, ascending
+  // Shaders whose program store holds no program at all: Unity failed to
+  // compile them for the bundle's platform and shipped them empty. Nothing can
+  // draw them from this bundle; the PC build of the same map can stand in.
+  std::vector<std::string> emptyShaderNames;
 };
 
 // What a shader-translating conversion did.
@@ -158,6 +162,7 @@ struct ShaderConversion {
   // Keyword variants pointed at their single-pass instanced twin, which carries
   // the per-eye stereo maths that multiview needs.
   int stereoVariantsRemapped = 0;
+  int stereoVariantsSplit = 0;  // separateStereoVariants: variants renamed to STEREO_MULTIVIEW_ON
   // Block-compressed textures seen, and how many had their m_IsReadable flag
   // set so the mod can decode them on device. A texture that is already
   // readable, or in a format a Quest can sample, is not counted as marked.
@@ -190,10 +195,59 @@ struct ShaderConversion {
 // have done anyway. Success therefore does not mean every shader converted; it
 // means the bundle was rewritten and is loadable, and the counters say how much
 // of it will actually render.
+struct ShaderConversionOptions {
+  // Give each stereo-aware shader separate single-view and multiview programs,
+  // the way Unity builds its own Quest shaders. The plain variants get a
+  // single-view translation of the plain program -- what blits, render
+  // textures and CustomRenderTextures draw with -- and the stereo variants get
+  // the multiview translation of the single-pass-stereo program, with their
+  // keyword renamed to STEREO_MULTIVIEW_ON, which Unity turns on for two-eye
+  // rendering. Off, the multiview program goes into the plain variants (the
+  // pre-0.14 behaviour): right for the eye cameras, but GL refuses a multiview
+  // program in any single-view framebuffer, which is what made offscreen draws
+  // on converted maps flicker or show garbage. Only turn this on when the game
+  // actually uses STEREO_MULTIVIEW_ON, or the eye cameras draw nothing.
+  // Applies to Unity 2021 bundles only: a 2019 bundle picks variants through
+  // m_NameIndices, which the rename cannot reach, so it keeps the pre-0.14
+  // behaviour.
+  bool separateStereoVariants = false;
+};
+
 ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
-                                      std::string const& destPath);
+                                      std::string const& destPath,
+                                      ShaderConversionOptions const& options = {});
 
 ShaderScan ScanShaders(std::string const& bundlePath);
+
+// Puts working shaders into a Quest bundle that shipped them empty.
+//
+// A Quest bundle's shader can come with no programs at all: the mapper's Unity
+// failed to compile it for Android (Hold My Hand's raymarched kaleidoscope).
+// `donorPath` is the same map's PC bundle, already run through
+// ConvertShadersToGles. For each shader named in `names`, the Quest bundle's
+// empty Shader object is replaced, body and all, by the donor's translated
+// one -- same path ID, so every material that uses it now gets the working
+// shader -- and the result is written to `destPath`. The Quest bundle itself
+// is not changed.
+//
+// A body is only moved between files built by the same Unity version, since
+// it is read through the destination's type tree. Its object references
+// (dependencies, non-modifiable textures) name objects of the PC bundle, so
+// they are replaced by the Quest shader's own when both have the same number,
+// and cleared otherwise. A shader missing from the donor, not translated there, or
+// from a different Unity version is left as it was and listed in `skipped`.
+struct ShaderMerge {
+  Status status = Status::Corrupt;
+  std::string message;
+  int merged = 0;
+  std::vector<std::string> mergedNames;
+  std::vector<std::string> skipped;  // "name: why"
+  std::vector<std::string> notes;    // merged, with a caveat
+  uint64_t outputBytes = 0;
+};
+
+ShaderMerge MergeShadersInto(std::string const& questPath, std::string const& donorPath,
+                             std::vector<std::string> const& names, std::string const& destPath);
 
 // Human-readable one-line summary of a ShaderScan, for the log.
 std::string DescribeShaderScan(ShaderScan const& scan);

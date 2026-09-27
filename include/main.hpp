@@ -30,6 +30,15 @@ bool GetStandInShading();
 // Whether the main camera renders _CameraDepthTexture while a Vivify map plays.
 bool GetSceneDepthTexture();
 bool GetTranslateShadersOnConversion();
+// Whether the built-in AudioLink port (VivifyAudioLink) runs and publishes
+// _AudioTexture.
+bool GetAudioLinkEnabled();
+// Whether SetRenderingSettings may turn on realtime shadows (off: the
+// shadow* quality settings in it are ignored).
+bool GetMapRealtimeShadows();
+// Whether a shader a map's Quest bundle shipped empty is replaced by the PC
+// build of it, converted (VivifyAssets.cpp).
+bool GetUsePcShadersForEmptyShaders();
 // Empty when the stand-in shader should be chosen automatically.
 std::string GetStandInShaderName();
 // Whether a map carrying the Vivify requirement still submits its score.

@@ -273,10 +273,10 @@ def shader_bundle(path, shaders, sf_version=21, target=19, textures=None):
     return build(path, sf_bytes=[sf], with_resource=False)
 
 
-def run_shaders(src, dst):
+def run_shaders(src, dst, mode="--shaders"):
     if os.path.exists(dst):
         os.remove(dst)
-    proc = subprocess.run([CONV, "--shaders", src, dst], capture_output=True, text=True)
+    proc = subprocess.run([CONV, mode, src, dst], capture_output=True, text=True)
     fields = {}
     refusals = []
     for line in proc.stdout.splitlines():
@@ -559,24 +559,29 @@ def _ps(spi, flat=True):
 
 
 def pc_shader_2021(name, vertex_programs, fragment_programs, keyword_names=("STEREO_INSTANCING_ON",),
-                   share_vertex=False, vertex_params=None, fragment_params_blobs=None, pass_names=None):
+                   share_vertex=False, vertex_params=None, fragment_params_blobs=None, pass_names=None,
+                   entry_keywords=None, dependencies=()):
     """A PC (Direct3D 11) shader in 2021.3.16's layout. *_programs: list of
     (dxbc, keyword index list). Every program gets a parameter blob after it,
     as 2021.3.10+ stores them, and fragments live in a second segment. With
     share_vertex, every vertex variant points at the first vertex entry, the
-    way Unity dedups identical programs."""
+    way Unity dedups identical programs. With entry_keywords (names, indexed
+    like keyword_names), each program entry also carries its keyword names, as
+    a 2019 bundle's do."""
     entries, vertex_refs, vertex_param_list, fragment_refs, fragment_params = [], [], [], [], []
     for code, keywords in vertex_programs:
         blob = 0 if (share_vertex and vertex_refs) else len(entries)
         vertex_refs.append(mkshader2021.player_sub_program(blob, DX11_VERTEX_SM50, keywords))
-        entries.append((mkshader.sub_program(DX11_VERTEX_SM50, code), 0))
+        names = [entry_keywords[k] for k in keywords] if entry_keywords else ()
+        entries.append((mkshader.sub_program(DX11_VERTEX_SM50, code, keywords=names), 0))
         vertex_param_list.append(len(entries))
         blob = (vertex_params[len(vertex_param_list) - 1] if vertex_params
                 else b"\x00\x00\x00\x00PARAMS-VS" + bytes([len(entries)]))
         entries.append((blob, 0))
     for code, keywords in fragment_programs:
         fragment_refs.append(mkshader2021.player_sub_program(len(entries), DX11_PIXEL_SM50, keywords))
-        entries.append((mkshader.sub_program(DX11_PIXEL_SM50, code), 1))
+        names = [entry_keywords[k] for k in keywords] if entry_keywords else ()
+        entries.append((mkshader.sub_program(DX11_PIXEL_SM50, code, keywords=names), 1))
         fragment_params.append(len(entries))
         blob = (fragment_params_blobs[len(fragment_params) - 1] if fragment_params_blobs
                 else b"\x00\x00\x00\x00PARAMS-PS" + bytes([len(entries)]))
@@ -585,7 +590,7 @@ def pc_shader_2021(name, vertex_programs, fragment_programs, keyword_names=("STE
     return mkshader2021.shader_body(name, [4], store, [{
         mkshader2021.VERTEX: {"player": [vertex_refs], "params": [vertex_param_list]},
         mkshader2021.FRAGMENT: {"player": [fragment_refs], "params": [fragment_params]},
-    }], keyword_names, pass_names=pass_names), entries
+    }], keyword_names, pass_names=pass_names, dependencies=dependencies), entries
 
 
 def inspect_converted(dst):
@@ -694,14 +699,14 @@ def glslang_link_problem(dst):
     return None
 
 
-def pc_shader_case(name, body, check):
+def pc_shader_case(name, body, check, mode="--shaders"):
     global fails, cases
     cases += 1
     src = os.path.join(TMP, "pc_src.vivify")
     dst = os.path.join(TMP, "pc_dst.vivify")
     sf = mkshader.serialized_file_with_shaders([body], sf_version=22, shader_tree=mkshader2021.RealTypeTree())
     build(src, sf_bytes=[sf], with_resource=False)
-    proc, fields, refusals = run_shaders(src, dst)
+    proc, fields, refusals = run_shaders(src, dst, mode)
     try:
         problem = check(proc, fields, refusals, dst) or glslang_link_problem(dst)
     except Exception as e:  # noqa: BLE001 - a crash in a check is a failure, with its reason
@@ -777,6 +782,69 @@ def expect_idempotent_linked(proc, fields, refusals, dst):
 
 
 pc_shader_case("a linked shader is left alone by a second pass", stereo_body, expect_idempotent_linked)
+
+
+# With separate stereo variants, the plain variant gets single-view code --
+# GL refuses a multiview program in the single-view framebuffers blits, render
+# textures and CustomRenderTextures draw into -- and the stereo variant keeps
+# multiview code under the keyword Unity turns on for two-eye rendering.
+def expect_stereo_split(proc, fields, refusals, dst):
+    if fields.get("linked") != "1" or fields.get("variantsRefused") != "0":
+        return f"linked={fields.get('linked')} variantsRefused={fields.get('variantsRefused')} {refusals}"
+    if fields.get("stereoSplit") != "2" or fields.get("stereoRemapped") != "0":
+        return f"stereoSplit={fields.get('stereoSplit')} stereoRemapped={fields.get('stereoRemapped')}"
+    _, refs, entries = inspect_converted(dst)
+    vertex = {r["keywords"]: r for r in refs if r["stage"] == "0"}
+    if set(vertex) != {"", "STEREO_MULTIVIEW_ON"}:
+        return f"vertex variants are {sorted(vertex)}; STEREO_INSTANCING_ON was not renamed"
+    plain = entries[int(vertex[""]["blob"])]["code"]
+    stereo = entries[int(vertex["STEREO_MULTIVIEW_ON"]["blob"])]["code"]
+    if "num_views" in plain or "GL_OVR_multiview" in plain:
+        return "the plain variant is still a multiview program"
+    if "layout(num_views = 2) in;" not in stereo or "gl_InstanceID * 2 + int(gl_ViewID_OVR)" not in stereo:
+        return "the stereo variant is not the multiview translation of the SPI program"
+    if "hlslcc_mtx4x4unity_MatrixVP" not in plain:
+        return "the plain variant is not the plain program's own code"
+    return None
+
+
+pc_shader_case("with separate stereo variants, plain gets single-view code and stereo becomes STEREO_MULTIVIEW_ON",
+               stereo_body, expect_stereo_split, mode="--shaders-split")
+
+# A 2019 bundle keeps its keyword names in the program entries, and Unity
+# picks its variants through the pass's m_NameIndices, which renaming the
+# entries' names does not reach. 0.14.0-0.14.4 split such bundles anyway: the
+# stereo variants stayed under a keyword the Quest never enables, the eye
+# cameras drew the single-view plain programs, and notes and most visuals of
+# downloaded PC maps were invisible. A 2019 bundle keeps the plain variants on
+# their stereo twin's multiview code instead, even in split mode.
+sps_body, _ = pc_shader_2021(
+    "Swifter/Stereo2019",
+    [(_vs(spi=False), []), (_vs(spi=True), [0])],
+    [(_ps(spi=False), []), (_ps(spi=True), [0])],
+    keyword_names=(), entry_keywords=("UNITY_SINGLE_PASS_STEREO",))
+
+
+def expect_2019_not_split(proc, fields, refusals, dst):
+    if fields.get("linked") != "1" or fields.get("variantsRefused") != "0":
+        return f"linked={fields.get('linked')} variantsRefused={fields.get('variantsRefused')} {refusals}"
+    if fields.get("stereoSplit") != "0":
+        return f"stereoSplit={fields.get('stereoSplit')}: a 2019 bundle was split"
+    if fields.get("stereoRemapped") != "2":
+        return f"stereoRemapped={fields.get('stereoRemapped')}: the plain variants did not get their twin's code"
+    _, refs, entries = inspect_converted(dst)
+    for ref in refs:
+        code = entries[int(ref["blob"])]["code"]
+        if ref["stage"] == "0" and "layout(num_views = 2) in;" not in code:
+            return f"vertex variant {ref['keywords']!r} is not a multiview program"
+    for entry in entries.values():
+        if "STEREO_MULTIVIEW_ON" in entry.get("keywords", ""):
+            return "a 2019 entry's keyword was renamed"
+    return None
+
+
+pc_shader_case("a 2019 bundle is not split: plain variants get their stereo twin's multiview code",
+               sps_body, expect_2019_not_split, mode="--shaders-split")
 
 mono_body, _ = pc_shader_2021("Custom/Mono", [(_vs(spi=False, texcoord=False), [])],
                               [(_ps(spi=False, flat=False), [])], keyword_names=())
@@ -968,6 +1036,78 @@ if p.returncode != 0 and not os.path.exists(os.path.join(TMP, "sh_bad.out")):
     print("ok   shader conversion rejects a non-bundle without leaving output")
 else:
     print("FAIL shader conversion accepted a non-bundle:\n" + p.stdout); fails += 1
+
+# A Quest bundle can ship a shader with nothing in it: the mapper's Unity failed
+# to compile it for Android (Hold My Hand's raymarched kaleidoscope). --merge
+# puts the translated PC build of that shader into the Quest bundle, under the
+# Quest shader's own path ID, so the materials that use it get a working one.
+def merge_case(quest_dependencies, expect_reference, expect_note):
+    global fails, cases
+    cases += 1
+    name = "Custom/PoofShaders/Kaleidoscope"
+    donor_src = os.path.join(TMP, "merge_pc.vivify")
+    donor = os.path.join(TMP, "merge_pc_converted.vivify")
+    quest = os.path.join(TMP, "merge_quest.vivify")
+    merged = os.path.join(TMP, "merge_out.vivify")
+    # The PC shader names a dependency in its own file: it must not survive
+    # into the Quest bundle, where path 4242 is something else or nothing.
+    pc_body, _ = pc_shader_2021(name, [(_vs(spi=False), []), (_vs(spi=True), [0])],
+                                [(_ps(spi=False), []), (_ps(spi=True), [0])], dependencies=[(0, 4242)])
+    pc_sf = mkshader.serialized_file_with_shaders([pc_body], sf_version=22,
+                                                  shader_tree=mkshader2021.RealTypeTree())
+    build(donor_src, sf_bytes=[pc_sf], with_resource=False)
+    proc, fields, refusals = run_shaders(donor_src, donor)
+    if fields.get("linked") != "1":
+        print(f"FAIL merge: the PC donor did not convert: {fields} {refusals}")
+        fails += 1
+        return
+    # The Quest bundle: the same shader with an empty store for GLES3, and a
+    # dependency of its own.
+    empty_store = mkshader.build_program_store([[b"\x00\x00\x00\x00"]])
+    quest_body = mkshader2021.shader_body(name, [9], empty_store, [], dependencies=quest_dependencies)
+    quest_sf = mkshader.serialized_file_with_shaders([quest_body], sf_version=22, target=13,
+                                                     shader_tree=mkshader2021.RealTypeTree())
+    build(quest, sf_bytes=[quest_sf], with_resource=False)
+    if os.path.exists(merged):
+        os.remove(merged)
+    proc = subprocess.run([CONV, "--merge", quest, donor, merged, name, "Custom/NotThere"],
+                          capture_output=True, text=True)
+    out = proc.stdout
+    problem = None
+    if proc.returncode != 0 or "merged=1" not in out:
+        problem = "merge did not succeed"
+    elif "skipped=Custom/NotThere: not in the Quest bundle" not in out:
+        problem = "the missing shader was not reported"
+    else:
+        platforms, refs, entries = inspect_converted(merged)
+        if platforms is None or "9" not in platforms.split(","):
+            problem = f"merged shader platforms are {platforms}"
+        elif not any("num_views" in e["code"] for e in entries.values()):
+            problem = "the merged shader has no translated multiview program"
+    if problem is None:
+        # The dependency in the donor body is cleared: the Quest file's
+        # m_Dependencies entry reads back as a null reference.
+        _, _, _, nodes, data = read_converted(merged)
+        off, size, _, _ = nodes[0]
+        body = data[off:off + size]
+        if struct.pack("<iq", 0, 4242) in body:
+            problem = "the PC shader's dependency was carried into the Quest bundle"
+        elif struct.pack("<ii", 1, *expect_reference[:1]) + struct.pack("<q", expect_reference[1]) not in body:
+            problem = f"the dependency list does not read as one reference to {expect_reference}"
+        elif expect_note != ("note=" in out):
+            problem = "a cleared reference was not noted" if expect_note else "an unexpected note"
+    if problem:
+        print(f"FAIL merge: {problem}\n{out}{proc.stderr}")
+        fails += 1
+    else:
+        print("ok   an empty Quest shader is replaced by its translated PC build"
+              + (", references cleared" if expect_note else ", keeping its own references"))
+
+
+# The Quest shader's own reference replaces the PC one (same count).
+merge_case([(1, 7)], (1, 7), False)
+# Counts differ: the reference is cleared, and the log says so.
+merge_case([], (0, 0), True)
 
 if GLSLANG is None:
     print("note: glslangValidator not installed; linked programs were not compiled")

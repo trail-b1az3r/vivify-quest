@@ -65,6 +65,8 @@ void Runtime::LateLoad() {
   modloader_require_mod(&tracksModInfo, CMatchType::MatchType_IdOnly);
   EnsureBehaviour();
   SongCore::API::Capabilities::RegisterCapability(kCapability);
+  // What BSAudioLink registers, so maps that require AudioLink are playable.
+  if (GetAudioLinkEnabled()) SongCore::API::Capabilities::RegisterCapability("AudioLink");
   CustomJSONData::CustomEventCallbacks::AddCustomEventCallback(&Runtime::OnCustomEventStatic);
   SongCore::API::LevelSelect::GetLevelWasSelectedEvent() += [](SongCore::API::LevelSelect::LevelWasSelectedEventArgs const& event) {
     Runtime::Instance().HandleLevelSelected(event);
