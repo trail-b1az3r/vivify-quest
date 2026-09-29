@@ -1311,6 +1311,61 @@ std::string LinkStages(Vivify::Dxbc::GlslResult const& vertex, Vivify::Dxbc::Gls
   return linked;
 }
 
+// For a vertex program whose geometry stage was dropped: a pipeline with a
+// geometry stage often leaves the projection to it, and the vertex program
+// then never writes gl_Position. Adds the standard object-to-clip transform
+// -- unity_ObjectToWorld, then the view-projection (per eye from
+// UnityStereoGlobals under multiview) -- run after the program's own main.
+// False when there is no object-space position input to project.
+bool WithProjectedPosition(std::string& vs) {
+  if (vs.find("gl_Position") != std::string::npos) return true;
+  if (vs.find("in vec4 in_POSITION0;") == std::string::npos) return false;
+  size_t const mainAt = vs.find("void main()");
+  if (mainAt == std::string::npos) return false;
+  bool const multiview = vs.find("num_views") != std::string::npos;
+  std::string declarations;
+  if (vs.find("hlslcc_mtx4x4unity_ObjectToWorld") == std::string::npos) {
+    declarations += "uniform vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];\n";
+  }
+  std::string projection;
+  if (multiview) {
+    if (vs.find("uniform UnityStereoGlobals") == std::string::npos) {
+      declarations += "layout(std140) uniform UnityStereoGlobals { vec4 vivify_cb_UnityStereoGlobals[68]; };\n";
+    } else if (vs.find("vivify_cb_UnityStereoGlobals") == std::string::npos) {
+      return false;  // declared under a name this does not know
+    }
+    // unity_StereoMatrixVP[eye] is rows 24 + 4 * eye of the block.
+    projection =
+        "  int vivify_row = 24 + 4 * int(gl_ViewID_OVR);\n"
+        "  gl_Position = vivify_cb_UnityStereoGlobals[vivify_row] * vivify_world.x +\n"
+        "      vivify_cb_UnityStereoGlobals[vivify_row + 1] * vivify_world.y +\n"
+        "      vivify_cb_UnityStereoGlobals[vivify_row + 2] * vivify_world.z +\n"
+        "      vivify_cb_UnityStereoGlobals[vivify_row + 3] * vivify_world.w;\n";
+  } else {
+    if (vs.find("hlslcc_mtx4x4unity_MatrixVP") == std::string::npos) {
+      declarations += "uniform vec4 hlslcc_mtx4x4unity_MatrixVP[4];\n";
+    }
+    projection =
+        "  gl_Position = hlslcc_mtx4x4unity_MatrixVP[0] * vivify_world.x + hlslcc_mtx4x4unity_MatrixVP[1] * "
+        "vivify_world.y +\n"
+        "      hlslcc_mtx4x4unity_MatrixVP[2] * vivify_world.z + hlslcc_mtx4x4unity_MatrixVP[3] * vivify_world.w;\n";
+  }
+  vs.replace(mainAt, std::string("void main()").size(), "void vivify_main()");
+  vs.insert(vs.find("void vivify_main()"), declarations);
+  // The program's own main can return from anywhere; wrapping it keeps every
+  // path through it.
+  size_t const end = vs.rfind('}');
+  if (end == std::string::npos) return false;
+  vs.insert(end + 1,
+            "\nvoid main() {\n"
+            "  vivify_main();\n"
+            "  vec4 vivify_world = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.x +\n"
+            "      hlslcc_mtx4x4unity_ObjectToWorld[1] * in_POSITION0.y +\n"
+            "      hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.z + hlslcc_mtx4x4unity_ObjectToWorld[3];\n" +
+                projection + "}\n");
+  return true;
+}
+
 // Turns a variant's m_ParsedForm parameters into the reflection its DXBC lost
 // when Unity stripped RDEF out of it.
 Vivify::Dxbc::ExternalReflection ReflectionFrom(SerializedFileParse::ProgramParameters const& parameters) {
@@ -1428,6 +1483,7 @@ struct LinkedShader {
   int variantsRefused = 0;
   int stereoRemapped = 0;
   int stereoSplit = 0;
+  int geometryDropped = 0;  // variants linked without their geometry stage
   int programsTranslated = 0;
   std::set<std::string> variantReasons;  // why individual variants stayed on DirectX
 };
@@ -1554,7 +1610,7 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
   // variants held multiview programs.
   bool const namesInEntries = shader.keywordNames.empty();
   int32_t splitKeyword = -1;
-  if (conversionOptions.separateStereoVariants && !namesInEntries) {
+  if (conversionOptions.separateStereoVariants && !conversionOptions.singleViewOnly && !namesInEntries) {
     for (size_t i = 0; i < keywordNames.size() && splitKeyword < 0; i++) {
       if (keywordNames[i] == "STEREO_INSTANCING_ON" && i < shader.keywordNameFileOffsets.size() &&
           shader.keywordNameFileOffsets[i] != 0) {
@@ -1562,7 +1618,8 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
       }
     }
   }
-  if (conversionOptions.separateStereoVariants && conversionOptions.splitUnity2019 && namesInEntries &&
+  if (conversionOptions.separateStereoVariants && !conversionOptions.singleViewOnly &&
+      conversionOptions.splitUnity2019 && namesInEntries &&
       !shader.stereoNameIndexFileOffsets.empty()) {
     for (size_t i = 0; i < keywordNames.size() && splitKeyword < 0; i++) {
       if (keywordNames[i] == "STEREO_INSTANCING_ON") splitKeyword = static_cast<int32_t>(i);
@@ -1590,7 +1647,11 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
     return nullptr;
   };
 
-  if (splitKeyword >= 0) {
+  if (conversionOptions.singleViewOnly) {
+    // Replay render mode: every program single-view, each variant its own
+    // code, no keyword renamed. Only single-screen cameras can draw these.
+    std::fill(multiviewRef.begin(), multiviewRef.end(), false);
+  } else if (splitKeyword >= 0) {
     // Plain variants that have a stereo twin get single-view code of their
     // own program; the twins keep theirs, translated for multiview, under
     // STEREO_MULTIVIEW_ON. A plain variant without a twin still gets multiview
@@ -1752,25 +1813,59 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
       return true;
     };
 
+    // A geometry stage cannot run here: multiview forbids one, and some do
+    // not translate at all. Rather than leave the whole variant on DirectX --
+    // which is a grey stand-in, or nothing, on the headset -- its vertex and
+    // fragment programs are linked without it. The geometry entries stay
+    // DirectX, so Unity finds no geometry program it can run and draws the
+    // pass without that stage: effects built on it (exploding triangles,
+    // wireframes) come out as the plain mesh with the pass's own shading.
+    // Fragment inputs only the geometry stage wrote read as zero.
+    auto linkDroppingGeometry = [&](ParsedProgramRef const& vertex, ParsedProgramRef const* fragment,
+                                    ParsedProgramRef const* geometry, std::string& source, int& version,
+                                    bool& dropped) {
+      dropped = false;
+      if (link(vertex, fragment, geometry, source, version)) return true;
+      if (geometry == nullptr) return false;
+      auto const* vs = translate(vertex);
+      auto const* fs = fragment != nullptr ? translate(*fragment) : nullptr;
+      if (vs == nullptr || (fragment != nullptr && fs == nullptr)) return false;
+      Vivify::Dxbc::GlslResult projected = *vs;
+      if (!WithProjectedPosition(projected.source)) return false;
+      source = LinkStages(projected, fs, nullptr, version);
+      dropped = true;
+      return true;
+    };
     for (auto const* vertex : vertices) {
       std::string source;
       int version = 300;
+      bool dropped = false;
       auto const* fragment = BestMatch(fragments, *vertex);
       auto const* geometry = BestMatch(geometries, *vertex);
-      if (!link(*vertex, fragment, geometry, source, version) || !place(*vertex, source, version)) {
+      if (!linkDroppingGeometry(*vertex, fragment, geometry, source, version, dropped) ||
+          !place(*vertex, source, version)) {
         out.variantsRefused++;
         continue;
       }
       out.variantsLinked++;
+      if (dropped) out.geometryDropped++;
     }
     for (auto const* stageList : {&fragments, &geometries}) {
       for (auto const* ref : *stageList) {
         std::string source;
         int version = 300;
+        bool dropped = false;
         auto const* vertex = BestMatch(vertices, *ref);
-        ParsedProgramRef const* fragment = stageList == &fragments ? ref : BestMatch(fragments, *ref);
-        ParsedProgramRef const* geometry = stageList == &geometries ? ref : BestMatch(geometries, *ref);
-        if (vertex == nullptr || !link(*vertex, fragment, geometry, source, version) ||
+        if (stageList == &geometries) {
+          // A geometry entry only takes a program that keeps its stage; one
+          // that dropped it is left on DirectX, so Unity skips the stage.
+          if (vertex != nullptr && link(*vertex, BestMatch(fragments, *ref), ref, source, version)) {
+            place(*ref, source, version);
+          }
+          continue;
+        }
+        ParsedProgramRef const* geometry = BestMatch(geometries, *ref);
+        if (vertex == nullptr || !linkDroppingGeometry(*vertex, ref, geometry, source, version, dropped) ||
             !place(*ref, source, version)) {
           out.variantsRefused++;
         }
@@ -1911,6 +2006,7 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
         conversion.variantsRefused += linked.variantsRefused;
         conversion.stereoVariantsRemapped += linked.stereoRemapped;
         conversion.stereoVariantsSplit += linked.stereoSplit;
+        conversion.geometryStagesDropped += linked.geometryDropped;
         for (auto const& reason : linked.variantReasons) {
           if (conversion.variantRefusals.size() >= kMaxLoggedRefusals * 2) break;
           conversion.variantRefusals.push_back(
@@ -1986,6 +2082,22 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
       return conversion;
     }
     filesRewritten++;
+  }
+
+  // A companion build loaded beside the main one (the single-view shaders for
+  // blits) must not share its internal file names: Unity refuses a second
+  // bundle holding the same files. Each "CAB-<hash>" gets the first hex digit
+  // of its hash changed, the same way for the file and its .resS, keeping
+  // every length. Texture streams still name the old .resS, so a renamed
+  // bundle is only good for its shaders and materials, which is all a
+  // companion is loaded for.
+  if (options.renameArchiveFiles) {
+    for (auto& node : nodes) {
+      size_t const at = node.path.find("CAB-");
+      if (at == std::string::npos || at + 4 >= node.path.size()) continue;
+      char& c = node.path[at + 4];
+      c = c == 'f' ? '0' : (c == '9' ? 'a' : static_cast<char>(c + 1));
+    }
   }
 
   // Nothing to retarget and nothing translated means the bundle already runs

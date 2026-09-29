@@ -1,6 +1,9 @@
 #include "VivifyRuntimeInternal.hpp"
 #include "VivifyComponents.hpp"
 #include "UnityEngine/Rendering/CameraEvent.hpp"
+#include "UnityEngine/Rendering/TextureDimension.hpp"
+#include "UnityEngine/RenderTextureDescriptor.hpp"
+#include "UnityEngine/HideFlags.hpp"
 
 namespace Vivify {
 
@@ -51,9 +54,10 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
   auto* mainCurrent = main;
   auto* mainScratch = scratch;
 
-  auto emitBlit = [&](UnityEngine::Rendering::RenderTargetIdentifier srcId,
-                      UnityEngine::Rendering::RenderTargetIdentifier dstId,
+  auto emitBlit = [&](UnityEngine::Rendering::RenderTargetIdentifier srcId, UnityEngine::RenderTexture* dst,
                       UnityEngine::Material* material, int pass) {
+    auto const dstId = ToTargetId(dst);
+    material = BlitMaterialFor(material, dst);
     if (material == nullptr) {
       cb->Blit(srcId, dstId);
     } else if (pass >= 0) {
@@ -81,14 +85,14 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
       for (auto const& targetName : data.targets) {
         if (targetName == kMainCameraId) {
           if (sourceIsMain) {
-            emitBlit(blitSrcId, ToTargetId(mainScratch), data.material, data.pass);
+            emitBlit(blitSrcId, mainScratch, data.material, data.pass);
             std::swap(mainCurrent, mainScratch);
 
             blitSrc = mainCurrent;
             blitSrcId = ToTargetId(mainCurrent);
           } else {
 
-            emitBlit(blitSrcId, ToTargetId(mainCurrent), data.material, data.pass);
+            emitBlit(blitSrcId, mainCurrent, data.material, data.pass);
           }
         } else if (auto found = _declaredTextures.find(targetName); found != _declaredTextures.end()) {
           auto* target = found->second.texture;
@@ -100,10 +104,10 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
             auto* tempPtr = temp.unsafePtr();
             if (!IsManagedAlive(tempPtr)) continue;
             selfBlitTemps.emplace_back(tempPtr);
-            emitBlit(blitSrcId, ToTargetId(tempPtr), data.material, data.pass);
+            emitBlit(blitSrcId, tempPtr, data.material, data.pass);
             cb->Blit(ToTargetId(tempPtr), ToTargetId(target));
           } else {
-            emitBlit(blitSrcId, ToTargetId(target), data.material, data.pass);
+            emitBlit(blitSrcId, target, data.material, data.pass);
           }
         }
       }
@@ -181,7 +185,9 @@ UnityEngine::Rendering::CommandBuffer* Runtime::BuildMidRenderCommandBuffer(
   auto* mainCurrent = _midMainRT;
   auto* mainScratch = _midScratchRT;
 
-  auto emitBlit = [&](RTI blitSrc, RTI blitDst, UnityEngine::Material* material, int pass) {
+  auto emitBlit = [&](RTI blitSrc, UnityEngine::RenderTexture* dst, UnityEngine::Material* material, int pass) {
+    RTI const blitDst = ToTargetId(dst);
+    material = BlitMaterialFor(material, dst);
     if (material == nullptr) {
       cb->Blit(blitSrc, blitDst);
     } else if (pass >= 0) {
@@ -208,13 +214,13 @@ UnityEngine::Rendering::CommandBuffer* Runtime::BuildMidRenderCommandBuffer(
     for (auto const& targetName : data.targets) {
       if (targetName == kMainCameraId) {
         if (sourceIsMain) {
-          emitBlit(blitSrcId, ToTargetId(mainScratch), data.material, data.pass);
+          emitBlit(blitSrcId, mainScratch, data.material, data.pass);
           std::swap(mainCurrent, mainScratch);
           blitSrcTexture = mainCurrent;
           blitSrcId = ToTargetId(mainCurrent);
         } else {
 
-          emitBlit(blitSrcId, ToTargetId(mainCurrent), data.material, data.pass);
+          emitBlit(blitSrcId, mainCurrent, data.material, data.pass);
         }
       } else if (auto found = _declaredTextures.find(targetName); found != _declaredTextures.end()) {
         auto* target = found->second.texture;
@@ -225,10 +231,10 @@ UnityEngine::Rendering::CommandBuffer* Runtime::BuildMidRenderCommandBuffer(
           auto* tempPtr = temp.unsafePtr();
           if (!IsManagedAlive(tempPtr)) continue;
           _midSelfBlitTemps.emplace_back(tempPtr);
-          emitBlit(blitSrcId, ToTargetId(tempPtr), data.material, data.pass);
+          emitBlit(blitSrcId, tempPtr, data.material, data.pass);
           cb->Blit(ToTargetId(tempPtr), ToTargetId(target));
         } else {
-          emitBlit(blitSrcId, ToTargetId(target), data.material, data.pass);
+          emitBlit(blitSrcId, target, data.material, data.pass);
         }
       }
     }
@@ -572,7 +578,49 @@ void Runtime::HandleBlit(CustomJSONData::CustomEventData* customEventData, rapid
 
 }
 
+// A blit draws into either the eye texture -- a two-slice array, one pass for
+// both eyes, which takes the multiview programs a converted map's shaders
+// have -- or into a single texture (screen textures, temporaries), where a
+// multiview program draws nothing. For the latter, a converted map's blit
+// material is swapped for a copy on the single-view build of its shader from
+// the blit companion (VivifyAssets.cpp). Quest-built shaders have both
+// programs already and are never in _singleViewShaders.
+UnityEngine::Material* Runtime::BlitMaterialFor(UnityEngine::Material* material,
+                                                UnityEngine::RenderTexture* destination) {
+  if (material == nullptr || _singleViewShaders.empty() || !IsAlive(material) || !IsAlive(destination)) {
+    return material;
+  }
+  auto descriptor = destination->get_descriptor();
+  if (descriptor.get_dimension() == UnityEngine::Rendering::TextureDimension::Tex2DArray ||
+      descriptor.get_volumeDepth() > 1) {
+    return material;
+  }
+  auto* shader = material->get_shader().unsafePtr();
+  if (!IsAlive(shader)) return material;
+  auto const singleView = _singleViewShaders.find(ShaderNameForLog(shader));
+  if (singleView == _singleViewShaders.end() || !IsAlive(singleView->second)) return material;
+  auto& copy = _singleViewBlitMaterials[material];
+  if (!IsAlive(copy)) {
+    copy = UnityEngine::Material::New_ctor(material);
+    copy->set_shader(singleView->second);
+    copy->set_hideFlags(UnityEngine::HideFlags::DontUnloadUnusedAsset);
+    PaperLogger.info("Vivify Blit: material '{}' draws into single-screen textures with the single-view build "
+                     "of '{}'", ToStdString(material->get_name()), singleView->first);
+  }
+  return copy;
+}
+
+// Keeps each single-view blit copy in step with its original, which the map
+// animates (SetMaterialProperty, AnimateTrack). Once a frame, before blits run.
+void Runtime::SyncSingleViewBlitMaterials() {
+  for (auto const& [original, copy] : _singleViewBlitMaterials) {
+    if (!IsAlive(original) || !IsAlive(copy)) continue;
+    copy->CopyPropertiesFromMaterial(original);
+  }
+}
+
 void Runtime::UpdateBlitEffects() {
+  SyncSingleViewBlitMaterials();
   if (GetDisableAllBlits()) {
     if ((!_preEffects.empty() || !_postEffects.empty() || HasMidRenderEffects()) && GetVivifyDebugLogging()) {
       PaperLogger.info("Vivify Blit effects cleared: Disable All Blits enabled pre={} post={}",

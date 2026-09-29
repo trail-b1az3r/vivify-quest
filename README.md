@@ -55,11 +55,10 @@ All settings are in **Mod Settings → Vivify**.
 | Convert PC Bundles On Device | on | Converts PC-only maps on the headset. |
 | Translate Shaders On Conversion | on | Translates PC shaders to GLES. Off: everything uses stand-in shading. |
 | Stand-In Shading For Unsupported Shaders | on | Draws shaders that can't run with a simple stand-in instead of nothing. |
-| PC Shaders For Broken Quest Shaders | on | Uses the PC build of shaders that a Quest bundle shipped empty. |
 | Scene Depth For Map Shaders | on | Renders `_CameraDepthTexture` for raymarchers and distortion effects. |
 | AudioLink | on | Runs AudioLink for maps that use it. |
 | Map Realtime Shadows | off | Lets maps turn on realtime shadows. Expensive; can blacken note bodies. |
-| Recordable 2019 Converted Maps | on | Lets replay and recording renderers draw converted Unity 2019 maps. Turn off if their notes or visuals go invisible in the headset. |
+| Replay Render Mode (converted maps) | off | Converts maps with single-screen programs so replay and recording renderers can draw them. Turn on to render, off to play. |
 | Disable Custom Note Visuals | off | Keeps the game's own notes, sabers and debris. |
 | Disable All Blits | off | Turns off post-processing effects. |
 | Disable Beat 0 Filmgrain Blit | off | Skips film-grain blits that start at beat 0. |

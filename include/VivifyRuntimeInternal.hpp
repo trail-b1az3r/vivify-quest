@@ -117,6 +117,16 @@ private:
                         std::vector<std::string> const& names);
   void ConvertPcForGraft(std::string const& levelPath, std::string const& androidBundlePath,
                          std::string const& pcBundlePath, std::vector<std::string> const& names);
+  // Blit companion (0.14.10): the single-view build of a converted map's
+  // shaders, for blits into single-screen textures, which the multiview
+  // programs of the main conversion cannot draw into.
+  void PrepareBlitCompanion(std::string const& levelPath, std::string const& pcBundlePath);
+  void LoadBlitCompanion(std::string const& levelPath, std::string const& companionPath);
+  void ClearBlitCompanion();
+  // The material a blit into `destination` should draw with: `material`, or
+  // for a single-screen destination a copy of it on the single-view shader.
+  UnityEngine::Material* BlitMaterialFor(UnityEngine::Material* material, UnityEngine::RenderTexture* destination);
+  void SyncSingleViewBlitMaterials();
   // Kicks off an off-thread PC->Android bundle conversion for the currently
   // selected level and re-enables the play button when it lands.
   void ConvertPcBundleAsync(std::string const& levelPath, std::string const& sourceBundlePath);
@@ -477,6 +487,11 @@ private:
   // empty, by shader name, for _graftLevelPath. Kept alive with
   // DontUnloadUnusedAsset; replaced when another level needs them.
   std::unordered_map<std::string, UnityEngine::Shader*> _graftedShaders;
+  // Blit companion shaders by name, for _blitCompanionLevel, and the material
+  // copies made on them (original -> copy).
+  std::unordered_map<std::string, UnityEngine::Shader*> _singleViewShaders;
+  std::unordered_map<UnityEngine::Material*, UnityEngine::Material*> _singleViewBlitMaterials;
+  std::string _blitCompanionLevel;
   std::string _graftLevelPath;
   int _graftGeneration = 0;
   int _graftApplied = 0;
