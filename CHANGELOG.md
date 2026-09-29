@@ -11,6 +11,20 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.11] - 2026-09-29
+
+### Fixed
+- **Converted maps freezing the game (0.14.10).** The blit companion, the
+  single-screen build of a map's shaders, was loaded on the main thread in
+  one call. That call loaded every material in it, and with them their
+  textures, whose data files the companion renames away. It now loads
+  asynchronously, a step per frame, and never blocks.
+
+### Changed
+- The blit companion is now opt-in. The new setting **Blit Fix For Screen
+  Textures (experimental)** is off by default. With it off, converted maps
+  load exactly as they did in 0.14.9 plus the geometry-stage fallback.
+
 ## [0.14.10] - 2026-09-29
 
 ### Fixed

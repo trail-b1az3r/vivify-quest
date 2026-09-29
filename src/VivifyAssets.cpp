@@ -1081,8 +1081,12 @@ bool LevelUsesBlits(std::string const& levelPath) {
 }  // namespace
 
 void Runtime::PrepareBlitCompanion(std::string const& levelPath, std::string const& pcBundlePath) {
-  // Replay render mode's main conversion is single-view already.
-  if (GetReplayRenderMode() || !GetTranslateShadersOnConversion() || pcBundlePath.empty()) return;
+  // Opt-in (0.14.11) until it has been seen working on a headset. Replay
+  // render mode's main conversion is single-view already.
+  if (!GetBlitScreenTextureFix() || GetReplayRenderMode() || !GetTranslateShadersOnConversion() ||
+      pcBundlePath.empty()) {
+    return;
+  }
   if (_blitCompanionLevel == levelPath && !_singleViewShaders.empty()) return;
   std::thread([this, levelPath, pcBundlePath]() {
     if (!LevelUsesBlits(levelPath)) return;
@@ -1107,17 +1111,48 @@ void Runtime::PrepareBlitCompanion(std::string const& levelPath, std::string con
 }
 
 void Runtime::LoadBlitCompanion(std::string const& levelPath, std::string const& companionPath) {
+  // One load at a time: a second copy of the same companion would clash with
+  // the one in flight. The one in flight checks the level when it lands.
+  if (_blitCompanionCreate || _blitCompanionAssets) return;
   ClearBlitCompanion();
-  auto bundle = UnityEngine::AssetBundle::LoadFromFile(StringW(companionPath));
-  if (!IsAlive(bundle.unsafePtr())) {
-    PaperLogger.warn("Vivify Blit: the single-view build '{}' did not load", companionPath);
+  // Asynchronous, advanced by PollBlitCompanion. 0.14.10 loaded the bundle and
+  // every material in it (and so their textures) on the main thread in one
+  // call, which froze the game on converted maps.
+  auto* request = UnityEngine::AssetBundle::LoadFromFileAsync(StringW(companionPath));
+  if (request == nullptr) {
+    PaperLogger.warn("Vivify Blit: the single-view build '{}' did not start loading", companionPath);
     return;
   }
-  // Blit materials are always assets of their own (a Blit event names one),
-  // so the materials are enough to reach every shader a blit can use.
-  auto* request = bundle->LoadAllAssetsAsync<UnityEngine::Material*>();
-  auto all = request != nullptr ? request->get_allAssets() : decltype(request->get_allAssets())(nullptr);
-  if (all) {
+  _blitCompanionCreate = request;
+  _blitCompanionLoadingLevel = levelPath;
+  _blitCompanionLoadingPath = companionPath;
+}
+
+void Runtime::PollBlitCompanion() {
+  if (_blitCompanionCreate) {
+    if (!_blitCompanionCreate->get_isDone()) return;
+    auto bundle = _blitCompanionCreate->get_assetBundle();
+    _blitCompanionCreate = nullptr;
+    if (!IsAlive(bundle.unsafePtr())) {
+      PaperLogger.warn("Vivify Blit: the single-view build '{}' did not load", _blitCompanionLoadingPath);
+      return;
+    }
+    if (_blitCompanionLoadingLevel != _selectedLevelPath) {
+      bundle->Unload(false);
+      return;
+    }
+    _blitCompanionBundle = bundle.unsafePtr();
+    // Blit materials are always assets of their own (a Blit event names one),
+    // so the materials reach every shader a blit can use.
+    _blitCompanionAssets = _blitCompanionBundle->LoadAllAssetsAsync<UnityEngine::Material*>();
+    return;
+  }
+  if (!_blitCompanionAssets) return;
+  if (!_blitCompanionAssets->get_isDone()) return;
+  auto all = _blitCompanionAssets->get_allAssets();
+  _blitCompanionAssets = nullptr;
+  bool const current = _blitCompanionLoadingLevel == _selectedLevelPath;
+  if (current && all) {
     for (auto object : all) {
       auto* material = il2cpp_utils::try_cast<UnityEngine::Material>(object.unsafePtr()).value_or(nullptr);
       if (!IsAlive(material)) continue;
@@ -1127,10 +1162,12 @@ void Runtime::LoadBlitCompanion(std::string const& levelPath, std::string const&
       _singleViewShaders.emplace(ShaderNameForLog(shader), shader);
     }
   }
-  bundle->Unload(false);
-  _blitCompanionLevel = levelPath;
+  if (IsAlive(_blitCompanionBundle)) _blitCompanionBundle->Unload(false);
+  _blitCompanionBundle = nullptr;
+  if (!current) return;
+  _blitCompanionLevel = _blitCompanionLoadingLevel;
   PaperLogger.info("Vivify Blit: {} single-view shader(s) ready for blits into screen textures ('{}')",
-                   _singleViewShaders.size(), companionPath);
+                   _singleViewShaders.size(), _blitCompanionLoadingPath);
 }
 
 void Runtime::ClearBlitCompanion() {
