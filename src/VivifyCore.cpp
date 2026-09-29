@@ -473,6 +473,7 @@ void Runtime::RefreshIsolationSettings() {
 }
 
 void Runtime::ResetRuntime(std::string_view reason) {
+  SetSongPlaying(false);
   // Written before anything is torn down, while the numbers are still valid.
   // The song position is included rather than a guess at "quit" vs "beaten":
   // by the time this runs the AudioTimeSyncController is usually already gone,

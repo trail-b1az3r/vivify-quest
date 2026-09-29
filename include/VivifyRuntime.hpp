@@ -40,4 +40,8 @@ void StartBulkPcBundleConversion(std::function<void(BulkConversionProgress const
 
 // True while a bulk pass started by StartBulkPcBundleConversion is running.
 bool IsBulkPcBundleConversionRunning();
+
+// Tells the bulk pass whether a song is playing; it pauses between bundles
+// while one is.
+void SetSongPlaying(bool playing);
 }

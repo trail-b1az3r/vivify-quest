@@ -18,6 +18,10 @@
 #include <cstring>
 #include <fstream>
 #include <iterator>
+#include <mutex>
+#include <condition_variable>
+#include <sys/resource.h>
+#include <unistd.h>
 #include <thread>
 #include <vector>
 
@@ -96,7 +100,10 @@ namespace {
 //      the variant's vertex and fragment linked without it, with the object-
 //      to-clip transform added when the geometry stage was the one doing it.
 //      Version 13 left such variants on DirectX: grey stand-ins, or nothing
-constexpr int kBundleConversionVersion = 14;
+//  15  a shader's own depth output (SV_Depth) is mapped from OpenGL's -1..1
+//      clip depth to the 0..1 window depth. Version 14 wrote it unmapped, and
+//      raymarchers that write depth drew in front of the whole scene
+constexpr int kBundleConversionVersion = 15;
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the
@@ -256,7 +263,42 @@ struct BundleConversionOutcome {
   std::string message;
 };
 
+// Converted bundles being written right now. Two conversions of the same
+// source -- the background pass and a level selection -- both write dest
+// through the same .part file, and interleaved they leave a corrupt bundle.
+// The second one waits for the first, then uses its result.
+std::mutex gConvertingMutex;
+std::condition_variable gConvertingDone;
+std::set<std::string> gConvertingDests;
+
+struct DestClaim {
+  std::string dest;
+  explicit DestClaim(std::string d) : dest(std::move(d)) {
+    std::unique_lock lock(gConvertingMutex);
+    gConvertingDone.wait(lock, [this] { return !gConvertingDests.contains(dest); });
+    gConvertingDests.insert(dest);
+  }
+  ~DestClaim() {
+    {
+      std::lock_guard lock(gConvertingMutex);
+      gConvertingDests.erase(dest);
+    }
+    gConvertingDone.notify_all();
+  }
+};
+
+BundleConversionOutcome RunBundleConversionUnclaimed(std::string const& source, std::string const& dest);
+
 BundleConversionOutcome RunBundleConversion(std::string const& source, std::string const& dest) {
+  DestClaim const claim(dest);
+  // Another conversion may have just written it.
+  if (CachedConversionIsCurrent(dest)) {
+    return {BundleConvert::Status::Success, "converted by another pass moments ago"};
+  }
+  return RunBundleConversionUnclaimed(source, dest);
+}
+
+BundleConversionOutcome RunBundleConversionUnclaimed(std::string const& source, std::string const& dest) {
   if (GetTranslateShadersOnConversion() && TranslationCrashedBefore(dest)) {
     auto const result = BundleConvert::ConvertToAndroid(source, dest);
     // Marked current, unlike the setting's retarget-only path: this is the
@@ -2831,6 +2873,15 @@ std::vector<std::filesystem::path> CollectCustomLevelDirectories() {
 }
 }
 
+// Whether a song is playing, for the background pass (0.14.12): a pass that
+// reconverts dozens of bundles took CPU, memory and storage from the song and
+// made every map stutter. It now waits between bundles while one plays.
+std::atomic<bool> gSongPlaying{false};
+
+void SetSongPlaying(bool playing) {
+  gSongPlaying.store(playing);
+}
+
 bool IsBulkPcBundleConversionRunning() {
   return gBulkConversionRunning.load();
 }
@@ -2848,6 +2899,8 @@ void StartBulkPcBundleConversion(std::function<void(BulkConversionProgress const
   auto levels = CollectCustomLevelDirectories();
 
   std::thread([onProgress = std::move(onProgress), levels = std::move(levels), force]() {
+    // Background work: below the game's own threads.
+    setpriority(PRIO_PROCESS, static_cast<id_t>(gettid()), 10);
     auto report = [&onProgress](BulkConversionProgress progress) {
       if (!onProgress) return;
       BSML::MainThreadScheduler::Schedule([onProgress, progress]() { onProgress(progress); });
@@ -2904,6 +2957,11 @@ void StartBulkPcBundleConversion(std::function<void(BulkConversionProgress const
           PaperLogger.info("Vivify bulk convert: discarded cached '{}' to reconvert", dest);
         }
 
+        if (gSongPlaying.load()) {
+          progress.status = "Paused while a song plays...";
+          report(progress);
+          while (gSongPlaying.load()) std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
         progress.status = level.filename().string();
         report(progress);
 
