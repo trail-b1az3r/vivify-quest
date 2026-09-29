@@ -17,6 +17,7 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <iterator>
 #include <thread>
 #include <vector>
 
@@ -84,7 +85,18 @@ namespace {
 //      Version 10 and 11 renamed the stereo keyword only in the program
 //      entries, which Unity does not select variants by; the eye cameras got
 //      the single-view programs and notes and most visuals were invisible
-constexpr int kBundleConversionVersion = 12;
+//  13  no stereo split at all: every converted map, 2019 and 2021, gets its
+//      stereo twin's multiview code in its plain variants, the layout that
+//      has worked on the headset since version 9. The headset never picked a
+//      variant renamed to STEREO_MULTIVIEW_ON (versions 10-12 in 2021
+//      bundles, 0.14.8 in 2019 ones), so split shaders drew nothing there;
+//      0.14.8's merged Hold My Hand kaleidoscope was one. Replay render mode
+//      converts single-view instead, into a cache of its own
+//  14  a geometry stage that cannot run (multiview forbids one) is dropped and
+//      the variant's vertex and fragment linked without it, with the object-
+//      to-clip transform added when the geometry stage was the one doing it.
+//      Version 13 left such variants on DirectX: grey stand-ins, or nothing
+constexpr int kBundleConversionVersion = 14;
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the
@@ -105,8 +117,8 @@ void DetectMultiviewKeyword() {
     gMultiviewKeyword.store(found ? 1 : 0);
     PaperLogger.info("Vivify: the game {} STEREO_MULTIVIEW_ON ({} global keywords); converted shaders get {}",
                      found ? "uses" : "does not use", keywords.size(),
-                     found ? "separate single-view and multiview programs"
-                           : "multiview programs in their plain variants");
+                     GetReplayRenderMode() ? "single-view programs only (replay render mode)"
+                                           : "multiview programs in their plain variants");
   } catch (...) {
     PaperLogger.warn("Vivify: could not list the game's shader keywords; converted shaders keep multiview "
                      "programs in their plain variants");
@@ -114,15 +126,12 @@ void DetectMultiviewKeyword() {
   }
 }
 
-bool SplitStereoVariants() {
-  return gMultiviewKeyword.load() == 1;
-}
-
-// What the cache marker records about how stereo variants were converted:
-// 1 = split, 2 = Unity 2019 bundles split too (0.14.8).
+// What the cache marker records about how a bundle's programs were built:
+// 0 = multiview in the plain variants (playing), 4 = single-view only
+// (replay render mode). 1-3 were the stereo splits of 0.14.0-0.14.8, which
+// the headset never drew; a bundle marked with one is converted again.
 int ConversionSplitMode() {
-  if (!SplitStereoVariants()) return 0;
-  return GetSplitUnity2019Shaders() ? 3 : 1;
+  return GetReplayRenderMode() ? 4 : 0;
 }
 
 std::string ConversionMarkerPath(std::string const& destPath) {
@@ -265,8 +274,9 @@ BundleConversionOutcome RunBundleConversion(std::string const& source, std::stri
     return {result.status, result.message};
   }
   BundleConvert::ShaderConversionOptions options;
-  options.separateStereoVariants = SplitStereoVariants();
-  options.splitUnity2019 = GetSplitUnity2019Shaders();
+  // Never split: see version 13 above.
+  options.separateStereoVariants = false;
+  options.singleViewOnly = GetReplayRenderMode();
   auto const conversion = BundleConvert::ConvertShadersToGles(source, dest, options);
   if (conversion.status == BundleConvert::Status::Success) MarkConversionCurrent(dest);
   // Logged here, on the worker, rather than folded into the message: a bundle
@@ -432,8 +442,11 @@ std::string ConvertedBundlePath(std::string const& sourceBundlePath) {
     prefix.push_back(safe ? c : '_');
   }
 
-  char suffix[32];
-  std::snprintf(suffix, sizeof(suffix), "_%016llx.vivify", static_cast<unsigned long long>(hash));
+  // Replay render mode's single-view conversions live beside the normal ones
+  // rather than replacing them, so switching modes does not reconvert.
+  char suffix[40];
+  std::snprintf(suffix, sizeof(suffix), GetReplayRenderMode() ? "_%016llx_replay.vivify" : "_%016llx.vivify",
+                static_cast<unsigned long long>(hash));
   return JoinPath(ConvertedBundleCacheDir(), prefix + suffix);
 }
 
@@ -723,6 +736,7 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
       _mainBundle = nullptr;
     }
     _preloadedBundlePath.clear();
+    ClearBlitCompanion();
   }
   ResetRuntime("left the level");
 
@@ -813,6 +827,7 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
     _selectedBundlePath = cachedConversion;
     SongCore::API::PlayButton::EnablePlayButton("Vivify");
     PreloadBundle(cachedConversion);
+    PrepareBlitCompanion(_selectedLevelPath, pcBundleFallback);
     return;
   }
 
@@ -962,6 +977,7 @@ void Runtime::ConvertPcBundleAsync(std::string const& levelPath, std::string con
     _selectedBundlePath = destPath;
     SongCore::API::PlayButton::EnablePlayButton("Vivify");
     PreloadBundle(destPath);
+    PrepareBlitCompanion(levelPath, sourceBundlePath);
     return;
   }
 
@@ -1011,8 +1027,123 @@ void Runtime::ConvertPcBundleAsync(std::string const& levelPath, std::string con
       _selectedBundlePath = loadPath;
       SongCore::API::PlayButton::EnablePlayButton("Vivify");
       PreloadBundle(loadPath);
+      if (loadPath != sourceBundlePath) PrepareBlitCompanion(levelPath, sourceBundlePath);
     });
   }).detach();
+}
+
+// ---------------------------------------------------------------------------
+// Blit companion
+//
+// A converted map's shaders hold multiview programs, which is what the eye
+// cameras need, and they cannot hold a single-view program beside them that
+// the headset would pick (the stereo keyword split never worked there; see
+// kBundleConversionVersion 13). But a blit into a single texture -- a screen
+// texture, a temporary -- is single-view, and a multiview program draws
+// nothing into it: those effects went missing.
+//
+// So a map that uses blits also gets a second, single-view conversion of its
+// PC bundle, with its internal files renamed so it loads beside the main one.
+// Its shaders, by name, are what BlitMaterialFor (VivifyPostProcessing.cpp)
+// swaps in for blits into single textures.
+// ---------------------------------------------------------------------------
+
+namespace {
+
+std::string BlitCompanionPath(std::string const& pcBundlePath) {
+  std::string path = ConvertedBundlePath(pcBundlePath);
+  size_t const dot = path.rfind(".vivify");
+  if (dot != std::string::npos) path.insert(dot, "_blit");
+  return path;
+}
+
+// Whether any difficulty of the level has a Blit event (or a legacy alias).
+// A plain text search: false positives only cost a conversion.
+bool LevelUsesBlits(std::string const& levelPath) {
+  std::error_code ec;
+  for (auto const& entry : std::filesystem::directory_iterator(levelPath, ec)) {
+    if (!entry.is_regular_file(ec)) continue;
+    std::string const name = entry.path().filename().string();
+    if (name.size() < 4 || name.substr(name.size() - 4) != ".dat") continue;
+    std::string lowered = name;
+    std::transform(lowered.begin(), lowered.end(), lowered.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    if (lowered == "info.dat") continue;
+    std::ifstream in(entry.path(), std::ios::binary);
+    std::string const text((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    for (char const* type : {"\"Blit\"", "\"PostProcess\"", "\"PostProcessing\"", "\"ScreenEffect\""}) {
+      if (text.find(type) != std::string::npos) return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
+
+void Runtime::PrepareBlitCompanion(std::string const& levelPath, std::string const& pcBundlePath) {
+  // Replay render mode's main conversion is single-view already.
+  if (GetReplayRenderMode() || !GetTranslateShadersOnConversion() || pcBundlePath.empty()) return;
+  if (_blitCompanionLevel == levelPath && !_singleViewShaders.empty()) return;
+  std::thread([this, levelPath, pcBundlePath]() {
+    if (!LevelUsesBlits(levelPath)) return;
+    std::string const companion = BlitCompanionPath(pcBundlePath);
+    if (!CachedConversionIsCurrent(companion)) {
+      BundleConvert::ShaderConversionOptions options;
+      options.singleViewOnly = true;
+      options.renameArchiveFiles = true;
+      auto const result = BundleConvert::ConvertShadersToGles(pcBundlePath, companion, options);
+      if (result.status != BundleConvert::Status::Success) {
+        PaperLogger.warn("Vivify Blit: the single-view build for blits into screen textures failed: {}",
+                         result.message);
+        return;
+      }
+      MarkConversionCurrent(companion);
+    }
+    BSML::MainThreadScheduler::Schedule([this, levelPath, companion]() {
+      if (levelPath != _selectedLevelPath) return;
+      LoadBlitCompanion(levelPath, companion);
+    });
+  }).detach();
+}
+
+void Runtime::LoadBlitCompanion(std::string const& levelPath, std::string const& companionPath) {
+  ClearBlitCompanion();
+  auto bundle = UnityEngine::AssetBundle::LoadFromFile(StringW(companionPath));
+  if (!IsAlive(bundle.unsafePtr())) {
+    PaperLogger.warn("Vivify Blit: the single-view build '{}' did not load", companionPath);
+    return;
+  }
+  // Blit materials are always assets of their own (a Blit event names one),
+  // so the materials are enough to reach every shader a blit can use.
+  auto* request = bundle->LoadAllAssetsAsync<UnityEngine::Material*>();
+  auto all = request != nullptr ? request->get_allAssets() : decltype(request->get_allAssets())(nullptr);
+  if (all) {
+    for (auto object : all) {
+      auto* material = il2cpp_utils::try_cast<UnityEngine::Material>(object.unsafePtr()).value_or(nullptr);
+      if (!IsAlive(material)) continue;
+      auto* shader = material->get_shader().unsafePtr();
+      if (!IsAlive(shader) || !shader->get_isSupported()) continue;
+      shader->set_hideFlags(UnityEngine::HideFlags::DontUnloadUnusedAsset);
+      _singleViewShaders.emplace(ShaderNameForLog(shader), shader);
+    }
+  }
+  bundle->Unload(false);
+  _blitCompanionLevel = levelPath;
+  PaperLogger.info("Vivify Blit: {} single-view shader(s) ready for blits into screen textures ('{}')",
+                   _singleViewShaders.size(), companionPath);
+}
+
+void Runtime::ClearBlitCompanion() {
+  for (auto const& [original, copy] : _singleViewBlitMaterials) {
+    if (IsAlive(copy)) UnityEngine::Object::Destroy(copy);
+  }
+  _singleViewBlitMaterials.clear();
+  // Let the next UnloadUnusedAssets take them.
+  for (auto const& [name, shader] : _singleViewShaders) {
+    if (IsAlive(shader)) shader->set_hideFlags(UnityEngine::HideFlags::None);
+  }
+  _singleViewShaders.clear();
+  _blitCompanionLevel.clear();
 }
 
 // ---------------------------------------------------------------------------
@@ -1041,7 +1172,10 @@ void Runtime::ConvertPcBundleAsync(std::string const& levelPath, std::string con
 void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string const& androidBundlePath) {
   _selectedBundlePath = androidBundlePath;
   int const generation = ++_graftGeneration;
-  if (!GetUsePcShadersForEmptyShaders() || !GetConvertPcBundlesOnDevice() || !GetTranslateShadersOnConversion()) {
+  // Always, whatever the conversion settings (0.14.10): an empty shader draws
+  // nothing, and its PC build is the only thing that can. Only turning shader
+  // translation off stops it, since the PC build is DirectX without it.
+  if (!GetTranslateShadersOnConversion()) {
     FinishAndroidBundleLoad(levelPath, androidBundlePath);
     return;
   }

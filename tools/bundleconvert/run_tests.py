@@ -560,7 +560,7 @@ def _ps(spi, flat=True):
 
 def pc_shader_2021(name, vertex_programs, fragment_programs, keyword_names=("STEREO_INSTANCING_ON",),
                    share_vertex=False, vertex_params=None, fragment_params_blobs=None, pass_names=None,
-                   entry_keywords=None, dependencies=()):
+                   entry_keywords=None, dependencies=(), geometry_programs=()):
     """A PC (Direct3D 11) shader in 2021.3.16's layout. *_programs: list of
     (dxbc, keyword index list). Every program gets a parameter blob after it,
     as 2021.3.10+ stores them, and fragments live in a second segment. With
@@ -586,11 +586,21 @@ def pc_shader_2021(name, vertex_programs, fragment_programs, keyword_names=("STE
         blob = (fragment_params_blobs[len(fragment_params) - 1] if fragment_params_blobs
                 else b"\x00\x00\x00\x00PARAMS-PS" + bytes([len(entries)]))
         entries.append((blob, 1))
-    store = mkshader.build_program_store([mkshader.segmented_chunks(entries)])
-    return mkshader2021.shader_body(name, [4], store, [{
+    geometry_refs, geometry_params = [], []
+    for code, keywords in geometry_programs:
+        geometry_refs.append(mkshader2021.player_sub_program(len(entries), 20, keywords))  # DX11 geometry SM5
+        entries.append((mkshader.sub_program(20, code), 1))
+        geometry_params.append(len(entries))
+        entries.append((b"\x00\x00\x00\x00PARAMS-GS" + bytes([len(entries)]), 1))
+    stages = {
         mkshader2021.VERTEX: {"player": [vertex_refs], "params": [vertex_param_list]},
         mkshader2021.FRAGMENT: {"player": [fragment_refs], "params": [fragment_params]},
-    }], keyword_names, pass_names=pass_names, dependencies=dependencies), entries
+    }
+    if geometry_refs:
+        stages[mkshader2021.GEOMETRY] = {"player": [geometry_refs], "params": [geometry_params]}
+    store = mkshader.build_program_store([mkshader.segmented_chunks(entries)])
+    return mkshader2021.shader_body(name, [4], store, [stages], keyword_names, pass_names=pass_names,
+                                    dependencies=dependencies), entries
 
 
 def inspect_converted(dst):
@@ -888,6 +898,77 @@ pc_shader_case("a 2019 SPI bundle split renames m_NameIndices in place: single-v
 pc_shader_case("a 2019 SPI bundle is not split unless asked",
                spi2019_body, lambda proc, fields, refusals, dst: None if fields.get("stereoSplit") == "0"
                and fields.get("stereoRemapped") == "2" else f"{fields}", mode="--shaders-split")
+
+# Replay render mode: every program single-view, no keyword renamed and no
+# plain variant pointed at its stereo twin, for single-screen cameras.
+def expect_single_view_only(proc, fields, refusals, dst):
+    if fields.get("linked") != "1" or fields.get("variantsRefused") != "0":
+        return f"linked={fields.get('linked')} variantsRefused={fields.get('variantsRefused')} {refusals}"
+    if fields.get("stereoSplit") != "0" or fields.get("stereoRemapped") != "0":
+        return f"stereoSplit={fields.get('stereoSplit')} stereoRemapped={fields.get('stereoRemapped')}"
+    _, refs, entries = inspect_converted(dst)
+    vertex = {r["keywords"]: r for r in refs if r["stage"] == "0"}
+    if set(vertex) != {"", "STEREO_INSTANCING_ON"}:
+        return f"vertex variants are {sorted(vertex)}; a keyword was renamed"
+    for keywords, ref in vertex.items():
+        code = entries[int(ref["blob"])]["code"]
+        if "num_views" in code or "GL_OVR_multiview" in code:
+            return f"variant {keywords!r} is a multiview program"
+    if "hlslcc_mtx4x4unity_MatrixVP" not in entries[int(vertex[""]["blob"])]["code"]:
+        return "the plain variant is not the plain program's own code"
+    return None
+
+
+pc_shader_case("replay render mode: every variant single-view, its own code, keywords untouched",
+               stereo_body, expect_single_view_only, mode="--shaders-single")
+
+# A geometry stage that cannot run here (multiview forbids one; this one does
+# not even translate) no longer leaves the variant on DirectX -- a grey
+# stand-in or nothing on the headset. Its vertex and fragment programs link
+# without it, and the geometry entry stays DirectX so Unity skips the stage.
+gs_body, _ = pc_shader_2021(
+    "Swifter/TriangleExplosion", [(_vs(spi=False), [])], [(_ps(spi=False), [])], keyword_names=(),
+    geometry_programs=[(b"not a geometry program", [])])
+
+
+def expect_geometry_dropped(proc, fields, refusals, dst):
+    if fields.get("linked") != "1" or fields.get("variantsRefused") != "0":
+        return f"linked={fields.get('linked')} variantsRefused={fields.get('variantsRefused')} {refusals}"
+    if fields.get("geometryDropped") != "1":
+        return f"geometryDropped={fields.get('geometryDropped')}"
+    _, refs, entries = inspect_converted(dst)
+    by_stage = {r["stage"]: r for r in refs}
+    if by_stage["2"]["type"] != "20":
+        return f"the geometry entry was relabelled (type {by_stage['2']['type']}); Unity would try to run it"
+    code = entries[int(by_stage["0"]["blob"])]["code"]
+    if "GEOMETRY" in code or "gl_Position" not in code:
+        return "the vertex+fragment program is not a plain linked one that writes gl_Position"
+    return None
+
+
+pc_shader_case("an untranslatable geometry stage is dropped; vertex and fragment still link",
+               gs_body, expect_geometry_dropped)
+
+# The blit companion: single-view programs in a bundle whose internal files
+# are renamed, so it can be loaded beside the main conversion.
+def expect_companion(proc, fields, refusals, dst):
+    problem = expect_single_view_only(proc, fields, refusals, dst)
+    if problem:
+        return problem
+    # Compared against a plain single-view conversion of the same source.
+    plain = os.path.join(TMP, "pc_plain.vivify")
+    run_shaders(os.path.join(TMP, "pc_src.vivify"), plain, "--shaders-single")
+    a = [n[3] for n in read_converted(plain)[3]]
+    b = [n[3] for n in read_converted(dst)[3]]
+    if len(a) != len(b) or any(x == y for x, y in zip(a, b) if "CAB-" in x):
+        return f"internal files not renamed: {a} -> {b}"
+    if any(len(x) != len(y) for x, y in zip(a, b)):
+        return f"a renamed path changed length: {a} -> {b}"
+    return None
+
+
+pc_shader_case("the blit companion is single-view with its internal files renamed",
+               stereo_body, expect_companion, mode="--shaders-companion")
 
 mono_body, _ = pc_shader_2021("Custom/Mono", [(_vs(spi=False, texcoord=False), [])],
                               [(_ps(spi=False, flat=False), [])], keyword_names=())

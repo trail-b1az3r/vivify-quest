@@ -11,6 +11,75 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.10] - 2026-09-29
+
+### Fixed
+- **Grey stand-ins and missing models on full Windows-bundle maps.** Shaders
+  with a geometry stage (743Aether's Wireframe Note, Triangle Explosion and
+  the like) were left untranslated. On the headset that meant a grey stand-in,
+  or nothing where only some variants failed.
+  - Multiview forbids a geometry stage, so these variants are now linked
+    without it. Where the geometry stage did the projection, the
+    object-to-clip transform is added to the vertex program.
+  - Effects built on the geometry stage (exploding triangles, wireframes) come
+    out as the plain mesh with the material's own shading, in its real
+    colours.
+  - Checked on 743Aether: all 35 of its shaders translate, up from 34, and
+    none of its variants are left on DirectX, down from 102. All 173
+    distinct programs compile and link under glslang, and every one writes a
+    position.
+- **Blit effects missing on converted maps.** A blit into a screen texture
+  or a temporary texture draws single-screen, where the two-eye programs of
+  a converted map's shaders draw nothing.
+  - Maps that use blits now also get a single-screen build of their
+    shaders, converted in the background and cached next to the main one.
+  - Any blit into a single texture uses a copy of its material on that
+    build, kept in step with the original every frame. Blits into the eye
+    texture keep the two-eye program.
+
+### Changed
+- **Broken Quest shaders are always replaced by their PC build.** The
+  **PC Shaders For Broken Quest Shaders** setting is gone, and Convert PC
+  Bundles On Device no longer stops it; only turning shader translation off
+  does. Hold My Hand's merge now uses the unsplit 2021 PC build (see 0.14.9).
+- Conversion cache version 14: converted maps reconvert once.
+
+## [0.14.9] - 2026-09-28
+
+### Fixed
+- **Converted maps broken by 0.14.8, and Hold My Hand's kaleidoscope drawing
+  nothing again.** Both had the same cause: the headset never picks a shader
+  variant whose stereo keyword was renamed to `STEREO_MULTIVIEW_ON`. That
+  held for all three places the rename was tried:
+  - the 2021 keyword table (0.14.0 onward);
+  - the 2019 programs (0.14.0–0.14.4);
+  - the 2019 pass table (0.14.8).
+
+  A split shader showed the headset only its single-screen program, which
+  draws nothing in two-eye rendering. The kaleidoscope worked in 0.14.7
+  because it came from the 2019 PC bundle, which wasn't split. In 0.14.8 it
+  came from the split 2021 one.
+  - Every converted map, 2019 and 2021, now gets the two-eye program in its
+    plain variants. That layout has worked on the headset since 0.13.3.
+  - Conversion cache version 13: maps (and Hold My Hand's merged bundle)
+    reconvert once.
+
+### Added
+- **Replay Render Mode (converted maps)** setting (off by default). It
+  replaces 0.14.8's Recordable 2019 Converted Maps. Turn it on while
+  rendering replays or recordings, and off to play.
+  - Converted maps are then built with single-screen programs only, which
+    replay and recording renderers can draw. The headset draws none of them.
+  - Each mode has its own cache, so switching converts each map at most once
+    per mode.
+
+### Removed
+- The **Recordable 2019 Converted Maps** setting.
+
+### Known issues
+- With no single-screen programs in play mode, offscreen blits and render
+  textures on converted maps can flicker again, as before 0.14.0.
+
 ## [0.14.8] - 2026-09-27
 
 ### Fixed

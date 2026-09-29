@@ -163,6 +163,7 @@ struct ShaderConversion {
   // the per-eye stereo maths that multiview needs.
   int stereoVariantsRemapped = 0;
   int stereoVariantsSplit = 0;  // separateStereoVariants: variants renamed to STEREO_MULTIVIEW_ON
+  int geometryStagesDropped = 0;  // variants linked without the geometry stage they could not use
   // Block-compressed textures seen, and how many had their m_IsReadable flag
   // set so the mod can decode them on device. A texture that is already
   // readable, or in a format a Quest can sample, is not counted as marked.
@@ -216,6 +217,21 @@ struct ShaderConversionOptions {
   // bundle's plain variants hold multiview programs: right for the headset,
   // invisible to single-screen cameras such as replay renderers.
   bool splitUnity2019 = false;
+  // Replay render mode: every program translated single-view, plain variants
+  // keeping their own code. For replay and recording renderers, which draw
+  // through one single-screen camera; the headset's two-eye pass draws none
+  // of it. Overrides the options above.
+  //
+  // (The splits above rename the stereo keyword to STEREO_MULTIVIEW_ON so the
+  // headset picks the multiview variant. On the headset it never did, in
+  // either the 2021 or the 2019 layout: 0.14.0-0.14.4 and 0.14.8 made
+  // converted maps invisible, and 0.14.8's merged Hold My Hand kaleidoscope
+  // drew nothing. The mod no longer turns them on.)
+  bool singleViewOnly = false;
+  // Give the output's internal files ("CAB-...") new names, so it can be
+  // loaded beside the main conversion of the same bundle. Its textures do not
+  // load (their streams name the old files); it is for its shaders.
+  bool renameArchiveFiles = false;
 };
 
 ShaderConversion ConvertShadersToGles(std::string const& sourcePath,

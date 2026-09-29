@@ -39,7 +39,7 @@ constexpr std::string_view kSubmitScoresConfigKey = "submitScoresOnVivifyMaps";
 constexpr std::string_view kTranslateShadersConfigKey = "translateShadersOnConversion";
 constexpr std::string_view kAudioLinkConfigKey = "audioLink";
 constexpr std::string_view kMapRealtimeShadowsConfigKey = "mapRealtimeShadows";
-constexpr std::string_view kSplit2019ConfigKey = "splitUnity2019ShadersForRecording";
+constexpr std::string_view kReplayRenderModeConfigKey = "replayRenderMode";
 constexpr std::string_view kPcShadersForEmptyConfigKey = "pcShadersForEmptyQuestShaders";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
 bool gMultipassRenderingEnabled = true;
@@ -84,7 +84,7 @@ bool gSubmitScores = true;
 bool gTranslateShaders = true;
 bool gAudioLink = true;
 bool gMapRealtimeShadows = false;
-bool gSplit2019 = true;
+bool gReplayRenderMode = false;
 bool gPcShadersForEmpty = true;
 // Which shader to use as the stand-in, by name, overriding the automatic pick.
 //
@@ -330,23 +330,21 @@ void RegisterModSettings() {
             GetTranslateShadersOnConversion(),
             [](bool value) { SetBoolConfigValue(kTranslateShadersConfigKey, value, gTranslateShaders); });
 
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"PC Shaders For Broken Quest Shaders",
-            GetUsePcShadersForEmptyShaders(),
-            [](bool value) { SetBoolConfigValue(kPcShadersForEmptyConfigKey, value, gPcShadersForEmpty); });
+        // "PC Shaders For Broken Quest Shaders" is no longer optional (0.14.10):
+        // empty Quest shaders always get their PC build.
 
         BSML::Lite::CreateToggle(
             container->get_transform(), u"Map Realtime Shadows",
             GetMapRealtimeShadows(),
             [](bool value) { SetBoolConfigValue(kMapRealtimeShadowsConfigKey, value, gMapRealtimeShadows); });
 
-        // Converted Unity 2019 maps get separate single-screen programs, so
-        // replay and recording renderers can draw them. Changing it redoes
-        // those conversions.
+        // Converted maps with single-screen programs only, for replay and
+        // recording renderers. Kept in a cache of its own, so switching back
+        // and forth converts each map only once per mode.
         BSML::Lite::CreateToggle(
-            container->get_transform(), u"Recordable 2019 Converted Maps",
-            GetSplitUnity2019Shaders(),
-            [](bool value) { SetBoolConfigValue(kSplit2019ConfigKey, value, gSplit2019); });
+            container->get_transform(), u"Replay Render Mode (converted maps)",
+            GetReplayRenderMode(),
+            [](bool value) { SetBoolConfigValue(kReplayRenderModeConfigKey, value, gReplayRenderMode); });
 
         BSML::Lite::CreateToggle(
             container->get_transform(), u"AudioLink",
@@ -497,8 +495,8 @@ bool GetMapRealtimeShadows() {
   return gMapRealtimeShadows;
 }
 
-bool GetSplitUnity2019Shaders() {
-  return gSplit2019;
+bool GetReplayRenderMode() {
+  return gReplayRenderMode;
 }
 
 bool GetUsePcShadersForEmptyShaders() {
@@ -531,7 +529,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kTranslateShadersConfigKey, true, gTranslateShaders);
   needsWrite |= EnsureBoolConfigValue(kAudioLinkConfigKey, true, gAudioLink);
   needsWrite |= EnsureBoolConfigValue(kMapRealtimeShadowsConfigKey, false, gMapRealtimeShadows);
-  needsWrite |= EnsureBoolConfigValue(kSplit2019ConfigKey, true, gSplit2019);
+  needsWrite |= EnsureBoolConfigValue(kReplayRenderModeConfigKey, false, gReplayRenderMode);
   needsWrite |= EnsureBoolConfigValue(kPcShadersForEmptyConfigKey, true, gPcShadersForEmpty);
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),
                                         gStandInShaderName);

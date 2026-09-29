@@ -88,7 +88,11 @@ int main(int argc, char** argv) {
   // --shaders-split2019 also splits Unity 2019 bundles (splitUnity2019).
   bool const split2019 = first == "--shaders-split2019";
   bool const split = first == "--shaders-split" || split2019;
-  bool const shaders = first == "--shaders" || split;
+  // --shaders-single is replay render mode (singleViewOnly).
+  // --shaders-companion is the blit companion: single-view, internal files renamed.
+  bool const companion = first == "--shaders-companion";
+  bool const single = first == "--shaders-single" || companion;
+  bool const shaders = first == "--shaders" || split || single;
   bool const flagged = repack || shaders;
   if (flagged && argc < 4) {
     std::fprintf(stderr, "usage: conv %s <src> <dst>\n", first.c_str());
@@ -101,15 +105,17 @@ int main(int argc, char** argv) {
     ShaderConversionOptions options;
     options.separateStereoVariants = split;
     options.splitUnity2019 = split2019;
+    options.singleViewOnly = single;
+    options.renameArchiveFiles = companion;
     ShaderConversion c = ConvertShadersToGles(src, dst, options);
     std::printf("status=%s\nmessage=%s\nseen=%d translated=%d leftAlone=%d refused=%d "
                 "programs=%d outBytes=%llu\ntexSeen=%d texReadable=%d texStreamed=%d\n"
-                "linked=%d variantsLinked=%d variantsRefused=%d stereoRemapped=%d stereoSplit=%d\n",
+                "linked=%d variantsLinked=%d variantsRefused=%d stereoRemapped=%d stereoSplit=%d geometryDropped=%d\n",
                 std::string(StatusText(c.status)).c_str(), c.message.c_str(), c.shadersSeen,
                 c.shadersTranslated, c.shadersLeftAlone, c.shadersRefused, c.programsTranslated,
                 (unsigned long long)c.outputBytes, c.texturesSeen, c.texturesMarkedReadable,
                 c.texturesStreamed, c.shadersLinked, c.variantsLinked, c.variantsRefused,
-                c.stereoVariantsRemapped, c.stereoVariantsSplit);
+                c.stereoVariantsRemapped, c.stereoVariantsSplit, c.geometryStagesDropped);
     for (auto const& refusal : c.refusals) std::printf("refusal=%s\n", refusal.c_str());
     for (auto const& refusal : c.variantRefusals) std::printf("variantRefusal=%s\n", refusal.c_str());
     return c.ok() ? 0 : 1;
