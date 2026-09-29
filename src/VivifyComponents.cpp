@@ -406,6 +406,12 @@ void RuntimeBehaviour::Update() {
     static int reported = 0;
     if (reported++ < 3) PaperLogger.error("Vivify AudioLink update threw a non-std exception");
   }
+  try {
+    Runtime::Instance().PollBlitCompanion();
+  } catch (...) {
+    static int reported = 0;
+    if (reported++ < 3) PaperLogger.error("Vivify Blit companion update threw");
+  }
   Runtime::Instance().Update();
 }
 

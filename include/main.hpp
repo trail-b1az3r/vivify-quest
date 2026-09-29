@@ -39,6 +39,8 @@ bool GetMapRealtimeShadows();
 // Replay render mode (0.14.9): converted maps get single-screen programs only,
 // for replay and recording renderers. The headset draws none of them.
 bool GetReplayRenderMode();
+// Experimental blit companion (0.14.10, opt-in from 0.14.11).
+bool GetBlitScreenTextureFix();
 // Whether a shader a map's Quest bundle shipped empty is replaced by the PC
 // build of it, converted (VivifyAssets.cpp).
 bool GetUsePcShadersForEmptyShaders();

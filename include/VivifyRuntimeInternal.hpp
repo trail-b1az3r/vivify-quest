@@ -9,6 +9,8 @@
 #include <optional>
 #include "VivifyTypes.hpp"
 #include "UnityEngine/Rendering/CommandBuffer.hpp"
+#include "UnityEngine/AssetBundleCreateRequest.hpp"
+#include "UnityEngine/AssetBundleRequest.hpp"
 #include "beatsaber-hook/shared/utils/typedefs-wrappers.hpp"
 
 namespace Vivify {
@@ -40,6 +42,8 @@ public:
   void LateLoad();
   void Update();
   void OnBehaviourDestroyed(RuntimeBehaviour* behaviour);
+  // Advances an in-flight blit companion load; once a frame, menu included.
+  void PollBlitCompanion();
   void SetPauseMenuActive(bool active);
   void RefreshMultipassRendering();
   void RefreshIsolationSettings();
@@ -492,6 +496,13 @@ private:
   std::unordered_map<std::string, UnityEngine::Shader*> _singleViewShaders;
   std::unordered_map<UnityEngine::Material*, UnityEngine::Material*> _singleViewBlitMaterials;
   std::string _blitCompanionLevel;
+  // An in-flight companion load (0.14.11: asynchronous, never on the main
+  // thread in one go -- the synchronous load froze converted maps).
+  SafePtr<UnityEngine::AssetBundleCreateRequest> _blitCompanionCreate;
+  SafePtr<UnityEngine::AssetBundleRequest> _blitCompanionAssets;
+  UnityEngine::AssetBundle* _blitCompanionBundle = nullptr;
+  std::string _blitCompanionLoadingLevel;
+  std::string _blitCompanionLoadingPath;
   std::string _graftLevelPath;
   int _graftGeneration = 0;
   int _graftApplied = 0;
