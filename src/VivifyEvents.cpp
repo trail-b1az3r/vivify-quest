@@ -59,6 +59,7 @@ bool Runtime::EnsureBeatmapPrepared(GlobalNamespace::BeatmapCallbacksController*
 
 void Runtime::PrepareBeatmap(CustomJSONData::CustomBeatmapData* beatmapData, float triggerTime) {
   ResetRuntime();
+  SetSongPlaying(true);
   _currentBeatmapData = beatmapData;
   _beatmapAD = nullptr;
   _audioTimeSyncController = UnityEngine::Object::FindObjectOfType<GlobalNamespace::AudioTimeSyncController*>();

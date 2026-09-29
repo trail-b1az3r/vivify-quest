@@ -11,6 +11,28 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.12] - 2026-09-29
+
+### Fixed
+- **Every map stuttering after an update or a Force Reconvert All.** The
+  background pass reconverted every converted map one after another, at full
+  speed, even while a song played. Your 0.14.11 log shows it redoing all 58.
+  - It now runs at low priority and waits between maps while a song is
+    playing.
+- **Two conversions of the same map at once.** If you selected a map while
+  the background pass was converting it, both wrote the same file, which
+  could leave a corrupt bundle. The second conversion now waits for the
+  first and uses its result.
+- **Raymarchers that write their own depth drew over everything on
+  converted maps.** Their depth was written in OpenGL's −1..1 clip range
+  where a 0..1 depth is expected, so anything nearer than halfway sat in
+  front of the whole scene. It is now mapped. (Hold My Hand's kaleidoscope
+  doesn't write depth, so this does not change it.)
+
+### Changed
+- Conversion cache version 15. Converted maps reconvert once, in the
+  background and throttled.
+
 ## [0.14.11] - 2026-09-29
 
 ### Fixed
