@@ -46,6 +46,10 @@ What changed in each release is in [CHANGELOG.md](CHANGELOG.md).
 2. Dependencies (SongCore, CustomJSONData, Tracks, BSML and the rest) are
    installed by your mod manager.
 
+The newest untested build of `main` is the rolling
+[nightly](https://github.com/trail-b1az3r/vivify-quest/releases/tag/nightly)
+pre-release. It is rebuilt daily when something has changed.
+
 ## Settings
 
 All settings are in **Mod Settings → Vivify**.
