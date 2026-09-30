@@ -14,7 +14,7 @@ It is built from several community Quest ports merged into one (see
 What changed in each release is in [CHANGELOG.md](CHANGELOG.md).
 
 ## Features
-
+- DO NOT USE NIGHTLY
 - FULLY WORKING RAYMARCHING SHADERES IN HOLD MY HAND (only in 0.14.7+)
 
 - **Vivify events on Quest:** custom prefabs, materials, blits, cameras,
