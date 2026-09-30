@@ -103,7 +103,12 @@ namespace {
 //  15  a shader's own depth output (SV_Depth) is mapped from OpenGL's -1..1
 //      clip depth to the 0..1 window depth. Version 14 wrote it unmapped, and
 //      raymarchers that write depth drew in front of the whole scene
-constexpr int kBundleConversionVersion = 15;
+//  16  back to how 0.14.7 (version 12) converted, which looked best on the
+//      headset: 2021 bundles split into single-view and STEREO_MULTIVIEW_ON
+//      variants when the game uses that keyword, 2019 bundles not split, no
+//      geometry-stage fallback, depth written as it was. Versions 13-15 drew
+//      converted maps worse and started songs with longer freezes
+constexpr int kBundleConversionVersion = 16;
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the
@@ -125,6 +130,7 @@ void DetectMultiviewKeyword() {
     PaperLogger.info("Vivify: the game {} STEREO_MULTIVIEW_ON ({} global keywords); converted shaders get {}",
                      found ? "uses" : "does not use", keywords.size(),
                      GetReplayRenderMode() ? "single-view programs only (replay render mode)"
+                     : found               ? "separate single-view and multiview programs (2021 bundles)"
                                            : "multiview programs in their plain variants");
   } catch (...) {
     PaperLogger.warn("Vivify: could not list the game's shader keywords; converted shaders keep multiview "
@@ -133,12 +139,18 @@ void DetectMultiviewKeyword() {
   }
 }
 
+// Whether 2021 bundles are split into single-view and multiview variants: when
+// the game uses STEREO_MULTIVIEW_ON, as 0.14.7 did.
+bool SplitStereoVariants() {
+  return gMultiviewKeyword.load() == 1;
+}
+
 // What the cache marker records about how a bundle's programs were built:
-// 0 = multiview in the plain variants (playing), 4 = single-view only
-// (replay render mode). 1-3 were the stereo splits of 0.14.0-0.14.8, which
-// the headset never drew; a bundle marked with one is converted again.
+// 0 = multiview in the plain variants, 1 = 2021 bundles split,
+// 4 = single-view only (replay render mode).
 int ConversionSplitMode() {
-  return GetReplayRenderMode() ? 4 : 0;
+  if (GetReplayRenderMode()) return 4;
+  return SplitStereoVariants() ? 1 : 0;
 }
 
 std::string ConversionMarkerPath(std::string const& destPath) {
@@ -316,8 +328,10 @@ BundleConversionOutcome RunBundleConversionUnclaimed(std::string const& source, 
     return {result.status, result.message};
   }
   BundleConvert::ShaderConversionOptions options;
-  // Never split: see version 13 above.
-  options.separateStereoVariants = false;
+  // As 0.14.7 did (version 16 above): 2021 bundles split, 2019 not.
+  options.separateStereoVariants = SplitStereoVariants();
+  options.splitUnity2019 = false;
+  options.dropUntranslatableGeometry = false;
   options.singleViewOnly = GetReplayRenderMode();
   auto const conversion = BundleConvert::ConvertShadersToGles(source, dest, options);
   if (conversion.status == BundleConvert::Status::Success) MarkConversionCurrent(dest);
@@ -1270,7 +1284,7 @@ void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string c
     FinishAndroidBundleLoad(levelPath, androidBundlePath);
     return;
   }
-  if (CachedConversionIsCurrent(merged)) {
+  if (false && CachedConversionIsCurrent(merged)) {  // merging is off; see ConvertPcForGraft
     PaperLogger.info("Vivify: loading the Quest bundle with its broken shaders replaced by their PC builds: '{}'",
                      merged);
     FinishAndroidBundleLoad(levelPath, merged);
@@ -1385,11 +1399,12 @@ void Runtime::ConvertPcForGraft(std::string const& levelPath, std::string const&
       ok = result.status == BundleConvert::Status::Success;
       message = result.message;
     }
-    // Merge the PC builds into the Quest bundle itself: the materials that use
-    // the empty shaders then load with a working one, with no run-time
-    // swapping, and the result is cached for every later play.
+    // Merging the PC builds into the Quest bundle itself (0.14.6-0.14.12) is
+    // off: the merged kaleidoscope drew nothing in 0.14.8, while 0.14.7's
+    // stand-in at load (GraftShadersFrom) drew it. Kept for a later look.
+    constexpr bool kMergeIntoQuestBundle = false;
     bool mergedOk = false;
-    if (ok) {
+    if (ok && kMergeIntoQuestBundle) {
       std::error_code ec;
       std::filesystem::create_directories(std::filesystem::path(merged).parent_path(), ec);
       auto const merge = BundleConvert::MergeShadersInto(androidBundlePath, converted, names, merged);

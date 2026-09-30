@@ -946,8 +946,21 @@ def expect_geometry_dropped(proc, fields, refusals, dst):
     return None
 
 
-pc_shader_case("an untranslatable geometry stage is dropped; vertex and fragment still link",
+# The mod keeps this off (0.14.13); the option still works when asked for.
+os.environ["VIVIFY_DROP_GEOMETRY"] = "1"
+pc_shader_case("an untranslatable geometry stage is dropped when asked; vertex and fragment still link",
                gs_body, expect_geometry_dropped)
+del os.environ["VIVIFY_DROP_GEOMETRY"]
+
+
+def expect_geometry_kept(proc, fields, refusals, dst):
+    if fields.get("geometryDropped") != "0" or fields.get("variantsRefused") == "0":
+        return f"geometryDropped={fields.get('geometryDropped')} variantsRefused={fields.get('variantsRefused')}"
+    return None
+
+
+pc_shader_case("by default an untranslatable geometry stage leaves its variant as it was",
+               gs_body, expect_geometry_kept)
 
 # The blit companion: single-view programs in a bundle whose internal files
 # are renamed, so it can be loaded beside the main conversion.

@@ -232,6 +232,11 @@ struct ShaderConversionOptions {
   // loaded beside the main conversion of the same bundle. Its textures do not
   // load (their streams name the old files); it is for its shaders.
   bool renameArchiveFiles = false;
+  // Link a variant whose geometry stage cannot run (multiview forbids one)
+  // without it, adding the object-to-clip transform when the geometry stage
+  // did the projection, instead of leaving the variant on DirectX. Off in the
+  // mod since 0.14.13: maps looked better and started faster without it.
+  bool dropUntranslatableGeometry = false;
 };
 
 ShaderConversion ConvertShadersToGles(std::string const& sourcePath,

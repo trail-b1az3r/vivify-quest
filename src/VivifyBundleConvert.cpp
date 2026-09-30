@@ -1826,7 +1826,7 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
                                     bool& dropped) {
       dropped = false;
       if (link(vertex, fragment, geometry, source, version)) return true;
-      if (geometry == nullptr) return false;
+      if (geometry == nullptr || !conversionOptions.dropUntranslatableGeometry) return false;
       auto const* vs = translate(vertex);
       auto const* fs = fragment != nullptr ? translate(*fragment) : nullptr;
       if (vs == nullptr || (fragment != nullptr && fs == nullptr)) return false;
