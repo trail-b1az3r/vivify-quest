@@ -81,6 +81,10 @@ All settings are in **Mod Settings → Vivify**.
 **Reset Vivify (clean slate)** (press twice) deletes all converted maps,
 crash-guard notes and PC bundles Vivify downloaded into Quest maps, and resets
 the settings; use it when maps are stuck grey or broken after an update.
+**Redownload All Vivify Maps** (press twice) lists your Vivify maps in
+`Mods/Vivify/VivifyMaps.txt`, then replaces each with a fresh BeatSaver
+download; use it when maps stay broken even on an older version. A map is
+only replaced once its new copy has downloaded.
 **Convert All PC Bundles Now** converts every PC map up front. **Force
 Reconvert All (ignore cache)** redoes every conversion.
 

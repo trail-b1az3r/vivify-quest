@@ -3,6 +3,7 @@
 #include "VivifyBundleConvert.hpp"
 #include "VivifyTextureDecode.hpp"
 #include "VivifyReport.hpp"
+#include "VivifyZip.hpp"
 #include "UnityEngine/Texture2D.hpp"
 #include "UnityEngine/AssetBundleRequest.hpp"
 #include "UnityEngine/HideFlags.hpp"
@@ -13,6 +14,7 @@
 #include <set>
 #include "UnityEngine/TextureFormat.hpp"
 #include <atomic>
+#include <cctype>
 #include <chrono>
 #include <cstdio>
 #include <cstring>
@@ -1624,15 +1626,34 @@ void Runtime::DownloadBundleTo(uint32_t checksum, std::string const& destPath, s
         BSML::MainThreadScheduler::Schedule([callback] { callback(false); });
         return;
       }
-      std::ofstream os(bundlePath, std::ios::binary);
-      bool const written = os.is_open();
-      if (written) {
-        os.write(reinterpret_cast<char const*>(dataRes.responseData->data()),
-                 static_cast<std::streamsize>(dataRes.responseData->size()));
-        os.close();
+      // Written beside the destination and renamed into place, and only if it
+      // is an asset bundle at all: the destination is the song folder, which
+      // outlives this mod's version. A download cut short by the game being
+      // closed, or an error page served as a success, used to stay there as
+      // the map's bundle -- and every version, older ones included, then
+      // loaded it.
+      auto const& bytes = *dataRes.responseData;
+      static constexpr char kSignature[] = "UnityFS";
+      bool const isBundle = bytes.size() > sizeof(kSignature) &&
+                            std::memcmp(bytes.data(), kSignature, sizeof(kSignature) - 1) == 0;
+      bool written = false;
+      if (isBundle) {
+        std::string const partPath = bundlePath + ".part";
+        std::ofstream os(partPath, std::ios::binary | std::ios::trunc);
+        if (os.is_open()) {
+          os.write(reinterpret_cast<char const*>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
+          os.close();
+          std::error_code ec;
+          if (os.good()) std::filesystem::rename(partPath, bundlePath, ec);
+          written = os.good() && !ec;
+          if (!written) std::filesystem::remove(partPath, ec);
+        }
+      } else {
+        PaperLogger.warn("Vivify bundle download failed: '{}' is not an asset bundle ({} bytes); not saved",
+                         bundlePath, bytes.size());
       }
       PaperLogger.info("Vivify bundle download complete: path='{}' bytes={} written={}",
-                         bundlePath, dataRes.responseData->size(), BoolText(written));
+                         bundlePath, bytes.size(), BoolText(written));
       BSML::MainThreadScheduler::Schedule([callback, written] { callback(written); });
     });
   });
@@ -3033,6 +3054,7 @@ void Runtime::RepairLoadedMaterialShaders() {
 
 namespace {
 std::atomic<bool> gBulkConversionRunning{false};
+std::atomic<bool> gRedownloadRunning{false};
 
 std::vector<std::filesystem::path> CollectCustomLevelDirectories() {
   std::vector<std::filesystem::path> roots;
@@ -3086,8 +3108,8 @@ void Runtime::ReleaseBundlesForReset() {
 std::atomic<bool> gCleanSlateRunning{false};
 
 void ResetToCleanSlate(std::function<void(std::string const&)> onDone) {
-  if (gBulkConversionRunning.load()) {
-    if (onDone) onDone("A conversion pass is running; reset after it finishes");
+  if (gBulkConversionRunning.load() || gRedownloadRunning.load()) {
+    if (onDone) onDone("A conversion or redownload is running; reset after it finishes");
     return;
   }
   if (gCleanSlateRunning.exchange(true)) return;
@@ -3118,11 +3140,273 @@ void ResetToCleanSlate(std::function<void(std::string const&)> onDone) {
   }).detach();
 }
 
+// ---------------------------------------------------------------------------
+// Redownload every Vivify map from BeatSaver
+// ---------------------------------------------------------------------------
+
+namespace {
+struct VivifyMapEntry {
+  std::filesystem::path folder;
+  std::string key;   // BeatSaver key, from a "<key> (<song> - <mapper>)" folder name
+  std::string hash;  // SongCore's hash of the installed version
+  std::string songName;
+  std::string result;
+};
+
+// A map is a Vivify map when it carries any Vivify bundle, or its info file
+// names Vivify (a requirement or suggestion) or declares asset bundles.
+bool IsVivifyLevelFolder(std::filesystem::path const& folder) {
+  std::error_code ec;
+  for (auto const& entry : std::filesystem::directory_iterator(folder, ec)) {
+    if (ec) break;
+    if (entry.path().extension() == ".vivify") return true;
+  }
+  for (char const* name : {"Info.dat", "info.dat"}) {
+    std::ifstream is(folder / name, std::ios::binary);
+    if (!is.is_open()) continue;
+    std::string const text((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
+    return text.find("\"Vivify\"") != std::string::npos || text.find("assetBundle\"") != std::string::npos;
+  }
+  return false;
+}
+
+std::string KeyFromFolderName(std::string const& name) {
+  size_t length = 0;
+  while (length < name.size() && std::isxdigit(static_cast<unsigned char>(name[length]))) length++;
+  if (length == 0 || length > 8) return {};
+  size_t rest = length;
+  while (rest < name.size() && name[rest] == ' ') rest++;
+  if (rest < name.size() && name[rest] != '(') return {};
+  std::string key = name.substr(0, length);
+  for (auto& c : key) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+  return key;
+}
+
+std::string HashFromLevelId(std::string const& levelId) {
+  std::string_view constexpr prefix = "custom_level_";
+  if (levelId.rfind(prefix, 0) != 0) return {};
+  std::string hash = levelId.substr(prefix.size(), 40);
+  if (hash.size() != 40) return {};
+  for (auto& c : hash) {
+    if (!std::isxdigit(static_cast<unsigned char>(c))) return {};
+    c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+  }
+  return hash;
+}
+
+void WriteVivifyMapsList(std::vector<VivifyMapEntry> const& maps) {
+  std::ofstream os(VivifyMapsListPath(), std::ios::trunc);
+  os << "# Vivify maps found by \"Redownload All Vivify Maps\"\n"
+        "# key\thash\tfolder\tsong\tresult\n";
+  for (auto const& map : maps) {
+    os << (map.key.empty() ? "-" : map.key) << '\t' << (map.hash.empty() ? "-" : map.hash) << '\t'
+       << map.folder.string() << '\t' << map.songName << '\t' << (map.result.empty() ? "pending" : map.result)
+       << '\n';
+  }
+}
+
+// The download URL for a map: the exact installed version when BeatSaver
+// still has it (looked up by hash), else the map's current version by key.
+std::string ResolveBeatSaverDownload(VivifyMapEntry& map, std::string& error) {
+  auto fromDocument = [&map](rapidjson::Document const& doc) -> std::string {
+    if (!doc.IsObject()) return {};
+    if (map.key.empty() && doc.HasMember("id") && doc["id"].IsString()) map.key = doc["id"].GetString();
+    if (!doc.HasMember("versions") || !doc["versions"].IsArray()) return {};
+    std::string latest;
+    for (auto const& version : doc["versions"].GetArray()) {
+      if (!version.IsObject() || !version.HasMember("downloadURL") || !version["downloadURL"].IsString()) continue;
+      std::string const url = version["downloadURL"].GetString();
+      if (latest.empty()) latest = url;
+      if (!map.hash.empty() && version.HasMember("hash") && version["hash"].IsString()) {
+        std::string hash = version["hash"].GetString();
+        for (auto& c : hash) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        if (hash == map.hash) return url;
+      }
+    }
+    return latest;
+  };
+  auto lookup = [&](std::string const& url) -> std::string {
+    auto response = WebUtils::Get<WebUtils::StringResponse>(WebUtils::URLOptions(url));
+    if (!response.IsSuccessful() || !response.responseData.has_value()) {
+      error = "BeatSaver lookup failed (http " + std::to_string(response.get_HttpCode()) + ")";
+      return {};
+    }
+    rapidjson::Document doc;
+    doc.Parse(response.responseData->c_str());
+    if (doc.HasParseError()) {
+      error = "BeatSaver sent an unreadable answer";
+      return {};
+    }
+    std::string const download = fromDocument(doc);
+    if (download.empty()) error = "BeatSaver lists no download";
+    return download;
+  };
+  std::string download;
+  if (!map.hash.empty()) download = lookup("https://api.beatsaver.com/maps/hash/" + map.hash);
+  if (download.empty() && !map.key.empty()) download = lookup("https://api.beatsaver.com/maps/id/" + map.key);
+  if (download.empty() && map.key.empty() && map.hash.empty()) error = "no BeatSaver key or hash";
+  return download;
+}
+
+bool RedownloadOne(VivifyMapEntry& map, std::string& error) {
+  std::string const url = ResolveBeatSaverDownload(map, error);
+  if (url.empty()) return false;
+  PaperLogger.info("Vivify redownload: '{}' from '{}'", map.folder.string(), url);
+  // Vivify maps run to hundreds of MB: well past WebUtils' 10 s default.
+  auto response = WebUtils::Get<WebUtils::DataResponse>(WebUtils::URLOptions(url, std::nullopt, 900));
+  if (!response.IsSuccessful() || !response.responseData.has_value()) {
+    error = "download failed (http " + std::to_string(response.get_HttpCode()) + ", curl " +
+            std::to_string(response.get_CurlStatus()) + ")";
+    return false;
+  }
+
+  std::error_code ec;
+  std::filesystem::path const staging = map.folder.parent_path() / (map.folder.filename().string() + ".vivify-new");
+  std::filesystem::remove_all(staging, ec);
+  if (!ExtractZip(*response.responseData, staging, error)) {
+    std::filesystem::remove_all(staging, ec);
+    error = "unzip failed: " + error;
+    return false;
+  }
+  // BeatSaver zips are flat; one packed with its folder is taken from inside.
+  std::filesystem::path root = staging;
+  if (!FileExists((staging / "Info.dat").string()) && !FileExists((staging / "info.dat").string())) {
+    std::vector<std::filesystem::path> children;
+    for (auto const& entry : std::filesystem::directory_iterator(staging, ec)) children.push_back(entry.path());
+    if (children.size() == 1 && std::filesystem::is_directory(children[0], ec)) root = children[0];
+  }
+  if (!FileExists((root / "Info.dat").string()) && !FileExists((root / "info.dat").string())) {
+    std::filesystem::remove_all(staging, ec);
+    error = "download has no Info.dat";
+    return false;
+  }
+
+  std::filesystem::remove_all(map.folder, ec);
+  if (ec) {
+    std::filesystem::remove_all(staging, ec);
+    error = "could not delete the old folder: " + ec.message();
+    return false;
+  }
+  std::filesystem::rename(root, map.folder, ec);
+  if (ec) {
+    // Rename fails across filesystems; copy instead.
+    std::error_code copyError;
+    std::filesystem::copy(root, map.folder, std::filesystem::copy_options::recursive, copyError);
+    if (copyError) {
+      error = "could not move the new copy into place: " + copyError.message() + " (it is in '" +
+              root.string() + "')";
+      return false;
+    }
+  }
+  std::filesystem::remove_all(staging, ec);
+  return true;
+}
+}
+
+std::string VivifyMapsListPath() {
+  return "/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyMaps.txt";
+}
+
+void RedownloadVivifyMaps(std::function<void(std::string const&)> onStatus) {
+  auto status = [onStatus](std::string const& text) {
+    if (!onStatus) return;
+    BSML::MainThreadScheduler::Schedule([onStatus, text]() { onStatus(text); });
+  };
+  if (gBulkConversionRunning.load() || gCleanSlateRunning.load()) {
+    if (onStatus) onStatus("A conversion or reset is running; try again after it finishes");
+    return;
+  }
+  if (gRedownloadRunning.exchange(true)) {
+    if (onStatus) onStatus("Already redownloading");
+    return;
+  }
+
+  // Everything that touches SongCore or Unity happens here, on the main thread.
+  Runtime::Instance().ReleaseBundlesForReset();
+  std::vector<VivifyMapEntry> maps;
+  for (auto const& folder : CollectCustomLevelDirectories()) {
+    if (folder.filename().string().ends_with(".vivify-new")) continue;
+    if (!IsVivifyLevelFolder(folder)) continue;
+    VivifyMapEntry map;
+    map.folder = folder;
+    map.key = KeyFromFolderName(folder.filename().string());
+    map.songName = folder.filename().string();
+    if (auto* level = SongCore::API::Loading::GetLevelByPath(folder)) {
+      map.hash = HashFromLevelId(static_cast<std::string>(level->levelID));
+      std::string const song = static_cast<std::string>(level->songName);
+      if (!song.empty()) map.songName = song;
+    }
+    for (auto& c : map.songName) {
+      if (c == '\t' || c == '\n' || c == '\r') c = ' ';
+    }
+    maps.push_back(std::move(map));
+  }
+  if (maps.empty()) {
+    gRedownloadRunning.store(false);
+    if (onStatus) onStatus("No Vivify maps found");
+    return;
+  }
+
+  std::thread([maps = std::move(maps), status]() mutable {
+    std::error_code ec;
+    std::filesystem::create_directories(std::filesystem::path(VivifyMapsListPath()).parent_path(), ec);
+    WriteVivifyMapsList(maps);
+    PaperLogger.info("Vivify redownload: {} Vivify map(s) listed in '{}'", maps.size(), VivifyMapsListPath());
+    // Converted copies of the old downloads are dead weight once the maps are
+    // replaced; every map converts fresh from what BeatSaver serves.
+    std::filesystem::remove_all(ConvertedBundleCacheDir(), ec);
+
+    int done = 0;
+    int failed = 0;
+    for (size_t i = 0; i < maps.size(); i++) {
+      auto& map = maps[i];
+      status("Redownloading " + std::to_string(i + 1) + "/" + std::to_string(maps.size()) + ": " +
+             map.songName);
+      std::string error;
+      bool ok = false;
+      try {
+        ok = RedownloadOne(map, error);
+      } catch (std::exception const& e) {
+        error = e.what();
+      }
+      if (ok) {
+        done++;
+        map.result = "redownloaded";
+      } else {
+        failed++;
+        map.result = "failed: " + error + " (old copy kept)";
+        PaperLogger.warn("Vivify redownload: '{}' failed: {}", map.folder.string(), error);
+      }
+      WriteVivifyMapsList(maps);
+      std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    }
+
+    std::string summary = "Redownloaded " + std::to_string(done) + " of " + std::to_string(maps.size()) +
+                          " Vivify map(s)";
+    if (failed > 0) summary += "; " + std::to_string(failed) + " failed (kept as they were, see VivifyMaps.txt)";
+    PaperLogger.info("Vivify redownload: {}", summary);
+    BSML::MainThreadScheduler::Schedule([status, summary]() {
+      gRedownloadRunning.store(false);
+      SongCore::API::Loading::RefreshSongs(false);
+      status(summary + ". Songs refreshing.");
+    });
+  }).detach();
+}
+
 bool IsBulkPcBundleConversionRunning() {
   return gBulkConversionRunning.load();
 }
 
 void StartBulkPcBundleConversion(std::function<void(BulkConversionProgress const&)> onProgress, bool force) {
+  if (gRedownloadRunning.load()) {
+    if (onProgress) {
+      BulkConversionProgress progress;
+      progress.finished = true;
+      progress.status = "Maps are redownloading; convert after that finishes";
+      onProgress(progress);
+    }
+    return;
+  }
   bool expected = false;
   if (!gBulkConversionRunning.compare_exchange_strong(expected, true)) {
     return;

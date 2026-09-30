@@ -52,4 +52,18 @@ void SetSongPlaying(bool playing);
 // onDone gets a one-line summary on the main thread. Refused while a bulk
 // conversion is running.
 void ResetToCleanSlate(std::function<void(std::string const&)> onDone);
+
+// "Redownload All Vivify Maps": writes the installed Vivify maps (BeatSaver
+// key, song hash, folder, song name) to VivifyMaps.txt, deletes the converted
+// bundle cache, then downloads each map from BeatSaver again and puts it in
+// place of its folder, so every Vivify map is back to exactly what its mapper
+// uploaded. A map's old folder is deleted only once its fresh copy has
+// downloaded and extracted, so a failed download never loses a map; the list
+// file records the outcome of each. Runs off the main thread; onStatus gets
+// progress and a final summary on the main thread. Refused while a bulk
+// conversion or reset is running.
+void RedownloadVivifyMaps(std::function<void(std::string const&)> onStatus);
+
+// The list RedownloadVivifyMaps writes.
+std::string VivifyMapsListPath();
 }
