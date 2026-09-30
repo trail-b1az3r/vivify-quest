@@ -108,7 +108,12 @@ namespace {
 //      variants when the game uses that keyword, 2019 bundles not split, no
 //      geometry-stage fallback, depth written as it was. Versions 13-15 drew
 //      converted maps worse and started songs with longer freezes
-constexpr int kBundleConversionVersion = 16;
+//  17  variants a Quest never selects (GPU instancing, which converted
+//      materials have turned off, and unsplit single-pass stereo) are left
+//      untranslated: in 743Aether 573 of 774 program references, 336 linked
+//      variants down to 90. Far less for Unity to load and the driver to
+//      compile when a converted map starts
+constexpr int kBundleConversionVersion = 17;
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the
@@ -357,6 +362,10 @@ BundleConversionOutcome RunBundleConversionUnclaimed(std::string const& source, 
   // Opt-in (setting): links a variant whose geometry stage cannot run without
   // it, instead of leaving it to a grey stand-in. Off by default since 0.14.13.
   options.dropUntranslatableGeometry = GetDrawGeometryShaderEffects();
+  // See version 17 above. Converted maps only: a donor build for a Quest
+  // map's empty shaders keeps everything, since Quest materials keep their
+  // instancing.
+  options.skipQuestUnusedVariants = true;
   options.singleViewOnly = GetReplayRenderMode();
   auto const conversion = BundleConvert::ConvertShadersToGles(source, dest, options);
   if (conversion.status == BundleConvert::Status::Success) MarkConversionCurrent(dest);
@@ -1176,6 +1185,7 @@ void Runtime::PrepareBlitCompanion(std::string const& levelPath, std::string con
       BundleConvert::ShaderConversionOptions options;
       options.singleViewOnly = true;
       options.renameArchiveFiles = true;
+      options.skipQuestUnusedVariants = true;  // same materials as the main conversion
       auto const result = BundleConvert::ConvertShadersToGles(pcBundlePath, companion, options);
       if (result.status != BundleConvert::Status::Success) {
         PaperLogger.warn("Vivify Blit: the single-view build for blits into screen textures failed: {}",

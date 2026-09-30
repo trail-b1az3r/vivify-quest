@@ -11,6 +11,27 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.18] - 2026-09-30
+
+### Fixed
+- **Converted maps freezing.** A PC bundle carries shader variants a Quest
+  can never use: GPU-instanced copies (Vivify turns instancing off on
+  converted materials) and, in Unity 2019 maps, an extra stereo copy. The
+  converter translated all of them, leaving that much more for the game to
+  load and the GPU to compile.
+  - In 743Aether, 573 of 774 shader program references were unusable.
+  - Those are now left out of the conversion: 743Aether goes from 336
+    linked variants to 90, and from 156 distinct programs to 86. Every
+    shader keeps its usable variants, and all 86 programs compile under
+    glslang.
+  - Unity 2021 maps with the stereo split (Dialtone) are unchanged.
+  - Conversion cache version 17: converted maps reconvert once, smaller.
+
+### Changed
+- **Prepare Shaders Before Playing** is now off for everyone. Its saved
+  setting was reset (new config key), because it may itself have been what
+  froze converted maps in the menu.
+
 ## [0.14.17] - 2026-09-30
 
 ### Added

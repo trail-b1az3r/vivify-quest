@@ -983,6 +983,27 @@ def expect_companion(proc, fields, refusals, dst):
 pc_shader_case("the blit companion is single-view with its internal files renamed",
                stereo_body, expect_companion, mode="--shaders-companion")
 
+# Variants a Quest never selects are left untranslated when asked (the mod
+# asks for converted maps): here the stereo copy of an unsplit 2019 shader.
+# The plain variant still gets its stereo twin's multiview code.
+def expect_unused_skipped(proc, fields, refusals, dst):
+    if fields.get("linked") != "1" or fields.get("skipped") != "2":
+        return f"linked={fields.get('linked')} skipped={fields.get('skipped')} {refusals}"
+    _, refs, entries = inspect_converted(dst)
+    gles = [r for r in refs if r["type"] in ("3", "4")]
+    if len(gles) != 2:
+        return f"{len(gles)} GLES refs; expected just the plain vertex and fragment"
+    vertex = [r for r in gles if r["stage"] == "0"][0]
+    if "num_views" not in entries[int(vertex["blob"])]["code"]:
+        return "the plain vertex variant lost its twin's multiview code"
+    return None
+
+
+os.environ["VIVIFY_SKIP_UNUSED"] = "1"
+pc_shader_case("variants a Quest never selects are left untranslated; the plain one keeps multiview code",
+               spi2019_body, expect_unused_skipped)
+del os.environ["VIVIFY_SKIP_UNUSED"]
+
 mono_body, _ = pc_shader_2021("Custom/Mono", [(_vs(spi=False, texcoord=False), [])],
                               [(_ps(spi=False, flat=False), [])], keyword_names=())
 

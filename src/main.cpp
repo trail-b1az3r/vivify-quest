@@ -44,7 +44,9 @@ constexpr std::string_view kAudioLinkConfigKey = "audioLink";
 constexpr std::string_view kMapRealtimeShadowsConfigKey = "mapRealtimeShadows";
 constexpr std::string_view kReplayRenderModeConfigKey = "replayRenderMode";
 constexpr std::string_view kBlitFixConfigKey = "blitScreenTextureFix";
-constexpr std::string_view kPrepareShadersConfigKey = "prepareShadersBeforePlaying";
+// Renamed in 0.14.18 so every install starts with it off: 0.14.15 saved it
+// as on, and it may be what froze converted maps in the menu.
+constexpr std::string_view kPrepareShadersConfigKey = "prepareShadersInMenu";
 constexpr std::string_view kGeometryEffectsConfigKey = "drawGeometryShaderEffects";
 constexpr std::string_view kPcShadersForEmptyConfigKey = "pcShadersForEmptyQuestShaders";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
@@ -92,7 +94,7 @@ bool gAudioLink = true;
 bool gMapRealtimeShadows = false;
 bool gReplayRenderMode = false;
 bool gBlitFix = false;
-bool gPrepareShaders = true;
+bool gPrepareShaders = false;
 bool gGeometryEffects = false;
 bool gPcShadersForEmpty = true;
 // Which shader to use as the stand-in, by name, overriding the automatic pick.
@@ -603,7 +605,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kMapRealtimeShadowsConfigKey, false, gMapRealtimeShadows);
   needsWrite |= EnsureBoolConfigValue(kReplayRenderModeConfigKey, false, gReplayRenderMode);
   needsWrite |= EnsureBoolConfigValue(kBlitFixConfigKey, false, gBlitFix);
-  needsWrite |= EnsureBoolConfigValue(kPrepareShadersConfigKey, true, gPrepareShaders);
+  needsWrite |= EnsureBoolConfigValue(kPrepareShadersConfigKey, false, gPrepareShaders);
   needsWrite |= EnsureBoolConfigValue(kGeometryEffectsConfigKey, false, gGeometryEffects);
   needsWrite |= EnsureBoolConfigValue(kPcShadersForEmptyConfigKey, true, gPcShadersForEmpty);
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),
