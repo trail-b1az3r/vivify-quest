@@ -107,6 +107,7 @@ int main(int argc, char** argv) {
     options.splitUnity2019 = split2019;
     options.singleViewOnly = single;
     options.renameArchiveFiles = companion;
+    options.dropUntranslatableGeometry = std::getenv("VIVIFY_DROP_GEOMETRY") != nullptr;
     ShaderConversion c = ConvertShadersToGles(src, dst, options);
     std::printf("status=%s\nmessage=%s\nseen=%d translated=%d leftAlone=%d refused=%d "
                 "programs=%d outBytes=%llu\ntexSeen=%d texReadable=%d texStreamed=%d\n"

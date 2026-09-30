@@ -946,8 +946,21 @@ def expect_geometry_dropped(proc, fields, refusals, dst):
     return None
 
 
-pc_shader_case("an untranslatable geometry stage is dropped; vertex and fragment still link",
+# The mod keeps this off (0.14.13); the option still works when asked for.
+os.environ["VIVIFY_DROP_GEOMETRY"] = "1"
+pc_shader_case("an untranslatable geometry stage is dropped when asked; vertex and fragment still link",
                gs_body, expect_geometry_dropped)
+del os.environ["VIVIFY_DROP_GEOMETRY"]
+
+
+def expect_geometry_kept(proc, fields, refusals, dst):
+    if fields.get("geometryDropped") != "0" or fields.get("variantsRefused") == "0":
+        return f"geometryDropped={fields.get('geometryDropped')} variantsRefused={fields.get('variantsRefused')}"
+    return None
+
+
+pc_shader_case("by default an untranslatable geometry stage leaves its variant as it was",
+               gs_body, expect_geometry_kept)
 
 # The blit companion: single-view programs in a bundle whose internal files
 # are renamed, so it can be loaded beside the main conversion.
@@ -1165,7 +1178,7 @@ else:
 # to compile it for Android (Hold My Hand's raymarched kaleidoscope). --merge
 # puts the translated PC build of that shader into the Quest bundle, under the
 # Quest shader's own path ID, so the materials that use it get a working one.
-def merge_case(quest_dependencies, expect_reference, expect_note):
+def merge_case(quest_dependencies, expect_reference, expect_note, donor_mode="--shaders"):
     global fails, cases
     cases += 1
     name = "Custom/PoofShaders/Kaleidoscope"
@@ -1180,7 +1193,7 @@ def merge_case(quest_dependencies, expect_reference, expect_note):
     pc_sf = mkshader.serialized_file_with_shaders([pc_body], sf_version=22,
                                                   shader_tree=mkshader2021.RealTypeTree())
     build(donor_src, sf_bytes=[pc_sf], with_resource=False)
-    proc, fields, refusals = run_shaders(donor_src, donor)
+    proc, fields, refusals = run_shaders(donor_src, donor, donor_mode)
     if fields.get("linked") != "1":
         print(f"FAIL merge: the PC donor did not convert: {fields} {refusals}")
         fails += 1
@@ -1206,8 +1219,8 @@ def merge_case(quest_dependencies, expect_reference, expect_note):
         platforms, refs, entries = inspect_converted(merged)
         if platforms is None or "9" not in platforms.split(","):
             problem = f"merged shader platforms are {platforms}"
-        elif not any("num_views" in e["code"] for e in entries.values()):
-            problem = "the merged shader has no translated multiview program"
+        elif not all("num_views" in entries[int(r["blob"])]["code"] for r in refs if r["stage"] == "0"):
+            problem = "a merged vertex variant is not a multiview program; the headset would draw nothing"
     if problem is None:
         # The dependency in the donor body is cleared: the Quest file's
         # m_Dependencies entry reads back as a null reference.
@@ -1232,6 +1245,31 @@ def merge_case(quest_dependencies, expect_reference, expect_note):
 merge_case([(1, 7)], (1, 7), False)
 # Counts differ: the reference is cleared, and the log says so.
 merge_case([], (0, 0), True)
+
+
+# A donor converted with the stereo split has single-view plain variants,
+# which drew nothing when merged (0.14.8). It is refused; the mod converts
+# its donors unsplit.
+def merge_split_donor_refused():
+    global fails, cases
+    cases += 1
+    name = "Custom/PoofShaders/Kaleidoscope"
+    donor = os.path.join(TMP, "merge_pc_split.vivify")
+    run_shaders(os.path.join(TMP, "merge_pc.vivify"), donor, "--shaders-split")
+    merged = os.path.join(TMP, "merge_split_out.vivify")
+    if os.path.exists(merged):
+        os.remove(merged)
+    proc = subprocess.run([CONV, "--merge", os.path.join(TMP, "merge_quest.vivify"), donor, merged, name],
+                          capture_output=True, text=True)
+    if proc.returncode == 0 or "merged=0" not in proc.stdout or "stereo split" not in proc.stdout \
+            or os.path.exists(merged):
+        print(f"FAIL merge: a split donor was not refused\n{proc.stdout}{proc.stderr}")
+        fails += 1
+    else:
+        print("ok   a donor converted with the stereo split is refused")
+
+
+merge_split_donor_refused()
 
 if GLSLANG is None:
     print("note: glslangValidator not installed; linked programs were not compiled")

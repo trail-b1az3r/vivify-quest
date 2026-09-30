@@ -103,7 +103,12 @@ namespace {
 //  15  a shader's own depth output (SV_Depth) is mapped from OpenGL's -1..1
 //      clip depth to the 0..1 window depth. Version 14 wrote it unmapped, and
 //      raymarchers that write depth drew in front of the whole scene
-constexpr int kBundleConversionVersion = 15;
+//  16  back to how 0.14.7 (version 12) converted, which looked best on the
+//      headset: 2021 bundles split into single-view and STEREO_MULTIVIEW_ON
+//      variants when the game uses that keyword, 2019 bundles not split, no
+//      geometry-stage fallback, depth written as it was. Versions 13-15 drew
+//      converted maps worse and started songs with longer freezes
+constexpr int kBundleConversionVersion = 16;
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the
@@ -125,6 +130,7 @@ void DetectMultiviewKeyword() {
     PaperLogger.info("Vivify: the game {} STEREO_MULTIVIEW_ON ({} global keywords); converted shaders get {}",
                      found ? "uses" : "does not use", keywords.size(),
                      GetReplayRenderMode() ? "single-view programs only (replay render mode)"
+                     : found               ? "separate single-view and multiview programs (2021 bundles)"
                                            : "multiview programs in their plain variants");
   } catch (...) {
     PaperLogger.warn("Vivify: could not list the game's shader keywords; converted shaders keep multiview "
@@ -133,12 +139,18 @@ void DetectMultiviewKeyword() {
   }
 }
 
+// Whether 2021 bundles are split into single-view and multiview variants: when
+// the game uses STEREO_MULTIVIEW_ON, as 0.14.7 did.
+bool SplitStereoVariants() {
+  return gMultiviewKeyword.load() == 1;
+}
+
 // What the cache marker records about how a bundle's programs were built:
-// 0 = multiview in the plain variants (playing), 4 = single-view only
-// (replay render mode). 1-3 were the stereo splits of 0.14.0-0.14.8, which
-// the headset never drew; a bundle marked with one is converted again.
+// 0 = multiview in the plain variants, 1 = 2021 bundles split,
+// 4 = single-view only (replay render mode).
 int ConversionSplitMode() {
-  return GetReplayRenderMode() ? 4 : 0;
+  if (GetReplayRenderMode()) return 4;
+  return SplitStereoVariants() ? 1 : 0;
 }
 
 std::string ConversionMarkerPath(std::string const& destPath) {
@@ -316,8 +328,10 @@ BundleConversionOutcome RunBundleConversionUnclaimed(std::string const& source, 
     return {result.status, result.message};
   }
   BundleConvert::ShaderConversionOptions options;
-  // Never split: see version 13 above.
-  options.separateStereoVariants = false;
+  // As 0.14.7 did (version 16 above): 2021 bundles split, 2019 not.
+  options.separateStereoVariants = SplitStereoVariants();
+  options.splitUnity2019 = false;
+  options.dropUntranslatableGeometry = false;
   options.singleViewOnly = GetReplayRenderMode();
   auto const conversion = BundleConvert::ConvertShadersToGles(source, dest, options);
   if (conversion.status == BundleConvert::Status::Success) MarkConversionCurrent(dest);
@@ -1370,29 +1384,61 @@ void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string c
   }).detach();
 }
 
+namespace {
+
+// The PC build of a Quest map's empty shaders is converted on its own,
+// without the stereo split: its plain variants hold the multiview programs
+// the headset draws. The split build (0.14.8's merge used the map's normal
+// conversion) put single-view programs in the plain variants, and the merged
+// kaleidoscope drew nothing; 0.14.7's stand-in at load, from an unsplit 2019
+// build, drew it.
+std::string UnsplitDonorPath(std::string const& pcBundlePath) {
+  std::string path = ConvertedBundlePath(pcBundlePath);
+  size_t const dot = path.rfind(".vivify");
+  if (dot != std::string::npos) path.insert(dot, "_donor");
+  return path;
+}
+
+bool DonorIsCurrent(std::string const& donorPath) {
+  std::error_code ec;
+  if (!std::filesystem::exists(donorPath, ec) || ec) return false;
+  std::ifstream marker(ConversionMarkerPath(donorPath));
+  int version = 0;
+  return static_cast<bool>(marker >> version) && version == kBundleConversionVersion;
+}
+
+}  // namespace
+
 void Runtime::ConvertPcForGraft(std::string const& levelPath, std::string const& androidBundlePath,
                                 std::string const& pcBundlePath, std::vector<std::string> const& names) {
   int const generation = _graftGeneration;
-  std::string const converted = ConvertedBundlePath(pcBundlePath);
+  std::string const donor = UnsplitDonorPath(pcBundlePath);
   std::string const merged = ConvertedBundlePath(androidBundlePath);
-  bool const cached = CachedConversionIsCurrent(converted);
+  bool const cached = DonorIsCurrent(donor);
   SongCore::API::PlayButton::DisablePlayButton("Vivify", cached ? "Merging PC shaders..." : "Converting PC shaders...");
-  std::thread([this, generation, levelPath, androidBundlePath, pcBundlePath, converted, merged, names, cached]() {
+  std::thread([this, generation, levelPath, androidBundlePath, pcBundlePath, donor, merged, names, cached]() {
     bool ok = cached;
     std::string message;
     if (!cached) {
-      auto const result = RunBundleConversion(pcBundlePath, converted);
+      BundleConvert::ShaderConversionOptions options;
+      options.separateStereoVariants = false;  // see UnsplitDonorPath
+      auto const result = BundleConvert::ConvertShadersToGles(pcBundlePath, donor, options);
       ok = result.status == BundleConvert::Status::Success;
       message = result.message;
+      if (ok) {
+        std::ofstream marker(ConversionMarkerPath(donor), std::ios::out | std::ios::trunc);
+        if (marker) marker << kBundleConversionVersion << " 0\n";
+      }
     }
-    // Merge the PC builds into the Quest bundle itself: the materials that use
-    // the empty shaders then load with a working one, with no run-time
-    // swapping, and the result is cached for every later play.
+    // Merge the PC builds into the Quest bundle itself, so the materials load
+    // with working shaders and nothing is swapped at run time. Only possible
+    // between bundles of the same Unity version; otherwise the stand-in at
+    // load below does the job.
     bool mergedOk = false;
     if (ok) {
       std::error_code ec;
       std::filesystem::create_directories(std::filesystem::path(merged).parent_path(), ec);
-      auto const merge = BundleConvert::MergeShadersInto(androidBundlePath, converted, names, merged);
+      auto const merge = BundleConvert::MergeShadersInto(androidBundlePath, donor, names, merged);
       mergedOk = merge.status == BundleConvert::Status::Success;
       if (mergedOk) MarkConversionCurrent(merged);
       std::string skipped;
@@ -1402,19 +1448,19 @@ void Runtime::ConvertPcForGraft(std::string const& levelPath, std::string const&
         PaperLogger.info("Vivify: {} ('{}' -> '{}', {} bytes){}{}", merge.message, androidBundlePath, merged,
                          merge.outputBytes, skipped.empty() ? "" : "; ", skipped);
       } else {
-        PaperLogger.warn("Vivify: could not merge the PC shaders into the Quest bundle: {}{}{}; standing them in "
-                         "at load instead", merge.message, skipped.empty() ? "" : "; ", skipped);
+        PaperLogger.info("Vivify: the PC shaders are stood in at load instead of merged: {}{}{}", merge.message,
+                         skipped.empty() ? "" : "; ", skipped);
       }
     }
-    BSML::MainThreadScheduler::Schedule([this, generation, levelPath, androidBundlePath, converted, merged, names,
-                                         ok, mergedOk, message]() {
+    BSML::MainThreadScheduler::Schedule([this, generation, levelPath, androidBundlePath, donor, merged, names, ok,
+                                         mergedOk, message]() {
       if (generation != _graftGeneration || levelPath != _selectedLevelPath) return;
       if (mergedOk) {
         FinishAndroidBundleLoad(levelPath, merged);
         return;
       }
       if (ok) {
-        GraftShadersFrom(levelPath, converted, names);
+        GraftShadersFrom(levelPath, donor, names);
       } else {
         PaperLogger.warn("Vivify: converting the map's PC bundle for its shaders failed: {}", message);
       }

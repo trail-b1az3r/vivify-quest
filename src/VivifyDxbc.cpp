@@ -2316,22 +2316,13 @@ void GlslEmitter::WriteDest(Instruction const& instruction, Operand const& dest,
   if (_failed) return;
   if (name == "null") return;
 
-  if (name == "gl_FragDepth") {
-    // A shader that writes its own depth (raymarchers, mostly) computes it as
-    // clip z / w with the projection Unity hands it at run time -- on GLES an
-    // OpenGL one, whose z/w runs from -1 (near) to 1 (far). DirectX takes
-    // that value as the depth directly; OpenGL wants a [0, 1] window depth.
-    // Written unmapped, everything nearer than halfway sat at depth 0, in
-    // front of the whole scene. The saturate the DirectX code applied is for
-    // the mapped value.
-    std::string depth = "(" + expression + ") * 0.5 + 0.5";
-    if (instruction.saturate) depth = "clamp(" + depth + ", 0.0, 1.0)";
-    Line(name + " = " + depth + ";");
-    return;
-  }
-
   std::string value = expression;
   if (instruction.saturate) value = "clamp(" + value + ", 0.0, 1.0)";
+
+  if (name == "gl_FragDepth") {
+    Line(name + " = " + value + ";");
+    return;
+  }
   // gl_Layer and the coverage mask are ints in GLSL and typeless registers in
   // DXBC, so the bits have to be reinterpreted rather than converted.
   if (name == "gl_Layer" || name == "gl_SampleMask[0]") {

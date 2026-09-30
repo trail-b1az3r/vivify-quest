@@ -11,6 +11,47 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.14] - 2026-09-30
+
+### Fixed
+- **The merge of PC shaders into Quest bundles is back, fixed.** It fills
+  shaders a Quest bundle shipped empty, such as Hold My Hand's kaleidoscope.
+  - Why the 0.14.8 merge drew nothing: it merged the PC bundle's normal
+    conversion, which splits 2021 shaders. The merged shader's plain
+    variants were then single-screen programs, and the headset's two-eye
+    pass draws nothing with those.
+  - The load-time stand-in that worked in 0.14.7 had used an unsplit build.
+    Merges and the stand-in now both use their own unsplit conversion of the
+    PC bundle, cached as `…_donor.vivify`.
+  - The converter now refuses a split build as a merge donor, and a new test
+    checks every merged vertex variant is a two-eye program.
+  - A merge still needs the PC and Quest bundles to come from the same Unity
+    version. Otherwise the shader is stood in at load, as in 0.14.7, and the
+    log says which one happened.
+
+## [0.14.13] - 2026-09-30
+
+### Changed
+- **Converted maps are built the way 0.14.7 built them.** You found that
+  version looked best, and 0.14.8–0.14.12 looked worse and froze longer at
+  song start.
+  - The stereo split is back for Unity 2021 bundles, when the game uses
+    `STEREO_MULTIVIEW_ON`. My 0.14.9 claim that it never worked was wrong.
+    Unity 2019 bundles are still not split.
+  - The geometry-stage fallback (0.14.10) is off. Its extra programs are
+    compiled when a song starts. The converter keeps it as an option,
+    unused by the mod.
+  - The shader depth mapping (0.14.12) is reverted.
+  - Hold My Hand: the kaleidoscope is swapped in at load, as in 0.14.7. The
+    merge into the Quest bundle is switched off; it drew nothing in 0.14.8.
+  - Conversion cache version 16. Converted maps reconvert once, when you
+    next select them.
+- Kept from 0.14.8–0.14.12, since none of them change how a map is drawn:
+  - Replay Render Mode (off by default);
+  - the blit fix (off by default);
+  - the background-pass throttling;
+  - one conversion per file at a time.
+
 ## [0.14.12] - 2026-09-29
 
 ### Fixed
