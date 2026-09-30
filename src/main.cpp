@@ -41,6 +41,7 @@ constexpr std::string_view kAudioLinkConfigKey = "audioLink";
 constexpr std::string_view kMapRealtimeShadowsConfigKey = "mapRealtimeShadows";
 constexpr std::string_view kReplayRenderModeConfigKey = "replayRenderMode";
 constexpr std::string_view kBlitFixConfigKey = "blitScreenTextureFix";
+constexpr std::string_view kPrepareShadersConfigKey = "prepareShadersBeforePlaying";
 constexpr std::string_view kPcShadersForEmptyConfigKey = "pcShadersForEmptyQuestShaders";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
 bool gMultipassRenderingEnabled = true;
@@ -87,6 +88,7 @@ bool gAudioLink = true;
 bool gMapRealtimeShadows = false;
 bool gReplayRenderMode = false;
 bool gBlitFix = false;
+bool gPrepareShaders = true;
 bool gPcShadersForEmpty = true;
 // Which shader to use as the stand-in, by name, overriding the automatic pick.
 //
@@ -355,6 +357,13 @@ void RegisterModSettings() {
             GetBlitScreenTextureFix(),
             [](bool value) { SetBoolConfigValue(kBlitFixConfigKey, value, gBlitFix); });
 
+        // Compiles a converted map's shaders in the menu after selecting it,
+        // a little each frame, instead of all at once when the song starts.
+        BSML::Lite::CreateToggle(
+            container->get_transform(), u"Prepare Shaders Before Playing",
+            GetPrepareShadersBeforePlaying(),
+            [](bool value) { SetBoolConfigValue(kPrepareShadersConfigKey, value, gPrepareShaders); });
+
         BSML::Lite::CreateToggle(
             container->get_transform(), u"AudioLink",
             GetAudioLinkEnabled(),
@@ -512,6 +521,10 @@ bool GetBlitScreenTextureFix() {
   return gBlitFix;
 }
 
+bool GetPrepareShadersBeforePlaying() {
+  return gPrepareShaders;
+}
+
 bool GetUsePcShadersForEmptyShaders() {
   return gPcShadersForEmpty;
 }
@@ -544,6 +557,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kMapRealtimeShadowsConfigKey, false, gMapRealtimeShadows);
   needsWrite |= EnsureBoolConfigValue(kReplayRenderModeConfigKey, false, gReplayRenderMode);
   needsWrite |= EnsureBoolConfigValue(kBlitFixConfigKey, false, gBlitFix);
+  needsWrite |= EnsureBoolConfigValue(kPrepareShadersConfigKey, true, gPrepareShaders);
   needsWrite |= EnsureBoolConfigValue(kPcShadersForEmptyConfigKey, true, gPcShadersForEmpty);
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),
                                         gStandInShaderName);

@@ -41,6 +41,8 @@ bool GetMapRealtimeShadows();
 bool GetReplayRenderMode();
 // Experimental blit companion (0.14.10, opt-in from 0.14.11).
 bool GetBlitScreenTextureFix();
+// Compile converted maps' shaders in the menu before play (0.14.15).
+bool GetPrepareShadersBeforePlaying();
 // Whether a shader a map's Quest bundle shipped empty is replaced by the PC
 // build of it, converted (VivifyAssets.cpp).
 bool GetUsePcShadersForEmptyShaders();

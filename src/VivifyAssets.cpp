@@ -214,23 +214,44 @@ bool TranslationCrashedBefore(std::string const& destPath) {
   std::ifstream marker(CrashedMarkerPath(destPath));
   int version = 0;
   if (!(marker >> version)) return false;
-  return version == kBundleConversionVersion;
+  int strikes = 2;  // markers from before 0.14.15 carry no count; they meant it
+  marker >> strikes;
+  return version == kBundleConversionVersion && strikes >= 2;
 }
 
-// Turns a leftover .loading marker into a .crashed one and throws away the
-// bundle that caused it, so the next conversion of it is retarget-only.
-// Returns true when that happened.
+// Turns a leftover .loading marker into a strike in the .crashed one. The
+// first strike only keeps the record: a load that never finished is as often
+// the game closed during a long first shader compile, or by hand, as a real
+// crash, and giving up on translation at once left maps grey for good. The
+// second strike in a row throws the bundle away, so the next conversion of it
+// is retarget-only. Returns true when that happened.
 bool RecordInterruptedLoad(std::string const& destPath) {
   if (destPath.empty() || !FileExists(LoadingMarkerPath(destPath))) return false;
-  PaperLogger.error("Vivify: the last load of converted bundle '{}' never finished -- the game most "
-                    "likely crashed loading its translated shaders. Reconverting it without shader "
-                    "translation so the level can be played (stand-in shading)", destPath);
   std::error_code ec;
+  std::filesystem::remove(LoadingMarkerPath(destPath), ec);
+  int strikes = 0;
+  {
+    std::ifstream marker(CrashedMarkerPath(destPath));
+    int version = 0;
+    if (marker >> version && version == kBundleConversionVersion && !(marker >> strikes)) strikes = 0;
+    if (version != kBundleConversionVersion) strikes = 0;
+  }
+  strikes++;
+  {
+    std::ofstream crashed(CrashedMarkerPath(destPath), std::ios::out | std::ios::trunc);
+    if (crashed) crashed << kBundleConversionVersion << " " << strikes << "\n";
+  }
+  if (strikes < 2) {
+    PaperLogger.warn("Vivify: the last load of converted bundle '{}' never finished (the game crashed, or was "
+                     "closed during it). Trying the translated shaders once more; a second time, it is "
+                     "reconverted without translation", destPath);
+    return false;
+  }
+  PaperLogger.error("Vivify: the last two loads of converted bundle '{}' never finished -- the game most "
+                    "likely crashes loading its translated shaders. Reconverting it without shader "
+                    "translation so the level can be played (stand-in shading)", destPath);
   std::filesystem::remove(destPath, ec);
   std::filesystem::remove(ConversionMarkerPath(destPath), ec);
-  std::filesystem::remove(LoadingMarkerPath(destPath), ec);
-  std::ofstream crashed(CrashedMarkerPath(destPath), std::ios::out | std::ios::trunc);
-  if (crashed) crashed << kBundleConversionVersion << "\n";
   return true;
 }
 
@@ -1897,6 +1918,106 @@ void Runtime::PreloadBundle(std::string const& bundlePath) {
   // Loaded and every asset realised. Play re-arms it, since that is when the
   // driver first compiles the programs.
   DisarmLoadGuard();
+  StartShaderWarmup(bundlePath);
+}
+
+// ---------------------------------------------------------------------------
+// Prepare Shaders Before Playing
+//
+// The GPU driver compiles a shader variant the first time something draws
+// with it. A converted PC map has hundreds of translated variants, and all of
+// that used to land on the first frames of the song: a 0.14.7 log shows the
+// game stalled for 88 seconds at song start, long enough to be closed as hung
+// (and the crash guard then made the map grey). Here the same compiling is
+// done in the menu, right after the map is selected and its bundle loaded:
+// every material the bundle holds is used once, a couple a frame, with and
+// without the stereo keyword the eye cameras turn on. The play button says
+// how far it has got.
+// ---------------------------------------------------------------------------
+
+void Runtime::StartShaderWarmup(std::string const& bundlePath) {
+  _warmupQueue.clear();
+  _warmupIndex = 0;
+  if (!GetPrepareShadersBeforePlaying()) return;
+  if (bundlePath.rfind(ConvertedBundleCacheDir(), 0) != 0) return;  // only bundles this mod translated
+  std::set<UnityEngine::Material*> seen;
+  auto add = [&](UnityEngine::Material* material) {
+    if (IsAlive(material) && seen.insert(material).second) _warmupQueue.push_back(material);
+  };
+  for (auto const& [path, asset] : _assets) {
+    if (!IsAlive(asset)) continue;
+    if (auto* material = il2cpp_utils::try_cast<UnityEngine::Material>(asset).value_or(nullptr)) {
+      add(material);
+    } else if (auto* gameObject = il2cpp_utils::try_cast<UnityEngine::GameObject>(asset).value_or(nullptr)) {
+      auto renderers = gameObject->GetComponentsInChildren<UnityEngine::Renderer*>(true);
+      for (int i = 0; i < renderers.size(); i++) {
+        if (!IsAlive(renderers[i])) continue;
+        auto materials = renderers[i]->get_sharedMaterials();
+        if (!materials) continue;
+        for (int j = 0; j < materials.size(); j++) add(materials[j].unsafePtr());
+      }
+    }
+  }
+  if (_warmupQueue.empty()) return;
+  _warmupLevel = _selectedLevelPath;
+  _warmupBundle = bundlePath;
+  _warmupStarted = UnityEngine::Time::get_realtimeSinceStartup();
+  // A driver crash while compiling counts against the bundle like one in play.
+  ArmLoadGuard(bundlePath);
+  SongCore::API::PlayButton::DisablePlayButton(
+      "Vivify", "Preparing shaders 0/" + std::to_string(_warmupQueue.size()) + "...");
+  PaperLogger.info("Vivify: preparing the shaders of {} material(s) before play ('{}')", _warmupQueue.size(),
+                   bundlePath);
+}
+
+void Runtime::PollShaderWarmup() {
+  if (_warmupQueue.empty()) return;
+  if (_warmupLevel != _selectedLevelPath) {
+    // Another level was picked; its own load starts its own preparation.
+    _warmupQueue.clear();
+    _warmupIndex = 0;
+    return;
+  }
+  // The stereo keyword the eye cameras turn on, so the variants they use are
+  // compiled too (a split 2021 shader keeps its two-eye program under it).
+  std::optional<UnityEngine::Rendering::GlobalKeyword> multiview;
+  if (auto keywords = UnityEngine::Shader::GetAllGlobalKeywords()) {
+    for (auto const& keyword : keywords) {
+      if (keyword.m_Name && std::string(keyword.m_Name) == "STEREO_MULTIVIEW_ON") multiview = keyword;
+    }
+  }
+  // Slowly: two materials a frame, so the menu keeps drawing.
+  constexpr size_t kPerFrame = 2;
+  for (size_t n = 0; n < kPerFrame && _warmupIndex < _warmupQueue.size(); n++) {
+    auto* material = _warmupQueue[_warmupIndex++];
+    if (!IsAlive(material)) continue;
+    try {
+      int const passes = material->get_passCount();
+      for (int p = 0; p < passes; p++) material->SetPass(p);
+      if (multiview.has_value()) {
+        auto keyword = multiview.value();
+        bool const was = UnityEngine::Shader::IsKeywordEnabled(::ByRef<UnityEngine::Rendering::GlobalKeyword>(keyword));
+        if (!was) UnityEngine::Shader::EnableKeyword(::ByRef<UnityEngine::Rendering::GlobalKeyword>(keyword));
+        for (int p = 0; p < passes; p++) material->SetPass(p);
+        if (!was) UnityEngine::Shader::DisableKeyword(::ByRef<UnityEngine::Rendering::GlobalKeyword>(keyword));
+      }
+    } catch (...) {
+      // One material that will not bind is no reason to stop.
+    }
+  }
+  if (_warmupIndex < _warmupQueue.size()) {
+    if (_warmupIndex % 10 == 0 || _warmupIndex < 3) {
+      SongCore::API::PlayButton::DisablePlayButton("Vivify", "Preparing shaders " + std::to_string(_warmupIndex) +
+                                                                 "/" + std::to_string(_warmupQueue.size()) + "...");
+    }
+    return;
+  }
+  float const seconds = UnityEngine::Time::get_realtimeSinceStartup() - _warmupStarted;
+  PaperLogger.info("Vivify: shaders of {} material(s) prepared in {:.1f}s", _warmupQueue.size(), seconds);
+  _warmupQueue.clear();
+  _warmupIndex = 0;
+  DisarmLoadGuard();
+  SongCore::API::PlayButton::EnablePlayButton("Vivify");
 }
 
 void Runtime::ArmLoadGuard(std::string const& bundlePath) {
@@ -1913,6 +2034,9 @@ void Runtime::DisarmLoadGuard() {
   if (_loadGuardPath.empty()) return;
   std::error_code ec;
   std::filesystem::remove(LoadingMarkerPath(_loadGuardPath), ec);
+  // Loaded fine: a single earlier strike is forgiven, so two have to come in
+  // a row. A bundle already reconverted without translation keeps its record.
+  if (!TranslationCrashedBefore(_loadGuardPath)) std::filesystem::remove(CrashedMarkerPath(_loadGuardPath), ec);
   _loadGuardPath.clear();
 }
 

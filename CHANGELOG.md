@@ -11,6 +11,27 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.15] - 2026-09-30
+
+### Added
+- **Prepare Shaders Before Playing** (setting, on by default). A 0.14.7 log
+  shows the game stalled for about 88 seconds at the start of a converted
+  map's song, while the headset's GPU driver compiled its translated shaders
+  for the first time.
+  - That compiling now happens in the menu instead, right after you select a
+    converted map. Each of its materials is used once, two per frame, for
+    both the single-screen and the two-eye variant.
+  - The play button shows "Preparing shaders N/M..." until it's done.
+  - The log says how long it took.
+
+### Changed
+- **Crash guard needs two failed loads in a row.** The first time a
+  converted map's load never finishes, the translated shaders get one more
+  try. Only a second failure in a row reconverts the map without
+  translation (grey stand-ins). Before, one crash, or closing the game during
+  a long first compile, turned a map grey until Force Reconvert. A load that
+  finishes clears the first strike.
+
 ## [0.14.14] - 2026-09-30
 
 ### Fixed
