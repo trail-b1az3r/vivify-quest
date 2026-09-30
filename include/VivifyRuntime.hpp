@@ -44,4 +44,12 @@ bool IsBulkPcBundleConversionRunning();
 // Tells the bulk pass whether a song is playing; it pauses between bundles
 // while one is.
 void SetSongPlaying(bool playing);
+
+// "Reset Vivify (clean slate)": deletes every converted bundle and crash-guard
+// note (the whole ConvertedBundles folder), and the PC bundles Vivify
+// downloaded into Quest maps' song folders (it downloads them again when
+// needed), after unloading whatever is loaded. Runs off the main thread;
+// onDone gets a one-line summary on the main thread. Refused while a bulk
+// conversion is running.
+void ResetToCleanSlate(std::function<void(std::string const&)> onDone);
 }

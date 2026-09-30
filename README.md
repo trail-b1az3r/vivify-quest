@@ -74,6 +74,9 @@ All settings are in **Mod Settings → Vivify**.
 | Submit Scores On Vivify Maps | on | |
 | Debug logging | off | More detail in the session log. |
 
+**Reset Vivify (clean slate)** (press twice) deletes all converted maps,
+crash-guard notes and PC bundles Vivify downloaded into Quest maps, and resets
+the settings; use it when maps are stuck grey or broken after an update.
 **Convert All PC Bundles Now** converts every PC map up front. **Force
 Reconvert All (ignore cache)** redoes every conversion.
 

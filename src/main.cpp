@@ -22,6 +22,9 @@
 
 static modloader::ModInfo modInfo{MOD_ID, VERSION, 0};
 
+// Defined below, outside this namespace; the settings reset button re-applies it.
+void EnsureConfigDefaults();
+
 namespace {
 constexpr std::string_view kMultipassRenderingConfigKey = "multipassRendering";
 constexpr std::string_view kVivifyDebugLoggingConfigKey = "vivifyDebugLogging";
@@ -408,6 +411,35 @@ void RegisterModSettings() {
         BSML::Lite::CreateUIButton(
             container->get_transform(), u"Force Reconvert All (ignore cache)",
             []() { startConversion(true); });
+
+        // Puts Vivify back to a fresh install's state, without touching the
+        // maps: every converted bundle and crash-guard note, the PC bundles it
+        // downloaded into Quest maps' folders, and its settings. Two presses
+        // within five seconds, since it cannot be undone.
+        BSML::Lite::CreateUIButton(
+            container->get_transform(), u"Reset Vivify (clean slate)",
+            []() {
+              static std::chrono::steady_clock::time_point armedUntil{};
+              auto const now = std::chrono::steady_clock::now();
+              if (now > armedUntil) {
+                armedUntil = now + std::chrono::seconds(5);
+                SetConvertStatusText("Press Reset again within 5 s: deletes converted maps and downloaded PC "
+                                     "bundles, resets settings");
+                return;
+              }
+              armedUntil = {};
+              if (Vivify::IsBulkPcBundleConversionRunning()) {
+                SetConvertStatusText("A conversion pass is running; reset after it finishes");
+                return;
+              }
+              EnsureConfigObject();
+              getConfig().config.RemoveAllMembers();
+              EnsureConfigDefaults();
+              SetConvertStatusText("Resetting...");
+              Vivify::ResetToCleanSlate([](std::string const& summary) {
+                SetConvertStatusText(summary + ". Reopen this menu to see the settings.");
+              });
+            });
 
         // paperlog output is not reachable without adb, so Vivify writes its own
         // plain-text report next to its data. Showing the path here means the

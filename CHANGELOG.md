@@ -11,6 +11,25 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.16] - 2026-09-30
+
+### Added
+- **Reset Vivify (clean slate)** button in Mod Settings → Vivify. Press it
+  twice within 5 seconds. It does, in one go, what otherwise needs a file
+  manager:
+  - deletes the whole `Mods/Vivify/ConvertedBundles` folder: every converted
+    map, merged and donor bundle, and crash-guard note, so maps the guard
+    turned grey are translated again;
+  - deletes the PC bundles Vivify downloaded into **Quest** maps' song
+    folders (such as Hold My Hand's `bundleWindows2021.vivify`). Vivify
+    downloads them again when needed. A PC-only map's own bundle is never
+    touched.
+  - resets every Vivify setting to its default.
+
+  It unloads whatever Vivify has loaded first, and it won't run while
+  Convert All is going. Each map converts again the next time you select
+  it. Reopen the menu to see the reset toggles.
+
 ## [0.14.15] - 2026-09-30
 
 ### Added

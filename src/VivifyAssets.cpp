@@ -3052,6 +3052,58 @@ void SetSongPlaying(bool playing) {
   gSongPlaying.store(playing);
 }
 
+void Runtime::ReleaseBundlesForReset() {
+  if (_mainBundle != nullptr && UnityEngine::Object::op_Implicit_bool(_mainBundle)) {
+    _mainBundle->Unload(true);
+  }
+  _mainBundle = nullptr;
+  _preloadedBundlePath.clear();
+  _selectedBundlePath.clear();
+  _selectedLevelPath.clear();
+  _graftedShaders.clear();
+  _graftLevelPath.clear();
+  _warmupQueue.clear();
+  _warmupIndex = 0;
+  ClearBlitCompanion();
+  DisarmLoadGuard();
+  SongCore::API::PlayButton::EnablePlayButton("Vivify");
+}
+
+std::atomic<bool> gCleanSlateRunning{false};
+
+void ResetToCleanSlate(std::function<void(std::string const&)> onDone) {
+  if (gBulkConversionRunning.load()) {
+    if (onDone) onDone("A conversion pass is running; reset after it finishes");
+    return;
+  }
+  if (gCleanSlateRunning.exchange(true)) return;
+  Runtime::Instance().ReleaseBundlesForReset();
+  auto levels = CollectCustomLevelDirectories();
+  std::thread([onDone = std::move(onDone), levels = std::move(levels)]() {
+    std::error_code ec;
+    std::uintmax_t const converted = std::filesystem::remove_all(ConvertedBundleCacheDir(), ec);
+    std::string const convertedError = ec ? ec.message() : std::string();
+    int pcRemoved = 0;
+    for (auto const& level : levels) {
+      // Only Quest maps: there the PC bundle is one Vivify downloaded for
+      // their empty shaders. A PC-only map's PC bundle is the map itself.
+      if (!FileExists(JoinPath(level.string(), std::string(kBundleFile)))) continue;
+      for (char const* name : {"bundleWindows2021.vivify", "bundleWindows2019.vivify"}) {
+        std::error_code removeError;
+        if (std::filesystem::remove(level / name, removeError)) pcRemoved++;
+      }
+    }
+    std::string summary = "Reset done: " + std::to_string(converted) + " converted file(s) and " +
+                          std::to_string(pcRemoved) + " downloaded PC bundle(s) deleted, settings reset";
+    if (!convertedError.empty()) summary += " (converted folder: " + convertedError + ")";
+    PaperLogger.info("Vivify clean slate: {}", summary);
+    BSML::MainThreadScheduler::Schedule([onDone, summary]() {
+      gCleanSlateRunning.store(false);
+      if (onDone) onDone(summary);
+    });
+  }).detach();
+}
+
 bool IsBulkPcBundleConversionRunning() {
   return gBulkConversionRunning.load();
 }
