@@ -407,6 +407,12 @@ void RuntimeBehaviour::Update() {
     if (reported++ < 3) PaperLogger.error("Vivify AudioLink update threw a non-std exception");
   }
   try {
+    Runtime::Instance().PollShaderWarmup();
+  } catch (...) {
+    static int reported = 0;
+    if (reported++ < 3) PaperLogger.error("Vivify shader preparation threw");
+  }
+  try {
     Runtime::Instance().PollBlitCompanion();
   } catch (...) {
     static int reported = 0;

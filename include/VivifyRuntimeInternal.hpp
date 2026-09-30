@@ -44,6 +44,9 @@ public:
   void OnBehaviourDestroyed(RuntimeBehaviour* behaviour);
   // Advances an in-flight blit companion load; once a frame, menu included.
   void PollBlitCompanion();
+  // Advances "Prepare Shaders Before Playing" (0.14.15): compiles a converted
+  // bundle's shaders in the menu, a few materials a frame. Once a frame.
+  void PollShaderWarmup();
   void SetPauseMenuActive(bool active);
   void RefreshMultipassRendering();
   void RefreshIsolationSettings();
@@ -496,6 +499,13 @@ private:
   std::unordered_map<std::string, UnityEngine::Shader*> _singleViewShaders;
   std::unordered_map<UnityEngine::Material*, UnityEngine::Material*> _singleViewBlitMaterials;
   std::string _blitCompanionLevel;
+  // Shader preparation queue for the selected converted bundle.
+  std::vector<UnityEngine::Material*> _warmupQueue;
+  size_t _warmupIndex = 0;
+  std::string _warmupLevel;
+  std::string _warmupBundle;
+  float _warmupStarted = 0.0f;
+  void StartShaderWarmup(std::string const& bundlePath);
   // An in-flight companion load (0.14.11: asynchronous, never on the main
   // thread in one go -- the synchronous load froze converted maps).
   SafePtr<UnityEngine::AssetBundleCreateRequest> _blitCompanionCreate;

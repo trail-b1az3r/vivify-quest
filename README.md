@@ -64,6 +64,7 @@ All settings are in **Mod Settings → Vivify**.
 | Map Realtime Shadows | off | Lets maps turn on realtime shadows. Expensive; can blacken note bodies. |
 | Replay Render Mode (converted maps) | off | Converts maps with single-screen programs so replay and recording renderers can draw them. Turn on to render, off to play. |
 | Blit Fix For Screen Textures (experimental) | off | Builds converted maps' shaders a second time for blits into screen textures, where they otherwise draw nothing. |
+| Prepare Shaders Before Playing | on | Compiles a converted map's shaders in the menu after you select it, instead of freezing at song start. |
 | Disable Custom Note Visuals | off | Keeps the game's own notes, sabers and debris. |
 | Disable All Blits | off | Turns off post-processing effects. |
 | Disable Beat 0 Filmgrain Blit | off | Skips film-grain blits that start at beat 0. |
