@@ -1284,7 +1284,7 @@ void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string c
     FinishAndroidBundleLoad(levelPath, androidBundlePath);
     return;
   }
-  if (false && CachedConversionIsCurrent(merged)) {  // merging is off; see ConvertPcForGraft
+  if (CachedConversionIsCurrent(merged)) {
     PaperLogger.info("Vivify: loading the Quest bundle with its broken shaders replaced by their PC builds: '{}'",
                      merged);
     FinishAndroidBundleLoad(levelPath, merged);
@@ -1384,30 +1384,61 @@ void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string c
   }).detach();
 }
 
+namespace {
+
+// The PC build of a Quest map's empty shaders is converted on its own,
+// without the stereo split: its plain variants hold the multiview programs
+// the headset draws. The split build (0.14.8's merge used the map's normal
+// conversion) put single-view programs in the plain variants, and the merged
+// kaleidoscope drew nothing; 0.14.7's stand-in at load, from an unsplit 2019
+// build, drew it.
+std::string UnsplitDonorPath(std::string const& pcBundlePath) {
+  std::string path = ConvertedBundlePath(pcBundlePath);
+  size_t const dot = path.rfind(".vivify");
+  if (dot != std::string::npos) path.insert(dot, "_donor");
+  return path;
+}
+
+bool DonorIsCurrent(std::string const& donorPath) {
+  std::error_code ec;
+  if (!std::filesystem::exists(donorPath, ec) || ec) return false;
+  std::ifstream marker(ConversionMarkerPath(donorPath));
+  int version = 0;
+  return static_cast<bool>(marker >> version) && version == kBundleConversionVersion;
+}
+
+}  // namespace
+
 void Runtime::ConvertPcForGraft(std::string const& levelPath, std::string const& androidBundlePath,
                                 std::string const& pcBundlePath, std::vector<std::string> const& names) {
   int const generation = _graftGeneration;
-  std::string const converted = ConvertedBundlePath(pcBundlePath);
+  std::string const donor = UnsplitDonorPath(pcBundlePath);
   std::string const merged = ConvertedBundlePath(androidBundlePath);
-  bool const cached = CachedConversionIsCurrent(converted);
+  bool const cached = DonorIsCurrent(donor);
   SongCore::API::PlayButton::DisablePlayButton("Vivify", cached ? "Merging PC shaders..." : "Converting PC shaders...");
-  std::thread([this, generation, levelPath, androidBundlePath, pcBundlePath, converted, merged, names, cached]() {
+  std::thread([this, generation, levelPath, androidBundlePath, pcBundlePath, donor, merged, names, cached]() {
     bool ok = cached;
     std::string message;
     if (!cached) {
-      auto const result = RunBundleConversion(pcBundlePath, converted);
+      BundleConvert::ShaderConversionOptions options;
+      options.separateStereoVariants = false;  // see UnsplitDonorPath
+      auto const result = BundleConvert::ConvertShadersToGles(pcBundlePath, donor, options);
       ok = result.status == BundleConvert::Status::Success;
       message = result.message;
+      if (ok) {
+        std::ofstream marker(ConversionMarkerPath(donor), std::ios::out | std::ios::trunc);
+        if (marker) marker << kBundleConversionVersion << " 0\n";
+      }
     }
-    // Merging the PC builds into the Quest bundle itself (0.14.6-0.14.12) is
-    // off: the merged kaleidoscope drew nothing in 0.14.8, while 0.14.7's
-    // stand-in at load (GraftShadersFrom) drew it. Kept for a later look.
-    constexpr bool kMergeIntoQuestBundle = false;
+    // Merge the PC builds into the Quest bundle itself, so the materials load
+    // with working shaders and nothing is swapped at run time. Only possible
+    // between bundles of the same Unity version; otherwise the stand-in at
+    // load below does the job.
     bool mergedOk = false;
-    if (ok && kMergeIntoQuestBundle) {
+    if (ok) {
       std::error_code ec;
       std::filesystem::create_directories(std::filesystem::path(merged).parent_path(), ec);
-      auto const merge = BundleConvert::MergeShadersInto(androidBundlePath, converted, names, merged);
+      auto const merge = BundleConvert::MergeShadersInto(androidBundlePath, donor, names, merged);
       mergedOk = merge.status == BundleConvert::Status::Success;
       if (mergedOk) MarkConversionCurrent(merged);
       std::string skipped;
@@ -1417,19 +1448,19 @@ void Runtime::ConvertPcForGraft(std::string const& levelPath, std::string const&
         PaperLogger.info("Vivify: {} ('{}' -> '{}', {} bytes){}{}", merge.message, androidBundlePath, merged,
                          merge.outputBytes, skipped.empty() ? "" : "; ", skipped);
       } else {
-        PaperLogger.warn("Vivify: could not merge the PC shaders into the Quest bundle: {}{}{}; standing them in "
-                         "at load instead", merge.message, skipped.empty() ? "" : "; ", skipped);
+        PaperLogger.info("Vivify: the PC shaders are stood in at load instead of merged: {}{}{}", merge.message,
+                         skipped.empty() ? "" : "; ", skipped);
       }
     }
-    BSML::MainThreadScheduler::Schedule([this, generation, levelPath, androidBundlePath, converted, merged, names,
-                                         ok, mergedOk, message]() {
+    BSML::MainThreadScheduler::Schedule([this, generation, levelPath, androidBundlePath, donor, merged, names, ok,
+                                         mergedOk, message]() {
       if (generation != _graftGeneration || levelPath != _selectedLevelPath) return;
       if (mergedOk) {
         FinishAndroidBundleLoad(levelPath, merged);
         return;
       }
       if (ok) {
-        GraftShadersFrom(levelPath, converted, names);
+        GraftShadersFrom(levelPath, donor, names);
       } else {
         PaperLogger.warn("Vivify: converting the map's PC bundle for its shaders failed: {}", message);
       }

@@ -11,6 +11,24 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.14] - 2026-09-30
+
+### Fixed
+- **The merge of PC shaders into Quest bundles is back, fixed.** It fills
+  shaders a Quest bundle shipped empty, such as Hold My Hand's kaleidoscope.
+  - Why the 0.14.8 merge drew nothing: it merged the PC bundle's normal
+    conversion, which splits 2021 shaders. The merged shader's plain
+    variants were then single-screen programs, and the headset's two-eye
+    pass draws nothing with those.
+  - The load-time stand-in that worked in 0.14.7 had used an unsplit build.
+    Merges and the stand-in now both use their own unsplit conversion of the
+    PC bundle, cached as `…_donor.vivify`.
+  - The converter now refuses a split build as a merge donor, and a new test
+    checks every merged vertex variant is a two-eye program.
+  - A merge still needs the PC and Quest bundles to come from the same Unity
+    version. Otherwise the shader is stood in at load, as in 0.14.7, and the
+    log says which one happened.
+
 ## [0.14.13] - 2026-09-30
 
 ### Changed

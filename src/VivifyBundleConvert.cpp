@@ -2175,6 +2175,14 @@ ShaderMerge MergeShadersInto(std::string const& questPath, std::string const& do
           donorProblems[shader.name] = "it did not translate in the PC bundle";
           continue;
         }
+        // A split build's plain variants are single-view, which the headset's
+        // two-eye pass draws nothing with (0.14.8's merged kaleidoscope). The
+        // donor has to be converted without the split.
+        if (std::find(shader.keywordNames.begin(), shader.keywordNames.end(), "STEREO_MULTIVIEW_ON") !=
+            shader.keywordNames.end()) {
+          donorProblems[shader.name] = "the PC build was converted with the stereo split; merging needs one without";
+          continue;
+        }
         auto const decoded = SerializedFileParse::DecodeShaderPrograms(nodeData, nodeSize, shader);
         bool hasProgram = false;
         for (auto const& program : decoded.programs) {
