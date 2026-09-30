@@ -11,6 +11,28 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.17] - 2026-09-30
+
+### Added
+- **Draw Geometry-Shader Effects (experimental)** setting, off by default.
+  - Shaders with a geometry stage, such as wireframe notes, exploding
+    triangles and similar effects in 743Aether, Through The Screen and other
+    PC-only maps, are drawn without that stage instead of as grey stand-ins.
+    The object-to-clip transform is added where the geometry stage did the
+    projection.
+  - This is the 0.14.10 fallback, off since 0.14.13. It's a setting now so it
+    can be tried per player.
+  - Turning it on or off reconverts affected maps when next selected, and
+    first song starts may take longer while the extra shaders compile.
+  - Aimed at issues #70, #60 and #64. Not verified on a headset.
+
+### Notes on open issues
+- #67 and #69 (blits turning a map one solid colour, or white until paused):
+  try **Blit Fix For Screen Textures (experimental)**.
+- #64 (743Aether freezing): 0.14.15 compiles shaders in the menu, and a
+  single freeze no longer turns a map grey. **Reset Vivify (clean slate)**
+  (0.14.16) clears maps that are already stuck grey.
+
 ## [0.14.16] - 2026-09-30
 
 ### Added

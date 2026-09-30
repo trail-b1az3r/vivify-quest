@@ -149,8 +149,10 @@ bool SplitStereoVariants() {
 // 0 = multiview in the plain variants, 1 = 2021 bundles split,
 // 4 = single-view only (replay render mode).
 int ConversionSplitMode() {
-  if (GetReplayRenderMode()) return 4;
-  return SplitStereoVariants() ? 1 : 0;
+  // +8: geometry-shader effects drawn without their geometry stage (setting).
+  int const geometry = GetDrawGeometryShaderEffects() ? 8 : 0;
+  if (GetReplayRenderMode()) return 4 + geometry;
+  return (SplitStereoVariants() ? 1 : 0) + geometry;
 }
 
 std::string ConversionMarkerPath(std::string const& destPath) {
@@ -352,7 +354,9 @@ BundleConversionOutcome RunBundleConversionUnclaimed(std::string const& source, 
   // As 0.14.7 did (version 16 above): 2021 bundles split, 2019 not.
   options.separateStereoVariants = SplitStereoVariants();
   options.splitUnity2019 = false;
-  options.dropUntranslatableGeometry = false;
+  // Opt-in (setting): links a variant whose geometry stage cannot run without
+  // it, instead of leaving it to a grey stand-in. Off by default since 0.14.13.
+  options.dropUntranslatableGeometry = GetDrawGeometryShaderEffects();
   options.singleViewOnly = GetReplayRenderMode();
   auto const conversion = BundleConvert::ConvertShadersToGles(source, dest, options);
   if (conversion.status == BundleConvert::Status::Success) MarkConversionCurrent(dest);

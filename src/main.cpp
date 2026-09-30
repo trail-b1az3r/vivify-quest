@@ -45,6 +45,7 @@ constexpr std::string_view kMapRealtimeShadowsConfigKey = "mapRealtimeShadows";
 constexpr std::string_view kReplayRenderModeConfigKey = "replayRenderMode";
 constexpr std::string_view kBlitFixConfigKey = "blitScreenTextureFix";
 constexpr std::string_view kPrepareShadersConfigKey = "prepareShadersBeforePlaying";
+constexpr std::string_view kGeometryEffectsConfigKey = "drawGeometryShaderEffects";
 constexpr std::string_view kPcShadersForEmptyConfigKey = "pcShadersForEmptyQuestShaders";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
 bool gMultipassRenderingEnabled = true;
@@ -92,6 +93,7 @@ bool gMapRealtimeShadows = false;
 bool gReplayRenderMode = false;
 bool gBlitFix = false;
 bool gPrepareShaders = true;
+bool gGeometryEffects = false;
 bool gPcShadersForEmpty = true;
 // Which shader to use as the stand-in, by name, overriding the automatic pick.
 //
@@ -367,6 +369,14 @@ void RegisterModSettings() {
             GetPrepareShadersBeforePlaying(),
             [](bool value) { SetBoolConfigValue(kPrepareShadersConfigKey, value, gPrepareShaders); });
 
+        // Experimental: shaders with a geometry stage (wireframes, exploding
+        // triangles) are drawn without it instead of as grey stand-ins.
+        // Changing it reconverts the affected maps.
+        BSML::Lite::CreateToggle(
+            container->get_transform(), u"Draw Geometry-Shader Effects (experimental)",
+            GetDrawGeometryShaderEffects(),
+            [](bool value) { SetBoolConfigValue(kGeometryEffectsConfigKey, value, gGeometryEffects); });
+
         BSML::Lite::CreateToggle(
             container->get_transform(), u"AudioLink",
             GetAudioLinkEnabled(),
@@ -557,6 +567,10 @@ bool GetPrepareShadersBeforePlaying() {
   return gPrepareShaders;
 }
 
+bool GetDrawGeometryShaderEffects() {
+  return gGeometryEffects;
+}
+
 bool GetUsePcShadersForEmptyShaders() {
   return gPcShadersForEmpty;
 }
@@ -590,6 +604,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kReplayRenderModeConfigKey, false, gReplayRenderMode);
   needsWrite |= EnsureBoolConfigValue(kBlitFixConfigKey, false, gBlitFix);
   needsWrite |= EnsureBoolConfigValue(kPrepareShadersConfigKey, true, gPrepareShaders);
+  needsWrite |= EnsureBoolConfigValue(kGeometryEffectsConfigKey, false, gGeometryEffects);
   needsWrite |= EnsureBoolConfigValue(kPcShadersForEmptyConfigKey, true, gPcShadersForEmpty);
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),
                                         gStandInShaderName);
