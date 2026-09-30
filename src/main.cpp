@@ -453,6 +453,25 @@ void RegisterModSettings() {
               });
             });
 
+        // Lists every Vivify map in VivifyMaps.txt, then replaces each with a
+        // fresh BeatSaver download, for maps whose folders were changed by an
+        // earlier version. Two presses within five seconds.
+        BSML::Lite::CreateUIButton(
+            container->get_transform(), u"Redownload All Vivify Maps",
+            []() {
+              static std::chrono::steady_clock::time_point armedUntil{};
+              auto const now = std::chrono::steady_clock::now();
+              if (now > armedUntil) {
+                armedUntil = now + std::chrono::seconds(5);
+                SetConvertStatusText("Press Redownload again within 5 s: lists Vivify maps in VivifyMaps.txt, "
+                                     "then replaces each with a fresh BeatSaver download");
+                return;
+              }
+              armedUntil = {};
+              SetConvertStatusText("Finding Vivify maps...");
+              Vivify::RedownloadVivifyMaps([](std::string const& text) { SetConvertStatusText(text); });
+            });
+
         // paperlog output is not reachable without adb, so Vivify writes its own
         // plain-text report next to its data. Showing the path here means the
         // file can be found without being told where to look.

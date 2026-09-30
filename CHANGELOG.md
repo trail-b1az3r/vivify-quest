@@ -11,6 +11,31 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.19] - 2026-09-30
+
+### Added
+- **Redownload All Vivify Maps** (settings, press twice). It lists every
+  installed Vivify map in
+  `/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyMaps.txt`
+  (BeatSaver key, song hash, folder, song name). It then deletes the
+  converted bundle cache and replaces each map's folder with a fresh
+  download from BeatSaver: the exact installed version when BeatSaver still
+  has it, otherwise the map's current version. Use it when maps stay broken
+  even on an older release: it returns every Vivify map to what its mapper
+  uploaded.
+  - A map's old folder is deleted only after its new copy has downloaded and
+    unpacked, so a failed download never loses a map. The list file records
+    the result for each map.
+  - Songs refresh when it finishes.
+
+### Fixed
+- **Broken bundles left in song folders.** A PC bundle Vivify downloaded
+  into a song folder was written straight to its final name. A download cut
+  short by closing the game during a freeze, or an error page served as a
+  success, stayed behind as the map's bundle, and every version, older ones
+  included, kept loading it. Downloads now go through a `.part` file and are
+  kept only if they are an asset bundle.
+
 ## [0.14.18] - 2026-09-30
 
 ### Fixed
