@@ -64,7 +64,8 @@ All settings are in **Mod Settings → Vivify**.
 | Map Realtime Shadows | off | Lets maps turn on realtime shadows. Expensive; can blacken note bodies. |
 | Replay Render Mode (converted maps) | off | Converts maps with single-screen programs so replay and recording renderers can draw them. Turn on to render, off to play. |
 | Blit Fix For Screen Textures (experimental) | off | Builds converted maps' shaders a second time for blits into screen textures, where they otherwise draw nothing. |
-| Prepare Shaders Before Playing | on | Compiles a converted map's shaders in the menu after you select it, instead of freezing at song start. |
+| Prepare Shaders Before Playing | off | Compiles a converted map's shaders in the menu after you select it, instead of freezing at song start. |
+| Draw Geometry-Shader Effects (experimental) | off | Draws wireframe/exploding-triangle style effects on converted maps without their geometry stage instead of grey. |
 | Disable Custom Note Visuals | off | Keeps the game's own notes, sabers and debris. |
 | Disable All Blits | off | Turns off post-processing effects. |
 | Disable Beat 0 Filmgrain Blit | off | Skips film-grain blits that start at beat 0. |
@@ -74,6 +75,9 @@ All settings are in **Mod Settings → Vivify**.
 | Submit Scores On Vivify Maps | on | |
 | Debug logging | off | More detail in the session log. |
 
+**Reset Vivify (clean slate)** (press twice) deletes all converted maps,
+crash-guard notes and PC bundles Vivify downloaded into Quest maps, and resets
+the settings; use it when maps are stuck grey or broken after an update.
 **Convert All PC Bundles Now** converts every PC map up front. **Force
 Reconvert All (ignore cache)** redoes every conversion.
 

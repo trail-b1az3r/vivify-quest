@@ -47,6 +47,10 @@ public:
   // Advances "Prepare Shaders Before Playing" (0.14.15): compiles a converted
   // bundle's shaders in the menu, a few materials a frame. Once a frame.
   void PollShaderWarmup();
+  // Unloads the loaded bundle and forgets every per-level bundle choice, so
+  // "Reset Vivify (clean slate)" can delete the files and the next level
+  // selection starts from nothing.
+  void ReleaseBundlesForReset();
   void SetPauseMenuActive(bool active);
   void RefreshMultipassRendering();
   void RefreshIsolationSettings();

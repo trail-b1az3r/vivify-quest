@@ -164,6 +164,7 @@ struct ShaderConversion {
   int stereoVariantsRemapped = 0;
   int stereoVariantsSplit = 0;  // separateStereoVariants: variants renamed to STEREO_MULTIVIEW_ON
   int geometryStagesDropped = 0;  // variants linked without the geometry stage they could not use
+  int variantsSkipped = 0;  // program refs of variants a Quest never selects, left untranslated
   // Block-compressed textures seen, and how many had their m_IsReadable flag
   // set so the mod can decode them on device. A texture that is already
   // readable, or in a format a Quest can sample, is not counted as marked.
@@ -237,6 +238,11 @@ struct ShaderConversionOptions {
   // did the projection, instead of leaving the variant on DirectX. Off in the
   // mod since 0.14.13: maps looked better and started faster without it.
   bool dropUntranslatableGeometry = false;
+  // Leave untranslated the variants a Quest never selects in a converted
+  // map: GPU instancing (turned off on converted materials) and unsplit
+  // single-pass stereo. Most of a PC bundle's programs; far less to load and
+  // compile. Not for donor builds, whose materials keep their instancing.
+  bool skipQuestUnusedVariants = false;
 };
 
 ShaderConversion ConvertShadersToGles(std::string const& sourcePath,

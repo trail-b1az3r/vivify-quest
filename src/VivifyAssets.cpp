@@ -108,7 +108,12 @@ namespace {
 //      variants when the game uses that keyword, 2019 bundles not split, no
 //      geometry-stage fallback, depth written as it was. Versions 13-15 drew
 //      converted maps worse and started songs with longer freezes
-constexpr int kBundleConversionVersion = 16;
+//  17  variants a Quest never selects (GPU instancing, which converted
+//      materials have turned off, and unsplit single-pass stereo) are left
+//      untranslated: in 743Aether 573 of 774 program references, 336 linked
+//      variants down to 90. Far less for Unity to load and the driver to
+//      compile when a converted map starts
+constexpr int kBundleConversionVersion = 17;
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the
@@ -149,8 +154,10 @@ bool SplitStereoVariants() {
 // 0 = multiview in the plain variants, 1 = 2021 bundles split,
 // 4 = single-view only (replay render mode).
 int ConversionSplitMode() {
-  if (GetReplayRenderMode()) return 4;
-  return SplitStereoVariants() ? 1 : 0;
+  // +8: geometry-shader effects drawn without their geometry stage (setting).
+  int const geometry = GetDrawGeometryShaderEffects() ? 8 : 0;
+  if (GetReplayRenderMode()) return 4 + geometry;
+  return (SplitStereoVariants() ? 1 : 0) + geometry;
 }
 
 std::string ConversionMarkerPath(std::string const& destPath) {
@@ -352,7 +359,13 @@ BundleConversionOutcome RunBundleConversionUnclaimed(std::string const& source, 
   // As 0.14.7 did (version 16 above): 2021 bundles split, 2019 not.
   options.separateStereoVariants = SplitStereoVariants();
   options.splitUnity2019 = false;
-  options.dropUntranslatableGeometry = false;
+  // Opt-in (setting): links a variant whose geometry stage cannot run without
+  // it, instead of leaving it to a grey stand-in. Off by default since 0.14.13.
+  options.dropUntranslatableGeometry = GetDrawGeometryShaderEffects();
+  // See version 17 above. Converted maps only: a donor build for a Quest
+  // map's empty shaders keeps everything, since Quest materials keep their
+  // instancing.
+  options.skipQuestUnusedVariants = true;
   options.singleViewOnly = GetReplayRenderMode();
   auto const conversion = BundleConvert::ConvertShadersToGles(source, dest, options);
   if (conversion.status == BundleConvert::Status::Success) MarkConversionCurrent(dest);
@@ -1172,6 +1185,7 @@ void Runtime::PrepareBlitCompanion(std::string const& levelPath, std::string con
       BundleConvert::ShaderConversionOptions options;
       options.singleViewOnly = true;
       options.renameArchiveFiles = true;
+      options.skipQuestUnusedVariants = true;  // same materials as the main conversion
       auto const result = BundleConvert::ConvertShadersToGles(pcBundlePath, companion, options);
       if (result.status != BundleConvert::Status::Success) {
         PaperLogger.warn("Vivify Blit: the single-view build for blits into screen textures failed: {}",
@@ -3050,6 +3064,58 @@ std::atomic<bool> gSongPlaying{false};
 
 void SetSongPlaying(bool playing) {
   gSongPlaying.store(playing);
+}
+
+void Runtime::ReleaseBundlesForReset() {
+  if (_mainBundle != nullptr && UnityEngine::Object::op_Implicit_bool(_mainBundle)) {
+    _mainBundle->Unload(true);
+  }
+  _mainBundle = nullptr;
+  _preloadedBundlePath.clear();
+  _selectedBundlePath.clear();
+  _selectedLevelPath.clear();
+  _graftedShaders.clear();
+  _graftLevelPath.clear();
+  _warmupQueue.clear();
+  _warmupIndex = 0;
+  ClearBlitCompanion();
+  DisarmLoadGuard();
+  SongCore::API::PlayButton::EnablePlayButton("Vivify");
+}
+
+std::atomic<bool> gCleanSlateRunning{false};
+
+void ResetToCleanSlate(std::function<void(std::string const&)> onDone) {
+  if (gBulkConversionRunning.load()) {
+    if (onDone) onDone("A conversion pass is running; reset after it finishes");
+    return;
+  }
+  if (gCleanSlateRunning.exchange(true)) return;
+  Runtime::Instance().ReleaseBundlesForReset();
+  auto levels = CollectCustomLevelDirectories();
+  std::thread([onDone = std::move(onDone), levels = std::move(levels)]() {
+    std::error_code ec;
+    std::uintmax_t const converted = std::filesystem::remove_all(ConvertedBundleCacheDir(), ec);
+    std::string const convertedError = ec ? ec.message() : std::string();
+    int pcRemoved = 0;
+    for (auto const& level : levels) {
+      // Only Quest maps: there the PC bundle is one Vivify downloaded for
+      // their empty shaders. A PC-only map's PC bundle is the map itself.
+      if (!FileExists(JoinPath(level.string(), std::string(kBundleFile)))) continue;
+      for (char const* name : {"bundleWindows2021.vivify", "bundleWindows2019.vivify"}) {
+        std::error_code removeError;
+        if (std::filesystem::remove(level / name, removeError)) pcRemoved++;
+      }
+    }
+    std::string summary = "Reset done: " + std::to_string(converted) + " converted file(s) and " +
+                          std::to_string(pcRemoved) + " downloaded PC bundle(s) deleted, settings reset";
+    if (!convertedError.empty()) summary += " (converted folder: " + convertedError + ")";
+    PaperLogger.info("Vivify clean slate: {}", summary);
+    BSML::MainThreadScheduler::Schedule([onDone, summary]() {
+      gCleanSlateRunning.store(false);
+      if (onDone) onDone(summary);
+    });
+  }).detach();
 }
 
 bool IsBulkPcBundleConversionRunning() {

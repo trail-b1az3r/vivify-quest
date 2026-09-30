@@ -22,6 +22,9 @@
 
 static modloader::ModInfo modInfo{MOD_ID, VERSION, 0};
 
+// Defined below, outside this namespace; the settings reset button re-applies it.
+void EnsureConfigDefaults();
+
 namespace {
 constexpr std::string_view kMultipassRenderingConfigKey = "multipassRendering";
 constexpr std::string_view kVivifyDebugLoggingConfigKey = "vivifyDebugLogging";
@@ -41,7 +44,10 @@ constexpr std::string_view kAudioLinkConfigKey = "audioLink";
 constexpr std::string_view kMapRealtimeShadowsConfigKey = "mapRealtimeShadows";
 constexpr std::string_view kReplayRenderModeConfigKey = "replayRenderMode";
 constexpr std::string_view kBlitFixConfigKey = "blitScreenTextureFix";
-constexpr std::string_view kPrepareShadersConfigKey = "prepareShadersBeforePlaying";
+// Renamed in 0.14.18 so every install starts with it off: 0.14.15 saved it
+// as on, and it may be what froze converted maps in the menu.
+constexpr std::string_view kPrepareShadersConfigKey = "prepareShadersInMenu";
+constexpr std::string_view kGeometryEffectsConfigKey = "drawGeometryShaderEffects";
 constexpr std::string_view kPcShadersForEmptyConfigKey = "pcShadersForEmptyQuestShaders";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
 bool gMultipassRenderingEnabled = true;
@@ -88,7 +94,8 @@ bool gAudioLink = true;
 bool gMapRealtimeShadows = false;
 bool gReplayRenderMode = false;
 bool gBlitFix = false;
-bool gPrepareShaders = true;
+bool gPrepareShaders = false;
+bool gGeometryEffects = false;
 bool gPcShadersForEmpty = true;
 // Which shader to use as the stand-in, by name, overriding the automatic pick.
 //
@@ -364,6 +371,14 @@ void RegisterModSettings() {
             GetPrepareShadersBeforePlaying(),
             [](bool value) { SetBoolConfigValue(kPrepareShadersConfigKey, value, gPrepareShaders); });
 
+        // Experimental: shaders with a geometry stage (wireframes, exploding
+        // triangles) are drawn without it instead of as grey stand-ins.
+        // Changing it reconverts the affected maps.
+        BSML::Lite::CreateToggle(
+            container->get_transform(), u"Draw Geometry-Shader Effects (experimental)",
+            GetDrawGeometryShaderEffects(),
+            [](bool value) { SetBoolConfigValue(kGeometryEffectsConfigKey, value, gGeometryEffects); });
+
         BSML::Lite::CreateToggle(
             container->get_transform(), u"AudioLink",
             GetAudioLinkEnabled(),
@@ -408,6 +423,35 @@ void RegisterModSettings() {
         BSML::Lite::CreateUIButton(
             container->get_transform(), u"Force Reconvert All (ignore cache)",
             []() { startConversion(true); });
+
+        // Puts Vivify back to a fresh install's state, without touching the
+        // maps: every converted bundle and crash-guard note, the PC bundles it
+        // downloaded into Quest maps' folders, and its settings. Two presses
+        // within five seconds, since it cannot be undone.
+        BSML::Lite::CreateUIButton(
+            container->get_transform(), u"Reset Vivify (clean slate)",
+            []() {
+              static std::chrono::steady_clock::time_point armedUntil{};
+              auto const now = std::chrono::steady_clock::now();
+              if (now > armedUntil) {
+                armedUntil = now + std::chrono::seconds(5);
+                SetConvertStatusText("Press Reset again within 5 s: deletes converted maps and downloaded PC "
+                                     "bundles, resets settings");
+                return;
+              }
+              armedUntil = {};
+              if (Vivify::IsBulkPcBundleConversionRunning()) {
+                SetConvertStatusText("A conversion pass is running; reset after it finishes");
+                return;
+              }
+              EnsureConfigObject();
+              getConfig().config.RemoveAllMembers();
+              EnsureConfigDefaults();
+              SetConvertStatusText("Resetting...");
+              Vivify::ResetToCleanSlate([](std::string const& summary) {
+                SetConvertStatusText(summary + ". Reopen this menu to see the settings.");
+              });
+            });
 
         // paperlog output is not reachable without adb, so Vivify writes its own
         // plain-text report next to its data. Showing the path here means the
@@ -525,6 +569,10 @@ bool GetPrepareShadersBeforePlaying() {
   return gPrepareShaders;
 }
 
+bool GetDrawGeometryShaderEffects() {
+  return gGeometryEffects;
+}
+
 bool GetUsePcShadersForEmptyShaders() {
   return gPcShadersForEmpty;
 }
@@ -557,7 +605,8 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kMapRealtimeShadowsConfigKey, false, gMapRealtimeShadows);
   needsWrite |= EnsureBoolConfigValue(kReplayRenderModeConfigKey, false, gReplayRenderMode);
   needsWrite |= EnsureBoolConfigValue(kBlitFixConfigKey, false, gBlitFix);
-  needsWrite |= EnsureBoolConfigValue(kPrepareShadersConfigKey, true, gPrepareShaders);
+  needsWrite |= EnsureBoolConfigValue(kPrepareShadersConfigKey, false, gPrepareShaders);
+  needsWrite |= EnsureBoolConfigValue(kGeometryEffectsConfigKey, false, gGeometryEffects);
   needsWrite |= EnsureBoolConfigValue(kPcShadersForEmptyConfigKey, true, gPcShadersForEmpty);
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),
                                         gStandInShaderName);

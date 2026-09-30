@@ -1484,6 +1484,7 @@ struct LinkedShader {
   int stereoRemapped = 0;
   int stereoSplit = 0;
   int geometryDropped = 0;  // variants linked without their geometry stage
+  int variantsSkipped = 0;  // program refs a Quest never selects, left alone
   int programsTranslated = 0;
   std::set<std::string> variantReasons;  // why individual variants stayed on DirectX
 };
@@ -1754,10 +1755,33 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
     return cached->second.ok ? &cached->second : nullptr;
   };
 
+  // Variants a Quest never selects, skipped when asked: their entries stay
+  // DirectX, so Unity drops them instead of loading and compiling them. In
+  // 743Aether that is 573 of 774 program references:
+  //   - GPU instancing (INSTANCING_ON and kin): the mod turns instancing off
+  //     on every material of a converted bundle when it loads, so never on;
+  //   - unsplit single-pass stereo (STEREO_INSTANCING_ON,
+  //     UNITY_SINGLE_PASS_STEREO): never on in a Quest; the plain variant
+  //     already carries its code. A split shader's renamed variants are kept.
+  auto unusable = [&](ParsedProgramRef const& ref) {
+    if (!conversionOptions.skipQuestUnusedVariants) return false;
+    for (uint16_t k : ref.keywordIndices) {
+      if (k >= keywordNames.size()) continue;
+      std::string const& name = keywordNames[k];
+      if (name == "INSTANCING_ON" || name == "DOTS_INSTANCING_ON" || name == "PROCEDURAL_INSTANCING_ON") return true;
+      if (splitKeyword < 0 && (name == "STEREO_INSTANCING_ON" || name == "UNITY_SINGLE_PASS_STEREO")) return true;
+    }
+    return false;
+  };
+
   std::map<VariantKey, std::vector<ParsedProgramRef const*>> byStage[3];
   bool tessellation = false;
   for (auto const& ref : refs) {
     VariantKey const key{ref.subShader, ref.pass, ref.player, ref.list};
+    if (unusable(ref)) {
+      out.variantsSkipped++;
+      continue;
+    }
     if (ref.stage == SerializedFileParse::kProgramStageHull || ref.stage == SerializedFileParse::kProgramStageDomain) {
       tessellation = true;
       continue;
@@ -2007,6 +2031,7 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
         conversion.stereoVariantsRemapped += linked.stereoRemapped;
         conversion.stereoVariantsSplit += linked.stereoSplit;
         conversion.geometryStagesDropped += linked.geometryDropped;
+        conversion.variantsSkipped += linked.variantsSkipped;
         for (auto const& reason : linked.variantReasons) {
           if (conversion.variantRefusals.size() >= kMaxLoggedRefusals * 2) break;
           conversion.variantRefusals.push_back(

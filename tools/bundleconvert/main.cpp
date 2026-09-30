@@ -108,15 +108,16 @@ int main(int argc, char** argv) {
     options.singleViewOnly = single;
     options.renameArchiveFiles = companion;
     options.dropUntranslatableGeometry = std::getenv("VIVIFY_DROP_GEOMETRY") != nullptr;
+    options.skipQuestUnusedVariants = std::getenv("VIVIFY_SKIP_UNUSED") != nullptr;
     ShaderConversion c = ConvertShadersToGles(src, dst, options);
     std::printf("status=%s\nmessage=%s\nseen=%d translated=%d leftAlone=%d refused=%d "
                 "programs=%d outBytes=%llu\ntexSeen=%d texReadable=%d texStreamed=%d\n"
-                "linked=%d variantsLinked=%d variantsRefused=%d stereoRemapped=%d stereoSplit=%d geometryDropped=%d\n",
+                "linked=%d variantsLinked=%d variantsRefused=%d stereoRemapped=%d stereoSplit=%d geometryDropped=%d skipped=%d\n",
                 std::string(StatusText(c.status)).c_str(), c.message.c_str(), c.shadersSeen,
                 c.shadersTranslated, c.shadersLeftAlone, c.shadersRefused, c.programsTranslated,
                 (unsigned long long)c.outputBytes, c.texturesSeen, c.texturesMarkedReadable,
                 c.texturesStreamed, c.shadersLinked, c.variantsLinked, c.variantsRefused,
-                c.stereoVariantsRemapped, c.stereoVariantsSplit, c.geometryStagesDropped);
+                c.stereoVariantsRemapped, c.stereoVariantsSplit, c.geometryStagesDropped, c.variantsSkipped);
     for (auto const& refusal : c.refusals) std::printf("refusal=%s\n", refusal.c_str());
     for (auto const& refusal : c.variantRefusals) std::printf("variantRefusal=%s\n", refusal.c_str());
     return c.ok() ? 0 : 1;

@@ -11,6 +11,68 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.18] - 2026-09-30
+
+### Fixed
+- **Converted maps freezing.** A PC bundle carries shader variants a Quest
+  can never use: GPU-instanced copies (Vivify turns instancing off on
+  converted materials) and, in Unity 2019 maps, an extra stereo copy. The
+  converter translated all of them, leaving that much more for the game to
+  load and the GPU to compile.
+  - In 743Aether, 573 of 774 shader program references were unusable.
+  - Those are now left out of the conversion: 743Aether goes from 336
+    linked variants to 90, and from 156 distinct programs to 86. Every
+    shader keeps its usable variants, and all 86 programs compile under
+    glslang.
+  - Unity 2021 maps with the stereo split (Dialtone) are unchanged.
+  - Conversion cache version 17: converted maps reconvert once, smaller.
+
+### Changed
+- **Prepare Shaders Before Playing** is now off for everyone. Its saved
+  setting was reset (new config key), because it may itself have been what
+  froze converted maps in the menu.
+
+## [0.14.17] - 2026-09-30
+
+### Added
+- **Draw Geometry-Shader Effects (experimental)** setting, off by default.
+  - Shaders with a geometry stage, such as wireframe notes, exploding
+    triangles and similar effects in 743Aether, Through The Screen and other
+    PC-only maps, are drawn without that stage instead of as grey stand-ins.
+    The object-to-clip transform is added where the geometry stage did the
+    projection.
+  - This is the 0.14.10 fallback, off since 0.14.13. It's a setting now so it
+    can be tried per player.
+  - Turning it on or off reconverts affected maps when next selected, and
+    first song starts may take longer while the extra shaders compile.
+  - Aimed at issues #70, #60 and #64. Not verified on a headset.
+
+### Notes on open issues
+- #67 and #69 (blits turning a map one solid colour, or white until paused):
+  try **Blit Fix For Screen Textures (experimental)**.
+- #64 (743Aether freezing): 0.14.15 compiles shaders in the menu, and a
+  single freeze no longer turns a map grey. **Reset Vivify (clean slate)**
+  (0.14.16) clears maps that are already stuck grey.
+
+## [0.14.16] - 2026-09-30
+
+### Added
+- **Reset Vivify (clean slate)** button in Mod Settings → Vivify. Press it
+  twice within 5 seconds. It does, in one go, what otherwise needs a file
+  manager:
+  - deletes the whole `Mods/Vivify/ConvertedBundles` folder: every converted
+    map, merged and donor bundle, and crash-guard note, so maps the guard
+    turned grey are translated again;
+  - deletes the PC bundles Vivify downloaded into **Quest** maps' song
+    folders (such as Hold My Hand's `bundleWindows2021.vivify`). Vivify
+    downloads them again when needed. A PC-only map's own bundle is never
+    touched.
+  - resets every Vivify setting to its default.
+
+  It unloads whatever Vivify has loaded first, and it won't run while
+  Convert All is going. Each map converts again the next time you select
+  it. Reopen the menu to see the reset toggles.
+
 ## [0.14.15] - 2026-09-30
 
 ### Added
