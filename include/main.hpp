@@ -48,6 +48,9 @@ bool GetDrawGeometryShaderEffects();
 // Whether a shader a map's Quest bundle shipped empty is replaced by the PC
 // build of it, converted (VivifyAssets.cpp).
 bool GetUsePcShadersForEmptyShaders();
+// Fraction (0.25-1) of the eye resolution that map post-process effects render
+// at (0.14.20); 1 renders them at full resolution, as before.
+float GetEffectResolutionScale();
 // Empty when the stand-in shader should be chosen automatically.
 std::string GetStandInShaderName();
 // Whether a map carrying the Vivify requirement still submits its score.

@@ -11,6 +11,12 @@ namespace {
 UnityEngine::Rendering::RenderTargetIdentifier ToTargetId(UnityEngine::Texture* texture) {
   return UnityEngine::Rendering::RenderTargetIdentifier::op_Implicit___UnityEngine__Rendering__RenderTargetIdentifier(texture);
 }
+// An eye-resolution size scaled by the Effect Resolution setting.
+int EffectSize(int size) {
+  float const scale = GetEffectResolutionScale();
+  if (scale >= 1.0f) return size;
+  return std::max(1, static_cast<int>(static_cast<float>(size) * scale + 0.5f));
+}
 UnityEngine::Rendering::RenderTargetIdentifier CameraTargetId() {
   return UnityEngine::Rendering::RenderTargetIdentifier::op_Implicit___UnityEngine__Rendering__RenderTargetIdentifier(
       UnityEngine::Rendering::BuiltinRenderTextureType::CameraTarget);
@@ -135,6 +141,8 @@ void Runtime::CacheMainRenderDescriptor(UnityEngine::RenderTexture* src) {
 
   desc.set_msaaSamples(1);
   desc.set_depthBufferBits(0);
+  desc.set_width(EffectSize(desc.get_width()));
+  desc.set_height(EffectSize(desc.get_height()));
   _cachedMainDescriptor = desc;
   _cachedMainVrUsage = src->get_vrUsage().value__;
   _hasMainDescriptor = true;
@@ -311,6 +319,8 @@ UnityEngine::RenderTexture* Runtime::EnsureCachedBlitTexture(UnityEngine::Render
   auto desc = src->get_descriptor();
   desc.set_msaaSamples(1);
   desc.set_depthBufferBits(0);
+  desc.set_width(EffectSize(desc.get_width()));
+  desc.set_height(EffectSize(desc.get_height()));
   int const width = desc.get_width();
   int const height = desc.get_height();
   int const format = desc.get_graphicsFormat().value__;
@@ -714,6 +724,8 @@ void Runtime::HandleCreateScreenTexture(rapidjson::Value const& json) {
     baseW = std::max(1, mainCam->get_pixelWidth());
     baseH = std::max(1, mainCam->get_pixelHeight());
   }
+  baseW = EffectSize(baseW);
+  baseH = EffectSize(baseH);
   int w = std::clamp(dt.width.value_or(baseW), 1, kMaxRenderTextureSize);
   int h = std::clamp(dt.height.value_or(baseH), 1, kMaxRenderTextureSize);
   w = std::clamp(static_cast<int>(w / dt.xRatio), 1, kMaxRenderTextureSize);
