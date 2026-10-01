@@ -50,6 +50,7 @@ constexpr std::string_view kPrepareShadersConfigKey = "prepareShadersInMenu";
 constexpr std::string_view kGeometryEffectsConfigKey = "drawGeometryShaderEffects";
 constexpr std::string_view kPcShadersForEmptyConfigKey = "pcShadersForEmptyQuestShaders";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
+constexpr std::string_view kEffectResolutionConfigKey = "effectResolutionPercent";
 bool gMultipassRenderingEnabled = true;
 bool gVivifyDebugLogging = false;
 bool gDisableBeat0FilmgrainBlit = false;
@@ -106,6 +107,8 @@ bool gPcShadersForEmpty = true;
 // runnable shader name, so a name from that list can be dropped in here and
 // tried immediately rather than waiting for another build.
 std::string gStandInShaderName;
+// Percent of the eye resolution map post-process effects render at.
+int gEffectResolution = 100;
 
 // Both diagnostic files live beside the mod's own data, and both are .txt.
 //
@@ -201,6 +204,27 @@ bool EnsureStringConfigValue(std::string_view key, std::string const& defaultVal
   return true;
 }
 
+// The integer equivalent of EnsureBoolConfigValue; a stored value outside
+// [minValue, maxValue] is replaced by the default.
+bool EnsureIntConfigValue(std::string_view key, int defaultValue, int minValue, int maxValue, int& value) {
+  auto& doc = getConfig().config;
+  auto it = doc.FindMember(key.data());
+  if (it != doc.MemberEnd() && it->value.IsInt() && it->value.GetInt() >= minValue &&
+      it->value.GetInt() <= maxValue) {
+    value = it->value.GetInt();
+    return false;
+  }
+
+  auto& allocator = doc.GetAllocator();
+  value = defaultValue;
+  if (it == doc.MemberEnd()) {
+    doc.AddMember(rapidjson::Value(key.data(), allocator), rapidjson::Value(defaultValue), allocator);
+  } else {
+    it->value.SetInt(defaultValue);
+  }
+  return true;
+}
+
 bool EnsureBoolConfigValue(std::string_view key, bool defaultValue, bool& value) {
   auto& doc = getConfig().config;
   auto it = doc.FindMember(key.data());
@@ -248,6 +272,27 @@ void SetBoolConfigValue(std::string_view key, bool enabled, bool& value) {
     it->value.SetBool(enabled);
   }
   value = enabled;
+  config.Write();
+}
+
+void SetIntConfigValue(std::string_view key, int newValue, int& value) {
+  if (gSettingsMenuBuilding) {
+    PaperLogger.info("Vivify settings: ignoring a '{}' change to {} that arrived while the menu was "
+                     "still being built",
+                     key, newValue);
+    return;
+  }
+  auto& config = getConfig();
+  auto& doc = config.config;
+  EnsureConfigObject();
+  auto& allocator = doc.GetAllocator();
+  auto it = doc.FindMember(key.data());
+  if (it == doc.MemberEnd()) {
+    doc.AddMember(rapidjson::Value(key.data(), allocator), rapidjson::Value(newValue), allocator);
+  } else {
+    it->value.SetInt(newValue);
+  }
+  value = newValue;
   config.Write();
 }
 
@@ -378,6 +423,16 @@ void RegisterModSettings() {
             container->get_transform(), u"Draw Geometry-Shader Effects (experimental)",
             GetDrawGeometryShaderEffects(),
             [](bool value) { SetBoolConfigValue(kGeometryEffectsConfigKey, value, gGeometryEffects); });
+
+        // Renders map post-process effects (blits, screen textures) below eye
+        // resolution and scales the result up. Full-screen raymarchers cost
+        // per pixel: 50% is a quarter of the work.
+        BSML::Lite::CreateIncrementSetting(
+            container->get_transform(), u"Effect Resolution % (lower = less lag)", 0, 25.0f,
+            static_cast<float>(gEffectResolution), true, true, 25.0f, 100.0f, [](float value) {
+              int const percent = std::clamp(static_cast<int>(value + 0.5f), 25, 100);
+              SetIntConfigValue(kEffectResolutionConfigKey, percent, gEffectResolution);
+            });
 
         BSML::Lite::CreateToggle(
             container->get_transform(), u"AudioLink",
@@ -596,6 +651,10 @@ bool GetUsePcShadersForEmptyShaders() {
   return gPcShadersForEmpty;
 }
 
+float GetEffectResolutionScale() {
+  return static_cast<float>(std::clamp(gEffectResolution, 25, 100)) / 100.0f;
+}
+
 std::string GetStandInShaderName() {
   return gStandInShaderName;
 }
@@ -629,6 +688,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kPcShadersForEmptyConfigKey, true, gPcShadersForEmpty);
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),
                                         gStandInShaderName);
+  needsWrite |= EnsureIntConfigValue(kEffectResolutionConfigKey, 100, 25, 100, gEffectResolution);
   if (needsWrite) {
     config.Write();
   }

@@ -11,6 +11,16 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.20] - 2026-10-01
+
+### Added
+- **Effect Resolution % (lower = less lag)** setting, 25-100%, default 100.
+  It renders a map's post-process effects (blits on the screen and the
+  screen textures maps create) at that share of the eye resolution and
+  scales the result up. Full-screen raymarchers and distortion effects cost
+  per pixel, so 50% does a quarter of the work. At 100% nothing changes.
+  Cameras a map creates still render at full resolution.
+
 ## [0.14.19] - 2026-09-30
 
 ### Added
