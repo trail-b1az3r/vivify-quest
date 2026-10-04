@@ -1,7 +1,7 @@
 
 ### if you have issues please just make a issue and follow issue template
 
-### ***if you cant find session log: look at log-help file for help***
+### ***if you cant find session log: look at log-help.md for help***
 # Vivify Quest
 
 A Quest port of [Vivify](https://github.com/Aeroluna/Vivify) for **Beat Saber
