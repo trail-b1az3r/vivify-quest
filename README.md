@@ -1,6 +1,7 @@
-## if you have issues please just make a issue and put your logs in it and try downgrading to 0.13.3, pleaseee
 
+###if you have issues please just make a issue and follow issue template
 
+### ***if you cant find session log: look at log-help file for help***
 # Vivify Quest
 
 A Quest port of [Vivify](https://github.com/Aeroluna/Vivify) for **Beat Saber
