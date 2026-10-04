@@ -1,5 +1,5 @@
 
-###if you have issues please just make a issue and follow issue template
+### if you have issues please just make a issue and follow issue template
 
 ### ***if you cant find session log: look at log-help file for help***
 # Vivify Quest
