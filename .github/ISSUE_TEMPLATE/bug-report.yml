@@ -101,22 +101,24 @@ body:
         Chroma
         Noodle Extensions
         Camera2
+        Mapping Extensions
     validations:
       required: true
 
 
   - type: textarea
-    id: log2
+    id: debug-log
     attributes:
       label: Vivify debug log
       description: |
         REQUIRED: Attach the vivify debug log file here, or provide a direct link to the log.
 
-        You can drag the txt file into this box to upload it to GitHub.
+        You can drag the sesion text file into this box to upload it to GitHub.
 
         If using a link, make sure maintainers can access it without requesting
-        permission or expires.
+        permission or from a service, where the link can expire.
         Do NOT submit a logCat file here
+
         Do NOT submit an issue without a log unless you genuinely cannot obtain one.
         It is preferred if you turn on debug mode in the vivify mod settings.
       placeholder: |
@@ -129,16 +131,18 @@ body:
   
 
   - type: textarea
-    id: log
+    id: headset-log
     attributes:
-      label: Anb log
+      label: anb log
       description: |
-        REQUIRED: Attach the Anb log file here, or provide a direct link to the log.
+        OPTIONAL: Attach the Anb log file here, or provide a direct link to the log.
 
         You can drag the log file into this box to upload it to GitHub.
 
         If using a link, make sure maintainers can access it without requesting
         permission.
+
+        Do NOT submit a vivify session log in thjs area
 
         Do NOT submit an issue without a log unless you genuinely cannot obtain one.
       placeholder: |
