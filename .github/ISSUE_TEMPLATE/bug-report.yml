@@ -104,6 +104,30 @@ body:
     validations:
       required: true
 
+
+  - type: textarea
+    id: log2
+    attributes:
+      label: Vivify debug log
+      description: |
+        REQUIRED: Attach the vivify debug log file here, or provide a direct link to the log.
+
+        You can drag the txt file into this box to upload it to GitHub.
+
+        If using a link, make sure maintainers can access it without requesting
+        permission or expires.
+        Do NOT submit a logCat file here
+        Do NOT submit an issue without a log unless you genuinely cannot obtain one.
+        It is preferred if you turn on debug mode in the vivify mod settings.
+      placeholder: |
+        Attach the vivify text log here, or paste a direct log URL.
+
+        Example:
+        https://example.com/vivify_session.txt
+    validations:
+      required: true
+  
+
   - type: textarea
     id: log
     attributes:
@@ -121,9 +145,9 @@ body:
         Attach the Anb log here, or paste a direct log URL.
 
         Example:
-        https://example.com/my-vivify-log.txt
+        https://example.com/logcat.log
     validations:
-      required: true
+      required: false
 
   - type: input
     id: log-time
