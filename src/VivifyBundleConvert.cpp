@@ -2406,6 +2406,20 @@ ShaderScan ScanShaders(std::string const& bundlePath) {
         if (!program.raw) realPrograms++;
       }
       if (decoded.ok && realPrograms == 0 && !shader.name.empty()) scan.emptyShaderNames.push_back(shader.name);
+      bool depthHere = false;
+      for (auto const& program : decoded.programs) {
+        static constexpr std::string_view kDepth = "CameraDepthTexture";  // and _LastCameraDepthTexture
+        auto names = [](std::vector<uint8_t> const& bytes) {
+          return std::search(bytes.begin(), bytes.end(), kDepth.begin(), kDepth.end()) != bytes.end();
+        };
+        if (!depthHere && (names(program.code) || names(program.rawBytes) || names(program.trailing))) {
+          depthHere = true;
+        }
+      }
+      if (depthHere) {
+        scan.samplesCameraDepth = true;
+        scan.cameraDepthShaderNames.push_back(shader.name.empty() ? std::string("?") : shader.name);
+      }
       for (auto const& program : decoded.programs) {
         scan.programs++;
         programTypes.insert(program.programType);

@@ -1267,11 +1267,20 @@ void Runtime::RefreshCameraComponents(bool allowCameraApplier) {
     // sample _CameraDepthTexture to know where the world is. PC Beat Saber's
     // camera renders that texture every frame, so maps never ask for it; the
     // Quest build's camera does not, and a shader sampling it gets Unity's
-    // empty stand-in -- every ray "hits" at once and the effect draws nothing,
-    // which is the Hold My Hand raymarchers and YOU's black hole. It costs a
-    // depth pre-pass, so it is only on while a Vivify map plays, and it can be
-    // turned off in settings.
-    if (GetSceneDepthTexture() && _currentBeatmapData != nullptr && !_isResetting) {
+    // empty stand-in -- every ray "hits" at once and the effect draws nothing.
+    // It costs a depth pre-pass over the whole scene, so it is only on while a
+    // Vivify map plays, only for maps whose shaders read it
+    // (ScanBundleForSceneDepth; Hold My Hand's do not), and it can be turned
+    // off in settings. A map that asks for depth itself (SetCameraProperty)
+    // still gets it from that.
+    auto const mapNeedsDepth = MapShadersNeedSceneDepth();
+    if (_currentBeatmapData != nullptr && mapNeedsDepth.has_value() && !mapNeedsDepth.value() &&
+        !_sceneDepthSkipLogged) {
+      _sceneDepthSkipLogged = true;
+      PaperLogger.info("Vivify main camera: no shader in this map reads the scene depth texture; not rendering it");
+    }
+    if (GetSceneDepthTexture() && mapNeedsDepth.value_or(true) && _currentBeatmapData != nullptr &&
+        !_isResetting) {
       int const mode = mainCamPtr->get_depthTextureMode().value__;
       if ((mode & UnityEngine::DepthTextureMode::Depth.value__) == 0) {
         CaptureMainCameraOriginals(mainCamPtr, mainCamGO);
