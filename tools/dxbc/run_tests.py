@@ -233,7 +233,7 @@ check("vertex version line", source.startswith("#version 300 es\n"), source[:40]
 check("attribute naming", "in vec4 in_POSITION0;" in source, source)
 check("varying naming", "out vec4 vs_TEXCOORD0;" in source, source)
 check("matrix uniform naming", "uniform vec4 hlslcc_mtx4x4unity_MatrixVP[4];" in source, source)
-check("clip position", "gl_Position.xyzw = (r0.xyzw + hlslcc_mtx4x4unity_MatrixVP[3].xyzw);" in source,
+check("clip position", "gl_Position.xyzw = (intBitsToFloat(r0.xyzw) + hlslcc_mtx4x4unity_MatrixVP[3].xyzw);" in source,
       source)
 check("swizzle collapse", "_MainTex_ST.xy + _MainTex_ST.zw" in source, source)
 check("temp declared", "vec4 r0;" in source, source)
@@ -252,7 +252,7 @@ proc, fields, lists, source = run("glsl", pixel_shader(body))
 check("texture translates", fields.get("ok") == "1", fields.get("error", ""))
 check("sampler declared", "uniform highp sampler2D _MainTex;" in source, source)
 check("texture call", "texture(_MainTex, vs_TEXCOORD0.xy).xyzw" in source, source)
-check("saturate wraps", "clamp((r0.xyzw * _Color.xyzw), 0.0, 1.0)" in source, source)
+check("saturate wraps", "clamp((intBitsToFloat(r0.xyzw) * _Color.xyzw), 0.0, 1.0)" in source, source)
 check("fragment output", "layout(location = 0) out vec4 SV_Target0;" in source, source)
 check("samplers listed", lists.get("sampler") == ["_MainTex"], str(lists.get("sampler")))
 
@@ -265,35 +265,35 @@ check("masked write", "SV_Target0.yz = (vs_TEXCOORD0.zw * _Color.yz);" in source
 body = m.insn(LT, m.dest(TEMP, 0, 0x3), m.src(INPUT, 0), m.src_cb(0, 0))
 body += m.insn(MOV, m.dest(OUTPUT, 0), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("vector compare", "intBitsToFloat(-ivec2(lessThan(vs_TEXCOORD0.xy, _Color.xy)))" in source,
+check("vector compare", "r0.xy = -ivec2(lessThan(vs_TEXCOORD0.xy, _Color.xy));" in source,
       source)
 
 body = m.insn(GE, m.dest(TEMP, 0, 0x1), m.src(INPUT, 0), m.src_cb(0, 0))
 body += m.insn(MOV, m.dest(OUTPUT, 0), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("scalar compare", "intBitsToFloat((vs_TEXCOORD0.x >= _Color.x) ? -1 : 0)" in source, source)
+check("scalar compare", "r0.x = (vs_TEXCOORD0.x >= _Color.x) ? -1 : 0;" in source, source)
 
 # movc selects per component off an integer-typed condition.
 body = m.insn(MOVC, m.dest(OUTPUT, 0, 0x3), m.src(TEMP, 0), m.src_cb(0, 0), m.src(INPUT, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
 check("vector movc",
-      "mix(vs_TEXCOORD0.xy, _Color.xy, notEqual(floatBitsToInt(r0.xy), ivec2(0)))" in source, source)
+      "mix(vs_TEXCOORD0.xy, _Color.xy, notEqual(r0.xy, ivec2(0)))" in source, source)
 body = m.insn(MOVC, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0), m.src_cb(0, 0), m.src(INPUT, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("scalar movc", "((floatBitsToInt(r0.x) != 0) ? _Color.x : vs_TEXCOORD0.x)" in source, source)
+check("scalar movc", "((r0.x != 0) ? _Color.x : vs_TEXCOORD0.x)" in source, source)
 
 # Integer maths round-trips through the bit-cast form.
 body = m.insn(IADD, m.dest(TEMP, 0, 0x1), m.src(TEMP, 0), m.imm_int(3) if False else m.imm_int(3))
 body += m.insn(ITOF, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("integer add", "intBitsToFloat(floatBitsToInt(r0.x) + 3)" in source, source)
-check("int to float", "SV_Target0.x = float(floatBitsToInt(r0.x));" in source, source)
+check("integer add", "r0.x = r0.x + 3;" in source, source)
+check("int to float", "SV_Target0.x = float(r0.x);" in source, source)
 
 # Source modifiers.
 body = m.insn(ADD, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0, modifier=m.MOD_NEG),
               m.src_cb(0, 0, modifier=m.MOD_ABS))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("negate modifier", "(-r0.x)" in source, source)
+check("negate modifier", "(-intBitsToFloat(r0.x))" in source, source)
 check("absolute modifier", "abs(_Color.x)" in source, source)
 
 # Control flow.
@@ -303,9 +303,49 @@ body += m.insn(ELSE)
 body += m.insn(DISCARD, m.src(TEMP, 0), controls=(1 << 7))
 body += m.insn(ENDIF)
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("if emitted", "if (floatBitsToInt(r0.x) != 0) {" in source, source)
+check("if emitted", "if (r0.x != 0) {" in source, source)
 check("else emitted", "} else {" in source, source)
-check("discard emitted", "if (floatBitsToInt(r0.x) != 0) discard;" in source, source)
+check("discard emitted", "if (r0.x != 0) discard;" in source, source)
+
+# Integers never pass through a float variable (0.14.22). GLSL ES lets a GPU
+# flush denormals to zero and Adreno does; as float bits the integers 1, 2, 3
+# are denormals, so 743 Aether's voronoi loop counter (for i = -1..1) never got
+# past zero, and the first frame to draw it hung the GPU. And -1, DXBC's
+# "true", is a NaN as a float literal: it used to be written 0.0.
+BREAKC, ILT = 3, 34
+body = m.insn(MOV, m.dest(TEMP, 0, 0x1), m.imm_int(-1))
+body += m.insn(LOOP)
+body += m.insn(ILT, m.dest(TEMP, 0, 0x2), m.imm_int(1), m.src(TEMP, 0, (X, X, X, X)))
+body += m.insn(BREAKC, m.src(TEMP, 0, (Y, Y, Y, Y)), controls=(1 << 7))
+body += m.insn(IADD, m.dest(TEMP, 0, 0x1), m.src(TEMP, 0, (X, X, X, X)), m.imm_int(1))
+body += m.insn(ENDLOOP)
+body += m.insn(ITOF, m.dest(OUTPUT, 0), m.src(TEMP, 0))
+proc, fields, _, source = run("glsl", pixel_shader(body))
+check("integer loop translates", fields.get("ok") == "1", fields.get("error", ""))
+check("temps are integer bit registers", "ivec4 r0;" in source and "vec4 r0;" not in source.replace("ivec4 r0;", ""),
+      source)
+check("a -1 literal is copied as the integer -1", "r0.x = -1;" in source, source)
+check("the loop counter increments as an integer", "r0.x = r0.x + 1;" in source, source)
+check("the loop exit compares integers", "r0.y = (1 < r0.x) ? -1 : 0;" in source and
+      "if (r0.y != 0) break;" in source, source)
+check("no integer round-trips through a float", "intBitsToFloat(floatBitsToInt(" not in source and
+      "floatBitsToInt(intBitsToFloat(" not in source, source)
+
+body = m.insn(MOV, m.dest(TEMP, 0, 0x3), m.imm_int(1, -1))
+body += m.insn(MOV, m.dest(OUTPUT, 0, 0x1), m.imm_int(-1))
+body += m.insn(MOV, m.dest(OUTPUT, 0, 0x2), m.imm_float(0.5))
+proc, fields, _, source = run("glsl", pixel_shader(body))
+check("integer literals copy exactly into temps", "r0.xy = ivec2(1, -1);" in source, source)
+check("a -1 literal written to a float output keeps its bits", "SV_Target0.x = intBitsToFloat(-1);" in source,
+      source)
+check("a float literal into an output stays a float", "SV_Target0.y = intBitsToFloat(1056964608);" in source or
+      "SV_Target0.y = 0.5;" in source, source)
+
+body = m.insn(MOVC, m.dest(TEMP, 0, 0x3), m.src(TEMP, 0, (Z, W, Z, W)), m.imm_int(1, 2), m.src(TEMP, 0, (X, Y, X, Y)))
+body += m.insn(MOV, m.dest(OUTPUT, 0), m.src(TEMP, 0))
+proc, fields, _, source = run("glsl", pixel_shader(body))
+check("a vector movc into a temp selects bits", "ivec2 sel_movc" in source and
+      "(sel_movc" in source and "mix(" not in source, source)
 
 body = m.insn(LOOP)
 body += m.insn(ADD, m.dest(TEMP, 0), m.src(TEMP, 0), m.imm_float(1.0))
@@ -340,7 +380,7 @@ variables = (variable("_Mode", 0, 4, SCALAR_INT),)
 body = m.insn(ITOF, m.dest(OUTPUT, 0, 0x1), m.src_cb(0, 0, (X, X, X, X)))
 proc, fields, _, source = run("glsl", pixel_shader(body, variables=variables, size=16, temps=0))
 check("int uniform declared", "uniform int _Mode;" in source, source)
-check("int uniform read as bits", "float(floatBitsToInt(intBitsToFloat(_Mode)))" in source, source)
+check("int uniform read as bits", "float(_Mode)" in source, source)
 
 # Array variables and dynamic indexing.
 variables = (variable("_Points", 0, 128, VECTOR4, elements=8),)
@@ -352,7 +392,7 @@ dynamic = [token, 0, 2] + m.src(TEMP, 0, (X, X, X, X))
 body = m.insn(MOV, m.dest(OUTPUT, 0), dynamic)
 proc, fields, _, source = run("glsl", pixel_shader(body, variables=variables, size=128))
 check("array uniform", "uniform vec4 _Points[8];" in source, source)
-check("dynamic index", "_Points[floatBitsToInt(r0.x) + 2].xyzw" in source, source)
+check("dynamic index", "_Points[r0.x + 2].xyzw" in source, source)
 
 # The same dynamic index against a non-array variable has no named form.
 variables = (variable("_Color", 0, 16, VECTOR4), variable("_Tint", 16, 16, VECTOR4),
@@ -513,12 +553,12 @@ check("gather4 picks its channel", "textureGather(_MainTex, vs_TEXCOORD0.xy, 1)"
 # Bit manipulation.
 body = m.insn(COUNTBITS, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("countbits", "uintBitsToFloat(uint(bitCount(floatBitsToUint(r0.x))))" in source,
+check("countbits", "uintBitsToFloat(uint(bitCount(uint(r0.x))))" in source,
       source + fields.get("error", ""))
 
 body = m.insn(BFREV, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("bfrev", "bitfieldReverse(floatBitsToUint(r0.x))" in source, source)
+check("bfrev", "bitfieldReverse(uint(r0.x))" in source, source)
 
 body = m.insn(FIRSTBIT_HI, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
@@ -531,7 +571,7 @@ check("firstbit_lo is findLSB", "findLSB(" in source, source)
 body = m.insn(UBFE, m.dest(OUTPUT, 0, 0x1), m.imm_int(8), m.imm_int(4), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
 check("ubfe masks its width and offset to five bits",
-      "bitfieldExtract(floatBitsToUint(r0.x), (4) & 31, (8) & 31)" in source,
+      "bitfieldExtract(uint(r0.x), (4) & 31, (8) & 31)" in source,
       source + fields.get("error", ""))
 
 body = m.insn(BFI, m.dest(OUTPUT, 0, 0x1), m.imm_int(8), m.imm_int(4), m.src(TEMP, 0),
@@ -541,12 +581,12 @@ check("bfi", "bitfieldInsert(" in source, source + fields.get("error", ""))
 
 body = m.insn(F32TOF16, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("f32tof16 keeps only the low half", "packHalf2x16(vec2(r0.x, 0.0)) & 0xffffu" in source,
+check("f32tof16 keeps only the low half", "packHalf2x16(vec2(intBitsToFloat(r0.x), 0.0)) & 0xffffu" in source,
       source + fields.get("error", ""))
 
 body = m.insn(F16TOF32, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("f16tof32", "unpackHalf2x16(floatBitsToUint(r0.x) & 0xffffu).x" in source, source)
+check("f16tof32", "unpackHalf2x16(uint(r0.x) & 0xffffu).x" in source, source)
 
 body = m.insn(UADDC, m.dest(TEMP, 0, 0x1), m.dest(TEMP, 0, 0x2), m.src(TEMP, 0), m.src(TEMP, 0))
 body += m.insn(MOV, m.dest(OUTPUT, 0), m.src(TEMP, 0))
@@ -612,7 +652,7 @@ check("work group size declared", "layout(local_size_x = 64, local_size_y = 1, "
       "local_size_z = 1) in;" in source, source)
 check("storage buffer declared", "buffer _Result_block { uint _Result[]; };" in source, source)
 check("thread id aliased once",
-      "vec4 vThreadID = uintBitsToFloat(uvec4(gl_GlobalInvocationID, 0u));" in source, source)
+      "ivec4 vThreadID = ivec4(uvec4(gl_GlobalInvocationID, 0u));" in source, source)
 check("compute escalates the version", source.startswith("#version 310 es"), source[:20])
 
 body = m.insn(SYNC, controls=(1 << 4))
@@ -807,7 +847,7 @@ check("pixel enables the multiview extension",
 proc, fields, _, source = run("glsl", eye_pixel)
 check("eye-index pixel translates without multiview", fields.get("ok") == "1",
       fields.get("error", ""))
-check("eye index is 0 without multiview", "vRTArrayIndex = intBitsToFloat(ivec4(0))" in source,
+check("eye index is 0 without multiview", "ivec4 vRTArrayIndex = ivec4(0)" in source,
       source)
 
 glslang_enabled = False

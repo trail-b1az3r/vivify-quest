@@ -1042,12 +1042,20 @@ std::string DisassembleProgram(Program const& program) {
 // GLSL ES emission
 // ---------------------------------------------------------------------------
 //
-// The register model is deliberately the naive one: every DXBC temp becomes a
-// vec4 and integer operations round-trip through floatBitsToInt/intBitsToFloat.
-// DXBC registers are typeless -- the same four bytes are read as float by one
-// instruction and as int by the next -- and any model that tries to infer a
-// type per register has to be right every time or it silently miscompiles. The
-// bit-cast form is always right, and the driver's optimiser removes the casts.
+// The register model is deliberately the naive one: DXBC registers are
+// typeless -- the same four bytes are read as float by one instruction and as
+// int by the next -- and any model that tries to infer a type per register has
+// to be right every time or it silently miscompiles. So every temp holds raw
+// bits, as an ivec4, and each instruction reinterprets them: a float read is
+// intBitsToFloat(r0.x), an int read is r0.x itself, a float result is stored
+// as floatBitsToInt(...).
+//
+// Until 0.14.22 temps were vec4s holding integers as float bits. GLSL ES lets
+// a GPU flush denormal floats to zero, and Adreno does: the integers 1, 2, 3
+// are denormals as floats, so a loop counter stored that way never got past
+// zero and the shader looped forever -- a GPU hang on the first frame that drew
+// it, which is how every converted map froze on start. Integers now never pass
+// through a float variable. (IsBitsRegister names what is stored this way.)
 //
 // The output version is not fixed. GLSL ES 3.00 covers an ordinary vertex or
 // fragment shader; textureGather, uaddCarry, imulExtended, multisample fetches
@@ -1085,6 +1093,36 @@ std::string FormatIntLiteral(uint32_t bits) {
   // unary operator applied to a positive constant that does not fit.
   if (value == INT32_MIN) return "(-2147483647 - 1)";
   return std::to_string(value);
+}
+
+// Registers that hold raw bits as ivec4s (see the register model above): the
+// temps r#, the indexable temps x#[...], and the integer built-in aliases.
+bool IsBitsRegister(std::string const& name) {
+  if (name.size() >= 2 && (name[0] == 'r' || name[0] == 'x') && name[1] >= '0' && name[1] <= '9') return true;
+  static constexpr std::string_view kAliases[] = {
+      "vFrontFace", "vVertexID", "vInstanceID", "vRTArrayIndex", "vPrimitiveID", "vSampleIndex",
+      "vGsInstanceID", "vThreadID", "vThreadGroupID", "vThreadIDInGroup", "vThreadIDInGroupFlattened"};
+  for (auto alias : kAliases) {
+    if (name == alias) return true;
+  }
+  return false;
+}
+
+// The argument of `function(...)` when that call is the whole of expression,
+// so a cast this emitter wrapped around a value can be taken off again rather
+// than undone by its inverse (which would pass the bits through a float).
+std::optional<std::string> UnwrapCall(std::string const& expression, std::string_view function) {
+  if (expression.size() < function.size() + 2 || expression.compare(0, function.size(), function) != 0 ||
+      expression[function.size()] != '(' || expression.back() != ')') {
+    return std::nullopt;
+  }
+  int depth = 0;
+  for (size_t i = function.size(); i < expression.size(); i++) {
+    if (expression[i] == '(') depth++;
+    if (expression[i] == ')') depth--;
+    if (depth == 0 && i != expression.size() - 1) return std::nullopt;
+  }
+  return expression.substr(function.size() + 1, expression.size() - function.size() - 2);
 }
 
 int PopCount4(uint8_t mask) {
@@ -2217,6 +2255,7 @@ std::string GlslEmitter::SrcBase(Operand const& operand, uint8_t mask) {
     if (!(mask & (1u << i))) continue;
     swizzle += kComponentNames[operand.numComponents == 1 ? 0 : (operand.swizzle[i] & 0x3u)];
   }
+  if (IsBitsRegister(name)) return "intBitsToFloat(" + name + swizzle + ")";
   return name + swizzle;
 }
 
@@ -2255,7 +2294,11 @@ std::string GlslEmitter::SrcInt(Operand const& operand, uint8_t mask) {
   } else {
     std::string const base = SrcBase(operand, mask);
     if (_failed) return {};
-    text = "floatBitsToInt(" + base + ")";
+    if (auto bits = UnwrapCall(base, "intBitsToFloat")) {
+      text = *bits;
+    } else {
+      text = "floatBitsToInt(" + base + ")";
+    }
   }
   switch (operand.modifier) {
     case Modifier::Neg: return "(-" + text + ")";
@@ -2285,6 +2328,8 @@ std::string GlslEmitter::SrcUint(Operand const& operand, uint8_t mask) {
   }
   std::string const base = SrcBase(operand, mask);
   if (_failed) return {};
+  if (auto bits = UnwrapCall(base, "intBitsToFloat")) return VecType(count, "u") + "(" + *bits + ")";
+  if (auto bits = UnwrapCall(base, "uintBitsToFloat")) return *bits;
   return "floatBitsToUint(" + base + ")";
 }
 
@@ -2332,6 +2377,19 @@ void GlslEmitter::WriteDest(Instruction const& instruction, Operand const& dest,
   std::string swizzle = ".";
   for (int i = 0; i < 4; i++) {
     if (mask & (1u << i)) swizzle += kComponentNames[i];
+  }
+  if (IsBitsRegister(name)) {
+    // Stored as bits: an integer result as it is, a float one bit-cast.
+    std::string bits;
+    if (auto inner = UnwrapCall(value, "intBitsToFloat"); inner && !instruction.saturate) {
+      bits = *inner;
+    } else if (auto innerUint = UnwrapCall(value, "uintBitsToFloat"); innerUint && !instruction.saturate) {
+      bits = VecType(PopCount4(mask), "i") + "(" + *innerUint + ")";
+    } else {
+      bits = "floatBitsToInt(" + value + ")";
+    }
+    Line(name + swizzle + " = " + bits + ";");
+    return;
   }
   Line(name + swizzle + " = " + value + ";");
 }
@@ -2463,6 +2521,40 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
   auto maskOf = [&](size_t index) -> uint8_t {
     if (operands.size() <= index) return 0x1;
     return operands[index].numComponents == 4 ? operands[index].mask : 0x1;
+  };
+  // Whether a typeless copy (mov, movc) of operands [first, first + count)
+  // into operands[0] should move bits rather than floats: unsaturated, the
+  // sources unmodified (a modifier makes it float arithmetic), and either the
+  // destination a bits register or a source a literal.
+  auto copiesBits = [&](size_t first, size_t count) {
+    if (instruction.saturate || operands.empty() || operands.size() < first + count) return false;
+    bool literal = false;
+    for (size_t i = first; i < first + count; i++) {
+      if (operands[i].modifier != Modifier::None) return false;
+      if (operands[i].type == kOperandImmediate32) literal = true;
+    }
+    if (literal) return true;
+    if (operands[0].type == kOperandTemp || operands[0].type == kOperandIndexableTemp) return true;
+    return false;
+  };
+  // selector ? whenSet : whenClear, per component, on integer vectors (GLSL ES
+  // 3.00 has no mix() for them). Vectors go through locals so each operand is
+  // evaluated once.
+  auto selectBits = [&](std::string const& selector, std::string const& whenSet, std::string const& whenClear,
+                        int count, char const* tag) -> std::string {
+    if (count == 1) return "((" + selector + " != 0) ? " + whenSet + " : " + whenClear + ")";
+    std::string const suffix = std::string(tag) + std::to_string(instruction.tokenOffset);
+    std::string const type = VecType(count, "i");
+    Line(type + " sel_" + suffix + " = " + selector + ";");
+    Line(type + " set_" + suffix + " = " + whenSet + ";");
+    Line(type + " clr_" + suffix + " = " + whenClear + ";");
+    std::string text = type + "(";
+    for (int i = 0; i < count; i++) {
+      std::string const c(1, kComponentNames[i]);
+      if (i != 0) text += ", ";
+      text += "(sel_" + suffix + "." + c + " != 0) ? set_" + suffix + "." + c + " : clr_" + suffix + "." + c;
+    }
+    return text + ")";
   };
 
   // The per-component ALU shape: every source is read with the destination's
@@ -2836,7 +2928,14 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
   switch (opcode) {
     // ---- moves and float arithmetic ----------------------------------------
     case OP_MOV:
-      WriteDest(instruction, operands[0], SrcFloat(operands[1], destMask()));
+      // mov copies bits. A copy into a bits register, or of a literal, goes
+      // through the integer view: as a float literal, -1 (DXBC's "true") is a
+      // NaN with no GLSL spelling and 1 is a denormal a GPU may flush to zero.
+      if (copiesBits(1, 1)) {
+        WriteDest(instruction, operands[0], "intBitsToFloat(" + SrcInt(operands[1], destMask()) + ")");
+      } else {
+        WriteDest(instruction, operands[0], SrcFloat(operands[1], destMask()));
+      }
       break;
     case OP_ADD: binary("+"); break;
     case OP_MUL: binary("*"); break;
@@ -2901,6 +3000,12 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       uint8_t const mask = destMask();
       int const count = PopCount4(mask);
       std::string const selector = SrcInt(operands[1], mask);
+      if (copiesBits(2, 2)) {
+        WriteDest(instruction, operands[0],
+                  "intBitsToFloat(" + selectBits(selector, SrcInt(operands[2], mask), SrcInt(operands[3], mask),
+                                                 count, "movc") + ")");
+        break;
+      }
       std::string const a = SrcFloat(operands[2], mask);
       std::string const b = SrcFloat(operands[3], mask);
       std::string expression;
@@ -3063,6 +3168,22 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       std::string const selector = SrcInt(operands[2], maskA);
       std::string const first = "swapA" + std::to_string(instruction.tokenOffset);
       std::string const second = "swapB" + std::to_string(instruction.tokenOffset);
+      if (!instruction.saturate && operands.size() > 4 && operands[3].modifier == Modifier::None &&
+          operands[4].modifier == Modifier::None) {
+        // As bits, like mov: see OP_MOV.
+        Line(VecType(countA, "i") + " " + first + " = " + SrcInt(operands[3], maskA) + ";");
+        Line(VecType(PopCount4(maskB), "i") + " " + second + " = " + SrcInt(operands[4], maskB) + ";");
+        if (operands[0].type != kOperandNull) {
+          WriteDest(instruction, operands[0],
+                    "intBitsToFloat(" + selectBits(selector, second, first, countA, "swapc0") + ")");
+        }
+        if (operands[1].type != kOperandNull) {
+          std::string const selectorB = SrcInt(operands[2], maskB);
+          WriteDest(instruction, operands[1],
+                    "intBitsToFloat(" + selectBits(selectorB, first, second, PopCount4(maskB), "swapc1") + ")");
+        }
+        break;
+      }
       Line(VecType(countA, "") + " " + first + " = " + SrcFloat(operands[3], maskA) + ";");
       Line(VecType(PopCount4(maskB), "") + " " + second + " = " + SrcFloat(operands[4], maskB) +
            ";");
@@ -3687,7 +3808,7 @@ GlslResult GlslEmitter::Run() {
                      " temporary registers";
       return result;
     }
-    std::string line = "vec4 ";
+    std::string line = "ivec4 ";
     for (uint32_t i = 0; i < _program.tempCount; i++) {
       if (i != 0) line += ", ";
       line += "r" + std::to_string(i);
@@ -3699,7 +3820,7 @@ GlslResult GlslEmitter::Run() {
       result.error = "indexable temp x" + std::to_string(temp.index) + " has an impossible size";
       return result;
     }
-    addPrologue("vec4 x" + std::to_string(temp.index) + "[" + std::to_string(temp.arraySize) + "];");
+    addPrologue("ivec4 x" + std::to_string(temp.index) + "[" + std::to_string(temp.arraySize) + "];");
   }
   // The built-in aliases. Every one of these is a GLSL built-in of some scalar
   // or integer type, and the register model reads registers as vec4s, so each
@@ -3707,16 +3828,16 @@ GlslResult GlslEmitter::Run() {
   if (_usedFrontFace) {
     // HLSL's front-face input is a bool that the bytecode reads as an
     // all-bits-set integer, which is not what a GLSL bool converts to.
-    addPrologue("vec4 vFrontFace = vec4(intBitsToFloat(gl_FrontFacing ? -1 : 0));");
+    addPrologue("ivec4 vFrontFace = ivec4(gl_FrontFacing ? -1 : 0);");
   }
-  if (_usedVertexID) addPrologue("vec4 vVertexID = intBitsToFloat(ivec4(gl_VertexID));");
+  if (_usedVertexID) addPrologue("ivec4 vVertexID = ivec4(gl_VertexID);");
   if (_usedInstanceID) {
     if (_options.multiview && _stereoInstanced) {
       // One multiview draw per real instance stands in for SPI's two, so the
       // SPI numbering is rebuilt: eye in bit 0, real instance above it.
-      addPrologue("vec4 vInstanceID = intBitsToFloat(ivec4(gl_InstanceID * 2 + int(gl_ViewID_OVR)));");
+      addPrologue("ivec4 vInstanceID = ivec4(gl_InstanceID * 2 + int(gl_ViewID_OVR));");
     } else {
-      addPrologue("vec4 vInstanceID = intBitsToFloat(ivec4(gl_InstanceID));");
+      addPrologue("ivec4 vInstanceID = ivec4(gl_InstanceID);");
     }
   }
   if (!_stereoEyeIndexType.empty()) {
@@ -3724,25 +3845,25 @@ GlslResult GlslEmitter::Run() {
   }
   if (_usedRTArrayIndexIn) {
     addPrologue(_options.multiview
-                    ? "vec4 vRTArrayIndex = intBitsToFloat(ivec4(int(gl_ViewID_OVR)));"
-                    : "vec4 vRTArrayIndex = intBitsToFloat(ivec4(0));");
+                    ? "ivec4 vRTArrayIndex = ivec4(int(gl_ViewID_OVR));"
+                    : "ivec4 vRTArrayIndex = ivec4(0);");
   }
-  if (_usedPrimitiveID) addPrologue("vec4 vPrimitiveID = intBitsToFloat(ivec4(gl_PrimitiveID));");
-  if (_usedSampleIndex) addPrologue("vec4 vSampleIndex = intBitsToFloat(ivec4(gl_SampleID));");
+  if (_usedPrimitiveID) addPrologue("ivec4 vPrimitiveID = ivec4(gl_PrimitiveID);");
+  if (_usedSampleIndex) addPrologue("ivec4 vSampleIndex = ivec4(gl_SampleID);");
   if (_usedGsInstanceID) {
-    addPrologue("vec4 vGsInstanceID = intBitsToFloat(ivec4(gl_InvocationID));");
+    addPrologue("ivec4 vGsInstanceID = ivec4(gl_InvocationID);");
   }
   if (_usedThreadID) {
-    addPrologue("vec4 vThreadID = uintBitsToFloat(uvec4(gl_GlobalInvocationID, 0u));");
+    addPrologue("ivec4 vThreadID = ivec4(uvec4(gl_GlobalInvocationID, 0u));");
   }
   if (_usedThreadGroupID) {
-    addPrologue("vec4 vThreadGroupID = uintBitsToFloat(uvec4(gl_WorkGroupID, 0u));");
+    addPrologue("ivec4 vThreadGroupID = ivec4(uvec4(gl_WorkGroupID, 0u));");
   }
   if (_usedThreadIDInGroup) {
-    addPrologue("vec4 vThreadIDInGroup = uintBitsToFloat(uvec4(gl_LocalInvocationID, 0u));");
+    addPrologue("ivec4 vThreadIDInGroup = ivec4(uvec4(gl_LocalInvocationID, 0u));");
   }
   if (_usedThreadIDFlattened) {
-    addPrologue("vec4 vThreadIDInGroupFlattened = uintBitsToFloat(uvec4(gl_LocalInvocationIndex));");
+    addPrologue("ivec4 vThreadIDInGroupFlattened = ivec4(uvec4(gl_LocalInvocationIndex));");
   }
 
   std::string immediateBuffer;
