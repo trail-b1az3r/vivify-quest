@@ -11,6 +11,29 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.21] - 2026-10-07
+
+### Changed
+- **Less lag: scene depth only for maps that read it.** Every Vivify map had
+  the main camera render a depth texture, a second pass over the whole
+  scene every frame. Vivify now checks the map's shaders in the background
+  when it loads the bundle, and skips that pass when none of them samples
+  `_CameraDepthTexture`.
+  - Of the bundles checked, Hold My Hand (its Quest build and its converted
+    PC build), Dialtone, HALO CE, geekd and Yoi Okashi read no depth. 743
+    Aether (3 shaders) and Burning Sands (2) do, and keep it.
+  - A map that asks for depth itself (`SetCameraProperty`) still gets it.
+    Until the check has finished, depth stays on, as before.
+  - In a 0.14.20 logcat of 42 Flux, the GPU ran at 96-97% at its top clock
+    and the game dropped to 53-80 FPS once the map's effects started.
+
+### Added
+- **Frame stalls in the session log.** A gameplay frame that takes half a
+  second or more is now logged with the song time and the bundle, up to 10
+  per song. A 0.14.7 log of a converted 743 Aether showed the game not
+  drawing for about 86 seconds at song start, with nothing in the log to
+  mark it. The next log of a freeze will show how long it lasts and where.
+
 ## [0.14.20] - 2026-10-01
 
 ### Added

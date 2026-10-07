@@ -138,8 +138,22 @@ void Runtime::Update() {
     }
     if (_currentBeatmapData == nullptr) {
       RefreshCameraComponents(false);
+      _lastGameplayFrame = {};
       return;
     }
+    // A frame that took far longer than the game's own pacing is a stall
+    // somewhere outside this function -- on a converted map's first frames,
+    // the GPU driver compiling its translated shaders. Logged with where in
+    // the song it happened, since nothing else marks it in the log.
+    if (_lastGameplayFrame != std::chrono::steady_clock::time_point{} && _stallsLogged < 10) {
+      double const gap = std::chrono::duration<double>(frameStart - _lastGameplayFrame).count();
+      if (gap >= 0.5 && !_pauseMenuActive) {
+        _stallsLogged++;
+        PaperLogger.warn("Vivify frame stall: the game did not draw for {:.1f}s (songTime {:.2f}, bundle '{}')",
+                         gap, CurrentSongTime(), _preloadedBundlePath);
+      }
+    }
+    _lastGameplayFrame = frameStart;
     // Ten seconds into the song the converted bundle has loaded and drawn;
     // whatever happens after that is not what the crash guard is for.
     if (!_loadGuardPath.empty() && CurrentSongTime() > 10.0f) DisarmLoadGuard();
@@ -561,6 +575,9 @@ void Runtime::ResetRuntime(std::string_view reason) {
   RemoveMidRenderCommandBuffers();
   ReleaseMidRenderTextures();
   _hasMainDescriptor = false;
+  _sceneDepthSkipLogged = false;
+  _lastGameplayFrame = {};
+  _stallsLogged = 0;
   ReleaseCachedBlitTextures();
   RestoreRenderSettings();
   _renderSettingAnimations.clear();

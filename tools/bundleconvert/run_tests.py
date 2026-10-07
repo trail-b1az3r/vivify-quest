@@ -1294,5 +1294,45 @@ merge_split_donor_refused()
 
 if GLSLANG is None:
     print("note: glslangValidator not installed; linked programs were not compiled")
+def scan_depth_case(name, body, expect_depth, convert_first=False):
+    """--scan reports whether any program names _CameraDepthTexture, which
+    decides whether the runtime renders the main camera's depth pre-pass."""
+    global fails, cases
+    cases += 1
+    src = os.path.join(TMP, "scan_src.vivify")
+    dst = os.path.join(TMP, "scan_dst.vivify")
+    sf = mkshader.serialized_file_with_shaders([body], sf_version=22, shader_tree=mkshader2021.RealTypeTree())
+    build(src, sf_bytes=[sf], with_resource=False)
+    target = src
+    if convert_first:
+        run_shaders(src, dst)
+        target = dst
+    proc = subprocess.run([CONV, "--scan", target], capture_output=True, text=True)
+    got = dict(line.split("=", 1) for line in proc.stdout.splitlines() if "=" in line and
+               not line.startswith("depthShader="))
+    problem = None
+    if proc.returncode != 0 or got.get("parsed") != "1":
+        problem = f"scan failed (exit {proc.returncode})"
+    elif got.get("samplesCameraDepth") != ("1" if expect_depth else "0"):
+        problem = f"samplesCameraDepth={got.get('samplesCameraDepth')}, expected {int(expect_depth)}"
+    elif expect_depth and "depthShader=Swifter/DepthReader" not in proc.stdout:
+        problem = "the depth-reading shader was not named"
+    if problem:
+        print(f"FAIL {name}: {problem}\n{proc.stdout}{proc.stderr}")
+        fails += 1
+    else:
+        print(f"ok   {name}")
+
+
+depth_body, _ = pc_shader_2021(
+    "Swifter/DepthReader",
+    [(_vs(spi=False), [])],
+    [(_ps(spi=False), [])],
+    keyword_names=(),
+    fragment_params_blobs=[b"\x00\x00\x00\x00PARAMS _CameraDepthTexture sampler"])
+scan_depth_case("a shader naming _CameraDepthTexture is reported as reading scene depth", depth_body, True)
+scan_depth_case("it still is after conversion", depth_body, True, convert_first=True)
+scan_depth_case("a shader that names no depth texture is not", stereo_body, False)
+
 print(f"\n{cases - fails}/{cases} passed")
 sys.exit(1 if fails else 0)

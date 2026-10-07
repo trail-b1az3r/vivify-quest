@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include <variant>
 #include <optional>
+#include <mutex>
 #include "VivifyTypes.hpp"
 #include "UnityEngine/Rendering/CommandBuffer.hpp"
 #include "UnityEngine/AssetBundleCreateRequest.hpp"
@@ -47,6 +48,12 @@ public:
   // Advances "Prepare Shaders Before Playing" (0.14.15): compiles a converted
   // bundle's shaders in the menu, a few materials a frame. Once a frame.
   void PollShaderWarmup();
+  // Starts a background scan of a bundle for shaders that read the scene
+  // depth texture, unless one ran for this version of the file.
+  void ScanBundleForSceneDepth(std::string const& bundlePath);
+  // Whether the loaded map's shaders read the scene depth texture: empty
+  // until every bundle they come from has been scanned.
+  std::optional<bool> MapShadersNeedSceneDepth();
   // Unloads the loaded bundle and forgets every per-level bundle choice, so
   // "Reset Vivify (clean slate)" can delete the files and the next level
   // selection starts from nothing.
@@ -479,6 +486,10 @@ private:
   bool _levelReportOpen = false;
   bool _fallbackShaderSearchFailed = false;
   int _slowFrameStreak = 0;
+  // Wall-clock gap between gameplay frames, for stalls outside Vivify's own
+  // work (the GPU driver compiling a map's shaders on first draw).
+  std::chrono::steady_clock::time_point _lastGameplayFrame{};
+  int _stallsLogged = 0;
   double _worstFrameMs = 0.0;
 
   bool _reduceDebris = false;
@@ -498,6 +509,20 @@ private:
   // empty, by shader name, for _graftLevelPath. Kept alive with
   // DontUnloadUnusedAsset; replaced when another level needs them.
   std::unordered_map<std::string, UnityEngine::Shader*> _graftedShaders;
+  // The converted PC bundle _graftedShaders came from.
+  std::string _graftDonorPath;
+  // Whether a bundle's shaders read the scene depth texture, by
+  // DepthScanKey(path); filled in by a worker thread (0.14.21).
+  std::mutex _depthScanMutex;
+  std::unordered_map<std::string, bool> _depthScanResults;
+  std::unordered_set<std::string> _depthScansRunning;
+  bool _sceneDepthSkipLogged = false;
+  // MapShadersNeedSceneDepth runs every frame: the bundles it last looked at,
+  // their scan keys (computed once, as they stat the file) and, once known,
+  // its answer.
+  std::string _depthSourcesFor;
+  std::vector<std::string> _depthSourceKeys;
+  std::optional<bool> _depthDecision;
   // Blit companion shaders by name, for _blitCompanionLevel, and the material
   // copies made on them (original -> copy).
   std::unordered_map<std::string, UnityEngine::Shader*> _singleViewShaders;

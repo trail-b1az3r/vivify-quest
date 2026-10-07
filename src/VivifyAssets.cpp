@@ -1516,6 +1516,8 @@ void Runtime::GraftShadersFrom(std::string const& levelPath, std::string const& 
   _preloadedBundlePath.clear();
   _graftedShaders.clear();
   _graftLevelPath = levelPath;
+  _graftDonorPath = convertedPath;
+  ScanBundleForSceneDepth(convertedPath);
   _graftApplied = 0;
 
   auto bundle = UnityEngine::AssetBundle::LoadFromFile(StringW(convertedPath));
@@ -1954,6 +1956,82 @@ void Runtime::PreloadBundle(std::string const& bundlePath) {
   // driver first compiles the programs.
   DisarmLoadGuard();
   StartShaderWarmup(bundlePath);
+  ScanBundleForSceneDepth(bundlePath);
+}
+
+// ---------------------------------------------------------------------------
+// Scene depth only for maps that read it (0.14.21)
+//
+// The main camera's depth texture costs a second pass over the whole scene
+// every frame. Every Vivify map used to get it, on the belief that raymarchers
+// such as Hold My Hand's needed it; a scan of Hold My Hand's bundles (its own
+// Quest build and its converted PC build) found no shader that samples it.
+// Shaders name it in their program text whatever the platform, so a scan of
+// the map's bundles tells whether any shader can read it. Until a scan has
+// answered, the depth texture stays on, as before.
+// ---------------------------------------------------------------------------
+
+namespace {
+std::string DepthScanKey(std::string const& path) {
+  std::error_code ec;
+  auto const time = std::filesystem::last_write_time(path, ec);
+  auto const size = std::filesystem::file_size(path, ec);
+  return path + "|" + std::to_string(ec ? 0 : static_cast<long long>(time.time_since_epoch().count())) + "|" +
+         std::to_string(ec ? 0 : size);
+}
+}
+
+void Runtime::ScanBundleForSceneDepth(std::string const& bundlePath) {
+  if (bundlePath.empty()) return;
+  std::string const key = DepthScanKey(bundlePath);
+  {
+    std::lock_guard lock(_depthScanMutex);
+    if (_depthScanResults.contains(key) || !_depthScansRunning.insert(key).second) return;
+  }
+  std::thread([this, bundlePath, key]() {
+    setpriority(PRIO_PROCESS, static_cast<id_t>(gettid()), 10);
+    bool needed = true;
+    bool known = false;
+    std::string shaders;
+    try {
+      auto const scan = BundleConvert::ScanShaders(bundlePath);
+      if (scan.parsed && scan.undecodableShaders == 0) {
+        known = true;
+        needed = scan.samplesCameraDepth;
+        for (auto const& name : scan.cameraDepthShaderNames) shaders += (shaders.empty() ? "" : ", ") + name;
+      }
+    } catch (...) {
+    }
+    PaperLogger.info("Vivify scene depth scan: '{}' -> {}{}", bundlePath,
+                     !known ? "unknown (depth stays on)" : (needed ? "needed by " : "not needed"), shaders);
+    std::lock_guard lock(_depthScanMutex);
+    _depthScansRunning.erase(key);
+    // An unreadable bundle is recorded as needing depth, so it is not
+    // rescanned on every load.
+    _depthScanResults[key] = needed;
+  }).detach();
+}
+
+std::optional<bool> Runtime::MapShadersNeedSceneDepth() {
+  bool const grafted = !_graftedShaders.empty() && !_graftDonorPath.empty();
+  std::string const sourcesFor = _preloadedBundlePath + "\n" + (grafted ? _graftDonorPath : std::string());
+  if (sourcesFor != _depthSourcesFor) {
+    _depthSourcesFor = sourcesFor;
+    _depthDecision.reset();
+    _depthSourceKeys.clear();
+    if (!_preloadedBundlePath.empty()) _depthSourceKeys.push_back(DepthScanKey(_preloadedBundlePath));
+    if (grafted) _depthSourceKeys.push_back(DepthScanKey(_graftDonorPath));
+  }
+  if (_depthDecision.has_value() || _depthSourceKeys.empty()) return _depthDecision;
+  bool needed = false;
+  std::lock_guard lock(_depthScanMutex);
+  for (auto const& key : _depthSourceKeys) {
+    auto found = _depthScanResults.find(key);
+    if (found == _depthScanResults.end()) return std::nullopt;
+    needed = needed || found->second;
+  }
+  _depthDecision = needed;
+  return _depthDecision;
 }
 
 // ---------------------------------------------------------------------------
@@ -3097,6 +3175,7 @@ void Runtime::ReleaseBundlesForReset() {
   _selectedBundlePath.clear();
   _selectedLevelPath.clear();
   _graftedShaders.clear();
+  _graftDonorPath.clear();
   _graftLevelPath.clear();
   _warmupQueue.clear();
   _warmupIndex = 0;

@@ -63,7 +63,7 @@ All settings are in **Mod Settings → Vivify**.
 | Convert PC Bundles On Device | on | Converts PC-only maps on the headset. |
 | Translate Shaders On Conversion | on | Translates PC shaders to GLES. Off: everything uses stand-in shading. |
 | Stand-In Shading For Unsupported Shaders | on | Draws shaders that can't run with a simple stand-in instead of nothing. |
-| Scene Depth For Map Shaders | on | Renders `_CameraDepthTexture` for raymarchers and distortion effects. |
+| Scene Depth For Map Shaders | on | Renders `_CameraDepthTexture` for maps whose shaders read it (raymarchers, distortion, soft particles). Maps that don't read it skip the extra pass. |
 | Effect Resolution % | 100 | Renders map post-process effects at a lower resolution and scales them up. Lower it (75 or 50) if Vivify maps lag. |
 | AudioLink | on | Runs AudioLink for maps that use it. |
 | Map Realtime Shadows | off | Lets maps turn on realtime shadows. Expensive; can blacken note bodies. |

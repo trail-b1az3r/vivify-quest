@@ -62,6 +62,14 @@ int main(int argc, char** argv) {
     }
     return 0;
   }
+  // --scan <bundle> prints what ScanShaders reports, one key=value per line.
+  if (std::string(argv[1]) == "--scan") {
+    auto const scan = Vivify::BundleConvert::ScanShaders(argv[2]);
+    std::printf("parsed=%d\nunity=%s\nshaders=%d\nprograms=%d\nsamplesCameraDepth=%d\n", scan.parsed ? 1 : 0,
+                scan.unityVersion.c_str(), scan.shaderObjects, scan.programs, scan.samplesCameraDepth ? 1 : 0);
+    for (auto const& name : scan.cameraDepthShaderNames) std::printf("depthShader=%s\n", name.c_str());
+    return scan.parsed ? 0 : 1;
+  }
   // --merge <quest> <converted-pc> <dst> <name>... puts the named shaders of
   // a converted PC bundle into a Quest bundle that shipped them empty.
   if (std::string(argv[1]) == "--merge") {
