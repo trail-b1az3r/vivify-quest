@@ -115,7 +115,14 @@ namespace {
 //      untranslated: in 743Aether 573 of 774 program references, 336 linked
 //      variants down to 90. Far less for Unity to load and the driver to
 //      compile when a converted map starts
-constexpr int kBundleConversionVersion = 17;
+//  18  translated programs keep integers in integer variables (temps are
+//      ivec4 bit registers) and copy integer literals exactly. Up to 17 they
+//      sat in floats as bit patterns, and the integers 1, 2, 3 are denormals
+//      there, which Adreno flushes to zero: loop counters never advanced, the
+//      shader looped forever and the GPU hung on a converted map's first
+//      frame. -1 (DXBC's "true") was also written 0.0, breaking conditions
+//      and loop bounds
+constexpr int kBundleConversionVersion = 18;
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the

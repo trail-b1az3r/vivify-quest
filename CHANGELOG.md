@@ -11,6 +11,33 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.22] - 2026-10-07
+
+### Fixed
+- **Converted maps freezing on start.** The shader translator stored
+  integers (loop counters, true/false flags, indices) in float variables as
+  bit patterns. As floats, the integers 1, 2, 3 are denormals, and GLSL ES
+  lets the GPU flush those to zero, which Adreno does. A loop counter
+  therefore never got past zero, the shader looped forever, and the game
+  hung on the first frame that drew it. A 0.14.21 log of 743 Aether shows
+  exactly that: the level loads, the first notes spawn, then nothing more.
+  - Temp registers are now integer variables that hold the raw bits. Float
+    instructions reinterpret them; integer ones use them as they are. No
+    integer passes through a float anywhere: in the 194 programs of a
+    converted 743 Aether, every one of its 304 loop counters now counts as an
+    integer, and all 194 compile and link under glslang.
+  - Conversion cache version 18: converted maps reconvert once, and a map
+    the crash guard had marked gets its translated shaders back.
+- **Wrong integer constants in converted shaders.** DXBC's `mov` has no
+  type, so integer literals were printed as floats. -1 (DXBC's "true") is a
+  NaN as a float and was written `0.0`, and 1 became `1.4e-45`. Conditions
+  came out false, and loops started at the wrong value (743 Aether's voronoi
+  loops ran 0..1 instead of -1..1). Typeless copies (`mov`, `movc`, `swapc`)
+  now move bits.
+- The stereo eye index and other integer built-ins (`SV_InstanceID`,
+  `SV_RenderTargetArrayIndex`, ...) are integer variables too, so eye 1 can
+  no longer be flushed to eye 0.
+
 ## [0.14.21] - 2026-10-07
 
 ### Changed
