@@ -51,6 +51,11 @@ bool GetUsePcShadersForEmptyShaders();
 // Fraction (0.25-1) of the eye resolution that map post-process effects render
 // at (0.14.20); 1 renders them at full resolution, as before.
 float GetEffectResolutionScale();
+int GetEffectResolutionPercent();
+// Culling (0.14.23): offscreen animators in a map's prefabs skip their update;
+// the main camera draws nothing beyond GetFarCullingDistance() metres (0: off).
+bool GetOffscreenCulling();
+int GetFarCullingDistance();
 // Empty when the stand-in shader should be chosen automatically.
 std::string GetStandInShaderName();
 // Whether a map carrying the Vivify requirement still submits its score.

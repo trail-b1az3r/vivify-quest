@@ -11,6 +11,30 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.23] - 2026-10-10
+
+### Added
+- **Offscreen Culling** (settings, on by default). Animators in a map's
+  prefabs and replacement notes stop updating while none of their renderers
+  is on screen, and resume at the right time once one is. An animator with
+  nothing to draw (one moving a light or a camera) keeps animating.
+- **Far Culling Distance** (settings, 0-1000 m, off by default). Nothing
+  farther than this from the player is drawn. It is off by default because
+  far scenery is part of many maps' look; try 150-300 m on heavy maps.
+- **`vivify_global.txt`**, a log that is never cleared: every session is
+  appended, with a timestamp on each line. Past 9 MB it continues in
+  `vivify_global-p2.txt`, `-p3` and so on. When all parts together pass
+  1 GB, the older half of them is deleted.
+- The per-level settings line in the session log now includes Effect
+  Resolution, scene depth, Prepare Shaders, geometry effects and both
+  culling settings.
+
+### Notes
+- A 0.14.22 log of 743 Aether runs smoothly until the map starts its
+  `IntroBokeh` full-screen blur at about 2 seconds; the stalls follow it.
+  That blur is GPU work that culling does not remove. **Effect Resolution
+  50%** is the setting that reduces it.
+
 ## [0.14.22] - 2026-10-07
 
 ### Fixed

@@ -65,6 +65,8 @@ All settings are in **Mod Settings → Vivify**.
 | Stand-In Shading For Unsupported Shaders | on | Draws shaders that can't run with a simple stand-in instead of nothing. |
 | Scene Depth For Map Shaders | on | Renders `_CameraDepthTexture` for maps whose shaders read it (raymarchers, distortion, soft particles). Maps that don't read it skip the extra pass. |
 | Effect Resolution % | 100 | Renders map post-process effects at a lower resolution and scales them up. Lower it (75 or 50) if Vivify maps lag. |
+| Offscreen Culling (less lag) | on | Animators in a map's prefabs stop updating while nothing they draw is on screen. |
+| Far Culling Distance | 0 (off) | Draws nothing farther than this many metres. Try 150-300 on heavy maps; far scenery may disappear. |
 | AudioLink | on | Runs AudioLink for maps that use it. |
 | Map Realtime Shadows | off | Lets maps turn on realtime shadows. Expensive; can blacken note bodies. |
 | Replay Render Mode (converted maps) | off | Converts maps with single-screen programs so replay and recording renderers can draw them. Turn on to render, off to play. |
@@ -98,6 +100,8 @@ Send these two files from the headset:
 /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
 /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
 ```
+
+`vivify_global.txt` (and `vivify_global-p2.txt`, ...) in the same folder keeps every session, with timestamps, so an older run can still be sent after a restart.
 
 For a crash, also send `/sdcard/ModData/com.beatgames.beatsaber/logs2/`.
 The map's bundle helps too:

@@ -5,6 +5,32 @@
 #include "UnityEngine/AudioSource.hpp"
 #include "UnityEngine/Canvas.hpp"
 #include <exception>
+#include "UnityEngine/AnimatorCullingMode.hpp"
+
+namespace Vivify {
+namespace {
+// Offscreen Culling (0.14.23): an animator whose hierarchy draws something
+// stops writing transforms while none of those renderers is visible, and picks
+// up at the right time once one is (its speed and time are still driven by
+// the song). An animator with no renderer under it -- one moving a light or a
+// camera -- keeps animating, since nothing would ever make it visible again.
+int CullOffscreenAnimators(UnityEngine::GameObject* root) {
+  if (!GetOffscreenCulling() || !IsManagedAlive(root)) return 0;
+  int culled = 0;
+  auto animators = root->GetComponentsInChildren<UnityEngine::Animator*>(true);
+  for (int i = 0; i < animators.size(); i++) {
+    auto* animator = animators[i];
+    if (!IsManagedAlive(animator)) continue;
+    if (animator->get_cullingMode() != UnityEngine::AnimatorCullingMode::AlwaysAnimate) continue;
+    auto renderers = animator->GetComponentsInChildren<UnityEngine::Renderer*>(true);
+    if (renderers.size() == 0) continue;
+    animator->set_cullingMode(UnityEngine::AnimatorCullingMode::CullUpdateTransforms);
+    culled++;
+  }
+  return culled;
+}
+}
+}
 
 namespace Vivify {
 
@@ -666,8 +692,9 @@ void Runtime::InstantiatePrefab(CustomJSONData::CustomEventData* customEventData
     }
   }
 
-  VIVIFY_DEBUG("Vivify InstantiatePrefab spawned: id='{}' asset='{}' tracks={} animators={}",
-               storageId, data.asset, data.tracks.size(), animators.size());
+  int const culledAnimators = CullOffscreenAnimators(instance);
+  VIVIFY_DEBUG("Vivify InstantiatePrefab spawned: id='{}' asset='{}' tracks={} animators={} offscreenCulled={}",
+               storageId, data.asset, data.tracks.size(), animators.size(), culledAnimators);
   _livePrefabs[storageId] = LivePrefab{
       .gameObject = instance,
       .tracks = data.tracks,
@@ -908,6 +935,7 @@ void Runtime::InstantiateReplacementPrefab(AssignedPrefabInfo const& info,
     animator->Update(0.01f);
   }
 
+  CullOffscreenAnimators(spawned);
   RegisterSyncedObject(spawned, CurrentSongTime());
   replacement.spawnedObjects.emplace_back(spawned);
   CacheReplacementRenderers(spawned, replacement);
