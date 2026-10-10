@@ -11,6 +11,31 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.24] - 2026-10-10
+
+### Added
+- **Use Only PC Bundle For Missing Shaders** (settings, off by default).
+  When a map's Quest bundle shipped shaders empty that its PC build has,
+  the whole map is played from the converted PC build instead of the Quest
+  bundle with those shaders patched in.
+- **Crash Guard** (settings, on by default). Off, a converted map is never
+  put into the grey untranslated fallback, however its loads ended.
+
+### Fixed
+- **Converted maps stuck grey with invisible notes (Yoi Okashi to Warui
+  Okashi).** Two loads of a converted map that never finish put it into the
+  crash guard's fallback: converted again without shader translation, so
+  everything draws as a grey stand-in and replaced notes can disappear. It
+  stayed that way until the converter changed. The freezes caused by other
+  mods (Adaptive Audio Latency and others) counted as strikes, so maps went
+  grey that have nothing wrong with them: Yoi Okashi's bundle converts with
+  all 24 shaders and 163 variants linked, and all 216 programs compile and
+  link under glslang.
+  - Conversion cache version 19 clears every strike, so each converted map
+    gets its translated shaders back once.
+  - A map loaded in the fallback is now named in the session log, with how
+    to get it out (Force Reconvert All, or Crash Guard off).
+
 ## [0.14.23] - 2026-10-10
 
 ### Added

@@ -54,6 +54,8 @@ constexpr std::string_view kPcShadersForEmptyConfigKey = "pcShadersForEmptyQuest
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
 constexpr std::string_view kEffectResolutionConfigKey = "effectResolutionPercent";
 constexpr std::string_view kOffscreenCullingConfigKey = "offscreenCulling";
+constexpr std::string_view kCrashGuardConfigKey = "crashGuard";
+constexpr std::string_view kPcBundleForMissingShadersConfigKey = "pcBundleForMissingShaders";
 constexpr std::string_view kFarCullingConfigKey = "farCullingDistance";
 bool gMultipassRenderingEnabled = true;
 bool gVivifyDebugLogging = false;
@@ -116,6 +118,12 @@ int gEffectResolution = 100;
 // Animators in a map's prefabs skip updating while none of their renderers is
 // on screen (0.14.23).
 bool gOffscreenCulling = true;
+// Two loads of a converted bundle that never finish put it into the
+// untranslated (grey) fallback; off, that never happens (0.14.24).
+bool gCrashGuard = true;
+// A Quest bundle missing shaders its PC build has is played from the converted
+// PC build instead of being patched (0.14.24).
+bool gPcBundleForMissingShaders = false;
 // Metres beyond which the main camera draws nothing; 0 is off (0.14.23).
 int gFarCullingDistance = 0;
 
@@ -463,6 +471,21 @@ void RegisterModSettings() {
               SetIntConfigValue(kEffectResolutionConfigKey, percent, gEffectResolution);
             });
 
+        // Plays the whole map from its converted PC build when the Quest
+        // bundle shipped shaders empty, instead of patching those shaders in.
+        BSML::Lite::CreateToggle(
+            container->get_transform(), u"Use Only PC Bundle For Missing Shaders", gPcBundleForMissingShaders,
+            [](bool value) {
+              SetBoolConfigValue(kPcBundleForMissingShadersConfigKey, value, gPcBundleForMissingShaders);
+            });
+
+        // After two loads of a converted map that never finish, it is
+        // reconverted without shader translation (grey stand-ins) so it can
+        // be played. Off: maps always keep their translated shaders.
+        BSML::Lite::CreateToggle(
+            container->get_transform(), u"Crash Guard (grey fallback after 2 freezes)", gCrashGuard,
+            [](bool value) { SetBoolConfigValue(kCrashGuardConfigKey, value, gCrashGuard); });
+
         // Animators in the map's prefabs stop updating while nothing they
         // draw is on screen; their animation resumes at the right time.
         BSML::Lite::CreateToggle(
@@ -698,6 +721,14 @@ bool GetUsePcShadersForEmptyShaders() {
   return gPcShadersForEmpty;
 }
 
+bool GetCrashGuard() {
+  return gCrashGuard;
+}
+
+bool GetUsePcBundleForMissingShaders() {
+  return gPcBundleForMissingShaders;
+}
+
 bool GetOffscreenCulling() {
   return gOffscreenCulling;
 }
@@ -749,6 +780,8 @@ void EnsureConfigDefaults() {
                                         gStandInShaderName);
   needsWrite |= EnsureIntConfigValue(kEffectResolutionConfigKey, 100, 25, 100, gEffectResolution);
   needsWrite |= EnsureBoolConfigValue(kOffscreenCullingConfigKey, true, gOffscreenCulling);
+  needsWrite |= EnsureBoolConfigValue(kCrashGuardConfigKey, true, gCrashGuard);
+  needsWrite |= EnsureBoolConfigValue(kPcBundleForMissingShadersConfigKey, false, gPcBundleForMissingShaders);
   needsWrite |= EnsureIntConfigValue(kFarCullingConfigKey, 0, 0, 1000, gFarCullingDistance);
   if (needsWrite) {
     config.Write();

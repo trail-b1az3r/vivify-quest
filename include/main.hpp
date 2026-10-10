@@ -55,6 +55,11 @@ int GetEffectResolutionPercent();
 // Culling (0.14.23): offscreen animators in a map's prefabs skip their update;
 // the main camera draws nothing beyond GetFarCullingDistance() metres (0: off).
 bool GetOffscreenCulling();
+// Crash guard (0.14.24): whether interrupted loads of a converted bundle count
+// toward its untranslated fallback.
+bool GetCrashGuard();
+// Whether a Quest bundle missing shaders is replaced by its converted PC build.
+bool GetUsePcBundleForMissingShaders();
 int GetFarCullingDistance();
 // Empty when the stand-in shader should be chosen automatically.
 std::string GetStandInShaderName();

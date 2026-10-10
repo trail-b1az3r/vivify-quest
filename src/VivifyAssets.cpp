@@ -122,7 +122,12 @@ namespace {
 //      shader looped forever and the GPU hung on a converted map's first
 //      frame. -1 (DXBC's "true") was also written 0.0, breaking conditions
 //      and loop bounds
-constexpr int kBundleConversionVersion = 18;
+//  19  no change to the output: a fresh start for crash-guard strikes. A
+//      freeze caused by another mod (Adaptive Audio Latency and others) during
+//      a converted map's load counted against the map, and two put it into the
+//      grey untranslated fallback for good -- 0.14.23's Yoi Okashi, whose
+//      translation compiles and links cleanly
+constexpr int kBundleConversionVersion = 19;
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the
@@ -227,6 +232,7 @@ bool FileExists(std::string const& path) {
 // True when this converter version's translated output for destPath has already
 // taken the game down once.
 bool TranslationCrashedBefore(std::string const& destPath) {
+  if (!GetCrashGuard()) return false;
   std::ifstream marker(CrashedMarkerPath(destPath));
   int version = 0;
   if (!(marker >> version)) return false;
@@ -245,6 +251,9 @@ bool RecordInterruptedLoad(std::string const& destPath) {
   if (destPath.empty() || !FileExists(LoadingMarkerPath(destPath))) return false;
   std::error_code ec;
   std::filesystem::remove(LoadingMarkerPath(destPath), ec);
+  // Crash Guard off (0.14.24): an interrupted load is not held against the
+  // bundle, and it is never reconverted without translation.
+  if (!GetCrashGuard()) return false;
   int strikes = 0;
   {
     std::ifstream marker(CrashedMarkerPath(destPath));
@@ -881,13 +890,14 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
   // what any of them were set to at the time.
   PaperLogger.info("Vivify settings for this level: standInShading={} convertPcBundlesOnDevice={} "
                    "disableCustomNoteVisuals={} disableAllBlits={} multipassRendering={} effectResolution={}% "
-                   "sceneDepth={} prepareShaders={} geometryEffects={} offscreenCulling={} farCulling={}m",
+                   "sceneDepth={} prepareShaders={} geometryEffects={} offscreenCulling={} farCulling={}m crashGuard={} "
+                   "pcBundleForMissingShaders={}",
                    BoolText(GetStandInShading()), BoolText(GetConvertPcBundlesOnDevice()),
                    BoolText(GetDisableCustomNoteVisuals()), BoolText(GetDisableAllBlits()),
                    BoolText(GetMultipassRenderingEnabled()), GetEffectResolutionPercent(),
                    BoolText(GetSceneDepthTexture()), BoolText(GetPrepareShadersBeforePlaying()),
                    BoolText(GetDrawGeometryShaderEffects()), BoolText(GetOffscreenCulling()),
-                   GetFarCullingDistance());
+                   GetFarCullingDistance(), BoolText(GetCrashGuard()), BoolText(GetUsePcBundleForMissingShaders()));
 
   std::string const androidBundlePath = JoinPath(_selectedLevelPath, std::string(kBundleFile));
 
@@ -1459,6 +1469,17 @@ bool DonorIsCurrent(std::string const& donorPath) {
 
 void Runtime::ConvertPcForGraft(std::string const& levelPath, std::string const& androidBundlePath,
                                 std::string const& pcBundlePath, std::vector<std::string> const& names) {
+  // "Use Only PC Bundle For Missing Shaders" (0.14.24): the whole map is
+  // played from its converted PC build instead of the Quest bundle with the
+  // missing shaders patched in.
+  if (GetUsePcBundleForMissingShaders()) {
+    PaperLogger.info("Vivify: the Quest bundle '{}' is missing {} shader(s) its PC build has; playing the PC "
+                     "build '{}' instead (Use Only PC Bundle For Missing Shaders)",
+                     androidBundlePath, names.size(), pcBundlePath);
+    _graftDeadline = -1.0f;
+    ConvertPcBundleAsync(levelPath, pcBundlePath);
+    return;
+  }
   int const generation = _graftGeneration;
   std::string const donor = UnsplitDonorPath(pcBundlePath);
   std::string const merged = ConvertedBundlePath(androidBundlePath);
@@ -1949,6 +1970,11 @@ void Runtime::PreloadBundle(std::string const& bundlePath) {
     _mainBundle = nullptr;
   }
   _preloadedBundlePath = bundlePath;
+  if (TranslationCrashedBefore(bundlePath)) {
+    PaperLogger.warn("Vivify: '{}' is in the crash guard's grey fallback (converted without shader "
+                     "translation after two loads that never finished). Force Reconvert All, or turning Crash "
+                     "Guard off, gives it its translated shaders back", bundlePath);
+  }
   ArmLoadGuard(bundlePath);
   _mainBundle = UnityEngine::AssetBundle::LoadFromFile(StringW(bundlePath));
   if (_mainBundle == nullptr) {

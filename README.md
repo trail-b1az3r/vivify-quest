@@ -65,6 +65,8 @@ All settings are in **Mod Settings → Vivify**.
 | Stand-In Shading For Unsupported Shaders | on | Draws shaders that can't run with a simple stand-in instead of nothing. |
 | Scene Depth For Map Shaders | on | Renders `_CameraDepthTexture` for maps whose shaders read it (raymarchers, distortion, soft particles). Maps that don't read it skip the extra pass. |
 | Effect Resolution % | 100 | Renders map post-process effects at a lower resolution and scales them up. Lower it (75 or 50) if Vivify maps lag. |
+| Use Only PC Bundle For Missing Shaders | off | A Quest map whose bundle is missing shaders is played entirely from its converted PC build instead of being patched. |
+| Crash Guard | on | After two loads of a converted map that never finish, plays it with grey stand-ins instead. Turn off if maps go grey after crashes caused by other mods. |
 | Offscreen Culling (less lag) | on | Animators in a map's prefabs stop updating while nothing they draw is on screen. |
 | Far Culling Distance | 0 (off) | Draws nothing farther than this many metres. Try 150-300 on heavy maps; far scenery may disappear. |
 | AudioLink | on | Runs AudioLink for maps that use it. |
