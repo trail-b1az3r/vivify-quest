@@ -54,6 +54,8 @@ public:
   // Whether the loaded map's shaders read the scene depth texture: empty
   // until every bundle they come from has been scanned.
   std::optional<bool> MapShadersNeedSceneDepth();
+  void ApplyFarCulling(UnityEngine::Camera* mainCam);
+  void RestoreFarCulling(UnityEngine::Camera* mainCam);
   // Unloads the loaded bundle and forgets every per-level bundle choice, so
   // "Reset Vivify (clean slate)" can delete the files and the next level
   // selection starts from nothing.
@@ -434,6 +436,11 @@ private:
   std::optional<int> _mainCamOriginalDepthMode;
   std::optional<int> _mainCamOriginalClearFlags;
   std::optional<UnityEngine::Color> _mainCamOriginalBackgroundColor;
+  // Far Culling Distance (0.14.23): the camera's own per-layer distances, kept
+  // to put back, and the distance applied over them (0: none applied).
+  std::optional<std::vector<float>> _mainCamOriginalCullDistances;
+  bool _mainCamOriginalCullSpherical = false;
+  int _appliedFarCulling = 0;
   UnityEngine::RenderTexture* _mainBlitTexture = nullptr;
   UnityEngine::RenderTexture* _scratchBlitTexture = nullptr;
   int _cachedBlitWidth = 0;

@@ -1,4 +1,6 @@
 #include "main.hpp"
+#include "VivifyGlobalLog.hpp"
+#include <ctime>
 #include "VivifyRuntime.hpp"
 #include "VivifyReport.hpp"
 #include <string>
@@ -51,6 +53,8 @@ constexpr std::string_view kGeometryEffectsConfigKey = "drawGeometryShaderEffect
 constexpr std::string_view kPcShadersForEmptyConfigKey = "pcShadersForEmptyQuestShaders";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
 constexpr std::string_view kEffectResolutionConfigKey = "effectResolutionPercent";
+constexpr std::string_view kOffscreenCullingConfigKey = "offscreenCulling";
+constexpr std::string_view kFarCullingConfigKey = "farCullingDistance";
 bool gMultipassRenderingEnabled = true;
 bool gVivifyDebugLogging = false;
 bool gDisableBeat0FilmgrainBlit = false;
@@ -109,6 +113,11 @@ bool gPcShadersForEmpty = true;
 std::string gStandInShaderName;
 // Percent of the eye resolution map post-process effects render at.
 int gEffectResolution = 100;
+// Animators in a map's prefabs skip updating while none of their renderers is
+// on screen (0.14.23).
+bool gOffscreenCulling = true;
+// Metres beyond which the main camera draws nothing; 0 is off (0.14.23).
+int gFarCullingDistance = 0;
 
 // Both diagnostic files live beside the mod's own data, and both are .txt.
 //
@@ -126,6 +135,19 @@ constexpr std::streamoff kVivifyLogMaxBytes = 8 * 1024 * 1024;
 
 std::ofstream gVivifyLogFile;
 std::mutex gVivifyLogMutex;
+// vivify_global.txt: every session appended, never truncated; 9 MB parts
+// (vivify_global-p2.txt, ...), the older half deleted past 1 GB in total.
+Vivify::GlobalLog gVivifyGlobalLog(std::string(kVivifyLogDir), "vivify_global", 9ull * 1024 * 1024,
+                                   1024ull * 1024 * 1024);
+
+std::string WallClockText() {
+  std::time_t const now = std::time(nullptr);
+  std::tm local{};
+  localtime_r(&now, &local);
+  char buffer[32];
+  std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &local);
+  return buffer;
+}
 bool gVivifyLogSinkInstalled = false;
 bool gVivifyLogCapped = false;
 std::chrono::steady_clock::time_point gVivifyLogLastFlush{};
@@ -144,10 +166,17 @@ void InstallVivifyFileLogSink() {
   gVivifyLogFile << "=== Vivify " << VERSION << " session log ===\n";
   gVivifyLogFile.flush();
   gVivifyLogLastFlush = std::chrono::steady_clock::now();
+  gVivifyGlobalLog.Open("=== Vivify " + std::string(VERSION) + " session started " + WallClockText() + " ===");
 
   Paper::Logger::AddLogSink([](Paper::LogData const& data) {
     if (!data.tag.has_value() || *data.tag != std::string_view(MOD_ID)) return;
     std::lock_guard<std::mutex> lock(gVivifyLogMutex);
+    bool const important = data.level >= Paper::LogLevel::WRN;
+    if (gVivifyGlobalLog.IsOpen()) {
+      gVivifyGlobalLog.Write(WallClockText() + " [" + std::string(Paper::format_as(data.level)) + "] " +
+                             std::string(data.message));
+      if (important) gVivifyGlobalLog.Flush();
+    }
     if (!gVivifyLogFile.is_open() || gVivifyLogCapped) return;
 
     gVivifyLogFile << '[' << Paper::format_as(data.level) << "] " << data.message << '\n';
@@ -166,9 +195,9 @@ void InstallVivifyFileLogSink() {
     // the lines that matter if the game stops before the buffer is written;
     // ordinary lines are flushed at most a few times a second.
     auto const now = std::chrono::steady_clock::now();
-    bool const important = data.level >= Paper::LogLevel::WRN;
     if (important || now - gVivifyLogLastFlush > std::chrono::milliseconds(250)) {
       gVivifyLogFile.flush();
+      gVivifyGlobalLog.Flush();
       gVivifyLogLastFlush = now;
     }
   });
@@ -434,6 +463,21 @@ void RegisterModSettings() {
               SetIntConfigValue(kEffectResolutionConfigKey, percent, gEffectResolution);
             });
 
+        // Animators in the map's prefabs stop updating while nothing they
+        // draw is on screen; their animation resumes at the right time.
+        BSML::Lite::CreateToggle(
+            container->get_transform(), u"Offscreen Culling (less lag)", gOffscreenCulling,
+            [](bool value) { SetBoolConfigValue(kOffscreenCullingConfigKey, value, gOffscreenCulling); });
+
+        // Draws nothing farther than this from the player. 0 is off: far
+        // scenery is part of many maps' look.
+        BSML::Lite::CreateIncrementSetting(
+            container->get_transform(), u"Far Culling Distance m (0 = off)", 0, 50.0f,
+            static_cast<float>(gFarCullingDistance), true, true, 0.0f, 1000.0f, [](float value) {
+              int const metres = std::clamp(static_cast<int>(value + 0.5f), 0, 1000);
+              SetIntConfigValue(kFarCullingConfigKey, metres, gFarCullingDistance);
+            });
+
         BSML::Lite::CreateToggle(
             container->get_transform(), u"AudioLink",
             GetAudioLinkEnabled(),
@@ -538,6 +582,9 @@ void RegisterModSettings() {
         BSML::Lite::CreateText(
             container->get_transform(),
             StringW("<size=70%>" + std::string(kVivifyLogPath) + "</size>"));
+        BSML::Lite::CreateText(
+            container->get_transform(),
+            StringW("<size=70%>" + std::string(kVivifyLogDir) + "/vivify_global.txt (every session)</size>"));
         } catch (std::exception const& e) {
           PaperLogger.error("Vivify settings menu: construction threw ({}); the controls after the "
                             "failure are missing", e.what());
@@ -651,6 +698,18 @@ bool GetUsePcShadersForEmptyShaders() {
   return gPcShadersForEmpty;
 }
 
+bool GetOffscreenCulling() {
+  return gOffscreenCulling;
+}
+
+int GetFarCullingDistance() {
+  return std::clamp(gFarCullingDistance, 0, 1000);
+}
+
+int GetEffectResolutionPercent() {
+  return std::clamp(gEffectResolution, 25, 100);
+}
+
 float GetEffectResolutionScale() {
   return static_cast<float>(std::clamp(gEffectResolution, 25, 100)) / 100.0f;
 }
@@ -689,6 +748,8 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),
                                         gStandInShaderName);
   needsWrite |= EnsureIntConfigValue(kEffectResolutionConfigKey, 100, 25, 100, gEffectResolution);
+  needsWrite |= EnsureBoolConfigValue(kOffscreenCullingConfigKey, true, gOffscreenCulling);
+  needsWrite |= EnsureIntConfigValue(kFarCullingConfigKey, 0, 0, 1000, gFarCullingDistance);
   if (needsWrite) {
     config.Write();
   }

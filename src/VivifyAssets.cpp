@@ -880,10 +880,14 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
   // took a guess at which toggle had moved, because nothing in the log said
   // what any of them were set to at the time.
   PaperLogger.info("Vivify settings for this level: standInShading={} convertPcBundlesOnDevice={} "
-                   "disableCustomNoteVisuals={} disableAllBlits={} multipassRendering={}",
+                   "disableCustomNoteVisuals={} disableAllBlits={} multipassRendering={} effectResolution={}% "
+                   "sceneDepth={} prepareShaders={} geometryEffects={} offscreenCulling={} farCulling={}m",
                    BoolText(GetStandInShading()), BoolText(GetConvertPcBundlesOnDevice()),
                    BoolText(GetDisableCustomNoteVisuals()), BoolText(GetDisableAllBlits()),
-                   BoolText(GetMultipassRenderingEnabled()));
+                   BoolText(GetMultipassRenderingEnabled()), GetEffectResolutionPercent(),
+                   BoolText(GetSceneDepthTexture()), BoolText(GetPrepareShadersBeforePlaying()),
+                   BoolText(GetDrawGeometryShaderEffects()), BoolText(GetOffscreenCulling()),
+                   GetFarCullingDistance());
 
   std::string const androidBundlePath = JoinPath(_selectedLevelPath, std::string(kBundleFile));
 

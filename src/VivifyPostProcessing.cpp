@@ -1211,6 +1211,7 @@ void Runtime::RestoreMainCameraOriginals() {
         mainCam->set_backgroundColor(_mainCamOriginalBackgroundColor.value());
       }
     }
+    if (IsAlive(mainCam)) RestoreFarCulling(mainCam);
     ApplyCullingProperty(_lastMainCameraGO, std::nullopt);
     auto* bloomPrePass = _lastMainCameraGO->GetComponent<GlobalNamespace::BloomPrePass*>();
     if (IsAlive(bloomPrePass)) {
@@ -1222,6 +1223,50 @@ void Runtime::RestoreMainCameraOriginals() {
   _mainCamOriginalBackgroundColor.reset();
 }
 
+void Runtime::RestoreFarCulling(UnityEngine::Camera* mainCam) {
+  if (_appliedFarCulling > 0 && IsAlive(mainCam) && _mainCamOriginalCullDistances.has_value()) {
+    auto const& original = _mainCamOriginalCullDistances.value();
+    auto distances = ArrayW<float>(static_cast<il2cpp_array_size_t>(original.size()));
+    for (size_t i = 0; i < original.size(); i++) distances[i] = original[i];
+    mainCam->set_layerCullDistances(distances);
+    mainCam->set_layerCullSpherical(_mainCamOriginalCullSpherical);
+  }
+  _appliedFarCulling = 0;
+  _mainCamOriginalCullDistances.reset();
+}
+
+// Far Culling Distance: the camera skips any renderer farther than the chosen
+// distance, on every layer (a layer the game already culls nearer keeps its
+// own distance). Measured as a sphere around the camera, so turning the head
+// does not pop things in and out.
+void Runtime::ApplyFarCulling(UnityEngine::Camera* mainCam) {
+  int const wanted = (_currentBeatmapData != nullptr && !_isResetting) ? GetFarCullingDistance() : 0;
+  if (wanted == _appliedFarCulling || !IsAlive(mainCam)) return;
+  if (wanted == 0) {
+    RestoreFarCulling(mainCam);
+    return;
+  }
+  if (!_mainCamOriginalCullDistances.has_value()) {
+    std::vector<float> original(32, 0.0f);
+    auto current = mainCam->get_layerCullDistances();
+    if (current) {
+      for (int i = 0; i < current.size() && i < 32; i++) original[i] = current[i];
+    }
+    _mainCamOriginalCullDistances = original;
+    _mainCamOriginalCullSpherical = mainCam->get_layerCullSpherical();
+  }
+  auto const& original = _mainCamOriginalCullDistances.value();
+  auto distances = ArrayW<float>(static_cast<il2cpp_array_size_t>(32));
+  for (int i = 0; i < 32; i++) {
+    float const own = original[i];
+    distances[i] = (own > 0.0f && own < static_cast<float>(wanted)) ? own : static_cast<float>(wanted);
+  }
+  mainCam->set_layerCullDistances(distances);
+  mainCam->set_layerCullSpherical(true);
+  _appliedFarCulling = wanted;
+  PaperLogger.info("Vivify main camera: far culling at {}m", wanted);
+}
+
 void Runtime::RefreshCameraComponents(bool allowCameraApplier) {
   auto mainCam = UnityEngine::Camera::get_main();
   auto* mainCamPtr = mainCam.unsafePtr();
@@ -1229,6 +1274,8 @@ void Runtime::RefreshCameraComponents(bool allowCameraApplier) {
   bool const cameraChanged = mainCamGO != _lastMainCameraGO;
   if (cameraChanged) {
     _lastMainCameraGO = mainCamGO;
+    _appliedFarCulling = 0;
+    _mainCamOriginalCullDistances.reset();
     _mainCamOriginalDepthMode.reset();
     _mainCamOriginalClearFlags.reset();
     _mainCamOriginalBackgroundColor.reset();
@@ -1290,6 +1337,7 @@ void Runtime::RefreshCameraComponents(bool allowCameraApplier) {
     }
   }
   _mainCameraPropsDirty = false;
+  if (IsAlive(mainCamPtr)) ApplyFarCulling(mainCamPtr);
   RefreshCameraApplier(mainCamGO, allowCameraApplier);
 }
 
