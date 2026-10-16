@@ -7,6 +7,7 @@
 #include <set>
 #include <tuple>
 #include <cstdio>
+#include <cctype>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
@@ -1275,6 +1276,23 @@ std::map<std::string, std::string> DeclaredVaryings(std::string const& source, s
 // vertex (or geometry) output, and a varying the fragment reads but nothing
 // writes is declared on the writing side, where it is simply undefined -- which
 // is also what D3D gives a pixel shader for an input the vertex shader skipped.
+// Replaces every occurrence of identifier `from` in GLSL text with `to`; a
+// longer name that merely contains it (vs_TEXCOORD01 for vs_TEXCOORD0) stays.
+void RenameIdentifier(std::string& text, std::string const& from, std::string const& to) {
+  auto isName = [](char c) { return std::isalnum(static_cast<unsigned char>(c)) || c == '_'; };
+  size_t at = 0;
+  while ((at = text.find(from, at)) != std::string::npos) {
+    bool const startsWord = at == 0 || !isName(text[at - 1]);
+    bool const endsWord = at + from.size() >= text.size() || !isName(text[at + from.size()]);
+    if (startsWord && endsWord) {
+      text.replace(at, from.size(), to);
+      at += to.size();
+    } else {
+      at += from.size();
+    }
+  }
+}
+
 std::string LinkStages(Vivify::Dxbc::GlslResult const& vertex, Vivify::Dxbc::GlslResult const* fragment,
                        Vivify::Dxbc::GlslResult const* geometry, int& version) {
   version = vertex.version;
@@ -1284,6 +1302,11 @@ std::string LinkStages(Vivify::Dxbc::GlslResult const& vertex, Vivify::Dxbc::Gls
   std::string vs = WithVersion(vertex.source, version);
   std::string fs = fragment != nullptr ? WithVersion(fragment->source, version) : std::string();
   std::string gs = geometry != nullptr ? WithVersion(geometry->source, version) : std::string();
+  // A pass-through varying the geometry stage renamed on its output: the
+  // fragment stage reads the new name.
+  if (geometry != nullptr && fragment != nullptr) {
+    for (auto const& [from, to] : geometry->renamedVaryings) RenameIdentifier(fs, from, to);
+  }
 
   if (fragment != nullptr) {
     std::string& feeder = geometry != nullptr ? gs : vs;

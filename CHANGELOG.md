@@ -11,6 +11,60 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.27] - 2026-10-16
+
+### Fixed
+- **Geometry shaders that pass a varying straight through no longer leave
+  their whole variant grey.** A geometry program that passed a semantic
+  through (for example `TEXCOORD0`) would need one name as both its input
+  and its output, so the converter refused it, and the variant stayed on
+  DirectX: grey or missing models on the headset. The geometry output now
+  takes a `gs_` name and the fragment stage's input is renamed to match when
+  they link.
+  - Reported in #60 (42 Flux: grey or missing models; Extra Sensory II) and
+    the geometry-shader variants in 743 Aether (#64, #81).
+  - Checked: a raw 743 Aether PC bundle now translates 34 of 35 shaders with
+    all 180 programs compiling and linking under glslang, where 2 of its
+    shaders were refused before. A new converter test links a pass-through
+    geometry stage with its fragment stage.
+- **Map saber trails work with Custom Models (#89).** Custom Models builds
+  its sabers through Lapiz, which skips the game's saber setup, so the saber
+  has no trail of its own and Vivify's trail, which followed that trail, was
+  never made. Only Custom Models' trail was left. Vivify's trail now follows
+  the saber itself when the game's trail is missing. When the map replaces
+  the trail (not additive), Custom Models' trails are hidden for the level
+  and come back afterwards.
+  - Read from the Custom Models and Lapiz sources. Not tried on a headset.
+
+### Compatibility
+- **GraphicsTweaks bloom keeps a map's effects in the PC order.** On Quest
+  the game's bloom (main effect) is off, so Vivify never placed it among a
+  map's Blit effects. GraphicsTweaks (the "PC graphics settings" mod) can
+  turn bloom on. Bloom then ran first, in the game's own pass, and every
+  effect, including "before main effect" ones, was drawn over the bloomed
+  image. When bloom is on, Vivify now renders it between the map's pre- and
+  post-effects as on PC, and skips the game's pass so it is not drawn twice.
+  Secondary cameras that ask for `mainEffect` get bloom as on PC. With bloom
+  off, as in an unmodded game, nothing changes. The log notes when Vivify
+  takes over rendering bloom.
+  - GraphicsTweaks 0.1.13 (the 1.40.8 build) was read for other overlaps:
+    MSAA (Vivify's effect textures already drop multisampling), resolution
+    scale (effects follow the frame's real size each frame), and depth and
+    smoke (Vivify still turns on scene depth for maps that read it). None
+    needed a change. Its higher refresh rates and resolution do make heavy
+    maps slower; Effect Resolution and Offscreen Culling help there.
+
+### Known, not fixed
+- Two geometry shaders in 743 Aether (Beat Saber Wireframe 3D-Noise and
+  TriangleExplosion) read `SV_RenderTargetArrayIndex`, the eye index in
+  single-pass stereo, as a geometry input. Those variants still stay on
+  DirectX. Turning on Draw Geometry-Shader Effects draws them without the
+  geometry stage. Passing the eye index through the geometry stage needs a
+  headset test.
+- Solid or white screen-effect maps (#67, #69, #87) are not reproduced here:
+  their bundles are not in the reports' logs. The experimental Blit Fix
+  setting is the current workaround.
+
 ## [0.14.26] - 2026-10-16
 
 ### Added
