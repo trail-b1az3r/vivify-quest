@@ -3,7 +3,7 @@
 
 ### ***if you cant find session log: look at log-help.md for help*** and make sure to get both logs, (/mods/vivify and /logs2)
 # Vivify Quest
-
+## current recomended version: ***0.14.7***
 A Quest port of [Vivify](https://github.com/Aeroluna/Vivify) for **Beat Saber
 1.40.8**. It plays Vivify maps on the headset, including maps that were only
 ever built for PC.
