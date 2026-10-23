@@ -1383,6 +1383,17 @@ MultipassKeywordController* Runtime::EnsureMultipassKeywordController(UnityEngin
   return controller;
 }
 
+namespace {
+bool MainEffectRenders(GlobalNamespace::MainEffectController* controller) {
+  if (!IsManagedAlive(controller) || controller->_mainEffectContainer.ptr() == nullptr ||
+      !IsManagedAlive(controller->_mainEffectContainer)) {
+    return false;
+  }
+  auto mainEffectSO = controller->_mainEffectContainer->get_mainEffect();
+  return mainEffectSO.ptr() != nullptr && IsManagedAlive(mainEffectSO) && mainEffectSO->get_hasPostProcessEffect();
+}
+}
+
 void Runtime::RefreshCameraApplier(UnityEngine::GameObject* mainCamGO, bool allowCameraApplier) {
   if (_pauseMenuActive) allowCameraApplier = false;
   if (!allowCameraApplier) {
@@ -1407,6 +1418,22 @@ void Runtime::RefreshCameraApplier(UnityEngine::GameObject* mainCamGO, bool allo
     _cameraApplier->hasMainEffect = false;
   }
 
+  // The game's main effect (bloom) is off on Quest unless a mod turns it on --
+  // GraphicsTweaks' bloom setting does. Left to itself it renders in the game's
+  // own ImageEffectController before the CameraApplier, so every Blit, the
+  // "before main effect" ones too, landed on an already-bloomed image. When it
+  // is on, the CameraApplier renders it between the map's pre- and
+  // post-effects as on PC, and ShouldBypassImageEffect skips the game's pass so
+  // it is not drawn twice. With it off nothing changes (0.14.27).
+  auto* mainEffect = mainCamGO->GetComponent<GlobalNamespace::MainEffectController*>();
+  bool const mainEffectActive = MainEffectRenders(mainEffect);
+  _cameraApplier->mainEffectController = mainEffectActive ? mainEffect : nullptr;
+  if (_cameraApplier->hasMainEffect != mainEffectActive) {
+    _cameraApplier->hasMainEffect = mainEffectActive;
+    PaperLogger.info("Vivify main camera: game main effect (bloom) {} the map's effects",
+                     mainEffectActive ? "is on; rendering it between" : "is off; not rendering it with");
+  }
+
   bool const needsBlit = !GetDisableAllBlits() &&
                          (!_preEffects.empty() || !_postEffects.empty() || HasMidRenderEffects() ||
                           !_secondaryCameras.empty());
@@ -1429,6 +1456,8 @@ bool Runtime::ShouldBypassImageEffect(GlobalNamespace::ImageEffectController* co
     return false;
   }
   if (!IsManagedAlive(controller)) return false;
+  auto* mainEffect = _cameraApplier->mainEffectController;
+  if (IsManagedAlive(mainEffect) && mainEffect->_imageEffectController.unsafePtr() == controller) return true;
   return controller->get_gameObject().unsafePtr() == _cameraApplierGO;
 }
 

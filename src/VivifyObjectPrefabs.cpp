@@ -1172,7 +1172,7 @@ void Runtime::ApplySaberVisuals(GlobalNamespace::SaberModelController* smc, Glob
                        "default saber visible", type);
     }
   }
-  ApplySaberTrailVisuals(smc, validTrailInfos, replacement);
+  ApplySaberTrailVisuals(smc, saber, validTrailInfos, replacement);
   ApplySaberReplacementColor(smc, saber, replacement, true);
   VIVIFY_DEBUG("Vivify saber replaced (type {}): models={} trails={} spawned={} renderers={} hiddenOriginals={}",
                type, validModelInfos.size(), validTrailInfos.size(), replacement.spawnedObjects.size(),
@@ -1183,12 +1183,56 @@ void Runtime::ApplySaberVisuals(GlobalNamespace::SaberModelController* smc, Glob
   }
 }
 
-void Runtime::ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc,
+// The game's trail renderer prefab, for a saber whose controller has no trail
+// of its own (Custom Models' controller skips the game's Init through Lapiz, so
+// its _saberTrail is never set). Any SaberTrail the game set up carries the
+// prefab -- the default saber model asset does, and Custom Models keeps a
+// disabled default saber under its model when no custom one is picked. Failing
+// that, any loaded SaberTrailRenderer will do, as Instantiate copies what it is
+// handed. Searched each time rather than cached: the asset can be unloaded with
+// its scene.
+GlobalNamespace::SaberTrailRenderer* Runtime::FindSaberTrailRendererPrefab(GlobalNamespace::SaberModelController* smc) {
+  auto prefabOf = [this](ArrayW<GlobalNamespace::SaberTrail*> trails) -> GlobalNamespace::SaberTrailRenderer* {
+    if (!trails) return nullptr;
+    for (int i = 0; i < trails.size(); i++) {
+      auto* trail = trails[i];
+      if (!IsAlive(trail) || il2cpp_utils::try_cast<FollowedSaberTrail>(trail).has_value()) continue;
+      auto* prefab = trail->____trailRendererPrefab.unsafePtr();
+      if (IsAlive(prefab)) return prefab;
+    }
+    return nullptr;
+  };
+  if (IsAlive(smc)) {
+    if (auto* prefab = prefabOf(smc->GetComponentsInChildren<GlobalNamespace::SaberTrail*>(true))) return prefab;
+  }
+  if (auto* prefab = prefabOf(UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::SaberTrail*>())) {
+    return prefab;
+  }
+  auto renderers = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::SaberTrailRenderer*>();
+  for (int i = 0; renderers && i < renderers.size(); i++) {
+    auto* renderer = renderers[i];
+    if (IsAlive(renderer) && IsAlive(renderer->____meshRenderer.unsafePtr())) return renderer;
+  }
+  return nullptr;
+}
+
+void Runtime::ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
                                      std::vector<AssignedPrefabInfo*> const& infos,
                                      VisualReplacement& replacement) {
   if (infos.empty() || !IsAlive(smc)) return;
   auto* sourceTrail = smc->____saberTrail.unsafePtr();
-  if (!IsAlive(sourceTrail) || !sourceTrail->____trailRendererPrefab) return;
+  bool const hasOwnTrail = IsAlive(sourceTrail) && IsAlive(sourceTrail->____trailRendererPrefab.unsafePtr()) &&
+                           IsAlive(sourceTrail->____trailRenderer.unsafePtr());
+  GlobalNamespace::SaberTrailRenderer* fallbackPrefab = nullptr;
+  if (!hasOwnTrail) {
+    fallbackPrefab = IsAlive(saber) ? FindSaberTrailRendererPrefab(smc) : nullptr;
+    if (!IsAlive(fallbackPrefab)) {
+      PaperLogger.warn("Vivify saber trail: the saber has no game trail to follow and no trail renderer was found; "
+                       "the map's trail is skipped");
+      return;
+    }
+    VIVIFY_DEBUG("Vivify saber trail: controller has no game trail (another saber mod); following the saber");
+  }
   UnityEngine::Transform* parent = nullptr;
   auto existing = std::find_if(_activeSabers.begin(), _activeSabers.end(), [smc](ActiveSaberVisual const& target) {
     return target.controller == smc;
@@ -1225,7 +1269,13 @@ void Runtime::ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc,
       UnityEngine::Object::Destroy(trailObject);
       continue;
     }
-    followedTrail->InitFollowed(sourceTrail, parent, material, top, bottom, duration, samplingFrequency, granularity);
+    if (hasOwnTrail) {
+      followedTrail->InitFollowed(sourceTrail, parent, material, top, bottom, duration, samplingFrequency,
+                                  granularity);
+    } else {
+      followedTrail->InitFromSaber(saber, smc, fallbackPrefab, parent, material, GetSaberColor(smc, saber), top,
+                                   bottom, duration, samplingFrequency, granularity);
+    }
     if (!IsAlive(followedTrail->____trailRenderer.unsafePtr())) {
       UnityEngine::Object::Destroy(trailObject);
       continue;
@@ -1235,10 +1285,23 @@ void Runtime::ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc,
   }
 
   if (!replacement.followedTrails.empty() && ShouldHideOriginal(infos)) {
-    auto* sourceRenderer = sourceTrail->____trailRenderer.unsafePtr();
-    if (IsAlive(sourceRenderer) && sourceRenderer->____meshRenderer && sourceRenderer->____meshRenderer->get_enabled()) {
-      sourceRenderer->____meshRenderer->set_enabled(false);
-      replacement.disabledRenderers.emplace_back(sourceRenderer->____meshRenderer);
+    auto hide = [this, &replacement](GlobalNamespace::SaberTrail* trail) {
+      auto* renderer = IsAlive(trail) ? trail->____trailRenderer.unsafePtr() : nullptr;
+      if (IsAlive(renderer) && renderer->____meshRenderer && renderer->____meshRenderer->get_enabled()) {
+        renderer->____meshRenderer->set_enabled(false);
+        replacement.disabledRenderers.emplace_back(renderer->____meshRenderer);
+      }
+    };
+    if (hasOwnTrail) hide(sourceTrail);
+    // Trails another mod hangs under the saber (Custom Models puts its own
+    // under its model) would otherwise keep drawing over the map's. Their
+    // renderers sit at the scene root, so hiding the saber's renderers misses
+    // them.
+    auto trails = smc->GetComponentsInChildren<GlobalNamespace::SaberTrail*>(true);
+    for (int i = 0; trails && i < trails.size(); i++) {
+      auto* trail = trails[i];
+      if (trail == sourceTrail || il2cpp_utils::try_cast<FollowedSaberTrail>(trail).has_value()) continue;
+      hide(trail);
     }
   }
 }

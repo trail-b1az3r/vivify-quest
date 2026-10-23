@@ -712,10 +712,13 @@ def geometry_passthrough():
 
 
 proc, fields, _, source = run("glsl", geometry_passthrough())
-check("a pass-through geometry varying is refused, not redeclared",
-      fields.get("ok") == "0", source)
-check("pass-through refusal explains the name clash",
-      "both its input and its output" in fields.get("error", ""), fields.get("error", ""))
+# 0.14.27: the output is renamed instead of refused. The vertex stage's name
+# stays on the input (the array the vertex stage writes), the output takes gs_.
+check("a pass-through geometry varying translates", fields.get("ok") == "1", fields.get("error", ""))
+check("the pass-through input keeps the vertex stage's name",
+      "in vec4 vs_TEXCOORD0[];" in source, source)
+check("the pass-through output takes a distinct name", "out vec4 gs_TEXCOORD0;" in source, source)
+check("the output is written under its new name", "gs_TEXCOORD0.xyzw = vs_TEXCOORD0[1].xyzw;" in source, source)
 
 # ---------------------------------------------------------------------------
 # Unity's program header in front of the container

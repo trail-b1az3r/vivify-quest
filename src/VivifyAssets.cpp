@@ -383,7 +383,7 @@ BundleConversionOutcome RunBundleConversionUnclaimed(std::string const& source, 
   // See version 17 above. Converted maps only: a donor build for a Quest
   // map's empty shaders keeps everything, since Quest materials keep their
   // instancing.
-  options.skipQuestUnusedVariants = true;
+  options.skipQuestUnusedVariants = !kLiteBuild;
   options.singleViewOnly = GetReplayRenderMode();
   auto const conversion = BundleConvert::ConvertShadersToGles(source, dest, options);
   if (conversion.status == BundleConvert::Status::Success) MarkConversionCurrent(dest);
@@ -1208,7 +1208,7 @@ void Runtime::PrepareBlitCompanion(std::string const& levelPath, std::string con
       BundleConvert::ShaderConversionOptions options;
       options.singleViewOnly = true;
       options.renameArchiveFiles = true;
-      options.skipQuestUnusedVariants = true;  // same materials as the main conversion
+      options.skipQuestUnusedVariants = !kLiteBuild;  // same materials as the main conversion
       auto const result = BundleConvert::ConvertShadersToGles(pcBundlePath, companion, options);
       if (result.status != BundleConvert::Status::Success) {
         PaperLogger.warn("Vivify Blit: the single-view build for blits into screen textures failed: {}",
@@ -2019,7 +2019,8 @@ std::string DepthScanKey(std::string const& path) {
 }
 
 void Runtime::ScanBundleForSceneDepth(std::string const& bundlePath) {
-  if (bundlePath.empty()) return;
+  // Lite: no scan, so the depth texture stays on as it was in 0.14.7.
+  if (kLiteBuild || bundlePath.empty()) return;
   std::string const key = DepthScanKey(bundlePath);
   {
     std::lock_guard lock(_depthScanMutex);

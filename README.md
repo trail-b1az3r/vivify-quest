@@ -58,6 +58,11 @@ pre-release. It is rebuilt daily when something has changed.
 
 All settings are in **Mod Settings → Vivify**.
 
+Two builds are published with each release. **Vivify-v…** has every feature.
+**Vivify-Lite-v…** has the feature set of 0.14.7 (with the geometry-shader
+setting): the settings added after it are not in that build. Install one of
+them, not both.
+
 | Setting | Default | What it does |
 |---|---|---|
 | Convert PC Bundles On Device | on | Converts PC-only maps on the headset. |

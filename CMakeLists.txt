@@ -31,6 +31,11 @@ add_compile_definitions(MOD_ID="${CMAKE_PROJECT_NAME}")
 add_compile_definitions(VERSION="${CMAKE_PROJECT_VERSION}")
 # Linked into the library by src/VivifyAudioLinkBundle.cpp (.incbin).
 add_compile_definitions(VIVIFY_AUDIOLINK_BUNDLE="${CMAKE_CURRENT_SOURCE_DIR}/assets/audiolink/AudioLink.bundle")
+# The lite build (VIVIFY_LITE=1 in the environment, set by build.yml for the
+# lite QMOD) keeps 0.14.7's feature set; see include/main.hpp.
+if("$ENV{VIVIFY_LITE}" STREQUAL "1")
+	add_compile_definitions(VIVIFY_LITE=1)
+endif()
 
 set(COMPILE_ID ${CMAKE_PROJECT_NAME})
 

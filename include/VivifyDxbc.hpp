@@ -293,6 +293,11 @@ struct GlslResult {
   // SV_RenderTargetArrayIndex to pick the eye. With `multiview` set its eye
   // selection is remapped onto gl_ViewID_OVR.
   bool stereoInstanced = false;
+  // Geometry programs only (0.14.27): varyings the geometry stage both reads
+  // and writes under one name. Its output is renamed (from -> to, both as
+  // written in this source); the fragment stage it links to reads the renamed
+  // name, which LinkStages rewrites to match.
+  std::vector<std::pair<std::string, std::string>> renamedVaryings;
 };
 
 // Reflection supplied from outside the bytecode.

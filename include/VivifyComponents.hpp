@@ -37,8 +37,27 @@ public:
   DECLARE_INSTANCE_METHOD(void, LateUpdate);
   DECLARE_INSTANCE_METHOD(void, Cleanup);
 
+public:
+  // Follows the saber's own movement instead of another trail: for a saber
+  // whose model controller never ran the game's Init (Custom Models, through
+  // Lapiz), so there is no trail on it to copy (0.14.27).
+  void InitFromSaber(GlobalNamespace::Saber* saber, GlobalNamespace::SaberModelController* controller,
+                     GlobalNamespace::SaberTrailRenderer* rendererPrefab, UnityEngine::Transform* parent,
+                     UnityEngine::Material* material, UnityEngine::Color color, UnityEngine::Vector3 topPos,
+                     UnityEngine::Vector3 bottomPos, float_t duration, int32_t samplingFrequency,
+                     int32_t granularity);
+
 private:
+  void Setup(GlobalNamespace::IBladeMovementData* movementData, GlobalNamespace::SaberTrailRenderer* rendererPrefab,
+             UnityEngine::Transform* rendererParent, UnityEngine::Transform* parent, UnityEngine::Material* material,
+             UnityEngine::Vector3 topPos, UnityEngine::Vector3 bottomPos, float_t duration,
+             int32_t samplingFrequency, int32_t granularity, float_t whiteSectionMaxDuration, UnityEngine::Color color);
+  bool SourceAlive() const;
+  UnityEngine::Color SourceColor();
+
   GlobalNamespace::SaberTrail* _followed = nullptr;
+  GlobalNamespace::Saber* _saber = nullptr;
+  GlobalNamespace::SaberModelController* _controller = nullptr;
   Vivify::OffsetBladeMovementData* _offsetMovementData = nullptr;
   UnityEngine::Color _lastAppliedColor;
   bool _hasLastAppliedColor = false;

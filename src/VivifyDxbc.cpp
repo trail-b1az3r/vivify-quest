@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstring>
 #include <deque>
+#include <map>
 #include <set>
 
 namespace Vivify::Dxbc {
@@ -1242,6 +1243,7 @@ class GlslEmitter {
   SignatureElement const* FindSignature(std::vector<SignatureElement> const& signature,
                                         uint32_t registerIndex) const;
   std::string VaryingName(SignatureElement const& element, bool vertexInput) const;
+  std::string OutputVaryingName(SignatureElement const& element) const;
   std::string InterpolationQualifier(uint32_t registerIndex) const;
 
   Program const& _program;
@@ -1256,6 +1258,9 @@ class GlslEmitter {
   bool _failed = false;
   std::string _error;
   int _version = 300;
+  // Geometry pass-through varyings, input name -> renamed output name (see
+  // GlslResult::renamedVaryings).
+  std::map<std::string, std::string> _geometryPassThrough;
 
   std::vector<std::vector<MappedVariable>> _constantBuffers;  // by cb bind point
   std::vector<MappedTexture> _textures;                       // by t# register
@@ -1322,6 +1327,17 @@ std::string GlslEmitter::VaryingName(SignatureElement const& element, bool verte
     if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'))) c = '_';
   }
   return (vertexInput ? "in_" : "vs_") + name + std::to_string(element.semanticIndex);
+}
+
+// A geometry program's pass-through output takes gs_ rather than vs_ (see
+// _geometryPassThrough); every other output keeps its name.
+std::string GlslEmitter::OutputVaryingName(SignatureElement const& element) const {
+  std::string name = VaryingName(element, false);
+  if (_program.stage == Stage::Geometry) {
+    auto renamed = _geometryPassThrough.find(name);
+    if (renamed != _geometryPassThrough.end()) return renamed->second;
+  }
+  return name;
 }
 
 // dcl_input_ps carries the interpolation mode in its opcode controls. Getting
@@ -1755,22 +1771,16 @@ bool GlslEmitter::BuildSignatures() {
       // A geometry shader reads its inputs per vertex, so every varying is an
       // array sized by the input primitive.
       //
-      // Its outputs feed the fragment stage, which was compiled separately and
-      // expects the same vs_SEMANTIC# names the vertex stage writes -- so a
-      // geometry shader that passes a semantic straight through would have to
-      // declare one name as both an input and an output. That is not legal
-      // GLSL, and renaming either side breaks the link with a program this
-      // translator never sees. Programs are translated one at a time, so the
-      // pipeline-wide rename the name scheme would need is not available; the
-      // collision is reported instead of guessed at.
+      // Its outputs feed the fragment stage, and the vertex stage writes the
+      // same vs_SEMANTIC# name it reads, so a semantic the geometry stage
+      // passes straight through would be one name as both input and output,
+      // which is not legal GLSL. The output takes gs_ instead, and the link
+      // renames the fragment stage's input to match (LinkStages). Refusing this
+      // left the whole variant on DirectX: grey or missing geometry.
       for (auto const& output : _program.outputSignature) {
         if (output.systemValueType != kSvUndefined) continue;
         if (VaryingName(output, false) != name) continue;
-        Fail("this geometry program passes '" + element.semanticName +
-             std::to_string(element.semanticIndex) +
-             "' through, which would need one varying name to be both its input and its "
-             "output; translating stages separately cannot rename it on both sides");
-        return false;
+        _geometryPassThrough[name] = "gs_" + name.substr(3);
       }
       _declarations += "in vec4 " + name + "[];\n";
     } else {
@@ -1825,7 +1835,7 @@ bool GlslEmitter::BuildSignatures() {
                        std::to_string(element.semanticIndex) + ";\n";
       continue;
     }
-    _declarations += "out vec4 " + VaryingName(element, false) + ";\n";
+    _declarations += "out vec4 " + OutputVaryingName(element) + ";\n";
   }
   return !_failed;
 }
@@ -2038,7 +2048,7 @@ std::string GlslEmitter::RegisterName(Operand const& operand) {
       if (_program.stage == Stage::Pixel) {
         return element->semanticName + std::to_string(element->semanticIndex);
       }
-      return VaryingName(*element, false);
+      return OutputVaryingName(*element);
     }
     case kOperandOutputDepth:
     case kOperandOutputDepthGreaterEqual:
@@ -3950,6 +3960,7 @@ GlslResult GlslEmitter::Run() {
   result.uniforms = _uniformNames;
   result.samplers = _samplerList;
   result.version = _version;
+  for (auto const& [from, to] : _geometryPassThrough) result.renamedVaryings.emplace_back(from, to);
   result.stereoInstanced = _stereoInstanced;
   return result;
 }

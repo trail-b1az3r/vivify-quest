@@ -1,6 +1,15 @@
 #pragma once
 
 #include <string>
+
+// The lite build (CMake: VIVIFY_LITE=1, see .github/workflows/build.yml) keeps
+// the feature set of 0.14.7: every setting and behaviour added after it is
+// switched off and hidden. The full build keeps all of them.
+#ifdef VIVIFY_LITE
+inline constexpr bool kLiteBuild = true;
+#else
+inline constexpr bool kLiteBuild = false;
+#endif
 // paper2_scotland2 4.7.0's shared/backtrace.hpp calls std::ifstream but includes
 // only <sstream>, and beatsaber-hook pulls that header in from
 // config-utils.hpp -> utils-functions.h. libc++ used to leak <fstream> through

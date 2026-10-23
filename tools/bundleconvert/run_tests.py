@@ -217,6 +217,9 @@ else:
 sys.path.insert(0, os.path.join(os.path.dirname(HERE), "dxbc"))
 import mkdxbc as dx  # noqa: E402
 import mkshader  # noqa: E402
+# Opcode numbers the geometry fixture needs (D3D10_SB_OPCODE_TYPE).
+DCL_GS_INPUT_PRIMITIVE_B, DCL_MAXOUT_B, DCL_GS_OUTPUT_TOPOLOGY_B, EMIT_B = 93, 94, 92, 19
+RET = 62
 
 DX11_VERTEX_SM50 = 16
 DX11_PIXEL_SM50 = 18
@@ -961,6 +964,44 @@ def expect_geometry_kept(proc, fields, refusals, dst):
 
 pc_shader_case("by default an untranslatable geometry stage leaves its variant as it was",
                gs_body, expect_geometry_kept)
+
+# A geometry stage that passes a semantic straight through (0.14.27): the
+# output is renamed and the fragment stage reads the renamed name, so the
+# variant links and keeps its geometry. Before, it was refused and left on
+# DirectX -- grey or missing models on the headset (42 Flux, Extra Sensory II).
+def _geometry_passthrough_dxbc():
+    isgn = dx.signature_chunk([{"name": "TEXCOORD", "index": 0, "register": 0, "mask": 0x3, "rw_mask": 0x3}], b"ISGN")
+    osgn = dx.signature_chunk([{"name": "TEXCOORD", "index": 0, "register": 0, "mask": 0x3, "rw_mask": 0x3}], b"OSGN")
+    code = dx.insn(DCL_GS_INPUT_PRIMITIVE_B, controls=3)
+    code += dx.insn(DCL_MAXOUT_B, extra=[3])
+    code += dx.insn(DCL_GS_OUTPUT_TOPOLOGY_B, controls=5)
+    code += dx.insn(MOV, dx.dest(dx.OPERAND_OUTPUT, 0), dx._operand(dx.OPERAND_INPUT, [1, 0], swizzle=(0, 1, 2, 3)))
+    code += dx.insn(EMIT_B)
+    code += dx.insn(RET)
+    return dx.unity_program([isgn, osgn, dx.shex_chunk([code], stage=2)])
+
+
+gs_pass_body, _ = pc_shader_2021(
+    "Swifter/GeometryPassthrough", [(_vs(spi=False), [])], [(_ps(spi=False), [])], keyword_names=(),
+    geometry_programs=[(_geometry_passthrough_dxbc(), [])])
+
+
+def expect_passthrough_linked(proc, fields, refusals, dst):
+    if fields.get("linked") != "1" or fields.get("variantsRefused") != "0":
+        return f"linked={fields.get('linked')} variantsRefused={fields.get('variantsRefused')} {refusals}"
+    if fields.get("geometryDropped") != "0":
+        return f"geometryDropped={fields.get('geometryDropped')}: the geometry stage was not kept"
+    _, refs, entries = inspect_converted(dst)
+    by_stage = {r["stage"]: r for r in refs}
+    if "2" not in by_stage:
+        return "no geometry entry in the converted shader"
+    if by_stage["2"]["type"] == "20":
+        return "the geometry entry was left on DirectX; it should have been translated"
+    return None
+
+
+pc_shader_case("a geometry stage that passes a varying through links with the fragment stage",
+               gs_pass_body, expect_passthrough_linked)
 
 # The blit companion: single-view programs in a bundle whose internal files
 # are renamed, so it can be loaded beside the main conversion.
