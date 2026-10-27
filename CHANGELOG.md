@@ -11,6 +11,43 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.28] - 2026-10-27
+
+### Fixed
+- **Black Windows maps with Replay Render Mode left on (#92, likely #93).**
+  The setting builds converted maps with single-screen programs only. Replay
+  renderers can draw those, but the headset draws none of them, so a player
+  who turned it on saw every converted map black until they turned it off
+  (as the reporter of #92 found). It now applies only while the Replay mod
+  is actually rendering a replay, checked through Replay's own API. Leaving
+  it on no longer affects normal play, and without Replay installed it does
+  nothing. The menu label says so, and the per-level settings line in the
+  log now includes `replayRenderMode`. #92's log shows the cause: the
+  converted caches carry the `_replay` suffix, but the settings line had no
+  field for the setting.
+  - Read from Replay 0.5.2's source: its render flag is set when Render is
+    pressed, before the level loads, which is when Vivify picks the bundle.
+    Not tried on a headset.
+- **Videos follow the song speed (#91).** At Slower Song, Faster Song, a
+  Practice speed or a mod such as BSNightcoreQuest, a map's videos kept
+  playing at 1x. A video attached to a note or saber prefab was also yanked
+  back to the song every time it drifted 0.15 s, so it stuttered. Videos
+  now play at the song's speed, both those on note or saber prefabs and
+  those in `InstantiatePrefab` objects, which were not tracked at all.
+  - Animators and particle systems already followed the song speed, and
+    property animations already run on song time; neither changed. Textures
+    that animate in their shader (`_Time`) run on the game clock, as on PC,
+    and still do not follow the song speed.
+
+### Known, not fixed
+- Mirror head-tilt in Lifelike (#81). The map's reflection is the game's
+  own environment mirror: the map turns on its `Mirror` object and asks
+  for mirror quality High. On Quest that renders only when GraphicsTweaks
+  enables mirrors, which matches the report that the problem needs
+  GraphicsTweaks. Vivify does not touch how the game renders mirrors.
+  Whether the tilt also shows on a non-Vivify map with GraphicsTweaks
+  mirrors on would tell if Vivify is involved at all.
+
 ## [0.14.27] - 2026-10-16
 
 ### Fixed

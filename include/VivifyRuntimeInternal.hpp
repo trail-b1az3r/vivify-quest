@@ -125,6 +125,7 @@ private:
   void UpdateSyncedObjects();
 
   void UpdatePrefabAnimationSpeed();
+  float SongSpeed();
   void LogThrottledUpdateError(std::string_view what);
 
   void HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEventArgs const& event);

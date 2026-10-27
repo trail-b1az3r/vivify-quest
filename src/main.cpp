@@ -7,6 +7,7 @@
 #include <string_view>
 #include <fstream>
 #include <chrono>
+#include <atomic>
 #include <mutex>
 #include <filesystem>
 #include "HMUI/ViewController.hpp"
@@ -21,6 +22,8 @@
 #include "bsml/shared/BSML/Settings/BSMLSettings.hpp"
 #include "custom-types/shared/register.hpp"
 #include "scotland2/shared/modloader.h"
+#include <dlfcn.h>
+#include <vector>
 
 static modloader::ModInfo modInfo{MOD_ID, VERSION, 0};
 
@@ -453,7 +456,7 @@ void RegisterModSettings() {
               container->get_transform(), u"Prepare Shaders Before Playing", GetPrepareShadersBeforePlaying(),
               [](bool value) { SetBoolConfigValue(kPrepareShadersConfigKey, value, gPrepareShaders); });
           BSML::Lite::CreateToggle(
-              container->get_transform(), u"Replay Render Mode (converted maps)", GetReplayRenderMode(),
+              container->get_transform(), u"Replay Render Mode (only while Replay renders)", gReplayRenderMode,
               [](bool value) { SetBoolConfigValue(kReplayRenderModeConfigKey, value, gReplayRenderMode); });
           BSML::Lite::CreateToggle(
               container->get_transform(), u"Blit Fix For Screen Textures (experimental)", GetBlitScreenTextureFix(),
@@ -663,8 +666,55 @@ bool GetMapRealtimeShadows() {
   return gMapRealtimeShadows;
 }
 
+namespace {
+// What conditional-dependencies' EXPOSE_API returns, laid out as in its
+// utils.hpp (0.3.0). Its headers are not used: they include the old
+// QuestLoader modloader header, which this scotland2 build does not have.
+struct ExposedTypeInfo {
+  std::string name;
+  size_t size;
+};
+struct ExposedApi {
+  ExposedTypeInfo ret;
+  std::vector<ExposedTypeInfo> params;
+  void* func;
+};
+
+using IsInRenderFunction = bool (*)();
+
+// Replay's IsInRender, found through the loader rather than by file path, and
+// type checked the way conditional-dependencies does before using it.
+IsInRenderFunction FindReplayIsInRender() {
+  CModInfo info{.id = "replay", .version = nullptr, .version_long = 0};
+  CModResult mod = modloader_get_mod(&info, MatchType_IdOnly);
+  if (mod.handle == nullptr) return nullptr;
+  auto* exported = reinterpret_cast<ExposedApi (*)()>(dlsym(mod.handle, "__IsInRender"));
+  if (exported == nullptr) return nullptr;
+  ExposedApi const api = exported();
+  if (api.ret.name != "bool" || api.ret.size != sizeof(bool) || !api.params.empty()) return nullptr;
+  return reinterpret_cast<IsInRenderFunction>(api.func);
+}
+
+// Whether the Replay mod is rendering a replay right now. The lookup is
+// retried until it succeeds, since one made before Replay has loaded would
+// otherwise stay empty for the session.
+bool ReplayModIsRendering() {
+  static std::atomic<IsInRenderFunction> isInRender{nullptr};
+  auto function = isInRender.load();
+  if (function == nullptr) {
+    function = FindReplayIsInRender();
+    if (function == nullptr) return false;
+    isInRender.store(function);
+  }
+  return function();
+}
+}
+
+// Single-view programs are what replay renderers draw, but the headset draws
+// none of them: a player who left this on got black maps (#92, #93). So it
+// only applies while the Replay mod is actually rendering (0.14.28).
 bool GetReplayRenderMode() {
-  return !kLiteBuild && gReplayRenderMode;
+  return !kLiteBuild && gReplayRenderMode && ReplayModIsRendering();
 }
 
 bool GetBlitScreenTextureFix() {

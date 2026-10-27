@@ -891,13 +891,14 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
   PaperLogger.info("Vivify settings for this level: standInShading={} convertPcBundlesOnDevice={} "
                    "disableCustomNoteVisuals={} disableAllBlits={} multipassRendering={} effectResolution={}% "
                    "sceneDepth={} prepareShaders={} geometryEffects={} offscreenCulling={} farCulling={}m crashGuard={} "
-                   "pcBundleForMissingShaders={}",
+                   "pcBundleForMissingShaders={} replayRenderMode={}",
                    BoolText(GetStandInShading()), BoolText(GetConvertPcBundlesOnDevice()),
                    BoolText(GetDisableCustomNoteVisuals()), BoolText(GetDisableAllBlits()),
                    BoolText(GetMultipassRenderingEnabled()), GetEffectResolutionPercent(),
                    BoolText(GetSceneDepthTexture()), BoolText(GetPrepareShadersBeforePlaying()),
                    BoolText(GetDrawGeometryShaderEffects()), BoolText(GetOffscreenCulling()),
-                   GetFarCullingDistance(), BoolText(GetCrashGuard()), BoolText(GetUsePcBundleForMissingShaders()));
+                   GetFarCullingDistance(), BoolText(GetCrashGuard()), BoolText(GetUsePcBundleForMissingShaders()),
+                   BoolText(GetReplayRenderMode()));
 
   std::string const androidBundlePath = JoinPath(_selectedLevelPath, std::string(kBundleFile));
 

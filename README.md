@@ -76,7 +76,7 @@ them, not both.
 | Far Culling Distance | 0 (off) | Draws nothing farther than this many metres. Try 150-300 on heavy maps; far scenery may disappear. |
 | AudioLink | on | Runs AudioLink for maps that use it. |
 | Map Realtime Shadows | off | Lets maps turn on realtime shadows. Expensive; can blacken note bodies. |
-| Replay Render Mode (converted maps) | off | Converts maps with single-screen programs so replay and recording renderers can draw them. Turn on to render, off to play. |
+| Replay Render Mode (only while Replay renders) | off | While the Replay mod renders a replay, converts maps with single-screen programs so its renderer can draw them. Normal play is unaffected. |
 | Blit Fix For Screen Textures (experimental) | off | Builds converted maps' shaders a second time for blits into screen textures, where they otherwise draw nothing. |
 | Prepare Shaders Before Playing | off | Compiles a converted map's shaders in the menu after you select it, instead of freezing at song start. |
 | Draw Geometry-Shader Effects (experimental) | off | Draws wireframe/exploding-triangle style effects on converted maps without their geometry stage instead of grey. |
