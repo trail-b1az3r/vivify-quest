@@ -1,6 +1,8 @@
 #include "main.hpp"
 #include "VivifyGlobalLog.hpp"
 #include <ctime>
+#include <cerrno>
+#include <cstring>
 #include "VivifyRuntime.hpp"
 #include "VivifyReport.hpp"
 #include <string>
@@ -169,15 +171,22 @@ void InstallVivifyFileLogSink() {
   std::error_code ec;
   std::filesystem::create_directories(std::string(kVivifyLogDir), ec);
 
+  // Each of the three files is opened on its own: one that cannot be opened
+  // used to return from here before the others were even tried.
+  errno = 0;
   gVivifyLogFile.open(std::string(kVivifyLogPath), std::ios::out | std::ios::trunc);
-  if (!gVivifyLogFile.is_open()) {
-    PaperLogger.warn("Vivify: could not open log file at {} (logging to logcat only)", kVivifyLogPath);
-    return;
+  int const sessionOpenErrno = errno;
+  if (gVivifyLogFile.is_open()) {
+    gVivifyLogFile << "=== Vivify " << VERSION << (kLiteBuild ? " (lite)" : "") << " session log, started "
+                   << WallClockText() << " ===\n";
+    gVivifyLogFile.flush();
   }
-  gVivifyLogFile << "=== Vivify " << VERSION << " session log ===\n";
-  gVivifyLogFile.flush();
   gVivifyLogLastFlush = std::chrono::steady_clock::now();
-  gVivifyGlobalLog.Open("=== Vivify " + std::string(VERSION) + " session started " + WallClockText() + " ===");
+  try {
+    gVivifyGlobalLog.Open("=== Vivify " + std::string(VERSION) + (kLiteBuild ? " (lite)" : "") + " session started " +
+                          WallClockText() + " ===");
+  } catch (...) {
+  }
 
   Paper::Logger::AddLogSink([](Paper::LogData const& data) {
     if (!data.tag.has_value() || *data.tag != std::string_view(MOD_ID)) return;
@@ -212,6 +221,29 @@ void InstallVivifyFileLogSink() {
       gVivifyLogLastFlush = now;
     }
   });
+
+  // Where each file went, or exactly why it did not, as the first lines every
+  // file that did open will carry. A report of "the global log is never
+  // created" can then be answered from the session log alone.
+  if (gVivifyLogFile.is_open()) {
+    PaperLogger.info("Vivify log files: session -> {}", kVivifyLogPath);
+  } else {
+    PaperLogger.warn("Vivify log files: session log could not be opened at {}: {}", kVivifyLogPath,
+                     sessionOpenErrno != 0 ? std::strerror(sessionOpenErrno) : "unknown error");
+  }
+  if (gVivifyGlobalLog.IsOpen()) {
+    PaperLogger.info("Vivify log files: global -> {}", gVivifyGlobalLog.CurrentPath().string());
+  } else {
+    PaperLogger.warn("Vivify log files: global log could not be opened: {}",
+                     gVivifyGlobalLog.LastError().empty() ? "unknown reason" : gVivifyGlobalLog.LastError());
+  }
+  if (Vivify::Report::Append("SESSION STARTED", "Vivify " + std::string(VERSION) + (kLiteBuild ? " (lite)" : "") +
+                                                    "; one block per level follows.\n")) {
+    PaperLogger.info("Vivify log files: report -> {}", Vivify::Report::FilePath());
+  } else {
+    PaperLogger.warn("Vivify log files: report could not be written at {}: {}", Vivify::Report::FilePath(),
+                     Vivify::Report::LastError());
+  }
 }
 
 void EnsureConfigObject() {
@@ -315,6 +347,16 @@ void SetBoolConfigValue(std::string_view key, bool enabled, bool& value) {
   config.Write();
 }
 
+// "Use Windows Bundle For This Map" (0.14.29): song folder names whose PC
+// bundle is converted and played even though they ship a Quest bundle.
+constexpr char const* kWindowsBundleMapsConfigKey = "windowsBundleMaps";
+
+std::string MapKeyOf(std::string const& levelPath) {
+  std::string trimmed = levelPath;
+  while (!trimmed.empty() && (trimmed.back() == '/' || trimmed.back() == '\\')) trimmed.pop_back();
+  return std::filesystem::path(trimmed).filename().string();
+}
+
 void SetIntConfigValue(std::string_view key, int newValue, int& value) {
   if (gSettingsMenuBuilding) {
     PaperLogger.info("Vivify settings: ignoring a '{}' change to {} that arrived while the menu was "
@@ -348,10 +390,40 @@ void SetConvertStatusText(std::string const& text) {
   gConvertStatusText->set_text(StringW(text));
 }
 
+// Settings menu state (0.14.29): the advanced widgets the "Show Advanced
+// Settings" button hides and shows, and the This Map row.
+std::vector<SafePtrUnity<UnityEngine::GameObject>> gAdvancedWidgets;
+bool gShowAdvanced = false;
+SafePtrUnity<UnityEngine::UI::Button> gAdvancedButton;
+SafePtrUnity<HMUI::CurvedTextMeshPro> gThisMapText;
+SafePtrUnity<UnityEngine::UI::Button> gThisMapButton;
+
+void RefreshThisMapRow() {
+  std::string const path = Vivify::SelectedVivifyMapPath();
+  std::string name = path;
+  while (!name.empty() && (name.back() == '/' || name.back() == '\\')) name.pop_back();
+  name = std::filesystem::path(name).filename().string();
+  bool const enabled = !path.empty() && GetWindowsBundleForMap(path);
+  if (gThisMapText) {
+    gThisMapText->set_text(StringW(path.empty() ? std::string("<size=80%>Select a Vivify map to choose its bundle</size>")
+                                                : "<size=80%>" + name + "</size>"));
+  }
+  if (gThisMapButton) {
+    BSML::Lite::SetButtonText(gThisMapButton.ptr(),
+                              StringW(std::string("Use Windows Bundle: ") + (enabled ? "on" : "off")));
+  }
+}
+
 void RegisterModSettings() {
   BSML::BSMLSettings::get_instance()->TryAddSettingsMenu(
       [](HMUI::ViewController* viewController, bool firstActivation, bool, bool) {
-        if (!firstActivation || viewController == nullptr) return;
+        if (viewController == nullptr) return;
+        // The selected map can change between visits, so its row is refreshed
+        // on every activation, not only when the menu is built.
+        if (!firstActivation) {
+          RefreshThisMapRow();
+          return;
+        }
         gSettingsMenuBuilding = true;
         // Cleared however this scope is left, including through the catch below.
         struct BuildGuard {
@@ -371,6 +443,8 @@ void RegisterModSettings() {
         try {
         auto* container = BSML::Lite::CreateScrollableSettingsContainer(viewController->get_transform());
         if (container == nullptr) return;
+        UnityEngine::Transform* parent = container->get_transform().unsafePtr();
+        gAdvancedWidgets.clear();
 
         // Which build is actually running, in the headset, without a file.
         // "the new features do not work" and "the new build did not install"
@@ -380,14 +454,45 @@ void RegisterModSettings() {
         // Built as a StringW from a std::string, the way every other text in
         // this menu is: the std::u16string this used to assemble by hand is
         // what took the menu down.
-        BSML::Lite::CreateText(container->get_transform(),
-                               StringW(std::string("Vivify ") + VERSION + (kLiteBuild ? " (lite)" : "")));
+        BSML::Lite::CreateText(parent, StringW(std::string("Vivify ") + VERSION + (kLiteBuild ? " (lite)" : "")));
 
-        // Settings are grouped by what they do. Controls that exist only in the
-        // full build are skipped entirely in lite (kLiteBuild), not shown disabled.
+        // 0.14.29: the everyday settings come first and everything else sits
+        // behind "Show Advanced Settings", which hides or shows those widgets
+        // in place (an inactive child drops out of the list's layout). Labels
+        // are short enough to fit beside their control. Controls that exist
+        // only in the full build are skipped in lite, not shown disabled.
         auto header = [&](std::string const& title) {
-          BSML::Lite::CreateText(container->get_transform(), StringW("<size=110%><b>" + title + "</b></size>"));
+          return BSML::Lite::CreateText(parent, StringW("<size=110%><b>" + title + "</b></size>"));
         };
+        // Registers a widget as advanced: hidden until the button below shows it.
+        auto advanced = [](auto* widget) {
+          if (widget == nullptr) return;
+          auto gameObject = widget->get_gameObject();
+          if (!gameObject) return;
+          gAdvancedWidgets.emplace_back(gameObject.unsafePtr());
+          gameObject->SetActive(gShowAdvanced);
+        };
+        auto toggle = [&](StringW label, bool value, std::function<void(bool)> onChange) {
+          return BSML::Lite::CreateToggle(parent, label, value, std::move(onChange));
+        };
+
+        if constexpr (!kLiteBuild) {
+          header("This Map");
+          gThisMapText = BSML::Lite::CreateText(parent, u"");
+          gThisMapButton = BSML::Lite::CreateUIButton(parent, u"Windows Bundle: off", []() {
+            std::string const path = Vivify::SelectedVivifyMapPath();
+            if (path.empty()) {
+              RefreshThisMapRow();
+              return;
+            }
+            bool const enabled = !GetWindowsBundleForMap(path);
+            SetWindowsBundleForMap(path, enabled);
+            PaperLogger.info("Vivify settings: Windows bundle for '{}' turned {}", path, enabled ? "on" : "off");
+            Vivify::ReselectSelectedMap();
+            RefreshThisMapRow();
+          });
+          RefreshThisMapRow();
+        }
 
         header("Performance");
         if constexpr (!kLiteBuild) {
@@ -395,96 +500,42 @@ void RegisterModSettings() {
           // them up. Full-screen raymarchers cost per pixel: 50% is a quarter of
           // the work. Steps of 5% (0.14.26).
           BSML::Lite::CreateIncrementSetting(
-              container->get_transform(), u"Effect Resolution % (lower = less lag)", 0, 5.0f,
-              static_cast<float>(gEffectResolution), true, true, 25.0f, 100.0f, [](float value) {
+              parent, u"Effect Resolution %", 0, 5.0f, static_cast<float>(gEffectResolution), true, true, 25.0f,
+              100.0f, [](float value) {
                 int const percent = std::clamp(static_cast<int>(value + 0.5f), 25, 100);
                 SetIntConfigValue(kEffectResolutionConfigKey, percent, gEffectResolution);
               });
-          BSML::Lite::CreateToggle(
-              container->get_transform(), u"Offscreen Culling (less lag)", gOffscreenCulling,
-              [](bool value) { SetBoolConfigValue(kOffscreenCullingConfigKey, value, gOffscreenCulling); });
+          toggle(u"Offscreen Culling", gOffscreenCulling,
+                 [](bool value) { SetBoolConfigValue(kOffscreenCullingConfigKey, value, gOffscreenCulling); });
           // Draws nothing farther than this from the player; 0 is off. Steps of
           // 10 m (0.14.26).
           BSML::Lite::CreateIncrementSetting(
-              container->get_transform(), u"Far Culling Distance m (0 = off)", 0, 10.0f,
-              static_cast<float>(gFarCullingDistance), true, true, 0.0f, 1000.0f, [](float value) {
+              parent, u"Far Culling (m, 0 = off)", 0, 10.0f, static_cast<float>(gFarCullingDistance), true, true,
+              0.0f, 1000.0f, [](float value) {
                 int const metres = std::clamp(static_cast<int>(value + 0.5f), 0, 1000);
                 SetIntConfigValue(kFarCullingConfigKey, metres, gFarCullingDistance);
               });
         }
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Disable All Blits", GetDisableAllBlits(),
-            [](bool value) { SetBoolConfigValue(kDisableAllBlitsConfigKey, value, gDisableAllBlits); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Disable Beat 0 Filmgrain Blit", GetDisableBeat0FilmgrainBlit(),
-            [](bool value) { SetBoolConfigValue(kDisableBeat0FilmgrainBlitConfigKey, value, gDisableBeat0FilmgrainBlit); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Disable CreateCamera Depth", GetDisableCreateCameraDepth(),
-            [](bool value) { SetBoolConfigValue(kDisableCreateCameraDepthConfigKey, value, gDisableCreateCameraDepth); });
+        toggle(u"Disable All Blits", GetDisableAllBlits(),
+               [](bool value) { SetBoolConfigValue(kDisableAllBlitsConfigKey, value, gDisableAllBlits); });
 
-        header("Shaders and Conversion");
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Convert PC Bundles On Device", GetConvertPcBundlesOnDevice(),
-            [](bool value) { SetBoolConfigValue(kConvertPcBundlesOnDeviceConfigKey, value, gConvertPcBundlesOnDevice); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Translate Shaders On Conversion", GetTranslateShadersOnConversion(),
-            [](bool value) { SetBoolConfigValue(kTranslateShadersConfigKey, value, gTranslateShaders); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Stand-In Shading For Unsupported Shaders", GetStandInShading(),
-            [](bool value) { SetBoolConfigValue(kStandInShadingConfigKey, value, gStandInShading); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Scene Depth For Map Shaders", GetSceneDepthTexture(),
-            [](bool value) { SetBoolConfigValue(kSceneDepthConfigKey, value, gSceneDepth); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Map Realtime Shadows", GetMapRealtimeShadows(),
-            [](bool value) { SetBoolConfigValue(kMapRealtimeShadowsConfigKey, value, gMapRealtimeShadows); });
-        // Experimental: geometry-stage effects are drawn without that stage
-        // instead of as grey stand-ins. Changing it reconverts affected maps.
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Draw Geometry-Shader Effects (experimental)", GetDrawGeometryShaderEffects(),
-            [](bool value) { SetBoolConfigValue(kGeometryEffectsConfigKey, value, gGeometryEffects); });
-        if constexpr (!kLiteBuild) {
-          BSML::Lite::CreateToggle(
-              container->get_transform(), u"Use Only PC Bundle For Missing Shaders", gPcBundleForMissingShaders,
-              [](bool value) { SetBoolConfigValue(kPcBundleForMissingShadersConfigKey, value, gPcBundleForMissingShaders); });
-          // After two loads of a converted map that never finish, it is
-          // reconverted without shader translation (grey stand-ins).
-          BSML::Lite::CreateToggle(
-              container->get_transform(), u"Crash Guard (grey fallback after 2 freezes)", gCrashGuard,
-              [](bool value) { SetBoolConfigValue(kCrashGuardConfigKey, value, gCrashGuard); });
-          BSML::Lite::CreateToggle(
-              container->get_transform(), u"Prepare Shaders Before Playing", GetPrepareShadersBeforePlaying(),
-              [](bool value) { SetBoolConfigValue(kPrepareShadersConfigKey, value, gPrepareShaders); });
-          BSML::Lite::CreateToggle(
-              container->get_transform(), u"Replay Render Mode (only while Replay renders)", gReplayRenderMode,
-              [](bool value) { SetBoolConfigValue(kReplayRenderModeConfigKey, value, gReplayRenderMode); });
-          BSML::Lite::CreateToggle(
-              container->get_transform(), u"Blit Fix For Screen Textures (experimental)", GetBlitScreenTextureFix(),
-              [](bool value) { SetBoolConfigValue(kBlitFixConfigKey, value, gBlitFix); });
-        }
+        header("Gameplay");
+        toggle(u"Submit Scores On Vivify Maps", GetSubmitScoresOnVivifyMaps(),
+               [](bool value) { SetBoolConfigValue(kSubmitScoresConfigKey, value, gSubmitScores); });
+        toggle(u"Disable Custom Note Visuals", GetDisableCustomNoteVisuals(), [](bool value) {
+          SetBoolConfigValue(kDisableCustomNoteVisualsConfigKey, value, gDisableCustomNoteVisuals);
+        });
+        toggle(u"No Vivify Visuals In Multiplayer", GetDisableVisualsInMultiplayer(), [](bool value) {
+          SetBoolConfigValue(kDisableVisualsInMultiplayerConfigKey, value, gDisableVisualsInMultiplayer);
+        });
+        toggle(u"AudioLink", GetAudioLinkEnabled(),
+               [](bool value) { SetBoolConfigValue(kAudioLinkConfigKey, value, gAudioLink); });
 
-        header("Features");
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"AudioLink", GetAudioLinkEnabled(),
-            [](bool value) { SetBoolConfigValue(kAudioLinkConfigKey, value, gAudioLink); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Submit Scores On Vivify Maps", GetSubmitScoresOnVivifyMaps(),
-            [](bool value) { SetBoolConfigValue(kSubmitScoresConfigKey, value, gSubmitScores); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Disable Custom Note Visuals", GetDisableCustomNoteVisuals(),
-            [](bool value) { SetBoolConfigValue(kDisableCustomNoteVisualsConfigKey, value, gDisableCustomNoteVisuals); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Disable Vivify Visuals In Multiplayer", GetDisableVisualsInMultiplayer(),
-            [](bool value) { SetBoolConfigValue(kDisableVisualsInMultiplayerConfigKey, value, gDisableVisualsInMultiplayer); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Disable VR Center Adjust Handling", GetDisableVRCenterAdjust(),
-            [](bool value) { SetBoolConfigValue(kDisableVRCenterAdjustConfigKey, value, gDisableVRCenterAdjust); });
-
-        header("Conversion");
+        header("PC Maps");
         // A map whose only asset bundle is a PC build has its play button
         // disabled, so it can never be selected into. These convert every
         // installed map in one pass instead.
-        gConvertStatusText = BSML::Lite::CreateText(container->get_transform(), u"Idle");
+        gConvertStatusText = BSML::Lite::CreateText(parent, u"Idle");
         if (Vivify::IsBulkPcBundleConversionRunning()) SetConvertStatusText("Converting...");
         // One progress callback for both buttons; they differ only in whether an
         // already-cached conversion is reused or thrown away first.
@@ -502,77 +553,127 @@ void RegisterModSettings() {
               },
               force);
         };
-        BSML::Lite::CreateUIButton(
-            container->get_transform(), u"Convert All PC Bundles Now",
-            []() { startConversion(false); });
+        BSML::Lite::CreateUIButton(parent, u"Convert All PC Bundles", []() { startConversion(false); });
+
+        header("Diagnostics");
+        toggle(u"Debug Logging", GetVivifyDebugLogging(),
+               [](bool value) { SetBoolConfigValue(kVivifyDebugLoggingConfigKey, value, gVivifyDebugLogging); });
+        // paperlog output is not reachable without adb, so Vivify writes its own
+        // plain-text files next to its data, all in this one folder.
+        BSML::Lite::CreateText(parent, StringW("<size=70%>Logs in " + std::string(kVivifyLogDir) +
+                                               ":\nVivifySession.txt, VivifyReport.txt" +
+                                               (kLiteBuild ? "" : ", vivify_global.txt") + "</size>"));
+
+        gAdvancedButton = BSML::Lite::CreateUIButton(parent, u"Show Advanced Settings", []() {
+          gShowAdvanced = !gShowAdvanced;
+          for (auto& widget : gAdvancedWidgets) {
+            if (widget) widget->SetActive(gShowAdvanced);
+          }
+          if (gAdvancedButton) {
+            BSML::Lite::SetButtonText(gAdvancedButton.ptr(),
+                                      gShowAdvanced ? u"Hide Advanced Settings" : u"Show Advanced Settings");
+          }
+        });
+
+        advanced(header("Shaders"));
+        advanced(toggle(u"Convert PC Bundles On Device", GetConvertPcBundlesOnDevice(), [](bool value) {
+          SetBoolConfigValue(kConvertPcBundlesOnDeviceConfigKey, value, gConvertPcBundlesOnDevice);
+        }));
+        advanced(toggle(u"Translate Shaders", GetTranslateShadersOnConversion(),
+                        [](bool value) { SetBoolConfigValue(kTranslateShadersConfigKey, value, gTranslateShaders); }));
+        advanced(toggle(u"Stand-In Shading", GetStandInShading(),
+                        [](bool value) { SetBoolConfigValue(kStandInShadingConfigKey, value, gStandInShading); }));
+        advanced(toggle(u"Scene Depth For Map Shaders", GetSceneDepthTexture(),
+                        [](bool value) { SetBoolConfigValue(kSceneDepthConfigKey, value, gSceneDepth); }));
+        advanced(toggle(u"Map Realtime Shadows", GetMapRealtimeShadows(), [](bool value) {
+          SetBoolConfigValue(kMapRealtimeShadowsConfigKey, value, gMapRealtimeShadows);
+        }));
+        // Experimental: geometry-stage effects are drawn without that stage
+        // instead of as grey stand-ins. Changing it reconverts affected maps.
+        advanced(toggle(u"Geometry-Shader Effects (exp.)", GetDrawGeometryShaderEffects(),
+                        [](bool value) { SetBoolConfigValue(kGeometryEffectsConfigKey, value, gGeometryEffects); }));
+        if constexpr (!kLiteBuild) {
+          advanced(toggle(u"PC Bundle For Missing Shaders", gPcBundleForMissingShaders, [](bool value) {
+            SetBoolConfigValue(kPcBundleForMissingShadersConfigKey, value, gPcBundleForMissingShaders);
+          }));
+          advanced(toggle(u"Prepare Shaders Before Playing", GetPrepareShadersBeforePlaying(),
+                          [](bool value) { SetBoolConfigValue(kPrepareShadersConfigKey, value, gPrepareShaders); }));
+          advanced(toggle(u"Blit Fix For Screen Textures (exp.)", GetBlitScreenTextureFix(),
+                          [](bool value) { SetBoolConfigValue(kBlitFixConfigKey, value, gBlitFix); }));
+          // After two loads of a converted map that never finish, it is
+          // reconverted without shader translation (grey stand-ins).
+          advanced(toggle(u"Crash Guard", gCrashGuard,
+                          [](bool value) { SetBoolConfigValue(kCrashGuardConfigKey, value, gCrashGuard); }));
+        }
+
+        advanced(header("Effects"));
+        advanced(toggle(u"Skip Beat-0 Film Grain Blit", GetDisableBeat0FilmgrainBlit(), [](bool value) {
+          SetBoolConfigValue(kDisableBeat0FilmgrainBlitConfigKey, value, gDisableBeat0FilmgrainBlit);
+        }));
+        advanced(toggle(u"No Depth On Map Cameras", GetDisableCreateCameraDepth(), [](bool value) {
+          SetBoolConfigValue(kDisableCreateCameraDepthConfigKey, value, gDisableCreateCameraDepth);
+        }));
+        advanced(toggle(u"Ignore VR Center Adjust", GetDisableVRCenterAdjust(), [](bool value) {
+          SetBoolConfigValue(kDisableVRCenterAdjustConfigKey, value, gDisableVRCenterAdjust);
+        }));
+
+        if constexpr (!kLiteBuild) {
+          advanced(header("Replays"));
+          // Only applies while the Replay mod renders; with it on, maps get a
+          // single-view build prepared at selection for that (0.14.29).
+          advanced(toggle(u"Replay Render Mode", gReplayRenderMode, [](bool value) {
+            SetBoolConfigValue(kReplayRenderModeConfigKey, value, gReplayRenderMode);
+          }));
+        }
+
+        advanced(header("Maintenance"));
         // A cached conversion is keyed on the source bundle, so it is reused even
         // after the converter itself has been fixed. This picks fixes up.
-        BSML::Lite::CreateUIButton(
-            container->get_transform(), u"Force Reconvert All (ignore cache)",
-            []() { startConversion(true); });
-
+        advanced(BSML::Lite::CreateUIButton(parent, u"Force Reconvert All", []() { startConversion(true); }));
         if constexpr (!kLiteBuild) {
           // Puts Vivify back to a fresh install's state, without touching the
           // maps. Two presses within five seconds, since it cannot be undone.
-          BSML::Lite::CreateUIButton(
-              container->get_transform(), u"Reset Vivify (clean slate)",
-              []() {
-                static std::chrono::steady_clock::time_point armedUntil{};
-                auto const now = std::chrono::steady_clock::now();
-                if (now > armedUntil) {
-                  armedUntil = now + std::chrono::seconds(5);
-                  SetConvertStatusText("Press Reset again within 5 s: deletes converted maps and downloaded PC "
-                                       "bundles, resets settings");
-                  return;
-                }
-                armedUntil = {};
-                if (Vivify::IsBulkPcBundleConversionRunning()) {
-                  SetConvertStatusText("A conversion pass is running; reset after it finishes");
-                  return;
-                }
-                EnsureConfigObject();
-                getConfig().config.RemoveAllMembers();
-                EnsureConfigDefaults();
-                SetConvertStatusText("Resetting...");
-                Vivify::ResetToCleanSlate([](std::string const& summary) {
-                  SetConvertStatusText(summary + ". Reopen this menu to see the settings.");
-                });
-              });
+          advanced(BSML::Lite::CreateUIButton(parent, u"Reset Vivify (clean slate)", []() {
+            static std::chrono::steady_clock::time_point armedUntil{};
+            auto const now = std::chrono::steady_clock::now();
+            if (now > armedUntil) {
+              armedUntil = now + std::chrono::seconds(5);
+              SetConvertStatusText("Press Reset again within 5 s: deletes converted maps and downloaded PC "
+                                   "bundles, resets settings");
+              return;
+            }
+            armedUntil = {};
+            if (Vivify::IsBulkPcBundleConversionRunning()) {
+              SetConvertStatusText("A conversion pass is running; reset after it finishes");
+              return;
+            }
+            EnsureConfigObject();
+            getConfig().config.RemoveAllMembers();
+            EnsureConfigDefaults();
+            SetConvertStatusText("Resetting...");
+            Vivify::ResetToCleanSlate([](std::string const& summary) {
+              SetConvertStatusText(summary + ". Reopen this menu to see the settings.");
+            });
+          }));
           // Lists every Vivify map in VivifyMaps.txt, then replaces each with a
           // fresh BeatSaver download. Two presses within five seconds.
-          BSML::Lite::CreateUIButton(
-              container->get_transform(), u"Redownload All Vivify Maps",
-              []() {
-                static std::chrono::steady_clock::time_point armedUntil{};
-                auto const now = std::chrono::steady_clock::now();
-                if (now > armedUntil) {
-                  armedUntil = now + std::chrono::seconds(5);
-                  SetConvertStatusText("Press Redownload again within 5 s: lists Vivify maps in VivifyMaps.txt, "
-                                       "then replaces each with a fresh BeatSaver download");
-                  return;
-                }
-                armedUntil = {};
-                SetConvertStatusText("Finding Vivify maps...");
-                Vivify::RedownloadVivifyMaps([](std::string const& text) { SetConvertStatusText(text); });
-              });
-        }
-
-        header("Diagnostics");
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Debug logging", GetVivifyDebugLogging(),
-            [](bool value) { SetBoolConfigValue(kVivifyDebugLoggingConfigKey, value, gVivifyDebugLogging); });
-        // paperlog output is not reachable without adb, so Vivify writes its own
-        // plain-text files next to its data. Their paths are shown here.
-        BSML::Lite::CreateText(container->get_transform(), u"Diagnostics files (plain .txt):");
-        BSML::Lite::CreateText(container->get_transform(), StringW("<size=70%>" + Vivify::Report::FilePath() + "</size>"));
-        BSML::Lite::CreateText(container->get_transform(), StringW("<size=70%>" + std::string(kVivifyLogPath) + "</size>"));
-        if constexpr (!kLiteBuild) {
-          BSML::Lite::CreateText(container->get_transform(),
-                                 StringW("<size=70%>" + std::string(kVivifyLogDir) + "/vivify_global.txt (every session)</size>"));
+          advanced(BSML::Lite::CreateUIButton(parent, u"Redownload All Vivify Maps", []() {
+            static std::chrono::steady_clock::time_point armedUntil{};
+            auto const now = std::chrono::steady_clock::now();
+            if (now > armedUntil) {
+              armedUntil = now + std::chrono::seconds(5);
+              SetConvertStatusText("Press Redownload again within 5 s: lists Vivify maps in VivifyMaps.txt, "
+                                   "then replaces each with a fresh BeatSaver download");
+              return;
+            }
+            armedUntil = {};
+            SetConvertStatusText("Finding Vivify maps...");
+            Vivify::RedownloadVivifyMaps([](std::string const& text) { SetConvertStatusText(text); });
+          }));
         }
         // Spacers, so the last line of the menu is not clipped by the scroll view.
-        BSML::Lite::CreateText(container->get_transform(), u" ");
-        BSML::Lite::CreateText(container->get_transform(), u" ");
+        BSML::Lite::CreateText(parent, u" ");
+        BSML::Lite::CreateText(parent, u" ");
         } catch (std::exception const& e) {
           PaperLogger.error("Vivify settings menu: construction threw ({}); the controls after the "
                             "failure are missing", e.what());
@@ -695,6 +796,11 @@ IsInRenderFunction FindReplayIsInRender() {
   return reinterpret_cast<IsInRenderFunction>(api.func);
 }
 
+bool ReplayModInstalled() {
+  CModInfo info{.id = "replay", .version = nullptr, .version_long = 0};
+  return modloader_get_mod(&info, MatchType_IdOnly).handle != nullptr;
+}
+
 // Whether the Replay mod is rendering a replay right now. The lookup is
 // retried until it succeeds, since one made before Replay has loaded would
 // otherwise stay empty for the session.
@@ -715,6 +821,51 @@ bool ReplayModIsRendering() {
 // only applies while the Replay mod is actually rendering (0.14.28).
 bool GetReplayRenderMode() {
   return !kLiteBuild && gReplayRenderMode && ReplayModIsRendering();
+}
+
+// The setting itself, rendering or not: while it is on and Replay is
+// installed, maps get their single-view conversion prepared ahead of a render.
+bool GetWindowsBundleForMap(std::string const& levelPath) {
+  if (kLiteBuild || levelPath.empty()) return false;
+  auto const& doc = getConfig().config;
+  if (!doc.IsObject()) return false;
+  auto it = doc.FindMember(kWindowsBundleMapsConfigKey);
+  if (it == doc.MemberEnd() || !it->value.IsArray()) return false;
+  std::string const key = MapKeyOf(levelPath);
+  for (auto const& entry : it->value.GetArray()) {
+    if (entry.IsString() && key == entry.GetString()) return true;
+  }
+  return false;
+}
+
+void SetWindowsBundleForMap(std::string const& levelPath, bool enabled) {
+  if (kLiteBuild || levelPath.empty()) return;
+  auto& config = getConfig();
+  auto& doc = config.config;
+  EnsureConfigObject();
+  auto& allocator = doc.GetAllocator();
+  auto it = doc.FindMember(kWindowsBundleMapsConfigKey);
+  if (it == doc.MemberEnd() || !it->value.IsArray()) {
+    if (it != doc.MemberEnd()) doc.RemoveMember(it);
+    doc.AddMember(rapidjson::Value(kWindowsBundleMapsConfigKey, allocator), rapidjson::Value(rapidjson::kArrayType),
+                  allocator);
+    it = doc.FindMember(kWindowsBundleMapsConfigKey);
+  }
+  auto& list = it->value;
+  std::string const key = MapKeyOf(levelPath);
+  for (auto entry = list.Begin(); entry != list.End();) {
+    entry = entry->IsString() && key == entry->GetString() ? list.Erase(entry) : entry + 1;
+  }
+  if (enabled) list.PushBack(rapidjson::Value(key.c_str(), allocator), allocator);
+  config.Write();
+}
+
+bool GetReplayRenderModeSetting() {
+  return !kLiteBuild && gReplayRenderMode;
+}
+
+bool GetReplayModInstalled() {
+  return ReplayModInstalled();
 }
 
 bool GetBlitScreenTextureFix() {

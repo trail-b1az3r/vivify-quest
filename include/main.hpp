@@ -48,6 +48,11 @@ bool GetMapRealtimeShadows();
 // Replay render mode (0.14.9): converted maps get single-screen programs only,
 // for replay and recording renderers. The headset draws none of them.
 bool GetReplayRenderMode();
+bool GetReplayRenderModeSetting();
+bool GetReplayModInstalled();
+// "Use Windows Bundle For This Map", by song folder.
+bool GetWindowsBundleForMap(std::string const& levelPath);
+void SetWindowsBundleForMap(std::string const& levelPath, bool enabled);
 // Experimental blit companion (0.14.10, opt-in from 0.14.11).
 bool GetBlitScreenTextureFix();
 // Compile converted maps' shaders in the menu before play (0.14.15).

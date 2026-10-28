@@ -1,4 +1,5 @@
 #include "VivifyReport.hpp"
+#include "VivifyGlobalLog.hpp"
 
 #include <chrono>
 #include <cstdio>
@@ -21,6 +22,11 @@ std::string& PathStorage() {
   static std::string path =
       "/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt";
   return path;
+}
+
+std::string& LastErrorStorage() {
+  static std::string error;
+  return error;
 }
 
 std::string Timestamp() {
@@ -81,10 +87,17 @@ void SetFilePathForTesting(std::string path) {
   PathStorage() = std::move(path);
 }
 
-void Append(std::string_view title, std::string_view body) {
-  // A diagnostic file must never be the reason the game breaks, so every
-  // failure here is swallowed: no exception escapes into Unity, and a report
-  // that cannot be written simply is not written.
+std::string LastError() {
+  std::lock_guard<std::mutex> lock(FileMutex());
+  return LastErrorStorage();
+}
+
+bool Append(std::string_view title, std::string_view body) {
+  // A diagnostic file must never be the reason the game breaks, so no
+  // exception escapes into Unity. A failure is returned and its reason kept
+  // (LastError) so the caller can say so in the session log; before 0.14.29 it
+  // was dropped without a trace, and a report that never appeared looked the
+  // same as one nobody had looked for.
   try {
     std::lock_guard<std::mutex> lock(FileMutex());
     std::filesystem::path const path(PathStorage());
@@ -92,20 +105,33 @@ void Append(std::string_view title, std::string_view body) {
     std::error_code ec;
     if (path.has_parent_path()) {
       std::filesystem::create_directories(path.parent_path(), ec);
-      if (ec) return;
+      if (ec) {
+        LastErrorStorage() = "cannot create '" + path.parent_path().string() + "': " + ec.message();
+        return false;
+      }
     }
     TrimIfLarge(path);
 
-    std::ofstream output(path, std::ios::binary | std::ios::app);
-    if (!output) return;
+    std::ofstream output;
+    if (!OpenAtEnd(output, path, LastErrorStorage())) return false;
     output << "\n================================================================\n"
            << "[" << Timestamp() << "] " << title << "\n"
            << "----------------------------------------------------------------\n"
            << body;
     if (!body.empty() && body.back() != '\n') output << "\n";
     output.flush();
+    if (!output) {
+      LastErrorStorage() = "write to '" + path.string() + "' failed";
+      return false;
+    }
+    LastErrorStorage().clear();
+    return true;
+  } catch (std::exception const& e) {
+    LastErrorStorage() = std::string("threw: ") + e.what();
+    return false;
   } catch (...) {
-    // Intentionally ignored -- see above.
+    LastErrorStorage() = "threw";
+    return false;
   }
 }
 

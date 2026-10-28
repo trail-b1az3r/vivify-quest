@@ -63,6 +63,10 @@ Two builds are published with each release. **Vivify-v…** has every feature.
 setting): the settings added after it are not in that build. Install one of
 them, not both.
 
+Everyday settings are at the top of Vivify's menu; **Show Advanced Settings** reveals the rest.
+**This Map → Use Windows Bundle** plays the selected map from its converted Windows bundle even when it
+ships a Quest bundle, for a Quest build that draws less than its PC build (the choice is kept per map).
+
 | Setting | Default | What it does |
 |---|---|---|
 | Convert PC Bundles On Device | on | Converts PC-only maps on the headset. |
@@ -75,8 +79,8 @@ them, not both.
 | Offscreen Culling (less lag) | on | Animators in a map's prefabs stop updating while nothing they draw is on screen. |
 | Far Culling Distance | 0 (off) | Draws nothing farther than this many metres. Try 150-300 on heavy maps; far scenery may disappear. |
 | AudioLink | on | Runs AudioLink for maps that use it. |
-| Map Realtime Shadows | off | Lets maps turn on realtime shadows. Expensive; can blacken note bodies. |
-| Replay Render Mode (only while Replay renders) | off | While the Replay mod renders a replay, converts maps with single-screen programs so its renderer can draw them. Normal play is unaffected. |
+| Map Realtime Shadows | off | Off: realtime shadows are off for the whole Vivify level, including from lights a map adds (they blacken note bodies on Quest). On: maps may use them. |
+| Replay Render Mode | off | While the Replay mod renders a replay (its own or a BeatLeader one), plays converted maps from a single-screen build its renderer can draw. That build is prepared in the background when you select the map. Normal play is unaffected. |
 | Blit Fix For Screen Textures (experimental) | off | Builds converted maps' shaders a second time for blits into screen textures, where they otherwise draw nothing. |
 | Prepare Shaders Before Playing | off | Compiles a converted map's shaders in the menu after you select it, instead of freezing at song start. |
 | Draw Geometry-Shader Effects (experimental) | off | Draws wireframe/exploding-triangle style effects on converted maps without their geometry stage instead of grey. |

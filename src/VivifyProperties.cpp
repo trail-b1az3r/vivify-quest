@@ -1140,6 +1140,29 @@ void Runtime::UpdateRenderSettingAnimations() {
   _renderSettingAnimations.erase(write, _renderSettingAnimations.end());
 }
 
+// With "Map Realtime Shadows" off, realtime shadows are off for the whole
+// Vivify level (0.14.29). Ignoring the map's own shadow settings (0.14.1) was
+// not enough: RSIH's prefab brings directional lights that cast soft shadows,
+// and when the game's quality level already allows shadows those lights cast
+// them anyway -- the shadow map comes out fully shadowed under multiview and
+// the game's note bodies draw black, leaving only the arrows. Saved and put
+// back with the rest of the level's render settings.
+void Runtime::DisableRealtimeShadowsForLevel() {
+  if (GetMapRealtimeShadows() || !_selectedMapHasVivifyRequirement) return;
+  // Only written once the old value is saved, so the level's end can put it back.
+  SaveRenderSetting("shadows", RenderSettingKind::Int);
+  for (auto const& saved : _savedRenderSettings) {
+    if (saved.name != "shadows" || !std::holds_alternative<int>(saved.saved)) continue;
+    int const before = std::get<int>(saved.saved);
+    ApplyRenderSettingInt("shadows", 0);
+    PaperLogger.info("Vivify: realtime shadows off for this level (the game had shadow quality {}; turn on "
+                     "'Map Realtime Shadows' to keep them)",
+                     before);
+    return;
+  }
+  PaperLogger.info("Vivify: could not read the game's shadow quality; realtime shadows left as they are");
+}
+
 void Runtime::RestoreRenderSettings() {
   for (auto const& s : _savedRenderSettings) {
     RawApplySavedRenderSetting(s);

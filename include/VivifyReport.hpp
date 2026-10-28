@@ -14,7 +14,8 @@
 // point, since a frozen game never reaches the end-of-level write.
 //
 // Deliberately Unity-free so it can be exercised on a host compiler, and
-// deliberately incapable of throwing into the game: every failure is swallowed.
+// deliberately incapable of throwing into the game: a failure is returned, never
+// thrown.
 
 #include <string>
 #include <string_view>
@@ -25,9 +26,9 @@ namespace Vivify::Report {
 std::string const& FilePath();
 
 // Appends one block, prefixed with a separator and a wall-clock timestamp.
-// Never throws; a write failure is silently dropped rather than risking the
-// game over a diagnostic file.
-void Append(std::string_view title, std::string_view body);
+// Never throws. False when nothing could be written; LastError says why.
+bool Append(std::string_view title, std::string_view body);
+std::string LastError();
 
 // Overrides the destination. Only used by the host tests.
 void SetFilePathForTesting(std::string path);

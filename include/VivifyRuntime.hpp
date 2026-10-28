@@ -7,6 +7,13 @@ void LateLoad();
 void RefreshMultipassRendering();
 void RefreshIsolationSettings();
 
+// The selected Vivify map's song folder path, empty when the selected level is
+// not a Vivify map.
+std::string SelectedVivifyMapPath();
+// Chooses the selected map's bundle again, after its Windows-bundle choice
+// changed. Does nothing during a level.
+void ReselectSelectedMap();
+
 // Progress of a bulk PC->Android bundle conversion pass.
 struct BulkConversionProgress {
   int levelsScanned = 0;

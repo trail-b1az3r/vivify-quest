@@ -11,6 +11,72 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.14.29] - 2026-10-28
+
+### Fixed
+- **`vivify_global.txt` and `VivifyReport.txt` are written again, or say why
+  not.** Of the three log files only the session log reliably appeared. The
+  other two were opened in append mode, and any failure was swallowed without
+  a trace. Both now open the way the session log does: created when missing,
+  otherwise opened and written at the end. Each file's path, or the exact
+  reason it could not be opened, is now among the first lines of the session
+  log. A failure opening one file no longer stops the other two from being
+  tried, and the report gets a `SESSION STARTED` line every launch.
+- **Replay renders of converted maps, including BeatLeader replays played
+  through the Replay mod.** Since 0.14.28, Replay Render Mode applied only
+  while Replay renders, but Replay decides to render only when Render is
+  pressed, after Vivify had already chosen and loaded the map's normal build.
+  So a render got the build the headset draws, which the render camera does
+  not. With the setting on, the single-view build is now prepared in the
+  background when the map is selected. When the render starts, Vivify plays
+  it instead, and logs which one it played.
+- **Note bodies black on maps that bring shadow-casting lights (RSIH).**
+  0.14.1 ignored a map's own shadow settings, but RSIH's prefab also adds two
+  directional lights with soft shadows. Those still cast shadows whenever the
+  game's quality level allows them, and under multiview the shadow map comes
+  out fully dark, so notes showed only their arrows. With "Map Realtime
+  Shadows" off (the default), realtime shadows are now off for the whole
+  Vivify level and restored after.
+  - Read from RSIH's bundle and the 0.14.1 notes; not tried on a headset.
+    The new visual check (below) logs a live note's parts, so if bodies are
+    still missing the log shows why.
+
+### Added
+- **Use Windows Bundle for a map** (This Map, at the top of Vivify's
+  settings). The selected map is played from its converted Windows bundle
+  even though it ships a Quest one. The choice is kept per song folder, takes
+  effect at once, and falls back to the Quest bundle when the map has no
+  Windows build. For maps like YOU, whose Quest build ships every shader but
+  draws less on the headset.
+- **Visual checks and a "Likely visual problems" list.** At 5, 30 and 90
+  seconds into each Vivify level, Vivify records what is on screen:
+  - how many live notes have a body or prefab that cannot draw;
+  - a full dump of one live note's renderers (shader, supported, enabled,
+    queue, and its dissolve `_Cutout` and colour);
+  - the lights and shadows the scene has, and the ambient and sun settings;
+  - whether the main camera draws the notes' layer.
+  Each level's VivifyReport block now opens with a plain list of what is most
+  likely to look wrong: shaders that are DirectX-only or refused by this GPU,
+  materials on stand-in shading or with no usable shader, undecodable
+  textures, the visual check's findings, and a pointer to Use Windows Bundle
+  when it might help.
+
+### Changed
+- **Settings are less cluttered.** Everyday settings (This Map,
+  Performance, Gameplay, PC Maps, Diagnostics) come first, and the rest sits
+  behind **Show Advanced Settings**. Labels are shorter so they fit beside
+  their controls, and the log files are listed on one line.
+
+### Known, not fixed
+- Expedition 33 ("[Gamified Vivify] Lumière") without its Chroma look with
+  GraphicsTweaks installed. That map uses only Chroma for its environment
+  and note colours, plus one Vivify prefab and no Blits, so none of Vivify's
+  GraphicsTweaks-related code runs on it. A session log from that map with
+  GraphicsTweaks on would show the visual check's light and camera lines.
+- YOU's notes that sometimes disappear: its glass notes read the screen
+  through a GrabPass. That is the first suspect, but it is not confirmed.
+  The visual check counts prefab notes with nothing that can draw.
+
 ## [0.14.28] - 2026-10-27
 
 ### Fixed
