@@ -3,6 +3,9 @@
 #include "VivifyAudioLink.hpp"
 #include "UnityEngine/Renderer.hpp"
 #include "UnityEngine/Matrix4x4.hpp"
+// Defines SaberMovementData's interface conversion that InitFromSaber calls;
+// Saber.hpp only declares it, which compiles and then fails to link.
+#include "GlobalNamespace/SaberMovementData.hpp"
 
 DEFINE_TYPE(Vivify, OffsetBladeMovementData);
 DEFINE_TYPE(Vivify, FollowedSaberTrail);
