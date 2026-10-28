@@ -208,3 +208,5 @@ including a glslang compile of every translated program.
 **Testers**
 - ME
 - people who made issues 
+**Special thanks to:**
+-  ProgrammingEnthusiast78: for quick bug reporting
