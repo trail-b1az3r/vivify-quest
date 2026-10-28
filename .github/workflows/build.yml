@@ -179,12 +179,18 @@ jobs:
         qpm s qmod
         git checkout -- mod.json
 
+    # The full QMOD, already named, sits beside the new one; every other
+    # .qmod here is the lite build.
     - name: Name the lite QMOD
       run: |
         shopt -s nullglob
-        built=(./*.qmod)
+        full="./Vivify-v${{ steps.mod_version.outputs.version }}.qmod"
+        built=()
+        for file in ./*.qmod; do
+          [ "$file" != "$full" ] && built+=("$file")
+        done
         if [ ${#built[@]} -ne 1 ]; then
-          echo "::error::expected one lite .qmod, found ${#built[@]}"
+          echo "::error::expected one lite .qmod besides $full, found ${#built[@]}"
           exit 1
         fi
         mv "${built[0]}" "./Vivify-Lite-v${{ steps.mod_version.outputs.version }}.qmod"
