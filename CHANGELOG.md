@@ -14,6 +14,9 @@ conversion cache version, and cached conversions are redone automatically.
 ## [0.14.29] - 2026-10-28
 
 ### Fixed
+- **The mod builds again.** 0.14.27's saber-trail fallback for Custom Models
+  called a function whose definition was never included, so the qmod
+  compiled but failed to link. 0.14.27 and 0.14.28 never produced a build.
 - **`vivify_global.txt` and `VivifyReport.txt` are written again, or say why
   not.** Of the three log files only the session log reliably appeared. The
   other two were opened in append mode, and any failure was swallowed without
