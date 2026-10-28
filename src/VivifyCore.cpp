@@ -514,6 +514,18 @@ void Runtime::RefreshIsolationSettings() {
 }
 
 void Runtime::ResetRuntime(std::string_view reason) {
+  // Breadcrumbs through a level's teardown, each flushed to disk (0.15.0):
+  // "the game crashes after a Vivify level" came with no log, and a native
+  // crash here loses whatever was still buffered. The last "level end:" line
+  // in vivify_global.txt names the step it died in. Only for a level that was
+  // running, since this also runs on every map selection.
+  bool const levelWasRunning = _currentBeatmapData != nullptr || _levelReportOpen;
+  auto step = [levelWasRunning](char const* what) {
+    if (!levelWasRunning) return;
+    PaperLogger.info("Vivify level end: {}", what);
+    FlushVivifyLogs();
+  };
+  step(reason.empty() ? "resetting" : std::string(reason).c_str());
   SetSongPlaying(false);
   // Written before anything is torn down, while the numbers are still valid.
   // The song position is included rather than a guess at "quit" vs "beaten":
@@ -527,6 +539,7 @@ void Runtime::ResetRuntime(std::string_view reason) {
                                              : std::string(")");
     }
     WriteLevelEndReport(outcome);
+    step("report written");
   }
 
   VIVIFY_DEBUG("Vivify ResetRuntime: livePrefabs={} preloaded={} synced={} secondaryCameras={} declaredTextures={} assets={}",
@@ -534,10 +547,13 @@ void Runtime::ResetRuntime(std::string_view reason) {
                _secondaryCameras.size(), _declaredTextures.size(), _assets.size());
   _isResetting = true;
   DestroyCameraApplier();
+  step("camera effects removed");
   RestoreGlobalProperties();
   RestoreAllVisualReplacements();
+  step("note and saber visuals restored");
   RestoreOverlayRenderState();
   RestoreMainCameraOriginals();
+  step("camera restored");
   std::unordered_set<UnityEngine::GameObject*> destroyed;
   for (auto& [id, prefab] : _livePrefabs) {
     if (prefab.gameObject == nullptr) {
@@ -562,6 +578,7 @@ void Runtime::ResetRuntime(std::string_view reason) {
   }
   _livePrefabs.clear();
   _instantiatePrefabs.clear();
+  step("map prefabs destroyed");
   _syncedObjects.clear();
   _blitMaterialValidCache.clear();
   _cachedBlitWidth = 0;
@@ -606,7 +623,9 @@ void Runtime::ResetRuntime(std::string_view reason) {
   _lastGameplayFrame = {};
   _stallsLogged = 0;
   ReleaseCachedBlitTextures();
+  step("render textures released");
   RestoreRenderSettings();
+  step("render settings restored");
   _renderSettingAnimations.clear();
   _savedRenderSettings.clear();
   _currentRenderSettings.clear();
@@ -633,6 +652,7 @@ void Runtime::ResetRuntime(std::string_view reason) {
   _inMultiplayerGameplayCached = false;
   _inMultiplayerGameplay = false;
   _isResetting = false;
+  step("done");
 }
 
 }

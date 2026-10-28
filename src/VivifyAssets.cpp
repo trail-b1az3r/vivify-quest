@@ -127,7 +127,13 @@ namespace {
 //      a converted map's load counted against the map, and two put it into the
 //      grey untranslated fallback for good -- 0.14.23's Yoi Okashi, whose
 //      translation compiles and links cleanly
-constexpr int kBundleConversionVersion = 19;
+//  20  a pixel program's depth or coverage output (register 0xFFFFFFFF, its
+//      system-value type sometimes left undefined) is no longer declared as a
+//      colour output at layout(location = 4294967295), which no GLSL ES
+//      compiler accepts: Through The Screen's depth-only AreaLit shader drew
+//      nothing (0.15.0). Also picks up 0.14.27's geometry pass-through renames,
+//      which went out without a version bump
+constexpr int kBundleConversionVersion = 20;
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the
@@ -935,10 +941,11 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
     return;
   }
   _selectedLevelPath = std::string(event.customBeatmapLevel->customLevelPath);
-  if (GetVivifyDebugLogging()) {
-    PaperLogger.info("Vivify level selected: path='{}' isCustom={} hasDetails={}",
-                     _selectedLevelPath, BoolText(event.isCustom), BoolText(event.customLevelDetails.has_value()));
-  }
+  // Always logged and flushed (0.15.0): returning from a level re-selects it,
+  // and a crash on the way back to the menu should show how far that got.
+  PaperLogger.info("Vivify level selected: path='{}' isCustom={} hasDetails={}", _selectedLevelPath,
+                   BoolText(event.isCustom), BoolText(event.customLevelDetails.has_value()));
+  FlushVivifyLogs();
   if (event.customLevelDetails) {
     auto const& requirements = event.customLevelDetails->difficultyDetails.requirements;
     _selectedMapHasVivifyRequirement = std::any_of(requirements.begin(), requirements.end(), [](std::string const& requirement) {

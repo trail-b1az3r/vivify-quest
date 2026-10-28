@@ -182,6 +182,45 @@ void Runtime::RunVisualCheck(std::string_view when) {
                      IsAlive(sun.unsafePtr()) ? ToStdString(sun->get_name()) : std::string("<none>"));
   }
 
+  // What the scene is drawing with (0.15.0), for "the map is just black":
+  // whether the map's objects are there at all, how many wear a shader this
+  // GPU cannot run, and which shaders draw the most of the scene.
+  if (firstCheck || _visualChecksRun == 2) {
+    int active = 0;
+    int unsupported = 0;
+    std::unordered_map<std::string, int> byShader;
+    auto renderers = UnityEngine::Object::FindObjectsOfType<UnityEngine::Renderer*>();
+    for (int i = 0; renderers && i < renderers.size(); i++) {
+      auto* renderer = renderers[i];
+      if (!IsAlive(renderer) || !renderer->get_enabled()) continue;
+      auto rendererObject = renderer->get_gameObject();
+      if (!IsAlive(rendererObject.unsafePtr()) || !rendererObject->get_activeInHierarchy()) continue;
+      active++;
+      auto* material = renderer->get_sharedMaterial().unsafePtr();
+      auto* shader = IsAlive(material) ? material->get_shader().unsafePtr() : nullptr;
+      if (!IsAlive(shader) || !shader->get_isSupported()) {
+        unsupported++;
+        continue;
+      }
+      byShader[ToStdString(shader->get_name())]++;
+    }
+    std::vector<std::pair<int, std::string>> top;
+    for (auto const& [name, count] : byShader) top.emplace_back(count, name);
+    std::sort(top.begin(), top.end(), [](auto const& a, auto const& b) { return a.first > b.first; });
+    std::string list;
+    for (size_t i = 0; i < top.size() && i < 8; i++) {
+      list += fmt::format("{}{} x{}", list.empty() ? "" : ", ", top[i].second, top[i].first);
+    }
+    PaperLogger.info("Vivify visual check at {}: {} active renderer(s), {} with no runnable shader; most drawn: {}; "
+                     "screen effects: {} before, {} after the main effect",
+                     when, active, unsupported, list.empty() ? std::string("<none>") : list, _preEffects.size(),
+                     _postEffects.size());
+    if (active > 0 && unsupported * 2 > active) {
+      NoteVisualProblem(fmt::format("{} of {} active renderer(s) had no shader this GPU can run at {}", unsupported,
+                                    active, when));
+    }
+  }
+
   // Whether the main camera draws the notes' layer at all.
   auto camera = UnityEngine::Camera::get_main();
   if (IsAlive(camera.unsafePtr())) {

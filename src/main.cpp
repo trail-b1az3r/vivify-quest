@@ -246,6 +246,18 @@ void InstallVivifyFileLogSink() {
   }
 }
 
+}  // namespace
+
+// Writes everything logged so far to the session and global logs now. For the
+// steps around a level's end (0.15.0): a native crash there loses whatever is
+// still buffered, and the last step that reached the file is the clue.
+void FlushVivifyLogs() {
+  std::lock_guard<std::mutex> lock(gVivifyLogMutex);
+  if (gVivifyLogFile.is_open()) gVivifyLogFile.flush();
+  gVivifyGlobalLog.Flush();
+}
+
+namespace {
 void EnsureConfigObject() {
   auto& doc = getConfig().config;
   if (!doc.IsObject()) {

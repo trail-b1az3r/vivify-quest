@@ -48,6 +48,8 @@ bool GetMapRealtimeShadows();
 // Replay render mode (0.14.9): converted maps get single-screen programs only,
 // for replay and recording renderers. The headset draws none of them.
 bool GetReplayRenderMode();
+// Flushes the session and global logs to disk now.
+void FlushVivifyLogs();
 bool GetReplayRenderModeSetting();
 bool GetReplayModInstalled();
 // "Use Windows Bundle For This Map", by song folder.

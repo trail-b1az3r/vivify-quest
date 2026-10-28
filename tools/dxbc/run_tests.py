@@ -256,6 +256,21 @@ check("saturate wraps", "clamp((intBitsToFloat(r0.xyzw) * _Color.xyzw), 0.0, 1.0
 check("fragment output", "layout(location = 0) out vec4 SV_Target0;" in source, source)
 check("samplers listed", lists.get("sampler") == ["_MainTex"], str(lists.get("sampler")))
 
+# A depth-only pixel program (Through The Screen's AreaLit/LightMeshClear):
+# SV_Depth's signature entry has no register (0xFFFFFFFF) and, in that
+# bundle, no system-value type either. It was declared as a colour output at
+# layout(location = 4294967295), which no GLSL ES compiler accepts, so every
+# variant of the shader stayed undrawable.
+OPERAND_OUTPUT_DEPTH = 12
+body = m.insn(MOV, m.dest(OPERAND_OUTPUT_DEPTH, None, 0x1), m.imm_float(1.0))
+depth_only = pixel_shader(body, temps=0, outputs=[
+    {"name": "SV_Depth", "index": 0, "register": 0xFFFFFFFF, "sv": 0, "mask": 0x1, "rw_mask": 0xE},
+])
+proc, fields, _, source = run("glsl", depth_only)
+check("depth-only pixel program translates", fields.get("ok") == "1", fields.get("error", "") + source)
+check("depth is written through gl_FragDepth", "gl_FragDepth" in source, source)
+check("depth is not declared as a colour output", "SV_Depth0" not in source and "4294967295" not in source, source)
+
 # A masked write must only evaluate the components it writes.
 body = m.insn(MUL, m.dest(OUTPUT, 0, 0x6), m.src(INPUT, 0, (Y, Z, W, X)), m.src_cb(0, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body, temps=0))
