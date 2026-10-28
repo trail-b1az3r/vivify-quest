@@ -157,6 +157,7 @@ void Runtime::Update() {
     // Ten seconds into the song the converted bundle has loaded and drawn;
     // whatever happens after that is not what the crash guard is for.
     if (!_loadGuardPath.empty() && CurrentSongTime() > 10.0f) DisarmLoadGuard();
+    RunScheduledVisualChecks();
     UpdateMaterialAnimations();
     UpdateGlobalAnimations();
     UpdateAnimatorAnimations();
@@ -277,6 +278,24 @@ void Runtime::RegisterSyncedObject(UnityEngine::GameObject* root, float startTim
   }
 }
 
+// The rate of the song clock: Slower or Faster Song, the practice speed, or a
+// mod such as BSNightcoreQuest. 1 without a song.
+float Runtime::SongSpeed() {
+  if (!IsManagedAlive(_audioTimeSyncController)) return 1.0f;
+  float const scale = _audioTimeSyncController->_timeScale;
+  return std::isfinite(scale) && scale > 0.0f ? std::clamp(scale, 0.05f, 10.0f) : 1.0f;
+}
+
+namespace {
+// A video plays on its own clock at 1x, so at any other song speed it drifts
+// from the music; a synced one was also yanked back each time it drifted
+// 0.15 s (#91).
+void ApplyVideoSpeed(UnityEngine::Video::VideoPlayer* videoPlayer, float speed) {
+  if (!IsManagedAlive(videoPlayer) || !videoPlayer->get_canSetPlaybackSpeed()) return;
+  if (std::abs(videoPlayer->get_playbackSpeed() - speed) > 0.005f) videoPlayer->set_playbackSpeed(speed);
+}
+}
+
 void Runtime::UpdatePrefabAnimationSpeed() {
   if (_syncedObjects.empty() && _livePrefabs.empty()) {
 
@@ -312,6 +331,14 @@ void Runtime::UpdatePrefabAnimationSpeed() {
   };
   for (auto& synced : _syncedObjects) drive(synced.animators, synced.particleSystems);
   for (auto& [id, prefab] : _livePrefabs) drive(prefab.animators, prefab.particleSystems);
+
+  float const songSpeed = SongSpeed();
+  for (auto& synced : _syncedObjects) {
+    for (auto* videoPlayer : synced.videoPlayers) ApplyVideoSpeed(videoPlayer, songSpeed);
+  }
+  for (auto& [id, prefab] : _livePrefabs) {
+    for (auto* videoPlayer : prefab.videoPlayers) ApplyVideoSpeed(videoPlayer, songSpeed);
+  }
 }
 
 void Runtime::UnregisterSyncedObject(UnityEngine::GameObject* root) {

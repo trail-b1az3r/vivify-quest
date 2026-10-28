@@ -692,6 +692,12 @@ void Runtime::InstantiatePrefab(CustomJSONData::CustomEventData* customEventData
     }
   }
 
+  auto videoArray = instance->GetComponentsInChildren<UnityEngine::Video::VideoPlayer*>(true);
+  std::vector<UnityEngine::Video::VideoPlayer*> videoPlayers;
+  for (auto videoPlayer : videoArray) {
+    if (videoPlayer != nullptr) videoPlayers.emplace_back(videoPlayer);
+  }
+
   int const culledAnimators = CullOffscreenAnimators(instance);
   VIVIFY_DEBUG("Vivify InstantiatePrefab spawned: id='{}' asset='{}' tracks={} animators={} offscreenCulled={}",
                storageId, data.asset, data.tracks.size(), animators.size(), culledAnimators);
@@ -700,6 +706,7 @@ void Runtime::InstantiatePrefab(CustomJSONData::CustomEventData* customEventData
       .tracks = data.tracks,
       .animators = std::move(animators),
       .particleSystems = std::move(particleSystems),
+      .videoPlayers = std::move(videoPlayers),
   };
 }
 

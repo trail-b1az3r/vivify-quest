@@ -194,6 +194,7 @@ struct LivePrefab {
   std::vector<TrackW> tracks;
   std::vector<UnityEngine::Animator*> animators;
   std::vector<UnityEngine::ParticleSystem*> particleSystems;
+  std::vector<UnityEngine::Video::VideoPlayer*> videoPlayers;
 };
 
 struct SyncedObject {

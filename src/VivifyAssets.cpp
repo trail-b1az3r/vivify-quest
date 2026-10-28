@@ -134,6 +134,25 @@ constexpr int kBundleConversionVersion = 19;
 // game's shaders having been compiled with multiview variants shows up in
 // Shader.GetAllGlobalKeywords(). Read on the main thread (DetectMultiviewKeyword)
 // and used by conversions on worker threads.
+// Which conversion a path or a conversion run is for: the normal one, or Replay
+// Render Mode's single-view one. Follows the setting (GetReplayRenderMode),
+// unless a thread pins it with ReplayVariantScope -- which lets a worker build
+// the replay variant ahead of a render while play keeps using the normal one
+// (0.14.29).
+thread_local int tReplayVariantOverride = -1;
+
+bool ReplayVariantWanted() {
+  return tReplayVariantOverride >= 0 ? tReplayVariantOverride == 1 : GetReplayRenderMode();
+}
+
+struct ReplayVariantScope {
+  int saved;
+  explicit ReplayVariantScope(bool replay) : saved(tReplayVariantOverride) { tReplayVariantOverride = replay ? 1 : 0; }
+  ~ReplayVariantScope() { tReplayVariantOverride = saved; }
+  ReplayVariantScope(ReplayVariantScope const&) = delete;
+  ReplayVariantScope& operator=(ReplayVariantScope const&) = delete;
+};
+
 std::atomic<int> gMultiviewKeyword{-1};
 
 void DetectMultiviewKeyword() {
@@ -148,7 +167,7 @@ void DetectMultiviewKeyword() {
     gMultiviewKeyword.store(found ? 1 : 0);
     PaperLogger.info("Vivify: the game {} STEREO_MULTIVIEW_ON ({} global keywords); converted shaders get {}",
                      found ? "uses" : "does not use", keywords.size(),
-                     GetReplayRenderMode() ? "single-view programs only (replay render mode)"
+                     ReplayVariantWanted() ? "single-view programs only (replay render mode)"
                      : found               ? "separate single-view and multiview programs (2021 bundles)"
                                            : "multiview programs in their plain variants");
   } catch (...) {
@@ -170,7 +189,7 @@ bool SplitStereoVariants() {
 int ConversionSplitMode() {
   // +8: geometry-shader effects drawn without their geometry stage (setting).
   int const geometry = GetDrawGeometryShaderEffects() ? 8 : 0;
-  if (GetReplayRenderMode()) return 4 + geometry;
+  if (ReplayVariantWanted()) return 4 + geometry;
   return (SplitStereoVariants() ? 1 : 0) + geometry;
 }
 
@@ -384,7 +403,7 @@ BundleConversionOutcome RunBundleConversionUnclaimed(std::string const& source, 
   // map's empty shaders keeps everything, since Quest materials keep their
   // instancing.
   options.skipQuestUnusedVariants = !kLiteBuild;
-  options.singleViewOnly = GetReplayRenderMode();
+  options.singleViewOnly = ReplayVariantWanted();
   auto const conversion = BundleConvert::ConvertShadersToGles(source, dest, options);
   if (conversion.status == BundleConvert::Status::Success) MarkConversionCurrent(dest);
   // Logged here, on the worker, rather than folded into the message: a bundle
@@ -415,6 +434,64 @@ BundleConversionOutcome RunBundleConversionUnclaimed(std::string const& source, 
         conversion.texturesMarkedReadable, conversion.texturesSeen, conversion.texturesStreamed);
   }
   return {conversion.status, conversion.message};
+}
+
+std::string ConvertedBundlePath(std::string const& sourceBundlePath);
+
+// Builds a PC bundle's single-view (Replay Render Mode) conversion in the
+// background while the setting is on and the Replay mod is installed, so it is
+// on disk when a render starts. Replay decides to render only when Render is
+// pressed, after the map was selected and its normal conversion loaded; with
+// nothing prepared, LoadMainBundle had no single-view build to switch to and
+// the render drew nothing (0.14.29). Waits for the normal conversion of the
+// same bundle first, so the two do not compete for memory.
+void PrepareReplayVariantInBackground(std::string const& pcBundlePath) {
+  if (pcBundlePath.empty() || !GetReplayRenderModeSetting() || !GetReplayModInstalled() ||
+      !GetConvertPcBundlesOnDevice() || GetReplayRenderMode()) {
+    return;
+  }
+  std::thread([pcBundlePath]() {
+    try {
+      std::string normal;
+      {
+        ReplayVariantScope const pin(false);
+        normal = ConvertedBundlePath(pcBundlePath);
+      }
+      { DestClaim const wait(normal); }
+      ReplayVariantScope const pin(true);
+      std::string const dest = ConvertedBundlePath(pcBundlePath);
+      if (CachedConversionIsCurrent(dest)) return;
+      PaperLogger.info("Vivify replay render: preparing the single-view conversion of '{}' -> '{}'", pcBundlePath,
+                       dest);
+      auto const outcome = RunBundleConversion(pcBundlePath, dest);
+      if (outcome.status == BundleConvert::Status::Success) {
+        PaperLogger.info("Vivify replay render: single-view conversion ready: {}", outcome.message);
+      } else {
+        PaperLogger.warn("Vivify replay render: single-view conversion failed ({}): {}",
+                         BundleConvert::StatusText(outcome.status), outcome.message);
+      }
+    } catch (std::exception const& e) {
+      PaperLogger.warn("Vivify replay render: preparing the single-view conversion threw: {}", e.what());
+    } catch (...) {
+      PaperLogger.warn("Vivify replay render: preparing the single-view conversion threw");
+    }
+  }).detach();
+}
+
+// The single-view conversion to play instead of `bundlePath` while Replay
+// renders, or empty when `bundlePath` is not a normal PC conversion or its
+// single-view build is not ready.
+std::string ReplayVariantFor(std::string const& bundlePath, std::string const& pcBundlePath) {
+  if (pcBundlePath.empty()) return {};
+  std::string normal;
+  {
+    ReplayVariantScope const pin(false);
+    normal = ConvertedBundlePath(pcBundlePath);
+  }
+  if (std::filesystem::path(normal) != std::filesystem::path(bundlePath)) return {};
+  ReplayVariantScope const pin(true);
+  std::string const replay = ConvertedBundlePath(pcBundlePath);
+  return CachedConversionIsCurrent(replay) ? replay : std::string();
 }
 
 std::string ResolveBundlePath(std::string const& levelPath) {
@@ -553,7 +630,7 @@ std::string ConvertedBundlePath(std::string const& sourceBundlePath) {
   // Replay render mode's single-view conversions live beside the normal ones
   // rather than replacing them, so switching modes does not reconvert.
   char suffix[40];
-  std::snprintf(suffix, sizeof(suffix), GetReplayRenderMode() ? "_%016llx_replay.vivify" : "_%016llx.vivify",
+  std::snprintf(suffix, sizeof(suffix), ReplayVariantWanted() ? "_%016llx_replay.vivify" : "_%016llx.vivify",
                 static_cast<unsigned long long>(hash));
   return JoinPath(ConvertedBundleCacheDir(), prefix + suffix);
 }
@@ -880,6 +957,13 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
   // BeatLeader and ScoreSaber recording a replay, which is why Vivify maps had
   // no replays to watch or render. Submission is on by default now, with a
   // setting for anyone who wants the old behaviour.
+  SelectBundleForLevel();
+}
+
+// Everything after the level and its Vivify requirement are known: which
+// bundle to play, from member state alone, so ReselectCurrentLevel can run it
+// again after the map's Windows-bundle choice changes (0.14.29).
+void Runtime::SelectBundleForLevel() {
   bool const submit = GetSubmitScoresOnVivifyMaps();
   MetaCore::Game::SetScoreSubmission("Vivify", submit);
   PaperLogger.info("Vivify score submission: {} for this Vivify map",
@@ -891,17 +975,23 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
   PaperLogger.info("Vivify settings for this level: standInShading={} convertPcBundlesOnDevice={} "
                    "disableCustomNoteVisuals={} disableAllBlits={} multipassRendering={} effectResolution={}% "
                    "sceneDepth={} prepareShaders={} geometryEffects={} offscreenCulling={} farCulling={}m crashGuard={} "
-                   "pcBundleForMissingShaders={}",
+                   "pcBundleForMissingShaders={} replayRenderMode={} windowsBundleForThisMap={}",
                    BoolText(GetStandInShading()), BoolText(GetConvertPcBundlesOnDevice()),
                    BoolText(GetDisableCustomNoteVisuals()), BoolText(GetDisableAllBlits()),
                    BoolText(GetMultipassRenderingEnabled()), GetEffectResolutionPercent(),
                    BoolText(GetSceneDepthTexture()), BoolText(GetPrepareShadersBeforePlaying()),
                    BoolText(GetDrawGeometryShaderEffects()), BoolText(GetOffscreenCulling()),
-                   GetFarCullingDistance(), BoolText(GetCrashGuard()), BoolText(GetUsePcBundleForMissingShaders()));
+                   GetFarCullingDistance(), BoolText(GetCrashGuard()), BoolText(GetUsePcBundleForMissingShaders()),
+                   BoolText(GetReplayRenderMode()), BoolText(GetWindowsBundleForMap(_selectedLevelPath)));
 
   std::string const androidBundlePath = JoinPath(_selectedLevelPath, std::string(kBundleFile));
+  bool const androidExists = std::filesystem::exists(androidBundlePath);
+  // "Use Windows Bundle For This Map" (0.14.29): the map's PC build is
+  // converted and played even though it ships a Quest one -- for a Quest build
+  // that draws less than its PC build does on this headset.
+  bool const preferWindows = GetWindowsBundleForMap(_selectedLevelPath) && GetConvertPcBundlesOnDevice();
 
-  if (std::filesystem::exists(androidBundlePath)) {
+  if (androidExists && !preferWindows) {
     if (GetVivifyDebugLogging()) {
       PaperLogger.info("Vivify bundle selection: using local Android bundle '{}'", androidBundlePath);
     }
@@ -921,8 +1011,8 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
       !cachedConversion.empty() && CachedConversionIsCurrent(cachedConversion);
 
   PaperLogger.info(
-      "Vivify bundle selection: level='{}' androidBundle=no android2021={} pcBundle='{}' convertedCache='{}' cached={}",
-      _selectedLevelPath, androidChecksum,
+      "Vivify bundle selection: level='{}' androidBundle={} android2021={} pcBundle='{}' convertedCache='{}' cached={}",
+      _selectedLevelPath, androidExists ? "yes, Windows bundle chosen for this map" : "no", androidChecksum,
       pcBundleFallback.empty() ? std::string("<none>") : pcBundleFallback,
       cachedConversion.empty() ? std::string("<none>") : cachedConversion,
       BoolText(haveCachedConversion));
@@ -941,9 +1031,23 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
     SongCore::API::PlayButton::EnablePlayButton("Vivify");
     PreloadBundle(cachedConversion);
     PrepareBlitCompanion(_selectedLevelPath, pcBundleFallback);
+    PrepareReplayVariantInBackground(pcBundleFallback);
     return;
   }
 
+  if (preferWindows) {
+    if (!pcBundleFallback.empty()) {
+      ConvertPcBundleAsync(_selectedLevelPath, pcBundleFallback);
+      return;
+    }
+    if (TryDownloadPcBundle(_selectedLevelPath)) return;
+    PaperLogger.warn("Vivify: Windows bundle chosen for '{}', but it has none in its folder or Info.dat; using "
+                     "its Quest bundle", _selectedLevelPath);
+    if (androidExists) {
+      BeginAndroidBundleLoad(_selectedLevelPath, androidBundlePath);
+      return;
+    }
+  }
   if (androidChecksum != 0) {
     BeginBundleDownload(androidChecksum, _selectedLevelPath, pcBundleFallback);
     return;
@@ -956,6 +1060,21 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
   PaperLogger.warn("Vivify: '{}' has no Android bundle, no PC bundle to convert, and no bundle checksum in "
                    "Info.dat to download one by", _selectedLevelPath);
   SongCore::API::PlayButton::DisablePlayButton("Vivify", "No Vivify assets found for this map.");
+}
+
+void Runtime::ReselectCurrentLevel() {
+  if (_selectedLevelPath.empty() || !_selectedMapHasVivifyRequirement || _currentBeatmapData != nullptr) return;
+  if (_mainBundle != nullptr && UnityEngine::Object::op_Implicit_bool(_mainBundle)) {
+    _mainBundle->Unload(true);
+    _mainBundle = nullptr;
+  }
+  _preloadedBundlePath.clear();
+  _selectedBundlePath.clear();
+  ClearBlitCompanion();
+  CancelPendingDownload();
+  PaperLogger.info("Vivify: choosing the bundle for '{}' again (Windows bundle for this map: {})", _selectedLevelPath,
+                   BoolText(GetWindowsBundleForMap(_selectedLevelPath)));
+  SelectBundleForLevel();
 }
 
 // A Vivify map with no Quest assets at all: download its PC bundle by the
@@ -1091,6 +1210,7 @@ void Runtime::ConvertPcBundleAsync(std::string const& levelPath, std::string con
     SongCore::API::PlayButton::EnablePlayButton("Vivify");
     PreloadBundle(destPath);
     PrepareBlitCompanion(levelPath, sourceBundlePath);
+    PrepareReplayVariantInBackground(sourceBundlePath);
     return;
   }
 
@@ -1140,7 +1260,10 @@ void Runtime::ConvertPcBundleAsync(std::string const& levelPath, std::string con
       _selectedBundlePath = loadPath;
       SongCore::API::PlayButton::EnablePlayButton("Vivify");
       PreloadBundle(loadPath);
-      if (loadPath != sourceBundlePath) PrepareBlitCompanion(levelPath, sourceBundlePath);
+      if (loadPath != sourceBundlePath) {
+        PrepareBlitCompanion(levelPath, sourceBundlePath);
+        PrepareReplayVariantInBackground(sourceBundlePath);
+      }
     });
   }).detach();
 }
@@ -1196,7 +1319,7 @@ bool LevelUsesBlits(std::string const& levelPath) {
 void Runtime::PrepareBlitCompanion(std::string const& levelPath, std::string const& pcBundlePath) {
   // Opt-in (0.14.11) until it has been seen working on a headset. Replay
   // render mode's main conversion is single-view already.
-  if (!GetBlitScreenTextureFix() || GetReplayRenderMode() || !GetTranslateShadersOnConversion() ||
+  if (!GetBlitScreenTextureFix() || ReplayVariantWanted() || !GetTranslateShadersOnConversion() ||
       pcBundlePath.empty()) {
     return;
   }
@@ -1887,6 +2010,46 @@ std::string Runtime::BuildLevelReport(std::string_view outcome) const {
   line(fmt::format("Device:  {}", _graphicsSummary.empty() ? std::string("(not yet probed)") : _graphicsSummary));
   line("");
 
+  // What is most likely to look wrong, first, in words (0.14.29): the
+  // sections below hold the numbers, but nobody reading a report should have
+  // to work out which of them matter.
+  std::vector<std::string> problems;
+  if (_auditShadersNoProgram > 0) {
+    problems.push_back(fmt::format("{} shader(s) have no Quest program (DirectX only): what uses them is grey or "
+                                   "missing",
+                                   _auditShadersNoProgram));
+  }
+  if (_auditShadersDeviceRejected > 0) {
+    std::string names;
+    for (auto const& name : _auditRejectedNames) names += (names.empty() ? "" : ", ") + name;
+    problems.push_back(fmt::format("{} shader(s) refused by this GPU ({}): what uses them is grey or missing",
+                                   _auditShadersDeviceRejected, names));
+  }
+  if (_shaderRepairFailed > 0) {
+    problems.push_back(fmt::format("{} material(s) have no usable shader and draw nothing", _shaderRepairFailed));
+  }
+  if (_shaderRepairSucceeded > 0) {
+    problems.push_back(fmt::format("{} material(s) drawn with Vivify's plain stand-in shading instead of the "
+                                   "map's own",
+                                   _shaderRepairSucceeded));
+  }
+  if (_texturesUnreadable + _texturesBlank > 0) {
+    problems.push_back(fmt::format("{} texture(s) could not be decoded and draw black or blank",
+                                   _texturesUnreadable + _texturesBlank));
+  }
+  for (auto const& problem : _visualProblems) problems.push_back(problem);
+  bool const questBundle = !_preloadedBundlePath.empty() &&
+                           _preloadedBundlePath.rfind(ConvertedBundleCacheDir(), 0) != 0;
+  if (questBundle && (_auditShadersNoProgram + _auditShadersDeviceRejected + _shaderRepairFailed > 0) &&
+      !ResolvePcBundlePath(_selectedLevelPath).empty()) {
+    problems.push_back("this map also has a Windows bundle: \"Use Windows Bundle\" under This Map in Vivify's "
+                       "settings plays that instead");
+  }
+  line("Likely visual problems");
+  if (problems.empty()) line("  none detected (these checks cannot see everything)");
+  for (auto const& problem : problems) line("  - " + problem);
+  line("");
+
   line("Level");
   line(fmt::format("  folder:        {}", _selectedLevelPath.empty() ? std::string("(none)") : _selectedLevelPath));
   line(fmt::format("  bundle loaded: {}", _preloadedBundlePath.empty() ? std::string("(none)") : _preloadedBundlePath));
@@ -1946,7 +2109,9 @@ std::string Runtime::BuildLevelReport(std::string_view outcome) const {
 
 void Runtime::WriteLevelStartReport() {
   _levelReportOpen = true;
-  Report::Append("LEVEL STARTED", BuildLevelReport("still playing (this block is written at load)"));
+  if (!Report::Append("LEVEL STARTED", BuildLevelReport("still playing (this block is written at load)"))) {
+    PaperLogger.warn("Vivify report: level block not written: {}", Report::LastError());
+  }
 }
 
 void Runtime::WriteLevelEndReport(std::string_view outcome) {
@@ -1954,7 +2119,9 @@ void Runtime::WriteLevelEndReport(std::string_view outcome) {
   // append an empty block every time something calls ResetRuntime.
   if (!_levelReportOpen) return;
   _levelReportOpen = false;
-  Report::Append("LEVEL ENDED", BuildLevelReport(outcome));
+  if (!Report::Append("LEVEL ENDED", BuildLevelReport(outcome))) {
+    PaperLogger.warn("Vivify report: level block not written: {}", Report::LastError());
+  }
 }
 
 void Runtime::PreloadBundle(std::string const& bundlePath) {
@@ -2212,6 +2379,31 @@ void Runtime::LoadMainBundle() {
     }
     return;
   }
+  // Replay starts rendering only when Render is pressed, after this map was
+  // selected and its normal conversion preloaded. The headset draws that
+  // build, the render camera does not, so while Replay renders the
+  // single-view build prepared at selection is played instead (0.14.29).
+  if (GetReplayRenderMode()) {
+    std::string const pcBundle = ResolvePcBundlePath(_selectedLevelPath);
+    std::string const replay = ReplayVariantFor(bundlePath, pcBundle);
+    if (!replay.empty()) {
+      PaperLogger.info("Vivify replay render: playing the single-view conversion '{}' instead of '{}'", replay,
+                       bundlePath);
+      if (_mainBundle != nullptr && UnityEngine::Object::op_Implicit_bool(_mainBundle)) {
+        _mainBundle->Unload(true);
+        _mainBundle = nullptr;
+      }
+      _preloadedBundlePath.clear();
+      bundlePath = replay;
+      _selectedBundlePath = replay;
+    } else if (bundlePath.rfind(ConvertedBundleCacheDir(), 0) == 0 &&
+               bundlePath.find("_replay.vivify") == std::string::npos) {
+      PaperLogger.warn("Vivify replay render: no single-view conversion of this map is ready, so the render may "
+                       "show it blank. Select the map with Replay Render Mode on and wait a moment before "
+                       "rendering; it is prepared in the background.");
+    }
+  }
+
   // Held through the first seconds of play (Update disarms it), which is when
   // the GPU driver compiles the translated programs for the first time.
   ArmLoadGuard(bundlePath);
@@ -3422,6 +3614,15 @@ bool RedownloadOne(VivifyMapEntry& map, std::string& error) {
 
 std::string VivifyMapsListPath() {
   return "/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyMaps.txt";
+}
+
+std::string SelectedVivifyMapPath() {
+  auto& runtime = Runtime::Instance();
+  return runtime.SelectedMapHasVivify() ? runtime.SelectedLevelPath() : std::string();
+}
+
+void ReselectSelectedMap() {
+  Runtime::Instance().ReselectCurrentLevel();
 }
 
 void RedownloadVivifyMaps(std::function<void(std::string const&)> onStatus) {

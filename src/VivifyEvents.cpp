@@ -60,6 +60,8 @@ bool Runtime::EnsureBeatmapPrepared(GlobalNamespace::BeatmapCallbacksController*
 void Runtime::PrepareBeatmap(CustomJSONData::CustomBeatmapData* beatmapData, float triggerTime) {
   ResetRuntime();
   SetSongPlaying(true);
+  _visualProblems.clear();
+  _visualChecksRun = 0;
   _currentBeatmapData = beatmapData;
   _beatmapAD = nullptr;
   _audioTimeSyncController = UnityEngine::Object::FindObjectOfType<GlobalNamespace::AudioTimeSyncController*>();
@@ -75,6 +77,7 @@ void Runtime::PrepareBeatmap(CustomJSONData::CustomBeatmapData* beatmapData, flo
                beatmapData->v2orEarlier, beatmapData->customEventDatas.size(),
                triggerTime, _beatmapAD != nullptr);
   LoadMainBundle();
+  DisableRealtimeShadowsForLevel();
   PreloadInstantiatePrefabs();
   ApplyMissedVivifyEvents(triggerTime);
   _lastSongTime = CurrentSongTime();

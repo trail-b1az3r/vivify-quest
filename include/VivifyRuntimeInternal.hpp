@@ -23,6 +23,11 @@ struct CameraApplier;
 
 class Runtime {
 public:
+  // Runs bundle selection again for the selected map (its Windows-bundle
+  // choice changed in the menu). Not during a level.
+  void ReselectCurrentLevel();
+  std::string const& SelectedLevelPath() const { return _selectedLevelPath; }
+  bool SelectedMapHasVivify() const { return _selectedMapHasVivifyRequirement; }
   static Runtime& Instance();
 
   CustomJSONData::CustomBeatmapData* GetCurrentBeatmapData() const { return _currentBeatmapData; }
@@ -125,9 +130,15 @@ private:
   void UpdateSyncedObjects();
 
   void UpdatePrefabAnimationSpeed();
+  float SongSpeed();
   void LogThrottledUpdateError(std::string_view what);
 
   void HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEventArgs const& event);
+  void SelectBundleForLevel();
+  void RunScheduledVisualChecks();
+  void DisableRealtimeShadowsForLevel();
+  void RunVisualCheck(std::string_view when);
+  void NoteVisualProblem(std::string problem);
   void DownloadBundle(uint32_t checksum, std::string const& levelPath, std::function<void(bool)> callback);
   // The same, saving to destPath instead of the level's Android bundle path.
   void DownloadBundleTo(uint32_t checksum, std::string const& destPath, std::function<void(bool)> callback);
@@ -496,6 +507,10 @@ private:
   int _auditShadersRunnable = 0;
   int _auditShadersNoProgram = 0;
   int _auditShadersDeviceRejected = 0;
+  // Live visual checks (VivifyVisualCheck.cpp, 0.14.29): what looked wrong
+  // this level, for the top of its report block.
+  std::vector<std::string> _visualProblems;
+  int _visualChecksRun = 0;
   std::vector<std::string> _auditRejectedNames;
   int _texturesDecoded = 0;
   int _texturesSkipped = 0;
