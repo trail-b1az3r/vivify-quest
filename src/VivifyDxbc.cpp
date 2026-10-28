@@ -1,6 +1,7 @@
 #include "VivifyDxbc.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <climits>
 #include <deque>
 #include <cstdio>
@@ -1830,6 +1831,18 @@ bool GlslEmitter::BuildSignatures() {
     }
 
     if (isPixel) {
+      // Depth and coverage have no render target: their signature entry sits in
+      // register 0xFFFFFFFF, and some bundles leave its system-value type
+      // undefined, so the switch above does not catch them. They are written
+      // through gl_FragDepth / gl_SampleMask by operand type. Declared here they
+      // became layout(location = 4294967295), which no GLSL ES compiler takes --
+      // Through The Screen's depth-only AreaLit shader drew nothing (0.15.0).
+      std::string lower = element.semanticName;
+      std::transform(lower.begin(), lower.end(), lower.begin(),
+                     [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+      if (element.registerIndex == 0xFFFFFFFFu || lower.rfind("sv_depth", 0) == 0 || lower == "sv_coverage") {
+        continue;
+      }
       _declarations += "layout(location = " + std::to_string(element.registerIndex) +
                        ") out vec4 " + element.semanticName +
                        std::to_string(element.semanticIndex) + ";\n";

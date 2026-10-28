@@ -11,6 +11,45 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-10-28
+
+### Fixed
+- **Shaders that write only depth now draw on converted maps.** A pixel
+  program that writes depth (or coverage) and no colour declared that output
+  as a colour output at `layout(location = 4294967295)`. No GLSL ES compiler
+  accepts that, so every variant of the shader drew nothing. In
+  [Through The Screen](https://beatsaver.com/maps/43a5d) that was all 18
+  programs of its `AreaLit/LightMeshClear` shader. Every one of its programs
+  and every one of [Yoi Okashi](https://beatsaver.com/maps/43a4b)'s now
+  compiles and links under glslang, and a translator test covers the case.
+- **Converted maps are converted again** (conversion version 20), so they
+  pick up this fix and 0.14.27's geometry pass-through fix, which went out
+  without a version bump. Crash-guard strikes start fresh too.
+
+### Added
+- **Breadcrumbs through a level's end.** "The game crashes after a Vivify
+  level" came with no log. Each step of a level's teardown now writes a
+  `Vivify level end:` line and flushes it to disk, as does selecting a level
+  again on the way back to the menu. After a crash, the last such line in
+  `vivify_global.txt` names the step it happened in. That file keeps earlier
+  sessions; `VivifySession.txt` is overwritten when the game starts again.
+- **The visual check summarises what is drawing.** At 5 and 30 seconds it
+  logs how many renderers are active, how many have no shader this GPU can
+  run, the shaders drawing the most of the scene, and how many screen effects
+  are running. A mostly-unrunnable scene is listed under "Likely visual
+  problems". This is for maps that are just black.
+
+### Known, not fixed
+- The crash after a Vivify level is not found yet. Nothing in 0.14.26 to
+  0.14.29 that runs at a level's end showed a fault when checked offline. The
+  breadcrumbs above are there to find it.
+- Through The Screen and Yoi Okashi were black, and it is not known whether
+  the fix above is all of it. Every shader of Yoi Okashi already compiled
+  before, so its black screen has another cause. Both maps' bundles load
+  cleanly and every asset they use is found. One shader in Through The
+  Screen, a particle visualizer, still cannot be translated: its geometry
+  stage reads the eye index.
+
 ## [0.14.29] - 2026-10-28
 
 ### Fixed
