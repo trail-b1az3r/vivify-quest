@@ -9,7 +9,7 @@ A Quest port of [Vivify](https://github.com/Aeroluna/Vivify) for **Beat Saber
 ever built for PC.
 
 
-- discord server: [here](https://discord.gg/Dt7nvFaWym)
+- **discord server:** ***[here](https://discord.gg/Dt7nvFaWym)***
 
 It is built from several community Quest ports merged into one (see
 [Credits](#credits)), and adds three things of its own:
