@@ -1584,6 +1584,7 @@ void Runtime::ClearBlitCompanion() {
 void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string const& androidBundlePath) {
   _selectedBundlePath = androidBundlePath;
   int const generation = ++_graftGeneration;
+  _singleViewOnlyNativeShaders.clear();
   // Always, whatever the conversion settings (0.14.10): an empty shader draws
   // nothing, and its PC build is the only thing that can. Only turning shader
   // translation off stops it, since the PC build is DirectX without it.
@@ -1644,9 +1645,18 @@ void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string c
         }
       }
     }
+    std::set<std::string> singleViewOnly(scan.singleViewOnlyShaderNames.begin(),
+                                         scan.singleViewOnlyShaderNames.end());
     BSML::MainThreadScheduler::Schedule([this, generation, levelPath, androidBundlePath, empty, preferred,
-                                         preferredFound, fallback, wantBuild, otherBuild, other]() {
+                                         preferredFound, fallback, wantBuild, otherBuild, other,
+                                         singleViewOnly = std::move(singleViewOnly)]() {
       if (generation != _graftGeneration || levelPath != _selectedLevelPath) return;
+      _singleViewOnlyNativeShaders = singleViewOnly;
+      _perEyeBlitLogged.clear();
+      if (!singleViewOnly.empty()) {
+        PaperLogger.info("Vivify: {} shader(s) in this map's Quest bundle have no two-eye program; a screen "
+                         "effect using one runs once per eye", singleViewOnly.size());
+      }
       if (empty.empty()) {
         FinishAndroidBundleLoad(levelPath, androidBundlePath);
         return;

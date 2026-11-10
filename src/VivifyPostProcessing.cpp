@@ -64,6 +64,43 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
                       UnityEngine::Material* material, int pass) {
     auto const dstId = ToTargetId(dst);
     material = BlitMaterialFor(material, dst);
+    // A Quest-built effect shader with no two-eye program (0.15.5): drawn
+    // into the two-eye texture it draws nothing, and the frame after it is
+    // whatever the scratch texture last held. Run it once per eye through
+    // single textures instead.
+    if (material != nullptr && NeedsPerEyeBlit(material, dst)) {
+      auto desc = dst->get_descriptor();
+      desc.set_dimension(UnityEngine::Rendering::TextureDimension::Tex2D);
+      desc.set_volumeDepth(1);
+      desc.set_vrUsage(UnityEngine::VRTextureUsage::None);
+      desc.set_msaaSamples(1);
+      desc.set_depthBufferBits(0);
+      auto* eyeIn = UnityEngine::RenderTexture::GetTemporary(desc).unsafePtr();
+      auto* eyeOut = UnityEngine::RenderTexture::GetTemporary(desc).unsafePtr();
+      if (IsManagedAlive(eyeIn) && IsManagedAlive(eyeOut)) {
+        selfBlitTemps.emplace_back(eyeIn);
+        selfBlitTemps.emplace_back(eyeOut);
+        auto eyeInId = ToTargetId(eyeIn);
+        auto eyeOutId = ToTargetId(eyeOut);
+        auto source = srcId;
+        auto target = dstId;
+        constexpr int kCopyElement = 2;  // CommandBuffer.CopyTexture(src, srcElement, dst, dstElement)
+        for (int eye = 0; eye < 2; eye++) {
+          cb->CopyTexture_Internal(byref(source), eye, -1, -1, -1, -1, -1, byref(eyeInId), 0, -1, -1, -1,
+                                   kCopyElement);
+          if (pass >= 0) {
+            cb->Blit(eyeInId, eyeOutId, material, pass);
+          } else {
+            cb->Blit(eyeInId, eyeOutId, material);
+          }
+          cb->CopyTexture_Internal(byref(eyeOutId), 0, -1, -1, -1, -1, -1, byref(target), eye, -1, -1, -1,
+                                   kCopyElement);
+        }
+        return;
+      }
+      if (IsManagedAlive(eyeIn)) UnityEngine::RenderTexture::ReleaseTemporary(eyeIn);
+      if (IsManagedAlive(eyeOut)) UnityEngine::RenderTexture::ReleaseTemporary(eyeOut);
+    }
     if (material == nullptr) {
       cb->Blit(srcId, dstId);
     } else if (pass >= 0) {
@@ -642,6 +679,29 @@ UnityEngine::Material* Runtime::BlitMaterialFor(UnityEngine::Material* material,
                      "of '{}'", ToStdString(material->get_name()), singleView->first);
   }
   return copy;
+}
+
+// Whether a blit with this material into this texture has to be run one eye
+// at a time: the texture is the two-eye array and the material's shader is a
+// Quest-built one whose programs are all single-view (found by the bundle scan
+// at selection). RSIH's end-of-song "TV shutdown" is one: its shader has no
+// stereo code, so Unity compiled no multiview program for it.
+bool Runtime::NeedsPerEyeBlit(UnityEngine::Material* material, UnityEngine::RenderTexture* destination) {
+  if (_singleViewOnlyNativeShaders.empty() || !IsAlive(material) || !IsAlive(destination)) return false;
+  auto descriptor = destination->get_descriptor();
+  if (descriptor.get_dimension() != UnityEngine::Rendering::TextureDimension::Tex2DArray ||
+      descriptor.get_volumeDepth() != 2) {
+    return false;
+  }
+  auto* shader = material->get_shader().unsafePtr();
+  if (!IsAlive(shader)) return false;
+  std::string const name = ShaderNameForLog(shader);
+  if (!_singleViewOnlyNativeShaders.contains(name)) return false;
+  if (_perEyeBlitLogged.insert(name).second) {
+    PaperLogger.info("Vivify Blit: '{}' has no two-eye program in this map's Quest bundle; running it once per "
+                     "eye", name);
+  }
+  return true;
 }
 
 // Keeps each single-view blit copy in step with its original, which the map
@@ -1236,6 +1296,10 @@ void Runtime::RestoreMainCameraOriginals() {
       }
     }
     if (IsAlive(mainCam)) RestoreFarCulling(mainCam);
+    if (IsAlive(mainCam) && _addedMainCamLayers != 0) {
+      mainCam->set_cullingMask(
+          static_cast<int>(static_cast<uint32_t>(mainCam->get_cullingMask()) & ~_addedMainCamLayers));
+    }
     ApplyCullingProperty(_lastMainCameraGO, std::nullopt);
     auto* bloomPrePass = _lastMainCameraGO->GetComponent<GlobalNamespace::BloomPrePass*>();
     if (IsAlive(bloomPrePass)) {
@@ -1245,6 +1309,7 @@ void Runtime::RestoreMainCameraOriginals() {
   _mainCamOriginalDepthMode.reset();
   _mainCamOriginalClearFlags.reset();
   _mainCamOriginalBackgroundColor.reset();
+  _addedMainCamLayers = 0;
 }
 
 void Runtime::RestoreFarCulling(UnityEngine::Camera* mainCam) {
@@ -1313,6 +1378,20 @@ void Runtime::RefreshCameraComponents(bool allowCameraApplier) {
                        static_cast<int>(UnityEngine::XR::XRSettings::get_stereoRenderingMode().value__),
                        BoolText(GetMultipassRenderingEnabled()),
                        pos.x, pos.y, pos.z, fwd.x, fwd.y, fwd.z);
+    }
+  }
+
+  // Layers a map's prefabs use that the PC headset camera draws and this
+  // camera does not (NoteHeadsetLayers): added for the level, taken back in
+  // RestoreMainCameraOriginals.
+  if (IsAlive(mainCamPtr) && _currentBeatmapData != nullptr && !_isResetting && _mapHeadsetLayers != 0) {
+    uint32_t const current = static_cast<uint32_t>(mainCamPtr->get_cullingMask());
+    uint32_t const missing = _mapHeadsetLayers & ~current;
+    if (missing != 0) {
+      mainCamPtr->set_cullingMask(static_cast<int>(current | missing));
+      _addedMainCamLayers |= missing;
+      PaperLogger.info("Vivify main camera: now draws layer(s) 0x{:08x} for this map's headset-only objects",
+                       missing);
     }
   }
 

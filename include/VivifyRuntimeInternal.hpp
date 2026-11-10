@@ -372,6 +372,11 @@ private:
   void HideOtherSaberRenderers(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
                                VisualReplacement& replacement);
   void DiscoverSabers();
+  void NoteHeadsetLayers(UnityEngine::GameObject* root, std::string const& asset);
+  // Headset-only layers this level's prefabs use, and those added to the main
+  // camera's culling mask for it.
+  uint32_t _mapHeadsetLayers = 0;
+  uint32_t _addedMainCamLayers = 0;
   float _lastSaberHideSweep = 0.0f;
   GlobalNamespace::SaberTrailRenderer* FindSaberTrailRendererPrefab(GlobalNamespace::SaberModelController* smc);
   void ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
@@ -574,6 +579,11 @@ private:
   // copies made on them (original -> copy).
   std::unordered_map<std::string, UnityEngine::Shader*> _singleViewShaders;
   std::unordered_map<UnityEngine::Material*, UnityEngine::Material*> _singleViewBlitMaterials;
+  // Shaders in the selected map's Quest bundle whose programs are all
+  // single-view, by name; a blit with one runs once per eye.
+  std::set<std::string> _singleViewOnlyNativeShaders;
+  std::set<std::string> _perEyeBlitLogged;
+  bool NeedsPerEyeBlit(UnityEngine::Material* material, UnityEngine::RenderTexture* destination);
   std::string _blitCompanionLevel;
   // Shader preparation queue for the selected converted bundle.
   std::vector<UnityEngine::Material*> _warmupQueue;

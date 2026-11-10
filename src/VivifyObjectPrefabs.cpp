@@ -71,6 +71,32 @@ int MakeTextureCamerasSingleView(UnityEngine::GameObject* root) {
   return changed;
 }
 
+// Layers the PC headset camera draws and the Quest's does not (0.15.5). The
+// Quest game camera's culling mask (0x3819fd37 in play) leaves out layer 17
+// and the layers PC mods use for headset-only objects (CameraUtils' HmdOnly 7,
+// AlwaysVisible 21, HmdOnlyAndReflected 24, AlwaysVisibleAndReflected 26).
+// Maps put their headset HUD there: Fall Away's text follows the head on
+// layer 17 while a far-off copy is filmed for the desktop overlay, whose
+// stereo variant passes the screen through untouched, on PC as well. On the
+// Quest that HUD was never drawn. The layers a map's prefab actually uses are
+// added to the main camera for the level (RefreshCameraComponents).
+constexpr uint32_t kPcHeadsetLayers = (1u << 7) | (1u << 17) | (1u << 21) | (1u << 24) | (1u << 26);
+
+uint32_t HeadsetLayersUsed(UnityEngine::GameObject* root) {
+  if (!IsManagedAlive(root)) return 0;
+  uint32_t used = 0;
+  auto renderers = root->GetComponentsInChildren<UnityEngine::Renderer*>(true);
+  for (int i = 0; renderers && i < renderers.size(); i++) {
+    auto* renderer = renderers[i];
+    if (!IsManagedAlive(renderer)) continue;
+    auto gameObject = renderer->get_gameObject();
+    if (!IsManagedAlive(gameObject.unsafePtr())) continue;
+    int const layer = gameObject->get_layer();
+    if (layer >= 0 && layer < 32) used |= 1u << layer;
+  }
+  return used & kPcHeadsetLayers;
+}
+
 // Realtime reflection probes in a map's prefab, reduced unless "Full
 // Reflection Probes" is on (0.15.3): at most 128 px, no HDR, and one cube face
 // a frame instead of all six. Get Your Wish's water probe is 512 px HDR and
@@ -770,6 +796,7 @@ void Runtime::InstantiatePrefab(CustomJSONData::CustomEventData* customEventData
   NoteTextureCameras(MakeTextureCamerasSingleView(instance));
   RegisterSingleViewMaterials(instance);
   ReduceReflectionProbes(instance);
+  NoteHeadsetLayers(instance, data.asset);
   int const culledAnimators = CullOffscreenAnimators(instance);
   VIVIFY_DEBUG("Vivify InstantiatePrefab spawned: id='{}' asset='{}' tracks={} animators={} offscreenCulled={}",
                storageId, data.asset, data.tracks.size(), animators.size(), culledAnimators);
@@ -1139,6 +1166,14 @@ void Runtime::HideOtherSaberRenderers(GlobalNamespace::SaberModelController* smc
   };
   if (IsAlive(smc)) hideUnder(smc->get_gameObject().unsafePtr());
   if (IsAlive(saber)) hideUnder(saber->get_gameObject().unsafePtr());
+}
+
+void Runtime::NoteHeadsetLayers(UnityEngine::GameObject* root, std::string const& asset) {
+  uint32_t const used = HeadsetLayersUsed(root);
+  if ((used & ~_mapHeadsetLayers) == 0) return;
+  _mapHeadsetLayers |= used;
+  PaperLogger.info("Vivify prefab '{}' has objects on headset-only layer(s) 0x{:08x}; the main camera will draw "
+                   "them, as the PC headset camera does", asset, used);
 }
 
 // Sabers whose model controller never went through the game's Init, which is
