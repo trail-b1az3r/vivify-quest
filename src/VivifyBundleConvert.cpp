@@ -2460,6 +2460,20 @@ ShaderScan ScanShaders(std::string const& bundlePath) {
         scan.samplesCameraDepth = true;
         scan.cameraDepthShaderNames.push_back(shader.name.empty() ? std::string("?") : shader.name);
       }
+      int glslHere = 0;
+      bool multiviewHere = false;
+      for (auto const& program : decoded.programs) {
+        if (program.raw || !SerializedFileParse::GpuProgramIsGlslSource(program.programType)) continue;
+        static constexpr std::string_view kMultiview = "GL_OVR_multiview";
+        glslHere++;
+        if (std::search(program.code.begin(), program.code.end(), kMultiview.begin(), kMultiview.end()) !=
+            program.code.end()) {
+          multiviewHere = true;
+        }
+      }
+      if (decoded.ok && glslHere > 0 && !multiviewHere && !shader.name.empty()) {
+        scan.singleViewOnlyShaderNames.push_back(shader.name);
+      }
       for (auto const& program : decoded.programs) {
         scan.programs++;
         programTypes.insert(program.programType);

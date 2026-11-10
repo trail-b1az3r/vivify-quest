@@ -11,6 +11,27 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.5] - 2026-11-10
+
+### Fixed
+- **Fall Away: the on-screen text (HUD) was missing.** The map's headset HUD
+  is text that follows your head, on layer 17. The PC headset camera draws
+  that layer; the Quest game camera leaves it out, so the text was never
+  drawn. The main camera now draws the headset-only layers a map's prefabs
+  use (17, and the layers PC mods use for headset-only objects: 7, 21, 24,
+  26), for that level only.
+  - The map also films a second copy of the text for an overlay effect
+    (`Aeroluna/OverlayUITex`). In a headset that effect passes the picture
+    through unchanged, on PC as well; it is for the desktop view. Read from
+    the map's PC and Quest shaders.
+- **RSIH: the "TV switching off" effect at the end.** Its shader
+  (`Custom/RetroTVShutdown`) has no two-eye program in the map's Quest
+  bundle, and a one-eye program draws nothing into the two-eye screen
+  texture. A screen effect whose Quest shader is one-eye only now runs once
+  per eye. The bundle scan at selection finds these shaders.
+- Neither is tried on a headset. The log names the layers added and the
+  effects run per eye.
+
 ## [0.15.4] - 2026-11-10
 
 Converted maps are reconverted once (conversion version 22).

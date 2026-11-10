@@ -546,6 +546,7 @@ void Runtime::ResetRuntime(std::string_view reason) {
   _recoverySkippedBlits.clear();
   EndSingleViewCamera();
   _singleViewSwaps.clear();
+  _mapHeadsetLayers = 0;
   SetRecoveryModeActive(false);
   step(reason.empty() ? "resetting" : std::string(reason).c_str());
   SetSongPlaying(false);
