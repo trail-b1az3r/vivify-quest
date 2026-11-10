@@ -1130,9 +1130,81 @@ void Runtime::UpdateSaberReplacementColors() {
     auto it = _saberReplacements.find(target.controller);
     if (it != _saberReplacements.end()) {
       ApplySaberReplacementColor(target.controller, target.saber, it->second);
-      if (sweep && it->second.hideOriginal) HideOtherSaberRenderers(target.controller, target.saber, it->second);
+      if (sweep && it->second.hideOriginal) {
+        // Only while the map's own model can be seen: with nothing of it on
+        // screen, hiding everything else left no saber at all (0.15.5).
+        if (EnsureMapSaberVisible(target.controller, target.saber, it->second)) {
+          HideOtherSaberRenderers(target.controller, target.saber, it->second);
+        }
+      }
     }
   }
+}
+
+// Makes sure the map's saber model is actually on screen, and says whether it
+// is (0.15.6). 0.15.4 hid every other renderer under the saber whenever a map
+// saber was applied; with a custom saber mod the map's model was not being
+// drawn, so nothing was left: invisible sabers. Three things a saber mod does
+// to the game's model object, which the map's model hangs under, undo it:
+//  - it switches that object off or scales it to nothing: the map's model
+//    moves up to the saber itself, which the mod leaves alone;
+//  - it disables every renderer under it once its own saber has loaded, the
+//    map's included: those are switched back on;
+// If the model still cannot be seen, everything hidden for it comes back and
+// hiding stops for this saber, so there is always a saber in the hand.
+bool Runtime::EnsureMapSaberVisible(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
+                                    VisualReplacement& replacement) {
+  auto visible = [this, &replacement]() {
+    for (auto* renderer : replacement.replacementRenderers) {
+      if (!IsAlive(renderer) || !renderer->get_enabled()) continue;
+      auto gameObject = renderer->get_gameObject();
+      if (!IsAlive(gameObject.unsafePtr()) || !gameObject->get_activeInHierarchy()) continue;
+      auto const scale = renderer->get_transform()->get_lossyScale();
+      if (std::abs(scale.x) < 1e-5f && std::abs(scale.y) < 1e-5f && std::abs(scale.z) < 1e-5f) continue;
+      return true;
+    }
+    return false;
+  };
+  if (replacement.replacementRenderers.empty()) return false;  // trail only: nothing to stand in
+  if (visible()) return true;
+
+  // Renderers a saber mod switched off along with the game's model.
+  int reenabled = 0;
+  for (auto* renderer : replacement.replacementRenderers) {
+    if (IsAlive(renderer) && !renderer->get_enabled()) {
+      renderer->set_enabled(true);
+      reenabled++;
+    }
+  }
+  // A model object that is off or scaled away: hang the map's model on the
+  // saber instead.
+  int moved = 0;
+  auto* saberTransform = IsAlive(saber) ? saber->get_transform().unsafePtr() : nullptr;
+  auto* modelTransform = IsAlive(smc) ? smc->get_transform().unsafePtr() : nullptr;
+  if (!visible() && IsAlive(saberTransform) && saberTransform != modelTransform) {
+    for (auto* spawned : replacement.spawnedObjects) {
+      if (!IsAlive(spawned)) continue;
+      auto transform = spawned->get_transform();
+      if (transform->get_parent().unsafePtr() != modelTransform) continue;
+      transform->SetParent(saberTransform, false);
+      moved++;
+    }
+  }
+  bool const nowVisible = visible();
+  if (reenabled > 0 || moved > 0 || !nowVisible) {
+    PaperLogger.info("Vivify saber: the map's model was not being drawn (another saber mod hid or switched off "
+                     "the game's model); re-enabled {} renderer(s), moved {} object(s) onto the saber, visible "
+                     "now: {}", reenabled, moved, BoolText(nowVisible));
+  }
+  if (nowVisible) return true;
+  // Give the player's saber back rather than leave nothing.
+  for (auto* renderer : replacement.disabledRenderers) {
+    if (IsAlive(renderer)) renderer->set_enabled(true);
+  }
+  replacement.disabledRenderers.clear();
+  replacement.hideOriginal = false;
+  PaperLogger.warn("Vivify saber: the map's saber model cannot be shown here; keeping your own saber visible");
+  return false;
 }
 
 // Hides every renderer under the saber that is not the map's own: the game's
@@ -1358,7 +1430,7 @@ void Runtime::ApplySaberVisuals(GlobalNamespace::SaberModelController* smc, Glob
       // saber mod's own model. Kept hidden by the sweep in
       // UpdateSaberReplacementColors.
       replacement.hideOriginal = true;
-      HideOtherSaberRenderers(smc, saber, replacement);
+      if (EnsureMapSaberVisible(smc, saber, replacement)) HideOtherSaberRenderers(smc, saber, replacement);
     } else {
       PaperLogger.warn("Vivify saber replace (type {}): no spawned renderer has a usable shader, keeping the "
                        "default saber visible", type);
