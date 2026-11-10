@@ -369,6 +369,10 @@ private:
   void ApplySaberReplacementColor(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
                                   VisualReplacement& replacement, bool force = false);
   void UpdateSaberReplacementColors();
+  void HideOtherSaberRenderers(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
+                               VisualReplacement& replacement);
+  void DiscoverSabers();
+  float _lastSaberHideSweep = 0.0f;
   GlobalNamespace::SaberTrailRenderer* FindSaberTrailRendererPrefab(GlobalNamespace::SaberModelController* smc);
   void ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
                               std::vector<AssignedPrefabInfo*> const& infos, VisualReplacement& replacement);

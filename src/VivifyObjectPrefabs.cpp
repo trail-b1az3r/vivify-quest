@@ -1094,11 +1094,75 @@ void Runtime::ApplySaberReplacementColor(GlobalNamespace::SaberModelController* 
 void Runtime::UpdateSaberReplacementColors() {
   if (_saberReplacements.empty() || _currentBeatmapData == nullptr || _isResetting) return;
   PurgeInvalidActiveSabers();
+  // Twice a second: a saber mod can build or re-enable its model after the
+  // map's saber went on, and it would then draw through the map's (0.15.4).
+  float const now = UnityEngine::Time::get_unscaledTime();
+  bool const sweep = now < _lastSaberHideSweep || now - _lastSaberHideSweep >= 0.5f;
+  if (sweep) _lastSaberHideSweep = now;
   for (auto const& target : _activeSabers) {
     auto it = _saberReplacements.find(target.controller);
     if (it != _saberReplacements.end()) {
       ApplySaberReplacementColor(target.controller, target.saber, it->second);
+      if (sweep && it->second.hideOriginal) HideOtherSaberRenderers(target.controller, target.saber, it->second);
     }
+  }
+}
+
+// Hides every renderer under the saber that is not the map's own: the game's
+// model, and whatever a custom saber mod put there, beside the game's model or
+// in place of it. The map's model stays a child of the saber, so anything that
+// moves the saber itself -- a trick mod throwing or spinning it -- carries the
+// map's model along. Hidden renderers come back with RestoreReplacementData.
+void Runtime::HideOtherSaberRenderers(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
+                                      VisualReplacement& replacement) {
+  auto hideUnder = [this, &replacement](UnityEngine::GameObject* root) {
+    if (!IsAlive(root)) return;
+    auto renderers = root->GetComponentsInChildren<UnityEngine::Renderer*>(true);
+    for (int i = 0; renderers && i < renderers.size(); i++) {
+      auto* renderer = renderers[i];
+      if (!IsAlive(renderer) || !renderer->get_enabled()) continue;
+      auto* transform = renderer->get_transform().unsafePtr();
+      bool ours = false;
+      for (auto* spawned : replacement.spawnedObjects) {
+        if (IsAlive(spawned) && transform->IsChildOf(spawned->get_transform())) {
+          ours = true;
+          break;
+        }
+      }
+      if (ours) continue;
+      renderer->set_enabled(false);
+      if (std::find(replacement.disabledRenderers.begin(), replacement.disabledRenderers.end(), renderer) ==
+          replacement.disabledRenderers.end()) {
+        replacement.disabledRenderers.emplace_back(renderer);
+      }
+    }
+  };
+  if (IsAlive(smc)) hideUnder(smc->get_gameObject().unsafePtr());
+  if (IsAlive(saber)) hideUnder(saber->get_gameObject().unsafePtr());
+}
+
+// Sabers whose model controller never went through the game's Init, which is
+// where Vivify learns of a saber: a saber mod that builds its own controller
+// can skip it, and the map's sabers were then ignored outright. Looked for
+// when a map assigns a saber and fewer than two are known (0.15.4).
+void Runtime::DiscoverSabers() {
+  if (!_selectedMapHasVivifyRequirement || _currentBeatmapData == nullptr || _isResetting) return;
+  PurgeInvalidActiveSabers();
+  if (_activeSabers.size() >= 2) return;
+  auto sabers = UnityEngine::Object::FindObjectsOfType<GlobalNamespace::Saber*>();
+  for (int i = 0; sabers && i < sabers.size(); i++) {
+    auto* saber = sabers[i];
+    if (!IsAlive(saber)) continue;
+    bool const known = std::any_of(_activeSabers.begin(), _activeSabers.end(),
+                                   [saber](ActiveSaberVisual const& target) { return target.saber == saber; });
+    if (known) continue;
+    auto* smc = saber->GetComponentInChildren<GlobalNamespace::SaberModelController*>(true);
+    if (!IsAlive(smc)) continue;
+    auto* parent = smc->get_transform().unsafePtr();
+    if (!IsAlive(parent)) continue;
+    PaperLogger.info("Vivify saber: found a saber (type {}) the game's setup did not announce; another saber mod "
+                     "built it", (int)saber->get_saberType());
+    _activeSabers.push_back(ActiveSaberVisual{.controller = smc, .saber = saber, .parent = parent});
   }
 }
 
@@ -1205,6 +1269,7 @@ void Runtime::TrackSaberModel(GlobalNamespace::SaberModelController* smc, Global
 }
 
 void Runtime::ApplySaberVisualsToActive() {
+  if (GetMapSabers()) DiscoverSabers();
   PurgeInvalidActiveSabers();
   for (auto const& target : _activeSabers) {
     ApplySaberVisuals(target.controller, target.saber, target.parent);
@@ -1218,6 +1283,11 @@ void Runtime::ApplySaberVisuals(GlobalNamespace::SaberModelController* smc, Glob
     return;
   }
   if (ShouldDisableVisualsForMultiplayer()) return;
+  // "Use Map Sabers" off: the player's own sabers stay, model and trail.
+  if (!GetMapSabers()) {
+    RestoreSaberVisuals(smc);
+    return;
+  }
   int type = (int)saber->get_saberType();
   auto modelInfos = FindAssignedSaberPrefabs(type);
   auto trailInfos = FindAssignedSaberTrailPrefabs(type);
@@ -1249,6 +1319,11 @@ void Runtime::ApplySaberVisuals(GlobalNamespace::SaberModelController* smc, Glob
   if (ShouldHideOriginal(validModelInfos)) {
     if (ReplacementCanRender(replacement)) {
       DisableOriginalRenderers(originalRenderers, replacement);
+      // Also what sits under the saber outside the game's model: a custom
+      // saber mod's own model. Kept hidden by the sweep in
+      // UpdateSaberReplacementColors.
+      replacement.hideOriginal = true;
+      HideOtherSaberRenderers(smc, saber, replacement);
     } else {
       PaperLogger.warn("Vivify saber replace (type {}): no spawned renderer has a usable shader, keeping the "
                        "default saber visible", type);

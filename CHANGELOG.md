@@ -11,6 +11,38 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.4] - 2026-11-10
+
+Converted maps are reconverted once (conversion version 22).
+
+### Fixed
+- **Shaders with a geometry stage gave both eyes the left eye's view.**
+  Reported as a shader's base layer showing in one eye and the lines drawn
+  over it in the other. In a single-pass stereo shader with a geometry stage
+  (wireframes, grass, extruded lines), the vertex stage reads the eye from the
+  instance ID and the geometry stage routes it. 0.15.1 taught the shader
+  translator to rebuild that instance ID per eye, but the converter never
+  told the translator which programs needed it, so the fix did not run in any
+  converted bundle. It does now. A new converter test covers it.
+  - Not tried on a headset. If a map still shows one layer per eye after it
+    reconverts, the map's name and a log with Debug Logging on will pin it.
+
+### Added
+- **Hover hints in the settings menu.** Point at a toggle, a number setting
+  or a button and a sentence or two says what it does.
+- **Use Map Sabers** (Gameplay, on by default).
+  - On: sabers a map brings replace yours, including a custom saber mod's
+    model, which is now hidden wherever it sits under the saber and kept
+    hidden if the mod builds it late. The map's model is attached to the
+    saber itself, so a trick mod that throws or spins the saber moves the
+    map's model with it.
+  - Off: you keep your own sabers and trails on every map.
+  - Sabers that another saber mod builds without the game's own setup are
+    now found when a map assigns a saber. Before, the map's sabers were
+    ignored on them.
+  - Read from the sources of the Quest trick mod (it moves the saber's own
+    transform). Not tried on a headset.
+
 ## [0.15.3 build 2] - 2026-11-05
 
 Same version, rebuilt. The menu and logs say "0.15.3 build 2".

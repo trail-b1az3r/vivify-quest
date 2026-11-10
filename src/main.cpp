@@ -19,6 +19,7 @@
 #include "UnityEngine/Transform.hpp"
 #include "bsml/shared/BSML-Lite/Creation/Buttons.hpp"
 #include "bsml/shared/BSML-Lite/Creation/Layout.hpp"
+#include "bsml/shared/BSML-Lite/Creation/Misc.hpp"
 #include "bsml/shared/BSML-Lite/Creation/Settings.hpp"
 #include "bsml/shared/BSML-Lite/Creation/Text.hpp"
 #include "beatsaber-hook/shared/utils/typedefs-wrappers.hpp"
@@ -35,7 +36,7 @@
 
 static modloader::ModInfo modInfo{MOD_ID, VERSION, 0};
 // A rebuild of the same version, shown beside it in the menu and the logs.
-constexpr char const* kBuildLabel = " build 2";
+constexpr char const* kBuildLabel = "";
 
 // Defined below, outside this namespace; the settings reset button re-applies it.
 void EnsureConfigDefaults();
@@ -69,6 +70,9 @@ constexpr std::string_view kAutoEffectResolutionConfigKey = "autoEffectResolutio
 constexpr std::string_view kCrashRecoveryConfigKey = "crashRecovery";
 constexpr std::string_view kReplayRenderModeConfigKey = "replayRenderMode";
 constexpr std::string_view kBlitFixConfigKey = "blitScreenTextureFix";
+// Map sabers (AssignObjectPrefab saber) replace the player's own, custom saber
+// mods included. Off keeps the player's sabers on every map (0.15.4).
+constexpr std::string_view kMapSabersConfigKey = "mapSabers";
 // Renamed in 0.14.18 so every install starts with it off: 0.14.15 saved it
 // as on, and it may be what froze converted maps in the menu.
 constexpr std::string_view kPrepareShadersConfigKey = "prepareShadersInMenu";
@@ -128,6 +132,7 @@ bool gTranslateShaders = true;
 bool gAudioLink = true;
 bool gMapRealtimeShadows = false;
 bool gMapReflectionProbes = true;
+bool gMapSabers = true;
 bool gFullReflectionProbes = false;
 bool gSingleViewMapCameras = true;
 bool gAutoEffectResolution = true;
@@ -466,6 +471,109 @@ SafePtrUnity<HMUI::CurvedTextMeshPro> gConvertStatusText;
 // every line away: the conversion progress, the This Map hint and the logs
 // line showed nothing at all. The rect itself now gets the height, and text
 // that still does not fit is drawn rather than hidden.
+// One or two sentences per setting, shown when the pointer rests on it
+// (0.15.4). Keyed by the control's label; nullptr when there is none.
+char const* SettingHint(std::u16string_view label) {
+  static std::pair<std::u16string_view, char const*> const kHints[] = {
+      {u"Use Windows Bundle",
+       "For the selected map only: use its PC (Windows) bundle, converted on the headset, instead of its Quest "
+       "bundle. Try it when a map's Quest version looks wrong or is missing things."},
+      {u"Effect Resolution %",
+       "Draws full-screen map effects at this share of the eye resolution, then scales them up. Lower is "
+       "faster and blurrier; 50% is a quarter of the work."},
+      {u"Auto Effect Resolution",
+       "Lowers the effect resolution by itself while a map runs slowly, and raises it again when there is "
+       "room."},
+      {u"Offscreen Culling (can hide objects)",
+       "Stops animating map objects you are not looking at, to save time. Can leave some objects hidden, so "
+       "turn it off if things go missing."},
+      {u"Far Culling (m, 0 = off)",
+       "Does not draw anything farther away than this many metres. 0 draws everything."},
+      {u"Disable All Blits",
+       "Turns off every full-screen effect a map adds (colour grading, distortion, flashes). Use it when an "
+       "effect covers the screen or makes a map lag."},
+      {u"Submit Scores On Vivify Maps",
+       "Lets scores from Vivify maps go to leaderboards, and lets replays be recorded. Off stops both."},
+      {u"Disable Custom Note Visuals",
+       "Keeps the game's normal notes, bombs and debris instead of the ones a map brings."},
+      {u"Use Map Sabers",
+       "On: sabers a map brings replace yours, including custom sabers from another mod; they stay attached "
+       "to the saber, so trick mods still move them. Off: you always keep your own sabers."},
+      {u"No Vivify Visuals In Multiplayer",
+       "In multiplayer, plays Vivify maps without their custom notes and sabers."},
+      {u"AudioLink",
+       "Feeds the song's sound to map shaders that react to music. Off saves a little time; those effects "
+       "then stay still."},
+      {u"Convert All PC Bundles",
+       "Converts every installed PC-only Vivify map now, so they are ready to play. Progress shows above."},
+      {u"Debug Logging",
+       "Writes much more detail to the Vivify log files. Turn it on before reproducing a problem you want to "
+       "report; it costs some performance."},
+      {u"Convert PC Bundles On Device",
+       "Lets the mod convert maps made only for PC so they can load on the headset. Off: only maps with a "
+       "Quest bundle work."},
+      {u"Translate Shaders",
+       "Converts a PC map's shaders so its materials look as intended. Off: converted maps use plain stand-in "
+       "shading instead."},
+      {u"Stand-In Shading",
+       "Draws objects whose shader could not be used with a simple substitute, so they are at least visible. "
+       "Off hides them."},
+      {u"Scene Depth For Map Shaders",
+       "Gives map shaders the scene's depth, which fog, soft edges and some screen effects need. Costs an "
+       "extra render of the scene on maps that use it."},
+      {u"Map Realtime Shadows", "Allows shadows from a map's own lights. They are expensive on a Quest."},
+      {u"Map Reflection Probes",
+       "Allows a map's live reflections, at reduced quality. Off removes them and saves time and memory."},
+      {u"Full Reflection Probes",
+       "Runs a map's live reflections at the quality the map asked for, not reduced. Heavy; can crash on "
+       "big maps."},
+      {u"Single-View Map Cameras",
+       "Fixes a map's in-world screens, portals and mirrors (its own cameras drawing into textures) on "
+       "converted maps."},
+      {u"Crash Recovery Mode",
+       "After a map crashes or freezes, plays it next time with less memory use and without the effect that "
+       "was starting when it went down."},
+      {u"Forget Crash Recovery", "Clears the list of maps that crashed, so they play normally again."},
+      {u"Geometry-Shader Effects (exp.)",
+       "Experimental. Draws effects that need a geometry shader (wireframes, exploding triangles) as plain "
+       "meshes when they cannot be converted. Changing it reconverts affected maps."},
+      {u"PC Bundle For Missing Shaders",
+       "When a map's Quest bundle is missing shaders, uses the converted PC bundle instead."},
+      {u"Prepare Shaders Before Playing",
+       "Compiles a map's shaders when you select it rather than during play. Fewer hitches in the song, "
+       "but a longer wait in the menu; has frozen the menu on some maps."},
+      {u"Blit Fix For Screen Textures (exp.)",
+       "Experimental. Converts a second, one-eye version of a map's full-screen effects, for effects that "
+       "come out black or doubled."},
+      {u"Crash Guard",
+       "If a converted map fails to load twice, converts it again without shader translation so it at least "
+       "loads, with plain shading."},
+      {u"Skip Beat-0 Film Grain Blit",
+       "Skips a full-screen effect that starts at the very beginning of a map, usually film grain or a "
+       "vignette."},
+      {u"No Depth On Map Cameras",
+       "Stops cameras a map creates from rendering depth. Saves time; effects that need depth can look wrong."},
+      {u"Ignore VR Center Adjust",
+       "Ignores your room offset and rotation setting during Vivify maps, for maps that look misplaced with "
+       "it."},
+      {u"Replay Render Mode",
+       "Prepares a version of each map that the Replay mod can render to video. Only matters while rendering "
+       "a replay."},
+      {u"Force Reconvert All",
+       "Throws away every converted map and converts them all again. Use after a mod update if maps still "
+       "look wrong."},
+      {u"Reset Vivify (clean slate)",
+       "Deletes converted maps and downloaded PC bundles and resets these settings. Your maps stay. Press "
+       "twice to confirm."},
+      {u"Redownload All Vivify Maps",
+       "Replaces every Vivify map with a fresh download from BeatSaver. Press twice to confirm."},
+  };
+  for (auto const& [name, hint] : kHints) {
+    if (name == label) return hint;
+  }
+  return nullptr;
+}
+
 void FitSettingLabels(UnityEngine::Component* widget) {
   if (widget == nullptr) return;
   auto gameObject = widget->get_gameObject();
@@ -612,17 +720,31 @@ void RegisterModSettings() {
           gAdvancedWidgets.emplace_back(gameObject.unsafePtr());
           gameObject->SetActive(gShowAdvanced);
         };
-        auto toggle = [&](StringW label, bool value, std::function<void(bool)> onChange) {
-          auto* created = BSML::Lite::CreateToggle(parent, label, value, std::move(onChange));
-          FitSettingLabels(reinterpret_cast<UnityEngine::Component*>(created));
-          return created;
+        // Hover hints (0.15.4): point at a setting or button and a line or
+        // two says what it does. The text is looked up by the control's label
+        // (SettingHint), so a control without an entry simply has no hint.
+        auto hinted = [](auto* widget, std::u16string_view label) {
+          if (widget == nullptr) return widget;
+          char const* hint = SettingHint(label);
+          if (hint == nullptr) return widget;
+          auto gameObject = widget->get_gameObject();
+          if (gameObject) BSML::Lite::AddHoverHint(gameObject.unsafePtr(), StringW(std::string(hint)));
+          return widget;
         };
-        auto increment = [&](StringW label, float step, float value, float min, float max,
-                             std::function<void(float)> onChange) {
-          auto* created = BSML::Lite::CreateIncrementSetting(parent, label, 0, step, value, true, true, min, max,
-                                                             std::move(onChange));
+        auto toggle = [&](std::u16string_view label, bool value, std::function<void(bool)> onChange) {
+          auto* created = BSML::Lite::CreateToggle(parent, StringW(label), value, std::move(onChange));
           FitSettingLabels(reinterpret_cast<UnityEngine::Component*>(created));
-          return created;
+          return hinted(created, label);
+        };
+        auto increment = [&](std::u16string_view label, float step, float value, float min, float max,
+                             std::function<void(float)> onChange) {
+          auto* created = BSML::Lite::CreateIncrementSetting(parent, StringW(label), 0, step, value, true, true, min,
+                                                             max, std::move(onChange));
+          FitSettingLabels(reinterpret_cast<UnityEngine::Component*>(created));
+          return hinted(created, label);
+        };
+        auto button = [&](std::u16string_view label, std::function<void()> onClick) {
+          return hinted(BSML::Lite::CreateUIButton(parent, StringW(label), std::move(onClick)), label);
         };
 
         if constexpr (!kLiteBuild) {
@@ -641,6 +763,7 @@ void RegisterModSettings() {
             Vivify::ReselectSelectedMap();
             RefreshThisMapRow();
           });
+          hinted(gThisMapButton.ptr(), u"Use Windows Bundle");
           RefreshThisMapRow();
         }
 
@@ -678,6 +801,8 @@ void RegisterModSettings() {
         toggle(u"Disable Custom Note Visuals", GetDisableCustomNoteVisuals(), [](bool value) {
           SetBoolConfigValue(kDisableCustomNoteVisualsConfigKey, value, gDisableCustomNoteVisuals);
         });
+        toggle(u"Use Map Sabers", gMapSabers,
+               [](bool value) { SetBoolConfigValue(kMapSabersConfigKey, value, gMapSabers); });
         toggle(u"No Vivify Visuals In Multiplayer", GetDisableVisualsInMultiplayer(), [](bool value) {
           SetBoolConfigValue(kDisableVisualsInMultiplayerConfigKey, value, gDisableVisualsInMultiplayer);
         });
@@ -710,7 +835,7 @@ void RegisterModSettings() {
               },
               force);
         };
-        BSML::Lite::CreateUIButton(parent, u"Convert All PC Bundles", []() { startConversion(false); });
+        button(u"Convert All PC Bundles", []() { startConversion(false); });
 
         header("Diagnostics");
         toggle(u"Debug Logging", GetVivifyDebugLogging(),
@@ -769,7 +894,7 @@ void RegisterModSettings() {
           advanced(toggle(u"Crash Recovery Mode", gCrashRecovery, [](bool value) {
             SetBoolConfigValue(kCrashRecoveryConfigKey, value, gCrashRecovery);
           }));
-          advanced(BSML::Lite::CreateUIButton(parent, u"Forget Crash Recovery", []() {
+          advanced(button(u"Forget Crash Recovery", []() {
             size_t const count = Vivify::Recovery::Entries().size();
             Vivify::Recovery::ForgetAll();
             PaperLogger.info("Vivify settings: crash recovery list cleared ({} entr{})", count,
@@ -819,11 +944,11 @@ void RegisterModSettings() {
         advanced(header("Maintenance"));
         // A cached conversion is keyed on the source bundle, so it is reused even
         // after the converter itself has been fixed. This picks fixes up.
-        advanced(BSML::Lite::CreateUIButton(parent, u"Force Reconvert All", []() { startConversion(true); }));
+        advanced(button(u"Force Reconvert All", []() { startConversion(true); }));
         if constexpr (!kLiteBuild) {
           // Puts Vivify back to a fresh install's state, without touching the
           // maps. Two presses within five seconds, since it cannot be undone.
-          advanced(BSML::Lite::CreateUIButton(parent, u"Reset Vivify (clean slate)", []() {
+          advanced(button(u"Reset Vivify (clean slate)", []() {
             static std::chrono::steady_clock::time_point armedUntil{};
             auto const now = std::chrono::steady_clock::now();
             if (now > armedUntil) {
@@ -847,7 +972,7 @@ void RegisterModSettings() {
           }));
           // Lists every Vivify map in VivifyMaps.txt, then replaces each with a
           // fresh BeatSaver download. Two presses within five seconds.
-          advanced(BSML::Lite::CreateUIButton(parent, u"Redownload All Vivify Maps", []() {
+          advanced(button(u"Redownload All Vivify Maps", []() {
             static std::chrono::steady_clock::time_point armedUntil{};
             auto const now = std::chrono::steady_clock::now();
             if (now > armedUntil) {
@@ -916,6 +1041,10 @@ bool GetDisableAllBlits() {
 
 bool GetDisableCreateCameraDepth() {
   return gDisableCreateCameraDepth;
+}
+
+bool GetMapSabers() {
+  return gMapSabers;
 }
 
 bool GetDisableCustomNoteVisuals() {
@@ -1197,6 +1326,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kAudioLinkConfigKey, true, gAudioLink);
   needsWrite |= EnsureBoolConfigValue(kMapRealtimeShadowsConfigKey, false, gMapRealtimeShadows);
   needsWrite |= EnsureBoolConfigValue(kMapReflectionProbesConfigKey, true, gMapReflectionProbes);
+  needsWrite |= EnsureBoolConfigValue(kMapSabersConfigKey, true, gMapSabers);
   needsWrite |= EnsureBoolConfigValue(kFullReflectionProbesConfigKey, false, gFullReflectionProbes);
   needsWrite |= EnsureBoolConfigValue(kSingleViewMapCamerasConfigKey, true, gSingleViewMapCameras);
   needsWrite |= EnsureBoolConfigValue(kAutoEffectResolutionConfigKey, true, gAutoEffectResolution);

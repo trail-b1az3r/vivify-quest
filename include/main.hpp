@@ -32,6 +32,7 @@ bool GetDisableBeat0FilmgrainBlit();
 bool GetDisableAllBlits();
 bool GetDisableCreateCameraDepth();
 bool GetDisableCustomNoteVisuals();
+bool GetMapSabers();
 bool GetDisableVisualsInMultiplayer();
 bool GetDisableVRCenterAdjust();
 bool GetConvertPcBundlesOnDevice();

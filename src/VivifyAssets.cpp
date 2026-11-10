@@ -143,7 +143,11 @@ namespace {
 //      offset between the eyes); and a geometry stage that reads the layer
 //      back is translated, with the eye handed over from the vertex stage
 //      (Through The Screen's ParticleScreen and Visualizer, 743 Aether)
-constexpr int kBundleConversionVersion = 21;
+//  22  the converter now tells the translator which programs are single-pass
+//      instanced code (0.15.4). Version 21's instance-ID fix for vertex stages
+//      that leave the layer to a geometry stage was never switched on, so
+//      those shaders still gave both eyes eye 0
+constexpr int kBundleConversionVersion = 22;
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the
