@@ -1209,6 +1209,34 @@ def expect_runtime_instancing_size(proc, fields, refusals, dst):
 pc_shader_case("an instanced array is sized by UNITY_RUNTIME_INSTANCING_ARRAY_SIZE, not the placeholder 2",
                instanced_body, expect_runtime_instancing_size)
 
+# 0.15.4: a single-pass instanced vertex stage that reads the eye from the
+# instance ID without writing the layer itself (a geometry stage does that).
+# The translator rebuilds SPI's instance numbering for it only when told the
+# program is SPI code, and the converter never told it: both views took eye 0.
+spi_eye_body, _ = pc_shader_2021(
+    "Grass/SpiEyeFromInstance",
+    [(_instanced_vs(), []), (_instanced_vs(), [0])],
+    [(_ps(spi=False), []), (_ps(spi=False), [0])],
+    vertex_params=[instanced_params, instanced_params],
+    fragment_params_blobs=[mkshader2021.inline_parameter_blob(), mkshader2021.inline_parameter_blob()])
+
+
+def expect_spi_instance_remap(proc, fields, refusals, dst):
+    if fields.get("linked") != "1" or fields.get("variantsRefused") != "0":
+        return f"linked={fields.get('linked')} variantsRefused={fields.get('variantsRefused')} {refusals}"
+    _, refs, entries = inspect_converted(dst)
+    for ref in refs:
+        if ref["stage"] != "0":
+            continue
+        code = entries[int(ref["blob"])]["code"]
+        if "gl_InstanceID * 2 + int(gl_ViewID_OVR)" not in code:
+            return f"vertex variant '{ref['keywords']}' takes every view as eye 0: {code}"
+    return None
+
+
+pc_shader_case("an SPI vertex stage that leaves the layer to a geometry stage still takes its eye from the view",
+               spi_eye_body, expect_spi_instance_remap)
+
 broken_body, _ = pc_shader_2021("Custom/Broken", [(_vs(spi=False), [])],
                                 [(dxbc_untranslatable(), [])], keyword_names=())
 
