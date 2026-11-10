@@ -372,6 +372,8 @@ private:
   void HideOtherSaberRenderers(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
                                VisualReplacement& replacement);
   void DiscoverSabers();
+  bool EnsureMapSaberVisible(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
+                             VisualReplacement& replacement);
   void NoteHeadsetLayers(UnityEngine::GameObject* root, std::string const& asset);
   // Headset-only layers this level's prefabs use, and those added to the main
   // camera's culling mask for it.

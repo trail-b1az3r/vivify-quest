@@ -11,6 +11,22 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.6] - 2026-11-10
+
+### Fixed
+- **Use Map Sabers made sabers invisible.** 0.15.4 hid everything else
+  under the saber whenever a map's saber was applied. With a custom saber
+  mod the map's model was not being drawn, so nothing was left. Now the
+  mod checks that the map's model is really on screen before hiding
+  anything:
+  - renderers of the map's model that another saber mod switched off are
+    switched back on;
+  - if the game's model object is switched off or scaled to nothing, the
+    map's model moves onto the saber itself;
+  - if the map's model still cannot be shown, your own saber stays visible.
+  The log says which of these happened ("Vivify saber: ..."). Not tried on
+  a headset.
+
 ## [0.15.5] - 2026-11-10
 
 ### Fixed
