@@ -29,6 +29,8 @@ public:
   DECLARE_DEFAULT_CTOR();
   DECLARE_SIMPLE_DTOR();
   DECLARE_INSTANCE_METHOD(void, Awake);
+  DECLARE_INSTANCE_METHOD(void, SetColorSource, GlobalNamespace::Saber* saber,
+                          GlobalNamespace::SaberModelController* controller);
   DECLARE_INSTANCE_METHOD(void, InitFollowed, GlobalNamespace::SaberTrail* followed, UnityEngine::Transform* parent,
                           UnityEngine::Material* material, UnityEngine::Vector3 topPos,
                           UnityEngine::Vector3 bottomPos, float_t duration, int32_t samplingFrequency,

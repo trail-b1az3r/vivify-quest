@@ -1215,6 +1215,14 @@ bool Runtime::EnsureMapSaberVisible(GlobalNamespace::SaberModelController* smc, 
     return false;
   };
   if (replacement.replacementRenderers.empty()) return false;  // trail only: nothing to stand in
+  // A saber the game itself has switched off -- the pause menu does -- shows
+  // nothing whatever is under it, and says nothing about the map's model.
+  // 0.15.6 took that for "cannot be shown" on every pause and gave the
+  // player's own saber back (0.15.9).
+  if (IsAlive(saber)) {
+    auto saberObject = saber->get_gameObject();
+    if (IsAlive(saberObject.unsafePtr()) && !saberObject->get_activeInHierarchy()) return true;
+  }
   if (visible()) return true;
 
   // Renderers a saber mod switched off along with the game's model.
@@ -1275,6 +1283,15 @@ void Runtime::HideOtherSaberRenderers(GlobalNamespace::SaberModelController* smc
         if (IsAlive(spawned) && transform->IsChildOf(spawned->get_transform())) {
           ours = true;
           break;
+        }
+      }
+      // The map trail's own renderer is a separate object, which a saber mod
+      // can have parented under the saber: never one of "the others".
+      for (auto* trail : replacement.followedTrails) {
+        auto* trailRenderer = IsAlive(trail) ? trail->____trailRenderer.unsafePtr() : nullptr;
+        if (IsAlive(trailRenderer) && trailRenderer->____meshRenderer &&
+            static_cast<UnityEngine::Renderer*>(trailRenderer->____meshRenderer.unsafePtr()) == renderer) {
+          ours = true;
         }
       }
       if (ours) continue;
@@ -1381,6 +1398,63 @@ void Runtime::NoteHeadsetLayers(UnityEngine::GameObject* root, std::string const
   _mapHeadsetLayers |= used;
   PaperLogger.info("Vivify prefab '{}' has objects on headset-only layer(s) 0x{:08x}; the main camera will draw "
                    "them, as the PC headset camera does", asset, used);
+}
+
+// Lights another mod hangs on the sabers (0.15.9). The logs show two point
+// lights named "Light", intensity 1000, soft shadows, in every level: one per
+// saber, from a saber mod. The game's own shaders ignore Unity lights, so they
+// normally do nothing; a converted PC map's shaders are lit by them. Its
+// objects light up around the sabers, the lights' shadows flicker on every
+// surface (the "z-fighting"), and each shadowed point light costs six extra
+// passes over the scene every frame. On PC there are no such lights. While a
+// Vivify map plays they are switched off, unless "Saber Lights On Map
+// Objects" is on, and come back when the level ends.
+void Runtime::HideForeignSaberLights() {
+  if (_currentBeatmapData == nullptr || _isResetting || GetSaberLightsOnMapObjects()) return;
+  float const now = UnityEngine::Time::get_unscaledTime();
+  if (now >= _lastSaberLightSweep && now - _lastSaberLightSweep < 1.0f) return;
+  _lastSaberLightSweep = now;
+  PurgeInvalidActiveSabers();
+  if (_activeSabers.empty()) return;
+  auto lights = UnityEngine::Object::FindObjectsOfType<UnityEngine::Light*>();
+  for (int i = 0; lights && i < lights.size(); i++) {
+    auto* light = lights[i];
+    if (!IsAlive(light) || !light->get_enabled()) continue;
+    auto* transform = light->get_transform().unsafePtr();
+    if (!IsAlive(transform)) continue;
+    bool onSaber = false;
+    for (auto const& target : _activeSabers) {
+      auto* saberTransform = target.saber->get_transform().unsafePtr();
+      auto* hand = IsAlive(saberTransform) ? saberTransform->get_parent().unsafePtr() : nullptr;
+      if ((IsAlive(hand) && transform->IsChildOf(hand)) || (IsAlive(saberTransform) && transform->IsChildOf(saberTransform))) {
+        onSaber = true;
+        break;
+      }
+    }
+    if (!onSaber) continue;
+    // A light the map's own saber prefab brings stays.
+    bool mapsOwn = false;
+    for (auto const& [controller, replacement] : _saberReplacements) {
+      for (auto* spawned : replacement.spawnedObjects) {
+        if (IsAlive(spawned) && transform->IsChildOf(spawned->get_transform())) mapsOwn = true;
+      }
+    }
+    if (mapsOwn) continue;
+    light->set_enabled(false);
+    _disabledSaberLights.push_back(light);
+    auto lightObject = light->get_gameObject();
+    PaperLogger.info("Vivify: switched off a saber light from another mod for this level ('{}', intensity {:.0f}, "
+                     "shadows {}); 'Saber Lights On Map Objects' in settings keeps them",
+                     IsAlive(lightObject.unsafePtr()) ? ToStdString(lightObject->get_name()) : "?",
+                     light->get_intensity(), light->get_shadows().value__ != 0 ? "on" : "off");
+  }
+}
+
+void Runtime::RestoreForeignSaberLights() {
+  for (auto* light : _disabledSaberLights) {
+    if (IsAlive(light)) light->set_enabled(true);
+  }
+  _disabledSaberLights.clear();
 }
 
 // Sabers whose model controller never went through the game's Init, which is
@@ -1671,6 +1745,7 @@ void Runtime::ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc,
     if (hasOwnTrail) {
       followedTrail->InitFollowed(sourceTrail, parent, material, top, bottom, duration, samplingFrequency,
                                   granularity);
+      followedTrail->SetColorSource(saber, smc);
     } else {
       followedTrail->InitFromSaber(saber, smc, fallbackPrefab, parent, material, GetSaberColor(smc, saber), top,
                                    bottom, duration, samplingFrequency, granularity);

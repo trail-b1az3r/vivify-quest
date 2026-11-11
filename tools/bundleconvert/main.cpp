@@ -116,6 +116,7 @@ int main(int argc, char** argv) {
     options.singleViewOnly = single;
     options.renameArchiveFiles = companion;
     options.dropUntranslatableGeometry = std::getenv("VIVIFY_DROP_GEOMETRY") != nullptr;
+    options.dropGeometryStages = std::getenv("VIVIFY_DROP_ALL_GEOMETRY") != nullptr;
     options.skipQuestUnusedVariants = std::getenv("VIVIFY_SKIP_UNUSED") != nullptr;
     ShaderConversion c = ConvertShadersToGles(src, dst, options);
     std::printf("status=%s\nmessage=%s\nseen=%d translated=%d leftAlone=%d refused=%d "

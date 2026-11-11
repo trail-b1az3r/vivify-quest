@@ -34,6 +34,8 @@
 // The implementation is deliberately free of Unity/il2cpp dependencies so it
 // can be unit-tested on a host compiler.
 
+#include <set>
+#include <map>
 #include <cstdint>
 #include <string>
 #include <string_view>
@@ -150,6 +152,8 @@ struct ShaderScan {
   // out. Fall Away's Aeroluna/OverlayUITex lays its HUD texture over the
   // screen only in its one-eye program.
   std::vector<std::string> stereoDropsTextureShaderNames;
+  // Per shader, the uniforms its GLSL programs declare as `int`.
+  std::map<std::string, std::set<std::string>> intUniformNames;
   // Whether any program names _CameraDepthTexture (GLSL text, a DXBC resource
   // table, or a parameter blob): only then does the map need the depth
   // pre-pass that renders it.
@@ -251,6 +255,12 @@ struct ShaderConversionOptions {
   // did the projection, instead of leaving the variant on DirectX. Off in the
   // mod since 0.14.13: maps looked better and started faster without it.
   bool dropUntranslatableGeometry = false;
+  // Link every variant with a geometry stage without it, translatable or not
+  // (0.15.9). A geometry stage in a two-eye program only runs for both eyes
+  // where the driver has EXT_multiview_tessellation_geometry_shader; the
+  // Quest's does not, and such effects (grass, fur, wireframes) drew in the
+  // left eye only. Without the stage they are the plain mesh, in both eyes.
+  bool dropGeometryStages = false;
   // Leave untranslated the variants a Quest never selects in a converted
   // map: GPU instancing (turned off on converted materials) and unsplit
   // single-pass stereo. Most of a PC bundle's programs; far less to load and

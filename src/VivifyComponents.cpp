@@ -164,11 +164,22 @@ bool FollowedSaberTrail::SourceAlive() const {
 }
 
 UnityEngine::Color FollowedSaberTrail::SourceColor() {
-  if (_followed != nullptr) return _followed->____color;
-  if (IsManagedAlive(_controller) && _controller->____colorManager != nullptr) {
+  // The saber's colour from the game's colour manager first (0.15.9). The
+  // game trail's own colour is not reliable: a custom saber mod hides that
+  // trail by making its colour transparent, and the map's trail, copying it,
+  // went invisible too.
+  if (IsManagedAlive(_controller) && _controller->____colorManager != nullptr && IsManagedAlive(_saber)) {
     return _controller->____colorManager->ColorForSaberType(_saber->get_saberType());
   }
+  if (_followed != nullptr && _followed->____color.a > 0.01f) return _followed->____color;
   return ____color;
+}
+
+void FollowedSaberTrail::SetColorSource(GlobalNamespace::Saber* saber,
+                                        GlobalNamespace::SaberModelController* controller) {
+  _saber = saber;
+  _controller = controller;
+  _hasLastAppliedColor = false;
 }
 
 void FollowedSaberTrail::Update() {

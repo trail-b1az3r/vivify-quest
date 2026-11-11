@@ -373,6 +373,10 @@ private:
   void HideOtherSaberRenderers(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
                                VisualReplacement& replacement);
   void DiscoverSabers();
+  void HideForeignSaberLights();
+  void RestoreForeignSaberLights();
+  std::vector<UnityEngine::Light*> _disabledSaberLights;
+  float _lastSaberLightSweep = 0.0f;
   void NoteReflectionProbes(UnityEngine::GameObject* root);
   void RefreshSlowProbes();
   void OnAnyCameraPreRender(UnityEngine::Camera* camera);
@@ -615,6 +619,8 @@ private:
   // single-view, by name; a blit with one runs once per eye.
   std::set<std::string> _singleViewOnlyNativeShaders;
   std::set<std::string> _stereoDropsTextureShaders;
+  std::map<std::string, std::set<std::string>> _intUniformsByShader;
+  std::set<UnityEngine::Material*> _intFixedMaterials;
   std::set<std::string> _perEyeBlitLogged;
   bool NeedsPerEyeBlit(UnityEngine::Material* material, UnityEngine::RenderTexture* destination);
   std::string _blitCompanionLevel;

@@ -211,7 +211,8 @@ bool SplitStereoVariants() {
 // 4 = single-view only (replay render mode).
 int ConversionSplitMode() {
   // +8: geometry-shader effects drawn without their geometry stage (setting).
-  int const geometry = GetDrawGeometryShaderEffects() ? 8 : 0;
+  // +16: every geometry stage left out, so those effects draw in both eyes.
+  int const geometry = (GetDrawGeometryShaderEffects() ? 8 : 0) + (GetGeometryEffectsBothEyes() ? 16 : 0);
   if (ReplayVariantWanted()) return 4 + geometry;
   return (SplitStereoVariants() ? 1 : 0) + geometry;
 }
@@ -422,6 +423,7 @@ BundleConversionOutcome RunBundleConversionUnclaimed(std::string const& source, 
   // Opt-in (setting): links a variant whose geometry stage cannot run without
   // it, instead of leaving it to a grey stand-in. Off by default since 0.14.13.
   options.dropUntranslatableGeometry = GetDrawGeometryShaderEffects();
+  options.dropGeometryStages = GetGeometryEffectsBothEyes();
   // See version 17 above. Converted maps only: a donor build for a Quest
   // map's empty shaders keeps everything, since Quest materials keep their
   // instancing.
@@ -1589,6 +1591,8 @@ void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string c
   int const generation = ++_graftGeneration;
   _singleViewOnlyNativeShaders.clear();
   _stereoDropsTextureShaders.clear();
+  _intUniformsByShader.clear();
+  _intFixedMaterials.clear();
   // Always, whatever the conversion settings (0.14.10): an empty shader draws
   // nothing, and its PC build is the only thing that can. Only turning shader
   // translation off stops it, since the PC build is DirectX without it.
@@ -1653,13 +1657,17 @@ void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string c
                                          scan.singleViewOnlyShaderNames.end());
     std::set<std::string> dropsTexture(scan.stereoDropsTextureShaderNames.begin(),
                                        scan.stereoDropsTextureShaderNames.end());
+    auto intUniforms = scan.intUniformNames;
     BSML::MainThreadScheduler::Schedule([this, generation, levelPath, androidBundlePath, empty, preferred,
                                          preferredFound, fallback, wantBuild, otherBuild, other,
                                          singleViewOnly = std::move(singleViewOnly),
-                                         dropsTexture = std::move(dropsTexture)]() {
+                                         dropsTexture = std::move(dropsTexture),
+                                         intUniforms = std::move(intUniforms)]() {
       if (generation != _graftGeneration || levelPath != _selectedLevelPath) return;
       _singleViewOnlyNativeShaders = singleViewOnly;
       _stereoDropsTextureShaders = dropsTexture;
+      _intUniformsByShader = intUniforms;
+      _intFixedMaterials.clear();
       _perEyeBlitLogged.clear();
       if (!singleViewOnly.empty()) {
         PaperLogger.info("Vivify: {} shader(s) in this map's Quest bundle have no two-eye program; a screen "
@@ -2053,6 +2061,16 @@ void Runtime::CacheBundleAssets() {
       continue;
     }
     if (!key.empty()) _assets[key] = asset;
+    // Kept through Resources.UnloadUnusedAssets (0.15.9). This table holds
+    // plain pointers, which Unity does not count as a use: a material only a
+    // Blit or a saber trail uses, on nothing in the scene, was destroyed by
+    // the clean-up the mod runs after loading a map's single-view shaders
+    // (0.15.3) and in crash recovery mode (0.15.2). Fall Away's HUD overlay
+    // material loaded and was gone by the time its Blit started. Unloading
+    // the bundle still frees everything.
+    if (!il2cpp_utils::try_cast<UnityEngine::GameObject>(asset).has_value()) {
+      asset->set_hideFlags(UnityEngine::HideFlags(asset->get_hideFlags().value__ | 32));  // DontUnloadUnusedAsset
+    }
     auto name = asset->get_name();
     if (name) {
       auto nameKey = NormalizeAssetKey(il2cpp_utils::detail::to_string(name));
@@ -3020,6 +3038,27 @@ void Runtime::RepairMaterialShader(UnityEngine::Material* material, std::string_
   if (_preloadedBundlePath.rfind(ConvertedBundleCacheDir(), 0) == 0 && material->get_enableInstancing()) {
     material->set_enableInstancing(false);
     _instancingDisabledMaterials++;
+  }
+  // A Quest-built shader that declares a uniform as `int` (0.15.9). The
+  // material holds the property as a float, and on OpenGL ES a float is not
+  // loaded into an int uniform: it stays 0. Heartbeat's tunnel raymarches
+  // `_Steps` times, so with 0 steps it is black. The value is set as an
+  // integer as well, which is the form that uniform takes.
+  if (!_intUniformsByShader.empty() && _intFixedMaterials.insert(material).second) {
+    auto* intShader = material->get_shader().unsafePtr();
+    if (IsAlive(intShader)) {
+      if (auto found = _intUniformsByShader.find(ShaderNameForLog(intShader)); found != _intUniformsByShader.end()) {
+        for (auto const& name : found->second) {
+          int const id = UnityEngine::Shader::PropertyToID(StringW(name));
+          if (!material->HasFloat(id)) continue;
+          float const value = material->GetFloat(id);
+          material->SetInteger(id, static_cast<int>(std::lround(value)));
+          PaperLogger.info("Vivify material '{}': '{}' is an int in shader '{}'; set as integer {}",
+                           ToStdString(material->get_name()), name, found->first,
+                           static_cast<int>(std::lround(value)));
+        }
+      }
+    }
   }
   if (_repairedMaterials.contains(material)) return;
   // A shader the level's Quest bundle shipped empty, with a PC build standing

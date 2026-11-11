@@ -11,6 +11,48 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.9] - 2026-11-11
+
+From the logs of 0.15.8 build 2 (`logs_4`). Converted maps are reconverted
+once. Nothing here is tried on a headset.
+
+### Fixed
+- **Map effects and trails that silently went missing (Fall Away's HUD).**
+  The mod keeps a table of a map's assets, which Unity does not count as a
+  use. The clean-up it runs after loading a map's single-view shaders (since
+  0.15.3), and in crash recovery mode, destroyed every asset used by nothing
+  in the scene: a material only a screen effect or a saber trail uses. The
+  log shows Fall Away's HUD overlay material loaded, then "missing" when its
+  effect started. Assets in the table are now kept until the bundle unloads.
+- **Saber lights from another mod, on converted maps.** The logs show two
+  point lights of intensity 1000 with soft shadows in every level, one per
+  saber. The game's own shaders ignore them; a converted PC map's shaders
+  are lit by them, their shadows flicker on every surface, and each one costs
+  six extra passes over the scene every frame. They are now switched off
+  while a Vivify map plays. New setting **Saber Lights On Map Objects** (off)
+  keeps them.
+- **Map sabers and trails lost after pausing.** 0.15.6's check that the
+  map's saber is on screen ran while the pause menu had the sabers switched
+  off, decided the map's saber could not be shown, and gave your own saber
+  and trails back for the rest of the level. It no longer judges a saber the
+  game has switched off.
+- **Invisible map trails.** The map's trail took its colour from the game's
+  own trail, which a custom saber mod makes transparent to hide it. It now
+  takes the saber colour from the game's colour manager. The map trail's own
+  renderer is also never hidden along with other mods' saber parts.
+- **Grass and other geometry-shader effects in one eye.** 0.15.8 build 2's
+  declaration changed nothing on the headset: its driver cannot run a
+  geometry stage for both eyes. New setting **Geometry Effects In Both Eyes**
+  (advanced, on): those effects are drawn without the geometry stage, flat
+  but in both eyes. Off gives the full effect in the left eye only.
+- **Heartbeat's black tunnel (an attempt).** Its Quest shader declares its
+  step count as an `int`; the material holds it as a float, which OpenGL ES
+  does not load into an int uniform, so it would raymarch zero steps. Such
+  values are now also set as integers. The log names each one.
+- **Auto Effect Resolution** only steps while a screen effect is on. In
+  Heartbeat it dropped to 40% with no effect running.
+- **Settings list** moved slightly right; it sat off the left edge.
+
 ## [0.15.8 build 2] - 2026-11-11
 
 Same version, rebuilt. The menu and logs say "0.15.8 build 2". Converted maps
