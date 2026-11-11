@@ -11,6 +11,57 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.8 build 2] - 2026-11-11
+
+Same version, rebuilt. The menu and logs say "0.15.8 build 2". Converted maps
+are reconverted once (conversion version 23). Nothing here is tried on a
+headset.
+
+### Fixed
+- **Grass and other geometry-shader effects in one eye (Yoi Okashi to Warui
+  Okashi).** A two-eye program with a geometry stage is only valid if the
+  geometry shader declares the view count too
+  (`EXT_multiview_tessellation_geometry_shader`). Ours did not, so it drew in
+  the left eye or not at all. It declares it now, where the headset's driver
+  has the extension; where it does not, nothing changes.
+- **743 Aether's clouds and fog in one eye.** They are mesh particle systems
+  with GPU instancing on, which Unity draws through shader variants the
+  converter leaves out. Particle systems of a converted map now draw without
+  GPU instancing, through the variant that is converted.
+- **Map saber trails overridden by Custom Models' trail.** Custom Models puts
+  its trails under its own saber model, beside the game's, and a trail turns
+  its renderer back on a few frames after it starts. When a map replaces the
+  trail, other trails under the whole saber are now hidden, and kept hidden.
+- **Water reflections (Get Your Wish).** A reflection probe draws one view
+  at a time, where a converted map's two-eye shaders draw nothing, so the
+  water reflected only the notes. A map with realtime probes is now prepared
+  like one with screen cameras, and its single-view shaders are used while a
+  probe renders. As with those cameras, this takes effect from the second
+  time the map is selected.
+- **Fall Away's HUD.** 0.15.5 showed the map's head-following text directly;
+  that text is only meant to be filmed by the map's own camera, and shown
+  directly it sat in the wrong place and hid note bodies behind it. That is
+  undone. The filmed HUD is laid over the screen by an effect whose two-eye
+  program leaves the HUD texture out; such an effect now runs its one-eye
+  program once per eye, so the overlay shows in the headset.
+
+### Performance
+- **Reflection probes refresh about once a second**, not continuously. One
+  face a frame was still an extra pass over the scene every frame for each
+  probe, since 0.15.3. "Full Reflection Probes" keeps the map's own rate.
+
+### Not fixed
+- **743 Aether lagging when you look down at the platform.** The platform's
+  gemstone shader is heavy per pixel and fills the view from there; nothing
+  in this build changes that.
+- **Heartbeat's second tunnel is black.** It is drawn by the map's own
+  Quest-built shader (`PoofShaders/AudioPortal/World_PC`), which Vivify does
+  not convert or alter; why it comes out black on the headset is not known.
+  Turning on This Map > Use Windows Bundle for it makes the mod use its own
+  conversion of the PC shader instead, which may behave differently.
+- **Luminescent's water** was not looked at separately; if it uses a
+  realtime reflection probe, the probe fix above applies.
+
 ## [0.15.8] - 2026-11-11
 
 ### Fixed

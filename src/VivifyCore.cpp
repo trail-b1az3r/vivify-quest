@@ -175,6 +175,7 @@ void Runtime::Update() {
     RefreshCameraComponents(true);
     DetectSongRestart();
     UpdateSaberReplacementColors();
+    RefreshSlowProbes();
     SyncReplacementTintColors();
   } catch (std::exception const& ex) {
     LogThrottledUpdateError(ex.what());
@@ -605,6 +606,7 @@ void Runtime::ResetRuntime(std::string_view reason) {
   _syncedObjects.clear();
   _blitMaterialValidCache.clear();
   _blitGuardWatches.clear();
+  _slowProbes.clear();
   _blitGuardKilled.clear();
   _cachedBlitWidth = 0;
   _cachedBlitHeight = 0;

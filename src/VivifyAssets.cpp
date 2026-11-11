@@ -147,7 +147,10 @@ namespace {
 //      instanced code (0.15.4). Version 21's instance-ID fix for vertex stages
 //      that leave the layer to a geometry stage was never switched on, so
 //      those shaders still gave both eyes eye 0
-constexpr int kBundleConversionVersion = 22;
+//  23  a geometry stage in a two-eye program declares the view count, under
+//      EXT_multiview_tessellation_geometry_shader, so it runs for both eyes
+//      where the driver has that extension (0.15.8 build 2)
+constexpr int kBundleConversionVersion = 23;
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the
@@ -1585,6 +1588,7 @@ void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string c
   _selectedBundlePath = androidBundlePath;
   int const generation = ++_graftGeneration;
   _singleViewOnlyNativeShaders.clear();
+  _stereoDropsTextureShaders.clear();
   // Always, whatever the conversion settings (0.14.10): an empty shader draws
   // nothing, and its PC build is the only thing that can. Only turning shader
   // translation off stops it, since the PC build is DirectX without it.
@@ -1647,11 +1651,15 @@ void Runtime::BeginAndroidBundleLoad(std::string const& levelPath, std::string c
     }
     std::set<std::string> singleViewOnly(scan.singleViewOnlyShaderNames.begin(),
                                          scan.singleViewOnlyShaderNames.end());
+    std::set<std::string> dropsTexture(scan.stereoDropsTextureShaderNames.begin(),
+                                       scan.stereoDropsTextureShaderNames.end());
     BSML::MainThreadScheduler::Schedule([this, generation, levelPath, androidBundlePath, empty, preferred,
                                          preferredFound, fallback, wantBuild, otherBuild, other,
-                                         singleViewOnly = std::move(singleViewOnly)]() {
+                                         singleViewOnly = std::move(singleViewOnly),
+                                         dropsTexture = std::move(dropsTexture)]() {
       if (generation != _graftGeneration || levelPath != _selectedLevelPath) return;
       _singleViewOnlyNativeShaders = singleViewOnly;
+      _stereoDropsTextureShaders = dropsTexture;
       _perEyeBlitLogged.clear();
       if (!singleViewOnly.empty()) {
         PaperLogger.info("Vivify: {} shader(s) in this map's Quest bundle have no two-eye program; a screen "
@@ -2994,6 +3002,10 @@ UnityEngine::Shader* Runtime::FindFallbackShader() {
       "Vivify found no usable stand-in shader among the shaders loaded in this process. "
       "Materials with unsupported shaders will be left alone rather than rescanning every time.");
   return nullptr;
+}
+
+bool Runtime::LoadedBundleIsConverted() const {
+  return _preloadedBundlePath.rfind(ConvertedBundleCacheDir(), 0) == 0;
 }
 
 void Runtime::RepairMaterialShader(UnityEngine::Material* material, std::string_view context) {
