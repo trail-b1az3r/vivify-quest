@@ -11,6 +11,30 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.8] - 2026-11-11
+
+### Fixed
+- **Screen effects now get the right screen size (`_ScreenParams`).** A
+  likely cause of Breezer going one colour when its backrooms start: its VHS
+  effect snaps its sampling to a grid of screen pixels, using a built-in
+  value that only a camera's own setup writes. When the effects run, that
+  value is whatever the last camera to render left behind; if that was a
+  camera drawing into a small texture, the whole view samples a few points,
+  or one. The mod now sets it to the size of the picture the effects work
+  on. The "Vivify Blit check" log line records what the value was before.
+  - Not confirmed on a headset. Why's This Dealer's effect does not use this
+    value, so its yellow screen has a different cause, still unknown; the
+    Flat-Screen Effect Guard (0.15.7) and its log line are for that.
+
+### Notes
+- **Breezer's bombs that should look like notes.** The map builds each one
+  from a bomb and two fake notes on tracks: one shows only its body, the
+  other only its arrow (its body dissolved, turned 180 degrees), and the
+  bomb itself is dissolved. Seeing two whole notes stacked means the
+  per-track `dissolve` / `dissolveArrow` are not being applied to notes that
+  sit on two tracks at once. That is done by Noodle Extensions and Tracks,
+  not by Vivify, and nothing in Vivify touches it. No change here.
+
 ## [0.15.7] - 2026-11-11
 
 ### Added

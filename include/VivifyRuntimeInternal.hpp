@@ -496,6 +496,7 @@ private:
   UnityEngine::Texture2D* _blitGuardReader = nullptr;
   std::unordered_map<UnityEngine::Material*, BlitGuardWatch> _blitGuardWatches;
   std::set<UnityEngine::Material*> _blitGuardKilled;
+  UnityEngine::Vector4 _blitGuardScreenParams = UnityEngine::Vector4(0.0f, 0.0f, 0.0f, 0.0f);
   bool EnsureBlitGuardTextures();
   bool BlitGuardDue(std::vector<UnityEngine::Material*> const& materials);
   void BlitGuardEvaluate(std::vector<UnityEngine::Material*> const& materials, UnityEngine::RenderTexture* src);
