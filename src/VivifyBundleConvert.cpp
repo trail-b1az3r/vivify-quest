@@ -1889,8 +1889,9 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
                                     ParsedProgramRef const* geometry, std::string& source, int& version,
                                     bool& dropped) {
       dropped = false;
-      if (link(vertex, fragment, geometry, source, version)) return true;
-      if (geometry == nullptr || !conversionOptions.dropUntranslatableGeometry) return false;
+      bool const always = geometry != nullptr && conversionOptions.dropGeometryStages;
+      if (!always && link(vertex, fragment, geometry, source, version)) return true;
+      if (geometry == nullptr || (!always && !conversionOptions.dropUntranslatableGeometry)) return false;
       auto const* vs = translate(vertex);
       auto const* fs = fragment != nullptr ? translate(*fragment) : nullptr;
       if (vs == nullptr || (fragment != nullptr && fs == nullptr)) return false;
@@ -1923,7 +1924,8 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
         if (stageList == &geometries) {
           // A geometry entry only takes a program that keeps its stage; one
           // that dropped it is left on DirectX, so Unity skips the stage.
-          if (vertex != nullptr && link(*vertex, BestMatch(fragments, *ref), ref, source, version)) {
+          if (!conversionOptions.dropGeometryStages && vertex != nullptr &&
+              link(*vertex, BestMatch(fragments, *ref), ref, source, version)) {
             place(*ref, source, version);
           }
           continue;
@@ -2473,6 +2475,35 @@ ShaderScan ScanShaders(std::string const& bundlePath) {
       }
       if (decoded.ok && glslHere > 0 && !multiviewHere && !shader.name.empty()) {
         scan.singleViewOnlyShaderNames.push_back(shader.name);
+      }
+      // Uniforms the GLSL declares as int (0.15.9): a material stores such a
+      // property as a float, and the mod sets it as an integer too.
+      if (decoded.ok && !shader.name.empty()) {
+        for (auto const& program : decoded.programs) {
+          if (program.raw || !SerializedFileParse::GpuProgramIsGlslSource(program.programType)) continue;
+          std::string_view const text(reinterpret_cast<char const*>(program.code.data()), program.code.size());
+          size_t at = 0;
+          while ((at = text.find("uniform", at)) != std::string_view::npos) {
+            size_t const lineEnd = std::min(text.find(';', at), text.find('\n', at));
+            if (lineEnd == std::string_view::npos) break;
+            std::string_view line = text.substr(at + 7, lineEnd - at - 7);
+            at = lineEnd;
+            auto trim = [](std::string_view v) {
+              while (!v.empty() && (v.front() == ' ' || v.front() == '\t')) v.remove_prefix(1);
+              while (!v.empty() && (v.back() == ' ' || v.back() == '\t')) v.remove_suffix(1);
+              return v;
+            };
+            line = trim(line);
+            for (std::string_view precision : {"highp ", "mediump ", "lowp "}) {
+              if (line.rfind(precision, 0) == 0) line = trim(line.substr(precision.size()));
+            }
+            if (line.rfind("int ", 0) != 0 && line.rfind("int\t", 0) != 0) continue;
+            std::string_view const name = trim(line.substr(4));
+            if (!name.empty() && name.rfind("unity_", 0) != 0 && name.find_first_of(" [\t") == std::string_view::npos) {
+              scan.intUniformNames[shader.name].emplace(name);
+            }
+          }
+        }
       }
       // Textures the one-eye programs sample and no two-eye program does: the
       // shader's stereo variant leaves part of its effect out.

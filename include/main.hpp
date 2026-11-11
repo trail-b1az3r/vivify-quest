@@ -33,6 +33,8 @@ bool GetDisableAllBlits();
 bool GetDisableCreateCameraDepth();
 bool GetDisableCustomNoteVisuals();
 bool GetMapSabers();
+bool GetGeometryEffectsBothEyes();
+bool GetSaberLightsOnMapObjects();
 bool GetFlatScreenGuard();
 bool GetDisableVisualsInMultiplayer();
 bool GetDisableVRCenterAdjust();

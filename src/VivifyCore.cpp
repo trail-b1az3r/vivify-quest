@@ -143,7 +143,12 @@ void Runtime::Update() {
       _lastGameplayFrame = {};
       return;
     }
-    if (!_pauseMenuActive) ReportGameplayFrame(UnityEngine::Time::get_unscaledDeltaTime());
+    // Only while a screen effect is on: lowering effect resolution cannot
+    // help a slow scene that has none (Heartbeat stepped down to 40% with no
+    // effect running, 0.15.9).
+    if (!_pauseMenuActive && !(_preEffects.empty() && _postEffects.empty())) {
+      ReportGameplayFrame(UnityEngine::Time::get_unscaledDeltaTime());
+    }
     // Crash recovery's sign of life, every 5 s of play (0.15.2).
     if (frameStart - _lastRecoveryHeartbeat > std::chrono::seconds(5)) {
       _lastRecoveryHeartbeat = frameStart;
@@ -176,6 +181,7 @@ void Runtime::Update() {
     DetectSongRestart();
     UpdateSaberReplacementColors();
     RefreshSlowProbes();
+    HideForeignSaberLights();
     SyncReplacementTintColors();
   } catch (std::exception const& ex) {
     LogThrottledUpdateError(ex.what());
@@ -607,6 +613,7 @@ void Runtime::ResetRuntime(std::string_view reason) {
   _blitMaterialValidCache.clear();
   _blitGuardWatches.clear();
   _slowProbes.clear();
+  RestoreForeignSaberLights();
   _blitGuardKilled.clear();
   _cachedBlitWidth = 0;
   _cachedBlitHeight = 0;

@@ -28,6 +28,8 @@
 #include "TMPro/TextOverflowModes.hpp"
 #include "UnityEngine/RectTransform.hpp"
 #include "UnityEngine/UI/LayoutElement.hpp"
+#include "UnityEngine/RectOffset.hpp"
+#include "UnityEngine/UI/VerticalLayoutGroup.hpp"
 #include "bsml/shared/BSML/Settings/BSMLSettings.hpp"
 #include "custom-types/shared/register.hpp"
 #include "scotland2/shared/modloader.h"
@@ -36,7 +38,7 @@
 
 static modloader::ModInfo modInfo{MOD_ID, VERSION, 0};
 // A rebuild of the same version, shown beside it in the menu and the logs.
-constexpr char const* kBuildLabel = " build 2";
+constexpr char const* kBuildLabel = "";
 
 // Defined below, outside this namespace; the settings reset button re-applies it.
 void EnsureConfigDefaults();
@@ -73,6 +75,9 @@ constexpr std::string_view kBlitFixConfigKey = "blitScreenTextureFix";
 // Map sabers (AssignObjectPrefab saber) replace the player's own, custom saber
 // mods included. Off keeps the player's sabers on every map (0.15.4).
 constexpr std::string_view kMapSabersConfigKey = "mapSabers";
+// Lets lights another mod puts on the sabers light a Vivify map's objects.
+// Off by default: they are switched off while a Vivify map plays (0.15.9).
+constexpr std::string_view kSaberLightsConfigKey = "saberLightsOnMapObjects";
 // Switches off a screen effect that turns a normal picture into one flat
 // colour for three seconds, and logs what went in and out (0.15.7).
 constexpr std::string_view kFlatScreenGuardConfigKey = "flatScreenGuard";
@@ -80,6 +85,9 @@ constexpr std::string_view kFlatScreenGuardConfigKey = "flatScreenGuard";
 // as on, and it may be what froze converted maps in the menu.
 constexpr std::string_view kPrepareShadersConfigKey = "prepareShadersInMenu";
 constexpr std::string_view kGeometryEffectsConfigKey = "drawGeometryShaderEffects";
+// Geometry-shader effects drawn without their geometry stage, so they show in
+// both eyes (flat) and not in the left eye only (0.15.9).
+constexpr std::string_view kGeometryBothEyesConfigKey = "geometryEffectsBothEyes";
 constexpr std::string_view kPcShadersForEmptyConfigKey = "pcShadersForEmptyQuestShaders";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
 constexpr std::string_view kEffectResolutionConfigKey = "effectResolutionPercent";
@@ -136,6 +144,7 @@ bool gAudioLink = true;
 bool gMapRealtimeShadows = false;
 bool gMapReflectionProbes = true;
 bool gMapSabers = true;
+bool gSaberLights = false;
 bool gFlatScreenGuard = true;
 bool gFullReflectionProbes = false;
 bool gSingleViewMapCameras = true;
@@ -162,6 +171,7 @@ bool gReplayRenderMode = false;
 bool gBlitFix = false;
 bool gPrepareShaders = false;
 bool gGeometryEffects = false;
+bool gGeometryBothEyes = true;
 bool gPcShadersForEmpty = true;
 // Which shader to use as the stand-in, by name, overriding the automatic pick.
 //
@@ -506,6 +516,9 @@ char const* SettingHint(std::u16string_view label) {
       {u"Use Map Sabers",
        "On: sabers a map brings replace yours, including custom sabers from another mod; they stay attached "
        "to the saber, so trick mods still move them. Off: you always keep your own sabers."},
+      {u"Saber Lights On Map Objects",
+       "Some saber mods put a light on each saber. Off (default): those lights are switched off during Vivify "
+       "maps, where they light the map's objects, flicker, and cost a lot of performance. On keeps them."},
       {u"No Vivify Visuals In Multiplayer",
        "In multiplayer, plays Vivify maps without their custom notes and sabers."},
       {u"AudioLink",
@@ -541,6 +554,10 @@ char const* SettingHint(std::u16string_view label) {
        "After a map crashes or freezes, plays it next time with less memory use and without the effect that "
        "was starting when it went down."},
       {u"Forget Crash Recovery", "Clears the list of maps that crashed, so they play normally again."},
+      {u"Geometry Effects In Both Eyes",
+       "Grass, fur and wireframe effects on PC maps use a shader stage the Quest can only run for the left eye. "
+       "On: they are drawn without it, flat but in both eyes. Off: full effect, left eye only. Changing it "
+       "reconverts the map."},
       {u"Geometry-Shader Effects (exp.)",
        "Experimental. Draws effects that need a geometry shader (wireframes, exploding triangles) as plain "
        "meshes when they cannot be converted. Changing it reconverts affected maps."},
@@ -696,6 +713,11 @@ void RegisterModSettings() {
         if (container == nullptr) return;
         UnityEngine::Transform* parent = container->get_transform().unsafePtr();
         gAdvancedWidgets.clear();
+        // The list sat slightly off the left edge of the panel: a little room
+        // on the left brings its rows back inside (0.15.9).
+        if (auto* layout = container->GetComponent<UnityEngine::UI::VerticalLayoutGroup*>(); layout != nullptr) {
+          layout->set_padding(UnityEngine::RectOffset::New_ctor(4, 1, 0, 0));
+        }
 
         // Which build is actually running, in the headset, without a file.
         // "the new features do not work" and "the new build did not install"
@@ -813,6 +835,8 @@ void RegisterModSettings() {
         });
         toggle(u"Use Map Sabers", gMapSabers,
                [](bool value) { SetBoolConfigValue(kMapSabersConfigKey, value, gMapSabers); });
+        toggle(u"Saber Lights On Map Objects", gSaberLights,
+               [](bool value) { SetBoolConfigValue(kSaberLightsConfigKey, value, gSaberLights); });
         toggle(u"No Vivify Visuals In Multiplayer", GetDisableVisualsInMultiplayer(), [](bool value) {
           SetBoolConfigValue(kDisableVisualsInMultiplayerConfigKey, value, gDisableVisualsInMultiplayer);
         });
@@ -915,6 +939,9 @@ void RegisterModSettings() {
         }
         // Experimental: geometry-stage effects are drawn without that stage
         // instead of as grey stand-ins. Changing it reconverts affected maps.
+        advanced(toggle(u"Geometry Effects In Both Eyes", gGeometryBothEyes, [](bool value) {
+          SetBoolConfigValue(kGeometryBothEyesConfigKey, value, gGeometryBothEyes);
+        }));
         advanced(toggle(u"Geometry-Shader Effects (exp.)", GetDrawGeometryShaderEffects(),
                         [](bool value) { SetBoolConfigValue(kGeometryEffectsConfigKey, value, gGeometryEffects); }));
         if constexpr (!kLiteBuild) {
@@ -1055,6 +1082,14 @@ bool GetDisableCreateCameraDepth() {
 
 bool GetFlatScreenGuard() {
   return gFlatScreenGuard;
+}
+
+bool GetSaberLightsOnMapObjects() {
+  return gSaberLights;
+}
+
+bool GetGeometryEffectsBothEyes() {
+  return gGeometryBothEyes;
 }
 
 bool GetMapSabers() {
@@ -1341,6 +1376,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kMapRealtimeShadowsConfigKey, false, gMapRealtimeShadows);
   needsWrite |= EnsureBoolConfigValue(kMapReflectionProbesConfigKey, true, gMapReflectionProbes);
   needsWrite |= EnsureBoolConfigValue(kMapSabersConfigKey, true, gMapSabers);
+  needsWrite |= EnsureBoolConfigValue(kSaberLightsConfigKey, false, gSaberLights);
   needsWrite |= EnsureBoolConfigValue(kFlatScreenGuardConfigKey, true, gFlatScreenGuard);
   needsWrite |= EnsureBoolConfigValue(kFullReflectionProbesConfigKey, false, gFullReflectionProbes);
   needsWrite |= EnsureBoolConfigValue(kSingleViewMapCamerasConfigKey, true, gSingleViewMapCameras);
@@ -1350,6 +1386,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kBlitFixConfigKey, false, gBlitFix);
   needsWrite |= EnsureBoolConfigValue(kPrepareShadersConfigKey, false, gPrepareShaders);
   needsWrite |= EnsureBoolConfigValue(kGeometryEffectsConfigKey, false, gGeometryEffects);
+  needsWrite |= EnsureBoolConfigValue(kGeometryBothEyesConfigKey, true, gGeometryBothEyes);
   needsWrite |= EnsureBoolConfigValue(kPcShadersForEmptyConfigKey, true, gPcShadersForEmpty);
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),
                                         gStandInShaderName);
