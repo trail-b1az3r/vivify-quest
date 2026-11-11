@@ -6,6 +6,12 @@
 #include "UnityEngine/Rendering/TextureDimension.hpp"
 #include "UnityEngine/RenderTextureDescriptor.hpp"
 #include "UnityEngine/HideFlags.hpp"
+#include "UnityEngine/Color32.hpp"
+#include "UnityEngine/Rect.hpp"
+#include "UnityEngine/RenderTextureFormat.hpp"
+#include "UnityEngine/Texture2D.hpp"
+#include "UnityEngine/TextureFormat.hpp"
+#include "UnityEngine/VRTextureUsage.hpp"
 
 namespace Vivify {
 
@@ -56,6 +62,49 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
   std::vector<UnityEngine::RenderTexture*> selfBlitTemps;
 
   cb->Blit(ToTargetId(src), ToTargetId(main));
+
+  // Flat-screen guard (0.15.7): now and then, a 16x16 sample of the picture
+  // before and after this call's effects (BlitGuard* below).
+  std::vector<UnityEngine::Material*> guardMaterials;
+  if (GetFlatScreenGuard()) {
+    auto collect = [&](std::vector<ActiveBlitEffect> const& effects) {
+      for (auto const& effect : effects) {
+        if (effect.data.material != nullptr && effect.data.source == kMainCameraId &&
+            CanUseBlitMaterial(effect.data.material, effect.data.pass)) {
+          guardMaterials.push_back(effect.data.material);
+        }
+      }
+    };
+    if (phase == 0 || phase == 1) collect(_preEffects);
+    if (phase == 0 || phase == 2) collect(_postEffects);
+  }
+  bool const guardProbe = !guardMaterials.empty() && BlitGuardDue(guardMaterials) && EnsureBlitGuardTextures();
+  UnityEngine::RenderTexture* guardEye = nullptr;
+  auto emitProbe = [&](UnityEngine::RenderTexture* from, UnityEngine::RenderTexture* probe) {
+    auto desc = from->get_descriptor();
+    if (desc.get_dimension() == UnityEngine::Rendering::TextureDimension::Tex2DArray) {
+      if (guardEye == nullptr) {
+        desc.set_dimension(UnityEngine::Rendering::TextureDimension::Tex2D);
+        desc.set_volumeDepth(1);
+        desc.set_vrUsage(UnityEngine::VRTextureUsage::None);
+        desc.set_msaaSamples(1);
+        desc.set_depthBufferBits(0);
+        guardEye = UnityEngine::RenderTexture::GetTemporary(desc).unsafePtr();
+        if (!IsManagedAlive(guardEye)) {
+          guardEye = nullptr;
+          return;
+        }
+        selfBlitTemps.emplace_back(guardEye);
+      }
+      auto fromId = ToTargetId(from);
+      auto eyeId = ToTargetId(guardEye);
+      cb->CopyTexture_Internal(byref(fromId), 0, -1, -1, -1, -1, -1, byref(eyeId), 0, -1, -1, -1, 2);
+      cb->Blit(eyeId, ToTargetId(probe));
+    } else {
+      cb->Blit(ToTargetId(from), ToTargetId(probe));
+    }
+  };
+  if (guardProbe) emitProbe(main, _blitGuardIn);
 
   auto* mainCurrent = main;
   auto* mainScratch = scratch;
@@ -163,12 +212,145 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
     renderEffects(_postEffects);
   }
 
+  if (guardProbe) emitProbe(mainCurrent, _blitGuardOut);
   cb->Blit(ToTargetId(mainCurrent), destId);
   UnityEngine::Graphics::ExecuteCommandBuffer(cb);
   cb->Clear();
+  if (guardProbe) BlitGuardEvaluate(guardMaterials, src);
   for (auto* temp : selfBlitTemps) {
     UnityEngine::RenderTexture::ReleaseTemporary(temp);
   }
+}
+
+// Flat-screen guard (0.15.7). Reported: a map's screen effect turns the whole
+// view one colour, and the map is only playable with every effect off (Why's
+// This Dealer goes all yellow). The effect's translation checks out, so what
+// it is being fed has to be measured on the headset. While an effect that
+// reads the screen has been on for a second or more, the picture going into
+// the effects and the picture coming out are each sampled at 16x16, at 1 s,
+// 2 s and 3 s. The first sample is logged. If all three show a varied picture
+// going in and a single flat colour coming out -- one that is neither black
+// nor white, which a fade is -- those effects are switched off for the rest
+// of the level, so the map can be seen and played, and the log says so.
+namespace {
+constexpr int kGuardSize = 16;
+constexpr float kGuardTimes[] = {1.0f, 2.0f, 3.0f};
+
+struct GuardSample {
+  bool ok = false;
+  int mean[3] = {0, 0, 0};
+  int spread = 0;  // largest difference from the mean in any channel
+};
+
+GuardSample ReadGuardSample(UnityEngine::RenderTexture* probe, UnityEngine::Texture2D* reader) {
+  GuardSample sample;
+  if (!IsManagedAlive(probe) || !IsManagedAlive(reader)) return sample;
+  auto previous = UnityEngine::RenderTexture::get_active();
+  UnityEngine::RenderTexture::set_active(probe);
+  reader->ReadPixels(UnityEngine::Rect(0.0f, 0.0f, static_cast<float>(kGuardSize), static_cast<float>(kGuardSize)),
+                     0, 0, false);
+  UnityEngine::RenderTexture::set_active(previous);
+  auto pixels = reader->GetPixels32();
+  if (!pixels || pixels.size() == 0) return sample;
+  long sum[3] = {0, 0, 0};
+  for (int i = 0; i < pixels.size(); i++) {
+    sum[0] += pixels[i].r;
+    sum[1] += pixels[i].g;
+    sum[2] += pixels[i].b;
+  }
+  for (int c = 0; c < 3; c++) sample.mean[c] = static_cast<int>(sum[c] / pixels.size());
+  for (int i = 0; i < pixels.size(); i++) {
+    int const channels[3] = {pixels[i].r, pixels[i].g, pixels[i].b};
+    for (int c = 0; c < 3; c++) sample.spread = std::max(sample.spread, std::abs(channels[c] - sample.mean[c]));
+  }
+  sample.ok = true;
+  return sample;
+}
+}  // namespace
+
+bool Runtime::EnsureBlitGuardTextures() {
+  auto make = [this](UnityEngine::RenderTexture*& texture) {
+    if (IsAlive(texture) && texture->IsCreated()) return true;
+    ReleaseRenderTexture(texture);
+    texture = UnityEngine::RenderTexture::New_ctor(kGuardSize, kGuardSize, 0,
+                                                   UnityEngine::RenderTextureFormat::ARGB32);
+    if (!IsAlive(texture)) {
+      texture = nullptr;
+      return false;
+    }
+    if (!texture->Create()) {
+      ReleaseRenderTexture(texture);
+      return false;
+    }
+    return true;
+  };
+  if (!make(_blitGuardIn) || !make(_blitGuardOut)) return false;
+  if (!IsAlive(_blitGuardReader)) {
+    _blitGuardReader = UnityEngine::Texture2D::New_ctor(kGuardSize, kGuardSize, UnityEngine::TextureFormat::RGBA32,
+                                                        false);
+  }
+  return IsAlive(_blitGuardReader);
+}
+
+// Whether this call should sample: some effect in it has been on, without a
+// break, long enough to reach its next sample time.
+bool Runtime::BlitGuardDue(std::vector<UnityEngine::Material*> const& materials) {
+  float const now = UnityEngine::Time::get_unscaledTime();
+  int const frame = static_cast<int>(UnityEngine::Time::get_frameCount());
+  bool due = false;
+  for (auto* material : materials) {
+    auto& watch = _blitGuardWatches[material];
+    if (watch.lastFrame != frame && watch.lastFrame != frame - 1) {
+      watch.start = now;
+      watch.samples = 0;
+      watch.flat = 0;
+    }
+    watch.lastFrame = frame;
+    if (watch.samples < 3 && now - watch.start >= kGuardTimes[watch.samples]) due = true;
+  }
+  return due;
+}
+
+void Runtime::BlitGuardEvaluate(std::vector<UnityEngine::Material*> const& materials, UnityEngine::RenderTexture* src) {
+  auto const in = ReadGuardSample(_blitGuardIn, _blitGuardReader);
+  auto const out = ReadGuardSample(_blitGuardOut, _blitGuardReader);
+  if (!in.ok || !out.ok) return;
+  float const now = UnityEngine::Time::get_unscaledTime();
+  int const brightest = std::max({out.mean[0], out.mean[1], out.mean[2]});
+  int const darkest = std::min({out.mean[0], out.mean[1], out.mean[2]});
+  bool const flatColour = out.spread <= 3 && in.spread >= 16 && brightest >= 24 && darkest <= 232;
+  std::string names;
+  bool kill = false;
+  for (auto* material : materials) {
+    auto& watch = _blitGuardWatches[material];
+    if (watch.samples >= 3 || now - watch.start < kGuardTimes[watch.samples]) continue;
+    watch.samples++;
+    if (flatColour) watch.flat++;
+    auto* shader = IsAlive(material) ? material->get_shader().unsafePtr() : nullptr;
+    std::string const name = ShaderNameForLog(shader);
+    if (watch.samples == 1 || flatColour) names += (names.empty() ? "'" : ", '") + name + "'";
+    if (watch.samples == 3 && watch.flat == 3) kill = true;
+  }
+  if (!names.empty()) {
+    auto desc = src->get_descriptor();
+    PaperLogger.info("Vivify Blit check: effect(s) {} -- picture in rgb=({},{},{}) spread={}, out rgb=({},{},{}) "
+                     "spread={}{}; screen {}x{} slices={} format={}",
+                     names, in.mean[0], in.mean[1], in.mean[2], in.spread, out.mean[0], out.mean[1], out.mean[2],
+                     out.spread, flatColour ? " (one flat colour)" : "", desc.get_width(), desc.get_height(),
+                     desc.get_volumeDepth(), static_cast<int>(desc.get_graphicsFormat().value__));
+  }
+  if (!kill) return;
+  for (auto* material : materials) {
+    auto const& watch = _blitGuardWatches[material];
+    if (watch.samples == 3 && watch.flat == 3) {
+      _blitGuardKilled.insert(material);
+      _blitMaterialValidCache[material] = false;
+    }
+  }
+  PaperLogger.warn("Vivify Blit: the effect(s) above turned a normal picture into one flat colour for 3 s; "
+                   "switched off for the rest of this level so the map can be seen (Flat-Screen Effect Guard "
+                   "in settings)");
+  FlushVivifyLogs();
 }
 
 void Runtime::CacheMainRenderDescriptor(UnityEngine::RenderTexture* src) {
@@ -403,12 +585,15 @@ void Runtime::ReleaseRenderTexture(UnityEngine::RenderTexture*& texture) {
 void Runtime::ReleaseCachedBlitTextures() {
   ReleaseRenderTexture(_mainBlitTexture);
   ReleaseRenderTexture(_scratchBlitTexture);
+  ReleaseRenderTexture(_blitGuardIn);
+  ReleaseRenderTexture(_blitGuardOut);
 }
 
 bool Runtime::CanUseBlitMaterial(UnityEngine::Material* material, int pass) const {
   if (!IsAlive(material)) {
     return false;
   }
+  if (_blitGuardKilled.contains(material)) return false;
   if (auto it = _blitMaterialValidCache.find(material); it != _blitMaterialValidCache.end()) {
     return it->second;
   }

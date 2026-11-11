@@ -11,6 +11,27 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.7] - 2026-11-11
+
+### Added
+- **Flat-Screen Effect Guard** (Performance section, on by default).
+  Reported: a map's screen effect turns the whole view one colour, and the
+  map is only playable with Disable All Blits on (Why's This Dealer goes all
+  yellow).
+  - While a screen effect has been on for a second or more, the mod samples
+    the picture going into the effects and the picture coming out, at 1 s,
+    2 s and 3 s.
+  - If all three show a normal picture going in and one flat colour coming
+    out, that effect is switched off for the rest of the level, so the map
+    can be seen and played. A flat black or white is left alone: that is a
+    fade.
+  - The first sample of each effect is written to the log ("Vivify Blit
+    check"), with the colours in and out and the screen texture's size.
+- This treats the symptom. In Why's This Dealer the effect itself is
+  translated correctly: it paints everything brighter than a very low
+  threshold flat yellow, so the cause is in the picture it is given on the
+  Quest, which is what the log line measures. Not tried on a headset.
+
 ## [0.15.6] - 2026-11-10
 
 ### Fixed
