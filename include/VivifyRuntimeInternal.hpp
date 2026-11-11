@@ -483,6 +483,22 @@ private:
   int _appliedFarCulling = 0;
   UnityEngine::RenderTexture* _mainBlitTexture = nullptr;
   UnityEngine::RenderTexture* _scratchBlitTexture = nullptr;
+  // Flat-screen guard: 16x16 samples of the picture before and after a
+  // call's effects, and per-effect bookkeeping.
+  struct BlitGuardWatch {
+    float start = 0.0f;
+    int lastFrame = -10;
+    int samples = 0;
+    int flat = 0;
+  };
+  UnityEngine::RenderTexture* _blitGuardIn = nullptr;
+  UnityEngine::RenderTexture* _blitGuardOut = nullptr;
+  UnityEngine::Texture2D* _blitGuardReader = nullptr;
+  std::unordered_map<UnityEngine::Material*, BlitGuardWatch> _blitGuardWatches;
+  std::set<UnityEngine::Material*> _blitGuardKilled;
+  bool EnsureBlitGuardTextures();
+  bool BlitGuardDue(std::vector<UnityEngine::Material*> const& materials);
+  void BlitGuardEvaluate(std::vector<UnityEngine::Material*> const& materials, UnityEngine::RenderTexture* src);
   int _cachedBlitWidth = 0;
   int _cachedBlitHeight = 0;
   int _cachedBlitFormat = 0;

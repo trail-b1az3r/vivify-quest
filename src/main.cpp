@@ -73,6 +73,9 @@ constexpr std::string_view kBlitFixConfigKey = "blitScreenTextureFix";
 // Map sabers (AssignObjectPrefab saber) replace the player's own, custom saber
 // mods included. Off keeps the player's sabers on every map (0.15.4).
 constexpr std::string_view kMapSabersConfigKey = "mapSabers";
+// Switches off a screen effect that turns a normal picture into one flat
+// colour for three seconds, and logs what went in and out (0.15.7).
+constexpr std::string_view kFlatScreenGuardConfigKey = "flatScreenGuard";
 // Renamed in 0.14.18 so every install starts with it off: 0.14.15 saved it
 // as on, and it may be what froze converted maps in the menu.
 constexpr std::string_view kPrepareShadersConfigKey = "prepareShadersInMenu";
@@ -133,6 +136,7 @@ bool gAudioLink = true;
 bool gMapRealtimeShadows = false;
 bool gMapReflectionProbes = true;
 bool gMapSabers = true;
+bool gFlatScreenGuard = true;
 bool gFullReflectionProbes = false;
 bool gSingleViewMapCameras = true;
 bool gAutoEffectResolution = true;
@@ -492,6 +496,9 @@ char const* SettingHint(std::u16string_view label) {
       {u"Disable All Blits",
        "Turns off every full-screen effect a map adds (colour grading, distortion, flashes). Use it when an "
        "effect covers the screen or makes a map lag."},
+      {u"Flat-Screen Effect Guard",
+       "If a map's screen effect turns the whole view into one flat colour for 3 seconds, switches that effect "
+       "off for the rest of the level so you can see the map. Fades to black or white are left alone."},
       {u"Submit Scores On Vivify Maps",
        "Lets scores from Vivify maps go to leaderboards, and lets replays be recorded. Off stops both."},
       {u"Disable Custom Note Visuals",
@@ -795,6 +802,9 @@ void RegisterModSettings() {
         toggle(u"Disable All Blits", GetDisableAllBlits(),
                [](bool value) { SetBoolConfigValue(kDisableAllBlitsConfigKey, value, gDisableAllBlits); });
 
+        toggle(u"Flat-Screen Effect Guard", gFlatScreenGuard,
+               [](bool value) { SetBoolConfigValue(kFlatScreenGuardConfigKey, value, gFlatScreenGuard); });
+
         header("Gameplay");
         toggle(u"Submit Scores On Vivify Maps", GetSubmitScoresOnVivifyMaps(),
                [](bool value) { SetBoolConfigValue(kSubmitScoresConfigKey, value, gSubmitScores); });
@@ -1041,6 +1051,10 @@ bool GetDisableAllBlits() {
 
 bool GetDisableCreateCameraDepth() {
   return gDisableCreateCameraDepth;
+}
+
+bool GetFlatScreenGuard() {
+  return gFlatScreenGuard;
 }
 
 bool GetMapSabers() {
@@ -1327,6 +1341,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kMapRealtimeShadowsConfigKey, false, gMapRealtimeShadows);
   needsWrite |= EnsureBoolConfigValue(kMapReflectionProbesConfigKey, true, gMapReflectionProbes);
   needsWrite |= EnsureBoolConfigValue(kMapSabersConfigKey, true, gMapSabers);
+  needsWrite |= EnsureBoolConfigValue(kFlatScreenGuardConfigKey, true, gFlatScreenGuard);
   needsWrite |= EnsureBoolConfigValue(kFullReflectionProbesConfigKey, false, gFullReflectionProbes);
   needsWrite |= EnsureBoolConfigValue(kSingleViewMapCamerasConfigKey, true, gSingleViewMapCameras);
   needsWrite |= EnsureBoolConfigValue(kAutoEffectResolutionConfigKey, true, gAutoEffectResolution);

@@ -33,6 +33,7 @@ bool GetDisableAllBlits();
 bool GetDisableCreateCameraDepth();
 bool GetDisableCustomNoteVisuals();
 bool GetMapSabers();
+bool GetFlatScreenGuard();
 bool GetDisableVisualsInMultiplayer();
 bool GetDisableVRCenterAdjust();
 bool GetConvertPcBundlesOnDevice();
