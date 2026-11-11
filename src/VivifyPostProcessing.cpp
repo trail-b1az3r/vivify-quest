@@ -63,6 +63,22 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
 
   cb->Blit(ToTargetId(src), ToTargetId(main));
 
+  // _ScreenParams for the effects (0.15.8): the size of the picture they work
+  // on. It is a built-in that only a camera's own setup writes, so inside
+  // this command buffer it is whatever the last camera to render left there
+  // -- a map camera or a probe drawing into a small texture leaves a small
+  // size. Breezer's VHS effect snaps its sampling to a grid of _ScreenParams
+  // pixels; with a wrong size the whole view samples a handful of points, or
+  // one, and the screen goes a single colour.
+  static int const screenParamsId = UnityEngine::Shader::PropertyToID(u"_ScreenParams");
+  _blitGuardScreenParams = UnityEngine::Shader::GetGlobalVector(screenParamsId);
+  auto setScreenParams = [&](UnityEngine::RenderTexture* target) {
+    float const width = static_cast<float>(std::max(target->get_width(), 1));
+    float const height = static_cast<float>(std::max(target->get_height(), 1));
+    cb->SetGlobalVector(screenParamsId, UnityEngine::Vector4(width, height, 1.0f + 1.0f / width, 1.0f + 1.0f / height));
+  };
+  setScreenParams(main);
+
   // Flat-screen guard (0.15.7): now and then, a 16x16 sample of the picture
   // before and after this call's effects (BlitGuard* below).
   std::vector<UnityEngine::Material*> guardMaterials;
@@ -134,6 +150,15 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
         auto source = srcId;
         auto target = dstId;
         constexpr int kCopyElement = 2;  // CommandBuffer.CopyTexture(src, srcElement, dst, dstElement)
+        // The one-eye program has to be the one chosen for these blits. Where
+        // the shader also has a two-eye variant (Fall Away's overlay), Unity
+        // would pick that while the stereo keyword is on, so what is queued
+        // so far is run, the keyword goes off for the two eye blits, and
+        // comes back on after (0.15.8).
+        UnityEngine::Graphics::ExecuteCommandBuffer(cb);
+        cb->Clear();
+        bool const stereoWasOn = UnityEngine::Shader::IsKeywordEnabled(StringW("STEREO_MULTIVIEW_ON"));
+        if (stereoWasOn) UnityEngine::Shader::DisableKeyword(StringW("STEREO_MULTIVIEW_ON"));
         for (int eye = 0; eye < 2; eye++) {
           cb->CopyTexture_Internal(byref(source), eye, -1, -1, -1, -1, -1, byref(eyeInId), 0, -1, -1, -1,
                                    kCopyElement);
@@ -145,6 +170,9 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
           cb->CopyTexture_Internal(byref(eyeOutId), 0, -1, -1, -1, -1, -1, byref(target), eye, -1, -1, -1,
                                    kCopyElement);
         }
+        UnityEngine::Graphics::ExecuteCommandBuffer(cb);
+        cb->Clear();
+        if (stereoWasOn) UnityEngine::Shader::EnableKeyword(StringW("STEREO_MULTIVIEW_ON"));
         return;
       }
       if (IsManagedAlive(eyeIn)) UnityEngine::RenderTexture::ReleaseTemporary(eyeIn);
@@ -213,6 +241,7 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
   }
 
   if (guardProbe) emitProbe(mainCurrent, _blitGuardOut);
+  setScreenParams(src);
   cb->Blit(ToTargetId(mainCurrent), destId);
   UnityEngine::Graphics::ExecuteCommandBuffer(cb);
   cb->Clear();
@@ -334,10 +363,11 @@ void Runtime::BlitGuardEvaluate(std::vector<UnityEngine::Material*> const& mater
   if (!names.empty()) {
     auto desc = src->get_descriptor();
     PaperLogger.info("Vivify Blit check: effect(s) {} -- picture in rgb=({},{},{}) spread={}, out rgb=({},{},{}) "
-                     "spread={}{}; screen {}x{} slices={} format={}",
+                     "spread={}{}; screen {}x{} slices={} format={}; _ScreenParams before the effects=({:.0f},{:.0f})",
                      names, in.mean[0], in.mean[1], in.mean[2], in.spread, out.mean[0], out.mean[1], out.mean[2],
                      out.spread, flatColour ? " (one flat colour)" : "", desc.get_width(), desc.get_height(),
-                     desc.get_volumeDepth(), static_cast<int>(desc.get_graphicsFormat().value__));
+                     desc.get_volumeDepth(), static_cast<int>(desc.get_graphicsFormat().value__),
+                     _blitGuardScreenParams.x, _blitGuardScreenParams.y);
   }
   if (!kill) return;
   for (auto* material : materials) {
@@ -872,7 +902,10 @@ UnityEngine::Material* Runtime::BlitMaterialFor(UnityEngine::Material* material,
 // at selection). RSIH's end-of-song "TV shutdown" is one: its shader has no
 // stereo code, so Unity compiled no multiview program for it.
 bool Runtime::NeedsPerEyeBlit(UnityEngine::Material* material, UnityEngine::RenderTexture* destination) {
-  if (_singleViewOnlyNativeShaders.empty() || !IsAlive(material) || !IsAlive(destination)) return false;
+  if ((_singleViewOnlyNativeShaders.empty() && _stereoDropsTextureShaders.empty()) || !IsAlive(material) ||
+      !IsAlive(destination)) {
+    return false;
+  }
   auto descriptor = destination->get_descriptor();
   if (descriptor.get_dimension() != UnityEngine::Rendering::TextureDimension::Tex2DArray ||
       descriptor.get_volumeDepth() != 2) {
@@ -881,10 +914,11 @@ bool Runtime::NeedsPerEyeBlit(UnityEngine::Material* material, UnityEngine::Rend
   auto* shader = material->get_shader().unsafePtr();
   if (!IsAlive(shader)) return false;
   std::string const name = ShaderNameForLog(shader);
-  if (!_singleViewOnlyNativeShaders.contains(name)) return false;
+  bool const dropsTexture = _stereoDropsTextureShaders.contains(name);
+  if (!_singleViewOnlyNativeShaders.contains(name) && !dropsTexture) return false;
   if (_perEyeBlitLogged.insert(name).second) {
-    PaperLogger.info("Vivify Blit: '{}' has no two-eye program in this map's Quest bundle; running it once per "
-                     "eye", name);
+    PaperLogger.info("Vivify Blit: '{}' {} in this map's Quest bundle; running its one-eye program once per eye",
+                     name, dropsTexture ? "leaves a texture out of its two-eye program" : "has no two-eye program");
   }
   return true;
 }

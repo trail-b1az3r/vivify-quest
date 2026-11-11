@@ -145,6 +145,11 @@ struct ShaderScan {
   // Shaders with GLSL programs of which none is a multiview (two-eye) one:
   // the shader has no stereo code, so it can only draw one eye at a time.
   std::vector<std::string> singleViewOnlyShaderNames;
+  // Shaders that have two-eye programs, but whose one-eye programs sample a
+  // texture no two-eye program does: in a headset the shader leaves that part
+  // out. Fall Away's Aeroluna/OverlayUITex lays its HUD texture over the
+  // screen only in its one-eye program.
+  std::vector<std::string> stereoDropsTextureShaderNames;
   // Whether any program names _CameraDepthTexture (GLSL text, a DXBC resource
   // table, or a parameter blob): only then does the map need the depth
   // pre-pass that renders it.

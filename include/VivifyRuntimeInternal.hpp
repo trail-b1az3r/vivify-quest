@@ -9,6 +9,7 @@
 #include <optional>
 #include <mutex>
 #include "VivifyTypes.hpp"
+#include "UnityEngine/ReflectionProbe.hpp"
 #include "UnityEngine/Rendering/CommandBuffer.hpp"
 #include "UnityEngine/AssetBundleCreateRequest.hpp"
 #include "UnityEngine/AssetBundleRequest.hpp"
@@ -372,6 +373,18 @@ private:
   void HideOtherSaberRenderers(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
                                VisualReplacement& replacement);
   void DiscoverSabers();
+  void NoteReflectionProbes(UnityEngine::GameObject* root);
+  void RefreshSlowProbes();
+  void OnAnyCameraPreRender(UnityEngine::Camera* camera);
+  void OnAnyCameraPostRender(UnityEngine::Camera* camera);
+  void InstallCameraCallbacks();
+  std::vector<UnityEngine::ReflectionProbe*> _slowProbes;
+  float _lastSlowProbeRefresh = 0.0f;
+  bool _probeCameraRendering = false;
+  void HideOtherSaberTrails(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
+                            VisualReplacement& replacement);
+  // Whether the loaded bundle is a PC bundle converted on the headset.
+  bool LoadedBundleIsConverted() const;
   bool EnsureMapSaberVisible(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
                              VisualReplacement& replacement);
   void NoteHeadsetLayers(UnityEngine::GameObject* root, std::string const& asset);
@@ -496,6 +509,7 @@ private:
   UnityEngine::Texture2D* _blitGuardReader = nullptr;
   std::unordered_map<UnityEngine::Material*, BlitGuardWatch> _blitGuardWatches;
   std::set<UnityEngine::Material*> _blitGuardKilled;
+  UnityEngine::Vector4 _blitGuardScreenParams = UnityEngine::Vector4(0.0f, 0.0f, 0.0f, 0.0f);
   bool EnsureBlitGuardTextures();
   bool BlitGuardDue(std::vector<UnityEngine::Material*> const& materials);
   void BlitGuardEvaluate(std::vector<UnityEngine::Material*> const& materials, UnityEngine::RenderTexture* src);
@@ -600,6 +614,7 @@ private:
   // Shaders in the selected map's Quest bundle whose programs are all
   // single-view, by name; a blit with one runs once per eye.
   std::set<std::string> _singleViewOnlyNativeShaders;
+  std::set<std::string> _stereoDropsTextureShaders;
   std::set<std::string> _perEyeBlitLogged;
   bool NeedsPerEyeBlit(UnityEngine::Material* material, UnityEngine::RenderTexture* destination);
   std::string _blitCompanionLevel;

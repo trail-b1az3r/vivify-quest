@@ -351,6 +351,8 @@ struct VisualReplacement {
 
   std::string appliedFingerprint;
   bool hideOriginal = false;
+  // The map replaces the saber trail: other trails are kept hidden.
+  bool hideTrails = false;
   // True when a replacement wears a stand-in shader and so gets its colour
   // mirrored under _BaseColor/_TintColor/_MainColor as well as _Color.
   bool tintAliases = false;

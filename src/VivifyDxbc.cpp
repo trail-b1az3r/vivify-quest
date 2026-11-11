@@ -3950,6 +3950,20 @@ GlslResult GlslEmitter::Run() {
     source += "#extension GL_OVR_multiview2 : require\n";
     if (_program.stage == Stage::Vertex) source += "layout(num_views = 2) in;\n";
   }
+  if (_options.multiview && _program.stage == Stage::Geometry) {
+    // A geometry stage in a two-eye program (0.15.8). OVR_multiview alone
+    // forbids one; EXT_multiview_tessellation_geometry_shader allows it, on
+    // the condition that the geometry shader declares the same view count as
+    // the vertex shader. Without the declaration the program is not a valid
+    // multiview program: grass, fur and wireframes drew in the left eye only,
+    // or not at all. Where the driver has the extension the stage now runs
+    // once per view; where it does not, the source is as it was.
+    source += "#extension GL_OVR_multiview2 : enable\n";
+    source += "#extension GL_EXT_multiview_tessellation_geometry_shader : enable\n";
+    source += "#ifdef GL_EXT_multiview_tessellation_geometry_shader\n";
+    source += "layout(num_views = 2) in;\n";
+    source += "#endif\n";
+  }
   source += "precision highp float;\n";
   source += "precision highp int;\n";
   source += _declarations;

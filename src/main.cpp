@@ -36,7 +36,7 @@
 
 static modloader::ModInfo modInfo{MOD_ID, VERSION, 0};
 // A rebuild of the same version, shown beside it in the menu and the logs.
-constexpr char const* kBuildLabel = "";
+constexpr char const* kBuildLabel = " build 2";
 
 // Defined below, outside this namespace; the settings reset button re-applies it.
 void EnsureConfigDefaults();
