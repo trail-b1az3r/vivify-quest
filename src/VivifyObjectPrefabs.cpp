@@ -1,4 +1,6 @@
 #include "VivifyRuntimeInternal.hpp"
+#include "UnityEngine/SystemInfo.hpp"
+#include "Unity/XR/Oculus/Utils.hpp"
 #include "custom-types/shared/delegate.hpp"
 #include "System/Delegate.hpp"
 #include "UnityEngine/CameraType.hpp"
@@ -835,6 +837,13 @@ void Runtime::InstantiatePrefab(CustomJSONData::CustomEventData* customEventData
   ReduceReflectionProbes(instance);
   NoteReflectionProbes(instance);
   NoteHeadsetLayers(instance, data.asset);
+  // No physics for a map's scenery (0.15.10). Prefabs carry the colliders
+  // Unity puts on every primitive (743 Aether has 43 mesh colliders), nothing
+  // in a map uses them, and animated ones are moved through the physics scene
+  // every frame. They are also the likeliest source of the controllers
+  // buzzing at random in Vivify maps: the sabers' own physics checks run
+  // against whatever colliders are in reach.
+  CleanCustomObject(instance);
   if (LoadedBundleIsConverted()) {
     int const particles = DisableParticleInstancing(instance);
     if (particles > 0) {
@@ -1410,6 +1419,7 @@ void Runtime::NoteHeadsetLayers(UnityEngine::GameObject* root, std::string const
 // Vivify map plays they are switched off, unless "Saber Lights On Map
 // Objects" is on, and come back when the level ends.
 void Runtime::HideForeignSaberLights() {
+  if (_currentBeatmapData != nullptr && !_isResetting) ApplyVivifyFoveation();
   if (_currentBeatmapData == nullptr || _isResetting || GetSaberLightsOnMapObjects()) return;
   float const now = UnityEngine::Time::get_unscaledTime();
   if (now >= _lastSaberLightSweep && now - _lastSaberLightSweep < 1.0f) return;
@@ -1447,6 +1457,43 @@ void Runtime::HideForeignSaberLights() {
                      "shadows {}); 'Saber Lights On Map Objects' in settings keeps them",
                      IsAlive(lightObject.unsafePtr()) ? ToStdString(lightObject->get_name()) : "?",
                      light->get_intensity(), light->get_shadows().value__ != 0 ? "on" : "off");
+  }
+}
+
+// The headset's own foveated rendering for the length of a Vivify map
+// (0.15.10): the edges of each eye's picture are shaded at lower detail by the
+// system, which knows the lens layout of whichever Quest this is. Where the
+// headset tracks the eyes (Quest Pro) the sharp area follows them. What the
+// game had set comes back when the level ends. Screen effects are worked out
+// in the mod's own textures and are not foveated by this.
+void Runtime::ApplyVivifyFoveation() {
+  int const wanted = GetVivifyFoveationLevel();
+  if (wanted <= 0 || _foveationApplied) return;
+  try {
+    _foveationBefore = Unity::XR::Oculus::Utils::GetFoveationLevel();
+    bool const eyeTracked = Unity::XR::Oculus::Utils::get_eyeTrackedFoveatedRenderingSupported();
+    _eyeTrackedBefore = eyeTracked && Unity::XR::Oculus::Utils::get_eyeTrackedFoveatedRenderingEnabled();
+    if (eyeTracked && !_eyeTrackedBefore) Unity::XR::Oculus::Utils::set_eyeTrackedFoveatedRenderingEnabled(true);
+    bool const ok = Unity::XR::Oculus::Utils::SetFoveationLevel(wanted);
+    _foveationApplied = true;
+    _foveationEyeTracked = eyeTracked;
+    PaperLogger.info("Vivify foveated rendering: level {} for this map (was {}), eye-tracked {}, accepted {}; "
+                     "device '{}'", wanted, _foveationBefore, BoolText(eyeTracked), BoolText(ok),
+                     ToStdString(UnityEngine::SystemInfo::get_deviceModel()));
+  } catch (...) {
+    PaperLogger.warn("Vivify foveated rendering: the headset's foveation could not be set");
+  }
+}
+
+void Runtime::RestoreVivifyFoveation() {
+  if (!_foveationApplied) return;
+  _foveationApplied = false;
+  try {
+    Unity::XR::Oculus::Utils::SetFoveationLevel(_foveationBefore);
+    if (_foveationEyeTracked && !_eyeTrackedBefore) {
+      Unity::XR::Oculus::Utils::set_eyeTrackedFoveatedRenderingEnabled(false);
+    }
+  } catch (...) {
   }
 }
 

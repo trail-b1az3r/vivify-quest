@@ -375,6 +375,12 @@ private:
   void DiscoverSabers();
   void HideForeignSaberLights();
   void RestoreForeignSaberLights();
+  void ApplyVivifyFoveation();
+  void RestoreVivifyFoveation();
+  bool _foveationApplied = false;
+  bool _foveationEyeTracked = false;
+  bool _eyeTrackedBefore = false;
+  int _foveationBefore = 0;
   std::vector<UnityEngine::Light*> _disabledSaberLights;
   float _lastSaberLightSweep = 0.0f;
   void NoteReflectionProbes(UnityEngine::GameObject* root);
@@ -653,6 +659,7 @@ private:
 public:
   void NoteTextureCameras(int count);
   void RegisterSingleViewMaterials(UnityEngine::GameObject* root);
+  void RegisterLiveSingleViewMaterials();
   void BeginSingleViewCamera();
   void EndSingleViewCamera();
 

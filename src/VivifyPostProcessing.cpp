@@ -159,13 +159,16 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
         cb->Clear();
         bool const stereoWasOn = UnityEngine::Shader::IsKeywordEnabled(StringW("STEREO_MULTIVIEW_ON"));
         if (stereoWasOn) UnityEngine::Shader::DisableKeyword(StringW("STEREO_MULTIVIEW_ON"));
+        // A converted map's material is on two-eye programs only: its copy
+        // on the single-view build is the one that can draw here.
+        auto* eyeMaterial = BlitMaterialFor(material, eyeOut);
         for (int eye = 0; eye < 2; eye++) {
           cb->CopyTexture_Internal(byref(source), eye, -1, -1, -1, -1, -1, byref(eyeInId), 0, -1, -1, -1,
                                    kCopyElement);
           if (pass >= 0) {
-            cb->Blit(eyeInId, eyeOutId, material, pass);
+            cb->Blit(eyeInId, eyeOutId, eyeMaterial, pass);
           } else {
-            cb->Blit(eyeInId, eyeOutId, material);
+            cb->Blit(eyeInId, eyeOutId, eyeMaterial);
           }
           cb->CopyTexture_Internal(byref(eyeOutId), 0, -1, -1, -1, -1, -1, byref(target), eye, -1, -1, -1,
                                    kCopyElement);
