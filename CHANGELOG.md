@@ -11,6 +11,54 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.10] - 2026-11-12
+
+From reports on 0.15.9. Nothing here is tried on a headset.
+
+### Fixed
+- **A map's screen cameras and reflection probes drew prefabs placed at the
+  start of the level as nothing.** The single-view shaders those cameras need
+  load in the background and land just after the level starts; prefabs
+  already spawned by then were never given them. They are now, when the
+  shaders arrive. This is why Get Your Wish's water kept reflecting only part
+  of the scene, and why the camera that films Fall Away's HUD filmed nothing.
+- **Fall Away's HUD with the map's Windows bundle.** In the converted map the
+  overlay effect's two-eye code passes the screen through without the HUD
+  texture. The mod now compares a converted map's two-eye and single-view
+  builds, finds effects like this, and runs them once per eye with the
+  single-view code.
+- **Kitchen Gun: a white flash where the screen should freeze.** The freeze
+  copies the screen into a texture the map declares; a two-eye program draws
+  nothing into such a texture, so it stayed blank. Maps that declare screen
+  textures or create cameras now get the single-view build automatically (it
+  was the opt-in "Blit Fix For Screen Textures").
+- **Controllers buzzing at random (a likely cause).** Map prefabs keep the
+  colliders Unity puts on every primitive. Colliders on a map's scenery are
+  now switched off, as they already were on note and saber prefabs. That also
+  takes animated colliders out of the physics step.
+
+### Added
+- **Foveated Rendering** (Performance; 0 = the game's own setting, 1 to 4).
+  Uses the headset's own foveation during Vivify maps, so the edges of your
+  view cost less; the system knows each Quest model's lenses, and follows the
+  eyes on a headset that tracks them. Screen effects are not affected by it.
+
+### Changed
+- The settings list is narrower, with room on both sides.
+
+### Not changed, and why
+- **Pre-rendering a map before playing** is not possible in VR: every frame
+  depends on where your head is at that moment. What can be done ahead is
+  already done: converting the map and, with Prepare Shaders Before Playing,
+  compiling its shaders.
+- **Geometry-shader effects (743 Aether's sparkles, Lifelike's grass and
+  text lines)**: the Quest's GPU cannot run that shader stage in its two-eye
+  rendering. They are flat or missing, in both eyes, with "Geometry Effects
+  In Both Eyes" on. Drawing only those objects once per eye is a larger piece
+  of work that has not been attempted.
+- **Breezer's screen going one colour, Aether's mirrors, Get Your Wish's
+  window, Lifelike's piano**: not found from the map files alone.
+
 ## [0.15.9] - 2026-11-11
 
 From the logs of 0.15.8 build 2 (`logs_4`). Converted maps are reconverted

@@ -2505,6 +2505,35 @@ ShaderScan ScanShaders(std::string const& bundlePath) {
           }
         }
       }
+      // Every texture any of the shader's GLSL programs samples (0.15.10):
+      // compared between a converted map's two-eye build and its single-view
+      // build, it shows a shader whose two-eye code leaves a texture out.
+      if (decoded.ok && !shader.name.empty()) {
+        for (auto const& program : decoded.programs) {
+          if (program.raw || !SerializedFileParse::GpuProgramIsGlslSource(program.programType)) continue;
+          std::string_view const text(reinterpret_cast<char const*>(program.code.data()), program.code.size());
+          size_t at = 0;
+          while ((at = text.find("sampler", at)) != std::string_view::npos) {
+            size_t const lineStart = text.rfind('\n', at) == std::string_view::npos ? 0 : text.rfind('\n', at) + 1;
+            size_t const lineEnd = std::min(text.find(';', at), text.find('\n', at));
+            at += 7;
+            if (lineEnd == std::string_view::npos || text.substr(lineStart, at - lineStart).find("uniform") ==
+                                                         std::string_view::npos) {
+              continue;
+            }
+            size_t nameEnd = lineEnd;
+            while (nameEnd > at && (text[nameEnd - 1] == ' ' || text[nameEnd - 1] == ']')) nameEnd--;
+            size_t nameStart = nameEnd;
+            while (nameStart > at && (std::isalnum(static_cast<unsigned char>(text[nameStart - 1])) ||
+                                      text[nameStart - 1] == '_')) {
+              nameStart--;
+            }
+            if (nameEnd > nameStart) {
+              scan.samplerNamesByShader[shader.name].emplace(text.substr(nameStart, nameEnd - nameStart));
+            }
+          }
+        }
+      }
       // Textures the one-eye programs sample and no two-eye program does: the
       // shader's stereo variant leaves part of its effect out.
       if (decoded.ok && glslHere > 0 && multiviewHere && !shader.name.empty()) {

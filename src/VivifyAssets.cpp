@@ -955,6 +955,7 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
   _selectedBundlePath.clear();
   _selectedMapHasVivifyRequirement = false;
   CancelPendingDownload();
+  _stereoDropsTextureShaders.clear();
   if (!event.isCustom || event.customBeatmapLevel == nullptr) {
     SongCore::API::PlayButton::EnablePlayButton("Vivify");
     return;
@@ -1325,6 +1326,24 @@ std::string BlitCompanionPath(std::string const& pcBundlePath) {
 
 // Whether any difficulty of the level has a Blit event (or a legacy alias).
 // A plain text search: false positives only cost a conversion.
+// Whether any difficulty of the level uses one of these custom event types.
+bool LevelUsesEvents(std::string const& levelPath, std::initializer_list<char const*> types) {
+  std::error_code ec;
+  for (auto const& entry : std::filesystem::directory_iterator(levelPath, ec)) {
+    if (!entry.is_regular_file(ec)) continue;
+    std::string lowered = entry.path().filename().string();
+    std::transform(lowered.begin(), lowered.end(), lowered.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    if (lowered.size() < 4 || lowered.substr(lowered.size() - 4) != ".dat" || lowered == "info.dat") continue;
+    std::ifstream in(entry.path(), std::ios::binary);
+    std::string const text((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    for (char const* type : types) {
+      if (text.find(type) != std::string::npos) return true;
+    }
+  }
+  return false;
+}
+
 bool LevelUsesBlits(std::string const& levelPath) {
   std::error_code ec;
   for (auto const& entry : std::filesystem::directory_iterator(levelPath, ec)) {
@@ -1362,12 +1381,20 @@ void Runtime::PrepareBlitCompanion(std::string const& levelPath, std::string con
   bool const forBlits = GetBlitScreenTextureFix();
   bool const forCameras = GetSingleViewMapCameras() && !pcBundlePath.empty() &&
                           std::filesystem::exists(TextureCameraMarkerPath(pcBundlePath), ec);
-  if ((!forBlits && !forCameras) || ReplayVariantWanted() || !GetTranslateShadersOnConversion() ||
-      pcBundlePath.empty()) {
-    return;
-  }
+  if (ReplayVariantWanted() || !GetTranslateShadersOnConversion() || pcBundlePath.empty()) return;
   if (_blitCompanionLevel == levelPath && !_singleViewShaders.empty()) return;
-  std::thread([this, levelPath, pcBundlePath, forBlits, forCameras]() {
+  std::thread([this, levelPath, pcBundlePath, forBlits, camerasMarked = forCameras]() {
+    // A map that draws into textures of its own -- a screen texture it
+    // declares, or a camera it creates -- needs the single-view build without
+    // being asked (0.15.10): a two-eye program draws nothing into such a
+    // texture, and whatever shows it is then blank. Kitchen Gun freezes the
+    // picture by copying the screen into a texture; with nothing copied, the
+    // "freeze" was a white screen for as long as it lasted.
+    bool const ownTextures =
+        GetSingleViewMapCameras() &&
+        LevelUsesEvents(levelPath, {"\"CreateScreenTexture\"", "\"DeclareRenderTexture\"", "\"CreateCamera\"",
+                                    "\"DeclareCullingTexture\""});
+    bool const forCameras = camerasMarked || ownTextures;
     if (!forCameras && !(forBlits && LevelUsesBlits(levelPath))) return;
     std::string const companion = BlitCompanionPath(pcBundlePath);
     if (!CachedConversionIsCurrent(companion)) {
@@ -1383,8 +1410,50 @@ void Runtime::PrepareBlitCompanion(std::string const& levelPath, std::string con
       }
       MarkConversionCurrent(companion);
     }
-    BSML::MainThreadScheduler::Schedule([this, levelPath, companion, forCameras]() {
+    // Shaders whose two-eye code samples fewer textures than their
+    // single-view code (0.15.10): a screen effect that only lays its texture
+    // over the picture outside a headset. Fall Away's HUD overlay, from the PC
+    // bundle, is one: in the converted map's two-eye program it passes the
+    // screen through. Such an effect is run per eye with the single-view
+    // program. Found by comparing the two converted builds; kept in a file
+    // beside the companion so each map is compared once.
+    std::set<std::string> dropsTexture;
+    {
+      std::string const listPath = companion + ".overlay";
+      std::error_code listEc;
+      if (std::filesystem::exists(listPath, listEc)) {
+        std::ifstream in(listPath);
+        for (std::string line; std::getline(in, line);) {
+          if (!line.empty()) dropsTexture.insert(line);
+        }
+      } else {
+        auto const twoEye = BundleConvert::ScanShaders(ConvertedBundlePath(pcBundlePath));
+        auto const oneEye = BundleConvert::ScanShaders(companion);
+        if (twoEye.parsed && oneEye.parsed) {
+          for (auto const& [name, samplers] : oneEye.samplerNamesByShader) {
+            auto const other = twoEye.samplerNamesByShader.find(name);
+            if (other == twoEye.samplerNamesByShader.end()) continue;
+            for (auto const& sampler : samplers) {
+              if (!other->second.contains(sampler)) {
+                dropsTexture.insert(name);
+                break;
+              }
+            }
+          }
+          std::ofstream out(listPath);
+          for (auto const& name : dropsTexture) out << name << "\n";
+        }
+      }
+    }
+    BSML::MainThreadScheduler::Schedule([this, levelPath, companion, forCameras,
+                                         dropsTexture = std::move(dropsTexture)]() {
       if (levelPath != _selectedLevelPath) return;
+      for (auto const& name : dropsTexture) {
+        if (_stereoDropsTextureShaders.insert(name).second) {
+          PaperLogger.info("Vivify Blit: '{}' samples a texture only in its single-view code; as a screen effect "
+                           "it will run once per eye", name);
+        }
+      }
       LoadBlitCompanion(levelPath, companion, forCameras);
     });
   }).detach();
@@ -1464,6 +1533,30 @@ void Runtime::FinishBlitCompanion(bool current) {
   PaperLogger.info("Vivify Blit: {} single-view shader(s) ready for blits into screen textures{} ('{}')",
                    _singleViewShaders.size(), _blitCompanionWantsPrefabs ? " and the map's texture cameras" : "",
                    _blitCompanionLoadingPath);
+  RegisterLiveSingleViewMaterials();
+}
+
+// Prefabs that were spawned before the single-view shaders finished loading
+// (0.15.10). The shaders load in the background and usually land a moment
+// after the level has started, by which time every prefab placed at beat 0
+// had been looked at and found nothing to register: a map's screen cameras
+// and reflection probes then drew those prefabs with two-eye programs, which
+// draw nothing there. Get Your Wish's water went on reflecting only the
+// notes; Fall Away's HUD camera filmed nothing.
+void Runtime::RegisterLiveSingleViewMaterials() {
+  if (!_blitCompanionWantsPrefabs || _singleViewShaders.empty()) return;
+  size_t const before = _singleViewSwaps.size();
+  for (auto const& [id, prefab] : _livePrefabs) RegisterSingleViewMaterials(prefab.gameObject);
+  for (auto const& [controller, replacement] : _saberReplacements) {
+    for (auto* spawned : replacement.spawnedObjects) RegisterSingleViewMaterials(spawned);
+  }
+  for (auto const& [controller, replacement] : _noteReplacements) {
+    for (auto* spawned : replacement.spawnedObjects) RegisterSingleViewMaterials(spawned);
+  }
+  if (_singleViewSwaps.size() != before) {
+    PaperLogger.info("Vivify texture cameras: {} material(s) of prefabs already in the level now have single-view "
+                     "shaders for the map's cameras and reflection probes", _singleViewSwaps.size() - before);
+  }
 }
 
 void Runtime::PollBlitCompanionPrefabs() {

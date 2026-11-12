@@ -33,6 +33,7 @@ bool GetDisableAllBlits();
 bool GetDisableCreateCameraDepth();
 bool GetDisableCustomNoteVisuals();
 bool GetMapSabers();
+int GetVivifyFoveationLevel();
 bool GetGeometryEffectsBothEyes();
 bool GetSaberLightsOnMapObjects();
 bool GetFlatScreenGuard();

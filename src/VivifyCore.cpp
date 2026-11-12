@@ -614,6 +614,7 @@ void Runtime::ResetRuntime(std::string_view reason) {
   _blitGuardWatches.clear();
   _slowProbes.clear();
   RestoreForeignSaberLights();
+  RestoreVivifyFoveation();
   _blitGuardKilled.clear();
   _cachedBlitWidth = 0;
   _cachedBlitHeight = 0;

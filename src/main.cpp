@@ -75,6 +75,9 @@ constexpr std::string_view kBlitFixConfigKey = "blitScreenTextureFix";
 // Map sabers (AssignObjectPrefab saber) replace the player's own, custom saber
 // mods included. Off keeps the player's sabers on every map (0.15.4).
 constexpr std::string_view kMapSabersConfigKey = "mapSabers";
+// The headset's fixed foveated rendering level during Vivify maps: 0 leaves
+// the game's own setting alone, 1-4 are the system's low to high-top (0.15.10).
+constexpr std::string_view kFoveationConfigKey = "vivifyFoveationLevel";
 // Lets lights another mod puts on the sabers light a Vivify map's objects.
 // Off by default: they are switched off while a Vivify map plays (0.15.9).
 constexpr std::string_view kSaberLightsConfigKey = "saberLightsOnMapObjects";
@@ -195,6 +198,7 @@ bool gCrashGuard = true;
 bool gPcBundleForMissingShaders = false;
 // Metres beyond which the main camera draws nothing; 0 is off (0.14.23).
 int gFarCullingDistance = 0;
+int gFoveationLevel = 0;
 
 // Both diagnostic files live beside the mod's own data, and both are .txt.
 //
@@ -503,6 +507,10 @@ char const* SettingHint(std::u16string_view label) {
        "turn it off if things go missing."},
       {u"Far Culling (m, 0 = off)",
        "Does not draw anything farther away than this many metres. 0 draws everything."},
+      {u"Foveated Rendering (0 = game's)",
+       "During Vivify maps, renders the edges of your view at lower detail to save performance, using the "
+       "headset's own foveation: 1 is mild, 4 is strongest. Uses eye tracking where the headset has it. 0 leaves "
+       "the game's setting alone."},
       {u"Disable All Blits",
        "Turns off every full-screen effect a map adds (colour grading, distortion, flashes). Use it when an "
        "effect covers the screen or makes a map lag."},
@@ -713,10 +721,10 @@ void RegisterModSettings() {
         if (container == nullptr) return;
         UnityEngine::Transform* parent = container->get_transform().unsafePtr();
         gAdvancedWidgets.clear();
-        // The list sat slightly off the left edge of the panel: a little room
-        // on the left brings its rows back inside (0.15.9).
+        // The list sat off the left edge of the panel and ran its full width:
+        // room on both sides makes it narrower and keeps it inside (0.15.10).
         if (auto* layout = container->GetComponent<UnityEngine::UI::VerticalLayoutGroup*>(); layout != nullptr) {
-          layout->set_padding(UnityEngine::RectOffset::New_ctor(4, 1, 0, 0));
+          layout->set_padding(UnityEngine::RectOffset::New_ctor(9, 9, 0, 0));
         }
 
         // Which build is actually running, in the headset, without a file.
@@ -821,6 +829,11 @@ void RegisterModSettings() {
                 SetIntConfigValue(kFarCullingConfigKey, metres, gFarCullingDistance);
               });
         }
+        increment(u"Foveated Rendering (0 = game's)", 1.0f, static_cast<float>(gFoveationLevel), 0.0f, 4.0f,
+                  [](float value) {
+                    int const level = std::clamp(static_cast<int>(value + 0.5f), 0, 4);
+                    SetIntConfigValue(kFoveationConfigKey, level, gFoveationLevel);
+                  });
         toggle(u"Disable All Blits", GetDisableAllBlits(),
                [](bool value) { SetBoolConfigValue(kDisableAllBlitsConfigKey, value, gDisableAllBlits); });
 
@@ -1292,6 +1305,10 @@ bool GetOffscreenCulling() {
   return !kLiteBuild && gOffscreenCulling;
 }
 
+int GetVivifyFoveationLevel() {
+  return gFoveationLevel;
+}
+
 int GetFarCullingDistance() {
   return kLiteBuild ? 0 : std::clamp(gFarCullingDistance, 0, 1000);
 }
@@ -1395,6 +1412,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kCrashGuardConfigKey, true, gCrashGuard);
   needsWrite |= EnsureBoolConfigValue(kPcBundleForMissingShadersConfigKey, false, gPcBundleForMissingShaders);
   needsWrite |= EnsureIntConfigValue(kFarCullingConfigKey, 0, 0, 1000, gFarCullingDistance);
+  needsWrite |= EnsureIntConfigValue(kFoveationConfigKey, 0, 0, 4, gFoveationLevel);
   if (needsWrite) {
     config.Write();
   }

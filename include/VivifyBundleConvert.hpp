@@ -154,6 +154,8 @@ struct ShaderScan {
   std::vector<std::string> stereoDropsTextureShaderNames;
   // Per shader, the uniforms its GLSL programs declare as `int`.
   std::map<std::string, std::set<std::string>> intUniformNames;
+  // Per shader, the textures its GLSL programs sample.
+  std::map<std::string, std::set<std::string>> samplerNamesByShader;
   // Whether any program names _CameraDepthTexture (GLSL text, a DXBC resource
   // table, or a parameter blob): only then does the map need the depth
   // pre-pass that renders it.
