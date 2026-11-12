@@ -90,7 +90,10 @@ constexpr std::string_view kPrepareShadersConfigKey = "prepareShadersInMenu";
 constexpr std::string_view kGeometryEffectsConfigKey = "drawGeometryShaderEffects";
 // Geometry-shader effects drawn without their geometry stage, so they show in
 // both eyes (flat) and not in the left eye only (0.15.9).
-constexpr std::string_view kGeometryBothEyesConfigKey = "geometryEffectsBothEyes";
+// Renamed in 0.15.11 so it starts off for everyone: with the stage dropped,
+// effects whose shapes the geometry stage makes (grass blades from points)
+// drew nothing. Geometry stages now route their eyes themselves.
+constexpr std::string_view kGeometryBothEyesConfigKey = "geometryEffectsFlatV2";
 constexpr std::string_view kPcShadersForEmptyConfigKey = "pcShadersForEmptyQuestShaders";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
 constexpr std::string_view kEffectResolutionConfigKey = "effectResolutionPercent";
@@ -174,7 +177,7 @@ bool gReplayRenderMode = false;
 bool gBlitFix = false;
 bool gPrepareShaders = false;
 bool gGeometryEffects = false;
-bool gGeometryBothEyes = true;
+bool gGeometryBothEyes = false;
 bool gPcShadersForEmpty = true;
 // Which shader to use as the stand-in, by name, overriding the automatic pick.
 //
@@ -515,8 +518,8 @@ char const* SettingHint(std::u16string_view label) {
        "Turns off every full-screen effect a map adds (colour grading, distortion, flashes). Use it when an "
        "effect covers the screen or makes a map lag."},
       {u"Flat-Screen Effect Guard",
-       "If a map's screen effect turns the whole view into one flat colour for 3 seconds, switches that effect "
-       "off for the rest of the level so you can see the map. Fades to black or white are left alone."},
+       "Every 2 seconds while a map's screen effect is on, checks 16 spots of the view. If they are all one or two "
+       "colours (and the scene itself is not), turns every screen effect off for the rest of the level."},
       {u"Submit Scores On Vivify Maps",
        "Lets scores from Vivify maps go to leaderboards, and lets replays be recorded. Off stops both."},
       {u"Disable Custom Note Visuals",
@@ -562,9 +565,9 @@ char const* SettingHint(std::u16string_view label) {
        "After a map crashes or freezes, plays it next time with less memory use and without the effect that "
        "was starting when it went down."},
       {u"Forget Crash Recovery", "Clears the list of maps that crashed, so they play normally again."},
-      {u"Geometry Effects In Both Eyes",
-       "Grass, fur and wireframe effects on PC maps use a shader stage the Quest can only run for the left eye. "
-       "On: they are drawn without it, flat but in both eyes. Off: full effect, left eye only. Changing it "
+      {u"Flat Geometry Effects",
+       "Draws grass, fur and wireframe effects of PC maps without their geometry shader: plain meshes, and "
+       "some effects then draw nothing. Only for a map where those effects still go wrong. Changing it "
        "reconverts the map."},
       {u"Geometry-Shader Effects (exp.)",
        "Experimental. Draws effects that need a geometry shader (wireframes, exploding triangles) as plain "
@@ -952,7 +955,7 @@ void RegisterModSettings() {
         }
         // Experimental: geometry-stage effects are drawn without that stage
         // instead of as grey stand-ins. Changing it reconverts affected maps.
-        advanced(toggle(u"Geometry Effects In Both Eyes", gGeometryBothEyes, [](bool value) {
+        advanced(toggle(u"Flat Geometry Effects", gGeometryBothEyes, [](bool value) {
           SetBoolConfigValue(kGeometryBothEyesConfigKey, value, gGeometryBothEyes);
         }));
         advanced(toggle(u"Geometry-Shader Effects (exp.)", GetDrawGeometryShaderEffects(),
@@ -1403,7 +1406,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kBlitFixConfigKey, false, gBlitFix);
   needsWrite |= EnsureBoolConfigValue(kPrepareShadersConfigKey, false, gPrepareShaders);
   needsWrite |= EnsureBoolConfigValue(kGeometryEffectsConfigKey, false, gGeometryEffects);
-  needsWrite |= EnsureBoolConfigValue(kGeometryBothEyesConfigKey, true, gGeometryBothEyes);
+  needsWrite |= EnsureBoolConfigValue(kGeometryBothEyesConfigKey, false, gGeometryBothEyes);
   needsWrite |= EnsureBoolConfigValue(kPcShadersForEmptyConfigKey, true, gPcShadersForEmpty);
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),
                                         gStandInShaderName);

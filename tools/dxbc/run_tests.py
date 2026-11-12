@@ -783,8 +783,8 @@ def geometry_layer(read_layer):
 
 proc, fields, _, source = run("glsl-mv", geometry_layer(False))
 check("a multiview geometry stage writing the layer translates", fields.get("ok") == "1", fields.get("error", ""))
-check("its layer write goes to a dummy, not gl_Layer", "gl_Layer" not in source and
-      "vivify_RTArrayIndexOut" in source, source)
+check("its layer write goes to gl_Layer, routing each primitive to its eye", "gl_Layer" in source and
+      "vivify_RTArrayIndexOut" not in source, source)
 proc, fields, _, source = run("glsl", geometry_layer(False))
 check("a single-view geometry stage still writes gl_Layer", "gl_Layer" in source, source)
 proc, fields, _, source = run("glsl-mv", geometry_layer(True))

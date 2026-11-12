@@ -150,7 +150,9 @@ namespace {
 //  23  a geometry stage in a two-eye program declares the view count, under
 //      EXT_multiview_tessellation_geometry_shader, so it runs for both eyes
 //      where the driver has that extension (0.15.8 build 2)
-constexpr int kBundleConversionVersion = 23;
+//  24  a geometry stage under multiview writes gl_Layer from the eye the
+//      program computes, instead of a dummy (0.15.11)
+constexpr int kBundleConversionVersion = 24;
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the

@@ -11,6 +11,40 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.11] - 2026-11-12
+
+Converted maps are reconverted once (conversion version 24). Nothing here is
+tried on a headset.
+
+### Fixed
+- **Geometry-shader effects in one eye, or not at all** (grass, 743
+  Aether's sparkles, Lifelike's grass and text lines). The Quest's driver
+  runs a geometry stage in two-eye rendering, but only sends its output to
+  the eye the stage names, and since 0.15.1 the converter had it name none,
+  which the driver reads as the left eye. The stage now names the eye the
+  program computes for itself, which has been the right one since 0.15.4.
+  All 417 programs of Yoi Okashi and 743 Aether still link under glslang.
+  "Geometry Effects In Both Eyes" is now **Flat Geometry Effects**, off by
+  default: drawing these effects without their geometry stage made some of
+  them disappear.
+- **Effects run once per eye could crash the game.** They copied each eye
+  in and out with a raw texture copy, which requires both sides to match in
+  size and format exactly. They now copy with a draw.
+- **Fall Away's HUD text** is shown directly again, as in 0.15.5, alongside
+  the filmed overlay.
+
+### Changed
+- **Flat-Screen Effect Guard**, as asked: every 2 seconds while a screen
+  effect is on, the view coming out of the effects is measured in 16 blocks.
+  If they are all one colour or only two, every screen effect is switched
+  off for the rest of the level. It does not trigger when the view going
+  into the effects was already that plain (a dark or empty scene).
+
+### Not changed
+- **Mirrors.** Neither 743 Aether nor Get Your Wish ships a mirror object
+  or material; what shows is the game's own environment mirror. Why the map
+  does not hide or replace it on the Quest is not found yet.
+
 ## [0.15.10] - 2026-11-12
 
 From reports on 0.15.9. Nothing here is tried on a headset.
