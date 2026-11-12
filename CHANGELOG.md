@@ -11,6 +11,29 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.12] - 2026-11-12
+
+Converted maps are reconverted once (conversion version 25). Not tried on a
+headset.
+
+### Fixed
+- **Geometry-shader effects in the right eye** (grass, 743 Aether's
+  sparkles, wireframes). Reported: what they draw in the left eye is right;
+  the right eye had nothing. The Quest's driver runs a geometry stage once,
+  for the left eye, and sends its output there only. The stage now runs a
+  second time, which moves each vertex from the left eye's view into the
+  right eye's and draws it there. Every program of Yoi Okashi, 743 Aether
+  and Through The Screen links under glslang with it. New advanced setting
+  **Geometry Effects In Right Eye** (on); turn it off if these effects look
+  doubled.
+- Kept from 0.15.8 to 0.15.11: particle systems without GPU instancing,
+  saber lights off, map trails, and the rest.
+
+### Not changed
+- **The z-fighting** that was seen: where it shows is not known yet. Raising
+  the shadow bias of a map's lights was tried and is not possible: the
+  game's build of Unity has no bias setting on lights.
+
 ## [0.15.11] - 2026-11-12
 
 Converted maps are reconverted once (conversion version 24). Nothing here is

@@ -93,6 +93,7 @@ int main(int argc, char** argv) {
     Vivify::Dxbc::GlslOptions options;
     options.multiview = mode == "glsl-mv" || mode == "glsl-mv-spi";
     options.stereoInstancedProgram = mode == "glsl-mv-spi";
+    options.geometryRightEyeCopy = std::getenv("VIVIFY_GEOMETRY_EYE_COPY") != nullptr;
     Vivify::Dxbc::GlslResult const result = Vivify::Dxbc::TranslateToGlsl(program, options);
     std::cout << "ok=" << (result.ok ? 1 : 0) << "\n";
     std::cout << "stereoInstanced=" << (result.stereoInstanced ? 1 : 0) << "\n";

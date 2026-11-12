@@ -94,6 +94,8 @@ constexpr std::string_view kGeometryEffectsConfigKey = "drawGeometryShaderEffect
 // effects whose shapes the geometry stage makes (grass blades from points)
 // drew nothing. Geometry stages now route their eyes themselves.
 constexpr std::string_view kGeometryBothEyesConfigKey = "geometryEffectsFlatV2";
+// Geometry-shader effects drawn a second time for the right eye (0.15.12).
+constexpr std::string_view kGeometryEyeCopyConfigKey = "geometryRightEyeCopy";
 constexpr std::string_view kPcShadersForEmptyConfigKey = "pcShadersForEmptyQuestShaders";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
 constexpr std::string_view kEffectResolutionConfigKey = "effectResolutionPercent";
@@ -178,6 +180,7 @@ bool gBlitFix = false;
 bool gPrepareShaders = false;
 bool gGeometryEffects = false;
 bool gGeometryBothEyes = false;
+bool gGeometryEyeCopy = true;
 bool gPcShadersForEmpty = true;
 // Which shader to use as the stand-in, by name, overriding the automatic pick.
 //
@@ -565,6 +568,10 @@ char const* SettingHint(std::u16string_view label) {
        "After a map crashes or freezes, plays it next time with less memory use and without the effect that "
        "was starting when it went down."},
       {u"Forget Crash Recovery", "Clears the list of maps that crashed, so they play normally again."},
+      {u"Geometry Effects In Right Eye",
+       "Grass, sparkles and wireframes of PC maps are drawn by a shader stage the Quest only runs for the left "
+       "eye. On: each is drawn again for the right eye. Turn off if those effects look doubled. Changing it "
+       "reconverts the map."},
       {u"Flat Geometry Effects",
        "Draws grass, fur and wireframe effects of PC maps without their geometry shader: plain meshes, and "
        "some effects then draw nothing. Only for a map where those effects still go wrong. Changing it "
@@ -955,6 +962,9 @@ void RegisterModSettings() {
         }
         // Experimental: geometry-stage effects are drawn without that stage
         // instead of as grey stand-ins. Changing it reconverts affected maps.
+        advanced(toggle(u"Geometry Effects In Right Eye", gGeometryEyeCopy, [](bool value) {
+          SetBoolConfigValue(kGeometryEyeCopyConfigKey, value, gGeometryEyeCopy);
+        }));
         advanced(toggle(u"Flat Geometry Effects", gGeometryBothEyes, [](bool value) {
           SetBoolConfigValue(kGeometryBothEyesConfigKey, value, gGeometryBothEyes);
         }));
@@ -1106,6 +1116,10 @@ bool GetSaberLightsOnMapObjects() {
 
 bool GetGeometryEffectsBothEyes() {
   return gGeometryBothEyes;
+}
+
+bool GetGeometryRightEyeCopy() {
+  return gGeometryEyeCopy;
 }
 
 bool GetMapSabers() {
@@ -1407,6 +1421,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kPrepareShadersConfigKey, false, gPrepareShaders);
   needsWrite |= EnsureBoolConfigValue(kGeometryEffectsConfigKey, false, gGeometryEffects);
   needsWrite |= EnsureBoolConfigValue(kGeometryBothEyesConfigKey, false, gGeometryBothEyes);
+  needsWrite |= EnsureBoolConfigValue(kGeometryEyeCopyConfigKey, true, gGeometryEyeCopy);
   needsWrite |= EnsureBoolConfigValue(kPcShadersForEmptyConfigKey, true, gPcShadersForEmpty);
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),
                                         gStandInShaderName);
