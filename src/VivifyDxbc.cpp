@@ -1830,15 +1830,15 @@ bool GlslEmitter::BuildSignatures() {
           }
           continue;
         }
-        if (_options.multiview) {
-          // A geometry stage under multiview: the views route the primitive,
-          // and a gl_Layer write would override them, putting every
-          // primitive in the layer the program computed -- one eye only
-          // (grass in the left eye, 0.15.1). The write lands in a dummy.
-          _writesRTArrayIndex = true;
-          _declarations += "vec4 vivify_RTArrayIndexOut;\n";
-          continue;
-        }
+        // A geometry stage writes the layer the program computed for its eye,
+        // under multiview too (0.15.11). OVR_multiview leaves a geometry stage
+        // undefined; on the Quest's driver it runs, and its primitives went to
+        // the left eye whatever it did: with gl_Layer = 0 before 0.15.1
+        // (the eye came from an instance ID that was never remapped), and with
+        // no layer write after it (the driver then uses layer 0). Since 0.15.4
+        // the vertex stage's instance ID carries the view, so the eye the
+        // program computes is the right one, and writing it is what routes
+        // each primitive to its eye.
         if (!Require(320, "SV_RenderTargetArrayIndex")) return false;
         continue;  // gl_Layer
       case kSvClipDistance:

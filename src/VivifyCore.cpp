@@ -616,6 +616,9 @@ void Runtime::ResetRuntime(std::string_view reason) {
   RestoreForeignSaberLights();
   RestoreVivifyFoveation();
   _blitGuardKilled.clear();
+  _blitGuardAllOff = false;
+  _blitGuardLogged = false;
+  _blitGuardLastSample = 0.0f;
   _cachedBlitWidth = 0;
   _cachedBlitHeight = 0;
   _cachedBlitFormat = 0;

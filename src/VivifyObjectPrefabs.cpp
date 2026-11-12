@@ -114,7 +114,9 @@ int DisableParticleInstancing(UnityEngine::GameObject* root) {
 // directly: shown directly it sat in the wrong place and hid the bodies of
 // notes behind it. The overlay itself is now drawn in the headset instead
 // (NeedsPerEyeBlit).
-constexpr uint32_t kPcHeadsetLayers = (1u << 7) | (1u << 21) | (1u << 24) | (1u << 26);
+// 0.15.11: layer 17 is back, as asked: the HUD text is shown directly again,
+// as 0.15.5 did, besides the filmed overlay.
+constexpr uint32_t kPcHeadsetLayers = (1u << 7) | (1u << 17) | (1u << 21) | (1u << 24) | (1u << 26);
 
 uint32_t HeadsetLayersUsed(UnityEngine::GameObject* root) {
   if (!IsManagedAlive(root)) return 0;
