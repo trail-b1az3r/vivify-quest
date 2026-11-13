@@ -16,6 +16,13 @@
 // given more memory than the system allows it, so this is how a map gets more
 // room to run.
 //
+// The same goes for a map's own saber trail (0.15.15): Fall Away, WHY'S THIS
+// DEALER and 42-flux went down within a frame of theirs being created. A map
+// whose last run ended that way plays without its trail next time (the
+// player's own trail stays). Unlike the rest of recovery mode, that applies
+// with Crash Recovery Mode off as well, since otherwise the map cannot be
+// played at all.
+//
 // Pure C++ (no game types), so it is exercised by tools/recovery on the host.
 
 #include <cstdint>
@@ -37,19 +44,27 @@ void LevelStarted(std::string const& levelPath, int64_t now);
 // Every few seconds of play. Cheap: one small file rewrite.
 void Heartbeat(float songTime, int64_t now);
 void BlitStarted(std::string const& asset, float songTime, int64_t now);
+// The map's own saber trail was just created.
+void MapTrailStarted(float songTime, int64_t now);
 // `finished` when the song reached its end.
 void LevelEnded(bool finished, float songTime, int64_t now);
+
+// What an entry's skippedBlit holds when the map's saber trail was to blame
+// rather than an effect. Asset names never start with '<'.
+inline constexpr char const* kMapTrailsEntry = "<map saber trails>";
 
 struct Entry {
   std::string levelPath;
   int64_t when = 0;
-  std::string skippedBlit;  // empty when no effect was to blame
+  std::string skippedBlit;  // empty when no effect was to blame; kMapTrailsEntry for the trail
 };
 
 std::vector<Entry> Entries();
 bool InRecovery(std::string const& levelPath);
 // Effects to skip on this map: those that were starting when it went down.
 std::vector<std::string> SkippedBlits(std::string const& levelPath);
+// The map's own saber trail was being created when it went down.
+bool SkipsMapTrails(std::string const& levelPath);
 void Forget(std::string const& levelPath);
 void ForgetAll();
 

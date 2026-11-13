@@ -22,6 +22,8 @@ struct Running {
   std::string lastBlit;
   int64_t lastBlitAt = 0;
   float lastBlitSongTime = 0.0f;
+  int64_t mapTrailAt = 0;
+  float mapTrailSongTime = 0.0f;
   int64_t ended = 0;
   bool finished = false;
   bool active = false;
@@ -53,6 +55,9 @@ void WriteMarkerLocked() {
     out << "heartbeat\t" << gRunning.heartbeat << "\t" << gRunning.heartbeatSongTime << "\n";
     if (!gRunning.lastBlit.empty()) {
       out << "blit\t" << gRunning.lastBlitAt << "\t" << gRunning.lastBlitSongTime << "\t" << gRunning.lastBlit << "\n";
+    }
+    if (gRunning.mapTrailAt != 0) {
+      out << "trail\t" << gRunning.mapTrailAt << "\t" << gRunning.mapTrailSongTime << "\n";
     }
     if (gRunning.ended != 0) out << "ended\t" << gRunning.ended << "\t" << (gRunning.finished ? 1 : 0) << "\n";
     out.flush();
@@ -110,6 +115,7 @@ std::string ProcessPreviousRun(int64_t now) {
   Running previous;
   bool hasEnded = false;
   bool hasBlit = false;
+  bool hasTrail = false;
   std::string line;
   while (std::getline(in, line)) {
     std::istringstream fields(line);
@@ -127,6 +133,9 @@ std::string ProcessPreviousRun(int64_t now) {
         fields.get();  // the tab before the asset name, which may hold spaces
         std::getline(fields, previous.lastBlit);
         hasBlit = !previous.lastBlit.empty();
+      } else if (key == "trail") {
+        fields >> previous.mapTrailAt >> previous.mapTrailSongTime;
+        hasTrail = previous.mapTrailAt != 0;
       } else if (key == "ended") {
         int finished = 0;
         fields >> previous.ended >> finished;
@@ -145,7 +154,18 @@ std::string ProcessPreviousRun(int64_t now) {
   std::string what;
   if (!hasEnded) {
     int64_t const lastSign = std::max(previous.heartbeat, previous.started);
-    if (hasBlit && previous.lastBlitAt + kBlitToDeathSeconds >= lastSign) blamedBlit = previous.lastBlit;
+    bool const blitRecent = hasBlit && previous.lastBlitAt + kBlitToDeathSeconds >= lastSign;
+    bool const trailRecent = hasTrail && previous.mapTrailAt + kBlitToDeathSeconds >= lastSign;
+    // When both were recent, the later of the two is blamed: a crash that
+    // comes back puts the other on the list as well.
+    bool const trailLater = !blitRecent || previous.mapTrailAt > previous.lastBlitAt ||
+                            (previous.mapTrailAt == previous.lastBlitAt &&
+                             previous.mapTrailSongTime >= previous.lastBlitSongTime);
+    if (trailRecent && trailLater) {
+      blamedBlit = kMapTrailsEntry;
+    } else if (blitRecent) {
+      blamedBlit = previous.lastBlit;
+    }
     what = "did not end: the game crashed or was closed while it played";
   } else if (!previous.finished && hasBlit && previous.ended - previous.lastBlitAt <= kBlitToQuitSeconds &&
              now - previous.ended <= kRestartSeconds) {
@@ -165,9 +185,14 @@ std::string ProcessPreviousRun(int64_t now) {
   }
   std::string message = "Vivify crash recovery: '" + previous.levelPath + "' " + what + " (last sign of life " +
                         std::to_string(static_cast<int>(previous.heartbeatSongTime)) + " s into the song)";
-  message += blamedBlit.empty() ? "; it plays in recovery mode next time"
-                                : "; it plays in recovery mode next time, without the effect '" + blamedBlit +
-                                      "' that was starting when it went down";
+  if (blamedBlit == kMapTrailsEntry) {
+    message += "; its own saber trail had just been created, so next time it plays without it (your own trail "
+               "stays), and in recovery mode if that is on";
+  } else {
+    message += blamedBlit.empty() ? "; it plays in recovery mode next time"
+                                  : "; it plays in recovery mode next time, without the effect '" + blamedBlit +
+                                        "' that was starting when it went down";
+  }
   return message;
 }
 
@@ -197,6 +222,14 @@ void BlitStarted(std::string const& asset, float songTime, int64_t now) {
   gRunning.lastBlitSongTime = songTime;
   gRunning.heartbeat = now;
   gRunning.heartbeatSongTime = songTime;
+  WriteMarkerLocked();
+}
+
+void MapTrailStarted(float songTime, int64_t now) {
+  std::lock_guard lock(gMutex);
+  if (!gRunning.active || gRunning.ended != 0) return;
+  gRunning.mapTrailAt = now;
+  gRunning.mapTrailSongTime = songTime;
   WriteMarkerLocked();
 }
 
@@ -232,9 +265,19 @@ bool InRecovery(std::string const& levelPath) {
 std::vector<std::string> SkippedBlits(std::string const& levelPath) {
   std::vector<std::string> blits;
   for (auto const& entry : Entries()) {
-    if (entry.levelPath == levelPath && !entry.skippedBlit.empty()) blits.push_back(entry.skippedBlit);
+    if (entry.levelPath == levelPath && !entry.skippedBlit.empty() && entry.skippedBlit != kMapTrailsEntry) {
+      blits.push_back(entry.skippedBlit);
+    }
   }
   return blits;
+}
+
+bool SkipsMapTrails(std::string const& levelPath) {
+  if (levelPath.empty()) return false;
+  auto const entries = Entries();
+  return std::any_of(entries.begin(), entries.end(), [&](Entry const& entry) {
+    return entry.levelPath == levelPath && entry.skippedBlit == kMapTrailsEntry;
+  });
 }
 
 void Forget(std::string const& levelPath) {

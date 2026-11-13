@@ -1,4 +1,6 @@
 #include "VivifyRuntimeInternal.hpp"
+#include "VivifyRecovery.hpp"
+#include <ctime>
 #include "UnityEngine/SystemInfo.hpp"
 #include "Unity/XR/Oculus/Utils.hpp"
 #include "custom-types/shared/delegate.hpp"
@@ -1742,6 +1744,13 @@ void Runtime::ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc,
                                      std::vector<AssignedPrefabInfo*> const& infos,
                                      VisualReplacement& replacement) {
   if (infos.empty() || !IsAlive(smc)) return;
+  if (_skipMapTrails) {
+    if (!_skipMapTrailsLogged) {
+      PaperLogger.info("Vivify saber trail: skipped for this map (crash recovery); your own trail stays");
+      _skipMapTrailsLogged = true;
+    }
+    return;
+  }
   auto* sourceTrail = smc->____saberTrail.unsafePtr();
   bool const hasOwnTrail = IsAlive(sourceTrail) && IsAlive(sourceTrail->____trailRendererPrefab.unsafePtr()) &&
                            IsAlive(sourceTrail->____trailRenderer.unsafePtr());
@@ -1810,6 +1819,15 @@ void Runtime::ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc,
   if (!replacement.followedTrails.empty() && ShouldHideOriginal(infos)) {
     replacement.hideTrails = true;
     HideOtherSaberTrails(smc, saber, replacement);
+  }
+  if (!replacement.followedTrails.empty()) {
+    // Fall Away, WHY'S THIS DEALER and 42-flux went down within a frame of
+    // this in 0.15.9-0.15.14 (0.15.15): noted for crash recovery, and every
+    // log line of the next seconds written to disk as it comes.
+    Recovery::MapTrailStarted(CurrentSongTime(), static_cast<int64_t>(std::time(nullptr)));
+    FlushVivifyLogsEveryLineFor(10);
+    PaperLogger.info("Vivify saber trail: {} map trail(s) created ({})", replacement.followedTrails.size(),
+                     hasOwnTrail ? "following the game's trail" : "following the saber");
   }
 }
 

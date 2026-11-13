@@ -1,4 +1,5 @@
 #include "VivifyRuntimeInternal.hpp"
+#include "VivifyCrashReport.hpp"
 #include "VivifyRecovery.hpp"
 #include <ctime>
 #include "VivifyComponents.hpp"
@@ -64,6 +65,8 @@ void Runtime::PrepareBeatmap(CustomJSONData::CustomBeatmapData* beatmapData, flo
   // the lines buffered at the time were lost with the process. Every line of
   // the next 20 s goes to disk as it is written (0.15.1).
   FlushVivifyLogsEveryLineFor(20);
+  // The engine can put its own signal handlers back after mods load.
+  CrashReport::Reinstall();
   ResetAutoEffectResolution();
   ResetRuntime();
   SetSongPlaying(true);

@@ -1,6 +1,8 @@
 #include "VivifyUpdater.hpp"
 #include "main.hpp"
 #include "VivifyGlobalLog.hpp"
+#include "VivifyCrashReport.hpp"
+#include <sstream>
 #include <algorithm>
 #include <ctime>
 #include <cerrno>
@@ -274,6 +276,7 @@ void InstallVivifyFileLogSink() {
     bool const important = data.level >= Paper::LogLevel::WRN;
     auto const now = std::chrono::steady_clock::now();
     bool const everyLine = now.time_since_epoch().count() < gVivifyFlushEveryLineUntil.load();
+    Vivify::CrashReport::NoteLine(data.message);
     if (gVivifyGlobalLog.IsOpen()) {
       gVivifyGlobalLog.Write(WallClockText() + " [" + std::string(Paper::format_as(data.level)) + "] " +
                              std::string(data.message));
@@ -1526,6 +1529,19 @@ MOD_EXTERN_FUNC void setup(CModInfo *info) noexcept {
     Vivify::Recovery::SetDirectory(std::string(kVivifyLogDir));
     std::string const recovery = Vivify::Recovery::ProcessPreviousRun(static_cast<int64_t>(std::time(nullptr)));
     if (!recovery.empty()) PaperLogger.warn("{}", recovery);
+  } catch (...) {
+  }
+  // A native crash in the previous run (0.15.15): its report goes into this
+  // run's log, and the recorder is set up for this one.
+  try {
+    Vivify::CrashReport::Install(std::string(kVivifyLogDir), std::string(VERSION));
+    std::string const crash = Vivify::CrashReport::TakePendingReport();
+    if (!crash.empty()) {
+      PaperLogger.warn("Vivify: the game crashed last time; the report (also in VivifyCrash.txt) follows");
+      std::istringstream lines(crash);
+      std::string line;
+      while (std::getline(lines, line)) PaperLogger.warn("Vivify crash report: {}", line);
+    }
   } catch (...) {
   }
   // A config file another tool or a crash left unreadable must not take the

@@ -77,6 +77,38 @@ int main() {
         R::SkippedBlits("/maps/spaces (x - y)") ==
             std::vector<std::string>{"assets/materials/post processing/drop effects.mat"});
 
+  // A crash a frame after the map's saber trail went on (Fall Away, 0.15.14).
+  R::LevelStarted("/maps/fallaway", 8000);
+  R::MapTrailStarted(0.0f, 8000);
+  std::string const trailCrash = R::ProcessPreviousRun(8100);
+  check("a crash right after the map trail blames the trail",
+        R::SkipsMapTrails("/maps/fallaway") && trailCrash.find("saber trail") != std::string::npos);
+  check("and skips no effect", R::SkippedBlits("/maps/fallaway").empty());
+
+  // An effect, then the trail half a second later in the same second, then the crash (WHY'S THIS DEALER).
+  R::LevelStarted("/maps/dealer2", 9000);
+  R::BlitStarted("assets/postprocess.mat", 28.71f, 9028);
+  R::MapTrailStarted(29.14f, 9028);
+  R::ProcessPreviousRun(9100);
+  check("of an effect and a trail, the later is blamed",
+        R::SkipsMapTrails("/maps/dealer2") && R::SkippedBlits("/maps/dealer2").empty());
+
+  // A trail long before the crash, an effect just before it: the effect.
+  R::LevelStarted("/maps/later", 10000);
+  R::MapTrailStarted(0.0f, 10000);
+  R::Heartbeat(55.0f, 10055);
+  R::BlitStarted("assets/late.mat", 58.0f, 10058);
+  R::ProcessPreviousRun(10100);
+  check("an old trail is not blamed", !R::SkipsMapTrails("/maps/later"));
+  check("the recent effect is", R::SkippedBlits("/maps/later") == std::vector<std::string>{"assets/late.mat"});
+
+  // A trail at the start and a clean finish: nothing.
+  R::LevelStarted("/maps/fine", 11000);
+  R::MapTrailStarted(0.0f, 11000);
+  R::LevelEnded(true, 120.0f, 11120);
+  check("a finished map with a trail leaves nothing", R::ProcessPreviousRun(11130).empty());
+  check("and its trail is kept", !R::SkipsMapTrails("/maps/fine"));
+
   R::Forget("/maps/aether");
   check("forget one map", !R::InRecovery("/maps/aether") && R::InRecovery("/maps/frozen"));
   R::ForgetAll();

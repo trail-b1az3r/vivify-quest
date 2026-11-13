@@ -154,6 +154,8 @@ namespace {
 //      program computes, instead of a dummy (0.15.11)
 //  25  geometry stages copy their output into the right eye (0.15.12)
 constexpr int kBundleConversionVersion = 25;
+static_assert(kBundleConversionVersion == BundleConvert::kConverterRevision,
+              "bump BundleConvert::kConverterRevision with the version above");
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the

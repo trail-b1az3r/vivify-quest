@@ -34,6 +34,7 @@
 // The implementation is deliberately free of Unity/il2cpp dependencies so it
 // can be unit-tested on a host compiler.
 
+#include <filesystem>
 #include <set>
 #include <map>
 #include <cstdint>
@@ -313,6 +314,22 @@ ShaderMerge MergeShadersInto(std::string const& questPath, std::string const& do
 std::string DescribeShaderScan(ShaderScan const& scan);
 
 std::string_view StatusText(Status status);
+
+// The converter's revision: bumped whenever a change alters what it writes,
+// so a cached conversion from an older revision is redone. The mod keys its
+// cache on it; the standalone library reports it (vivify_convert_revision).
+inline constexpr int kConverterRevision = 25;
+
+// A path given as UTF-8 text. On Windows a narrow std::string path is read in
+// the system code page, so a non-ASCII folder name (a map title, a user name)
+// could not be opened; elsewhere this is the path as given.
+inline std::filesystem::path Utf8Path(std::string const& text) {
+#ifdef _WIN32
+  return std::filesystem::path(std::u8string(text.begin(), text.end()));
+#else
+  return std::filesystem::path(text);
+#endif
+}
 std::string BuildTargetName(int32_t target);
 
 }
