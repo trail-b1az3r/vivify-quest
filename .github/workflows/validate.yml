@@ -156,6 +156,21 @@ jobs:
     - name: Zip extractor tests
       run: VIVIFY_ZIPTEST=/tmp/ziptest python3 tools/ziptest/run_tests.py
 
+  crash-report-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Build and run the native crash report tests
+      # No sanitizers: they install signal handlers of their own, and this
+      # test is about what happens to a real fatal signal.
+      run: |
+        g++ -std=c++20 -O0 -Wall -fno-omit-frame-pointer -rdynamic \
+            -I include -o /tmp/crashtest \
+            tools/crashreport/main.cpp src/VivifyCrashReport.cpp
+        /tmp/crashtest
+
   crash-recovery-tests:
     runs-on: ubuntu-latest
     steps:

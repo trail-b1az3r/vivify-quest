@@ -541,6 +541,10 @@ private:
   float _lastKnownSongLength = -1.0f;
   bool _recoveryMode = false;
   std::vector<std::string> _recoverySkippedBlits;
+  // This map went down right after its own saber trail was created last time
+  // (0.15.15); it plays without it. Independent of Crash Recovery Mode.
+  bool _skipMapTrails = false;
+  bool _skipMapTrailsLogged = false;
   std::chrono::steady_clock::time_point _lastRecoveryHeartbeat{};
   float _lastSyncSongTime = -1.0f;
   int _songTimeCacheFrame = -1;

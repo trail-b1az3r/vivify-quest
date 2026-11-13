@@ -11,6 +11,51 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.15] - 2026-11-13
+
+From logs_5 (0.15.14). Not tried on a headset.
+
+### Fixed
+- **Fall Away, WHY'S THIS DEALER and 42-flux crashing.** In every crash, the
+  game went down within a frame of the map's own saber trail being created:
+  - Fall Away and 42-flux at the start, where theirs goes on;
+  - Dealer at 29 s, half a second after its screen effect, when its sabers and
+    trail go on.
+
+  Maps without a trail of their own played (Through The Screen, Yoi Okashi,
+  Heartbeat). It began with 0.15.9, the first version that actually drew the
+  map's trail: before that it was hidden along with the other saber renderers.
+  The logs do not show which call inside the trail fails, so this release:
+  - **Records when a map trail is created.** If the game goes down within a
+    few seconds of it, the map plays without its own trail next time, and your
+    own trail stays. This applies even with Crash Recovery Mode off, because
+    without it the map crashes every time. **Forget Crash Recovery** in the
+    advanced settings gives the trail back.
+  - **Writes every log line to disk as it is logged** for 10 s after a map
+    trail is created.
+
+  So such a map crashes once more, and plays after that.
+
+### Added
+- **Native crash report.** When the game takes a fatal signal, Vivify writes
+  `VivifyCrash.new` before the game's own crash handling runs. It holds:
+  - the signal and fault address;
+  - a walk of the stack as library + offset, which the release library's
+    symbol table turns into function names;
+  - the last 40 Vivify log lines, including any still in the buffer.
+
+  The next launch copies it into the global log and appends it to
+  `VivifyCrash.txt`. The signal is then handed on to the game's own handler,
+  so the crash itself goes as before. A crash report from Fall Away, Dealer or
+  Breezer would name the call that fails.
+
+### Not fixed
+- **Breezer** went down in the menu after it was selected, before the level
+  loaded, with nothing in the log to say where. The crash report will say.
+- **Dealer's yellow screen** when its effect starts: the effect's output was
+  not flat (the flat-screen guard saw three or more colours), so the guard
+  left it on.
+
 ## [0.15.14] - 2026-11-13
 
 The mod itself is unchanged apart from file paths (below), and not tried on a headset.

@@ -1225,6 +1225,17 @@ void Runtime::EnterRecoveryModeIfNeeded() {
   _recoveryMode = false;
   _recoverySkippedBlits.clear();
   SetRecoveryModeActive(false);
+  // A map that went down right after its own saber trail was created plays
+  // without that trail (0.15.15), with Crash Recovery Mode off as well: the
+  // alternative is a map that crashes every time.
+  _skipMapTrails = !_selectedLevelPath.empty() && Recovery::SkipsMapTrails(_selectedLevelPath);
+  _skipMapTrailsLogged = false;
+  if (_skipMapTrails) {
+    PaperLogger.warn("Vivify crash recovery: this map went down right after its own saber trail was created last "
+                     "time; it plays without that trail (your own trail stays). 'Forget Crash Recovery' in the "
+                     "advanced settings gives it back");
+    NoteVisualProblem("Map saber trail skipped: the game crashed right after it was created last time");
+  }
   if (!GetCrashRecovery() || _selectedLevelPath.empty() || !Recovery::InRecovery(_selectedLevelPath)) return;
   _recoveryMode = true;
   _recoverySkippedBlits = Recovery::SkippedBlits(_selectedLevelPath);
