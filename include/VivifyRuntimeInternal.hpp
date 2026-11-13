@@ -9,6 +9,7 @@
 #include <optional>
 #include <mutex>
 #include "VivifyTypes.hpp"
+#include "UnityEngine/Matrix4x4.hpp"
 #include "UnityEngine/ReflectionProbe.hpp"
 #include "UnityEngine/Rendering/CommandBuffer.hpp"
 #include "UnityEngine/AssetBundleCreateRequest.hpp"
@@ -375,6 +376,11 @@ private:
   void DiscoverSabers();
   void HideForeignSaberLights();
   void RestoreForeignSaberLights();
+  void ApplyFieldOfView(UnityEngine::Camera* mainCam);
+  void RestoreFieldOfView();
+  UnityEngine::Camera* _fovCamera = nullptr;
+  int _fovAppliedPercent = 0;
+  UnityEngine::Matrix4x4 _fovLeftProjection{};
   void ApplyVivifyFoveation();
   void RestoreVivifyFoveation();
   bool _foveationApplied = false;

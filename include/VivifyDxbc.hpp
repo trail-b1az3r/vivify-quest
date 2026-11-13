@@ -353,6 +353,13 @@ struct GlslOptions {
   // instance ID was gl_InstanceID, so every view took eye 0, and the geometry
   // stage's gl_Layer = 0 sent the draw to the left eye only (0.15.1).
   bool stereoInstancedProgram = false;
+  // A geometry stage under multiview also draws each primitive for the right
+  // eye (0.15.12). The Quest's driver runs a geometry stage once, with the
+  // left eye's view, and sends what it emits to the left eye only. The stage
+  // now runs twice (geometry instancing); the second run moves each vertex
+  // from the left eye's clip space into the right eye's and emits it into
+  // layer 1.
+  bool geometryRightEyeCopy = false;
   // Used only when the program has no RDEF of its own.
   ExternalReflection const* reflection = nullptr;
 };

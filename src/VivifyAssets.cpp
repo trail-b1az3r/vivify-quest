@@ -152,7 +152,8 @@ namespace {
 //      where the driver has that extension (0.15.8 build 2)
 //  24  a geometry stage under multiview writes gl_Layer from the eye the
 //      program computes, instead of a dummy (0.15.11)
-constexpr int kBundleConversionVersion = 24;
+//  25  geometry stages copy their output into the right eye (0.15.12)
+constexpr int kBundleConversionVersion = 25;
 
 // Whether Beat Saber's own shaders use STEREO_MULTIVIEW_ON: -1 not looked yet,
 // 0 no, 1 yes. Unity registers every keyword a loaded shader declares, so the
@@ -214,7 +215,9 @@ bool SplitStereoVariants() {
 int ConversionSplitMode() {
   // +8: geometry-shader effects drawn without their geometry stage (setting).
   // +16: every geometry stage left out, so those effects draw in both eyes.
-  int const geometry = (GetDrawGeometryShaderEffects() ? 8 : 0) + (GetGeometryEffectsBothEyes() ? 16 : 0);
+  // +32: geometry stages copy their output into the right eye.
+  int const geometry = (GetDrawGeometryShaderEffects() ? 8 : 0) + (GetGeometryEffectsBothEyes() ? 16 : 0) +
+                       (GetGeometryRightEyeCopy() ? 32 : 0);
   if (ReplayVariantWanted()) return 4 + geometry;
   return (SplitStereoVariants() ? 1 : 0) + geometry;
 }
@@ -426,6 +429,7 @@ BundleConversionOutcome RunBundleConversionUnclaimed(std::string const& source, 
   // it, instead of leaving it to a grey stand-in. Off by default since 0.14.13.
   options.dropUntranslatableGeometry = GetDrawGeometryShaderEffects();
   options.dropGeometryStages = GetGeometryEffectsBothEyes();
+  options.geometryRightEyeCopy = GetGeometryRightEyeCopy();
   // See version 17 above. Converted maps only: a donor build for a Quest
   // map's empty shaders keeps everything, since Quest materials keep their
   // instancing.

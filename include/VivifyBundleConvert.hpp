@@ -263,6 +263,9 @@ struct ShaderConversionOptions {
   // Quest's does not, and such effects (grass, fur, wireframes) drew in the
   // left eye only. Without the stage they are the plain mesh, in both eyes.
   bool dropGeometryStages = false;
+  // Geometry stages under multiview draw a copy of their output into the
+  // right eye (GlslOptions::geometryRightEyeCopy, 0.15.12).
+  bool geometryRightEyeCopy = false;
   // Leave untranslated the variants a Quest never selects in a converted
   // map: GPU instancing (turned off on converted materials) and unsplit
   // single-pass stereo. Most of a PC bundle's programs; far less to load and

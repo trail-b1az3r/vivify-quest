@@ -1767,6 +1767,7 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
     options.multiview = multiview;
     bool const spi = multiview && spiRef[indexOf(ref)];
     options.stereoInstancedProgram = spi;
+    options.geometryRightEyeCopy = conversionOptions.geometryRightEyeCopy;
     auto cached = translated.find({blob, multiview, spi});
     if (cached == translated.end()) {
       Vivify::Dxbc::GlslResult result;

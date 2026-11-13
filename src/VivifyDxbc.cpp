@@ -1235,6 +1235,18 @@ class GlslEmitter {
   std::string DestName(Operand const& operand, uint8_t& mask);
   void WriteDest(Instruction const& instruction, Operand const& dest, std::string const& expression);
   void Line(std::string const& text);
+  // EmitVertex, preceded for a right-eye copy by the move into that eye.
+  void EmitVertexLine() {
+    if (EyeCopyActive()) {
+      Line("if (vivify_EyeCopy != 0) gl_Position = vivify_LeftToRight * gl_Position;");
+      Line("gl_Layer = vivify_EyeCopy;");
+    }
+    Line("EmitVertex();");
+  }
+  bool EyeCopyActive() const {
+    return _options.multiview && _options.geometryRightEyeCopy && _program.stage == Stage::Geometry;
+  }
+  uint32_t _gsInvocations = 1;
 
   MappedTexture const* TextureFor(Operand const& resource);
   MappedStorage const* StorageFor(Operand const& operand);
@@ -1965,6 +1977,7 @@ bool GlslEmitter::BuildStageDeclarations() {
       }
       case OP_DCL_GS_INSTANCE_COUNT:
         if (!instruction.extra.empty() && instruction.extra[0] > 1) {
+          _gsInvocations = instruction.extra[0];
           _declarations += "layout(invocations = " + std::to_string(instruction.extra[0]) + ") in;\n";
         }
         break;
@@ -3699,7 +3712,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
     // ---- geometry shader output ---------------------------------------------
     case OP_EMIT:
     case OP_EMIT_STREAM:
-      Line("EmitVertex();");
+      EmitVertexLine();
       break;
     case OP_CUT:
     case OP_CUT_STREAM:
@@ -3707,7 +3720,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       break;
     case OP_EMITTHENCUT:
     case OP_EMITTHENCUT_STREAM:
-      Line("EmitVertex();");
+      EmitVertexLine();
       Line("EndPrimitive();");
       break;
 
@@ -3903,6 +3916,20 @@ GlslResult GlslEmitter::Run() {
   if (_emitViewIndexVarying) addPrologue("vivify_ViewIndex = int(gl_ViewID_OVR);");
   if (_usedPrimitiveID) addPrologue("ivec4 vPrimitiveID = ivec4(gl_PrimitiveID);");
   if (_usedSampleIndex) addPrologue("ivec4 vSampleIndex = ivec4(gl_SampleID);");
+  // The right-eye copy runs on a second invocation of its own; a stage that
+  // already instances itself keeps its invocations and gets no copy.
+  bool const eyeCopy = EyeCopyActive() && _gsInvocations <= 1;
+  if (EyeCopyActive()) {
+    if (eyeCopy) {
+      addPrologue("int vivify_EyeCopy = gl_InvocationID;");
+      std::string const cb = "vivify_cb_UnityStereoGlobals";
+      addPrologue("mat4 vivify_LeftToRight = mat4(" + cb + "[28], " + cb + "[29], " + cb + "[30], " + cb +
+                  "[31]) * inverse(mat4(" + cb + "[24], " + cb + "[25], " + cb + "[26], " + cb + "[27]));");
+    } else {
+      addPrologue("int vivify_EyeCopy = 0;");
+      addPrologue("mat4 vivify_LeftToRight = mat4(1.0);");
+    }
+  }
   if (_usedGsInstanceID) {
     addPrologue("ivec4 vGsInstanceID = ivec4(gl_InvocationID);");
   }
@@ -3967,6 +3994,12 @@ GlslResult GlslEmitter::Run() {
   source += "precision highp float;\n";
   source += "precision highp int;\n";
   source += _declarations;
+  if (eyeCopy) {
+    source += "layout(invocations = 2) in;\n";
+    if (std::find(_uniformNames.begin(), _uniformNames.end(), "UnityStereoGlobals") == _uniformNames.end()) {
+      source += "layout(std140) uniform UnityStereoGlobals { vec4 vivify_cb_UnityStereoGlobals[68]; };\n";
+    }
+  }
   source += immediateBuffer;
   // Subroutines have to be able to reach the temps, and DXBC gives them one
   // shared register file rather than a stack frame, so the registers are file

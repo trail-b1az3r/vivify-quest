@@ -1,3 +1,4 @@
+#include "VivifyUpdater.hpp"
 #include "main.hpp"
 #include "VivifyGlobalLog.hpp"
 #include <algorithm>
@@ -21,6 +22,7 @@
 #include "bsml/shared/BSML-Lite/Creation/Layout.hpp"
 #include "bsml/shared/BSML-Lite/Creation/Misc.hpp"
 #include "bsml/shared/BSML-Lite/Creation/Settings.hpp"
+#include "bsml/shared/BSML/Components/Settings/DropdownListSetting.hpp"
 #include "bsml/shared/BSML-Lite/Creation/Text.hpp"
 #include "beatsaber-hook/shared/utils/typedefs-wrappers.hpp"
 #include "HMUI/CurvedTextMeshPro.hpp"
@@ -75,6 +77,8 @@ constexpr std::string_view kBlitFixConfigKey = "blitScreenTextureFix";
 // Map sabers (AssignObjectPrefab saber) replace the player's own, custom saber
 // mods included. Off keeps the player's sabers on every map (0.15.4).
 constexpr std::string_view kMapSabersConfigKey = "mapSabers";
+// Field Of View % during Vivify maps: 100 is the headset's own (0.15.12).
+constexpr std::string_view kFieldOfViewConfigKey = "fieldOfViewPercent";
 // The headset's fixed foveated rendering level during Vivify maps: 0 leaves
 // the game's own setting alone, 1-4 are the system's low to high-top (0.15.10).
 constexpr std::string_view kFoveationConfigKey = "vivifyFoveationLevel";
@@ -94,6 +98,8 @@ constexpr std::string_view kGeometryEffectsConfigKey = "drawGeometryShaderEffect
 // effects whose shapes the geometry stage makes (grass blades from points)
 // drew nothing. Geometry stages now route their eyes themselves.
 constexpr std::string_view kGeometryBothEyesConfigKey = "geometryEffectsFlatV2";
+// Geometry-shader effects drawn a second time for the right eye (0.15.12).
+constexpr std::string_view kGeometryEyeCopyConfigKey = "geometryRightEyeCopy";
 constexpr std::string_view kPcShadersForEmptyConfigKey = "pcShadersForEmptyQuestShaders";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
 constexpr std::string_view kEffectResolutionConfigKey = "effectResolutionPercent";
@@ -178,6 +184,7 @@ bool gBlitFix = false;
 bool gPrepareShaders = false;
 bool gGeometryEffects = false;
 bool gGeometryBothEyes = false;
+bool gGeometryEyeCopy = true;
 bool gPcShadersForEmpty = true;
 // Which shader to use as the stand-in, by name, overriding the automatic pick.
 //
@@ -202,6 +209,7 @@ bool gPcBundleForMissingShaders = false;
 // Metres beyond which the main camera draws nothing; 0 is off (0.14.23).
 int gFarCullingDistance = 0;
 int gFoveationLevel = 0;
+int gFieldOfView = 100;
 
 // Both diagnostic files live beside the mod's own data, and both are .txt.
 //
@@ -510,6 +518,9 @@ char const* SettingHint(std::u16string_view label) {
        "turn it off if things go missing."},
       {u"Far Culling (m, 0 = off)",
        "Does not draw anything farther away than this many metres. 0 draws everything."},
+      {u"Field Of View %",
+       "During Vivify maps, shows more of the scene at once (smaller), so effects at the edge of the view come "
+       "into it. Above 100 the world no longer moves exactly with your head, which can feel uncomfortable."},
       {u"Foveated Rendering (0 = game's)",
        "During Vivify maps, renders the edges of your view at lower detail to save performance, using the "
        "headset's own foveation: 1 is mild, 4 is strongest. Uses eye tracking where the headset has it. 0 leaves "
@@ -565,6 +576,10 @@ char const* SettingHint(std::u16string_view label) {
        "After a map crashes or freezes, plays it next time with less memory use and without the effect that "
        "was starting when it went down."},
       {u"Forget Crash Recovery", "Clears the list of maps that crashed, so they play normally again."},
+      {u"Geometry Effects In Right Eye",
+       "Grass, sparkles and wireframes of PC maps are drawn by a shader stage the Quest only runs for the left "
+       "eye. On: each is drawn again for the right eye. Turn off if those effects look doubled. Changing it "
+       "reconverts the map."},
       {u"Flat Geometry Effects",
        "Draws grass, fur and wireframe effects of PC maps without their geometry shader: plain meshes, and "
        "some effects then draw nothing. Only for a map where those effects still go wrong. Changing it "
@@ -594,6 +609,16 @@ char const* SettingHint(std::u16string_view label) {
       {u"Replay Render Mode",
        "Prepares a version of each map that the Replay mod can render to video. Only matters while rendering "
        "a replay."},
+      {u"Update Vivify",
+       "Downloads the newest release of Vivify from GitHub and installs it for the next time you start the game."},
+      {u"Install Nightly",
+       "Installs the latest nightly build: the newest changes, untested. Takes effect after restarting the game."},
+      {u"Install Dev Build",
+       "Installs the most recent build of the development branch, newer than the nightly and less tested."},
+      {u"Converter Version",
+       "Picks a Vivify release, 0.13.5 or later, with the converter it shipped with. The converter is part of the "
+       "mod, so this installs that whole version."},
+      {u"Install Chosen Version", "Installs the version picked above. Takes effect after restarting the game."},
       {u"Force Reconvert All",
        "Throws away every converted map and converts them all again. Use after a mod update if maps still "
        "look wrong."},
@@ -832,6 +857,10 @@ void RegisterModSettings() {
                 SetIntConfigValue(kFarCullingConfigKey, metres, gFarCullingDistance);
               });
         }
+        increment(u"Field Of View %", 5.0f, static_cast<float>(gFieldOfView), 100.0f, 150.0f, [](float value) {
+          int const percent = std::clamp(static_cast<int>(value + 0.5f), 100, 150);
+          SetIntConfigValue(kFieldOfViewConfigKey, percent, gFieldOfView);
+        });
         increment(u"Foveated Rendering (0 = game's)", 1.0f, static_cast<float>(gFoveationLevel), 0.0f, 4.0f,
                   [](float value) {
                     int const level = std::clamp(static_cast<int>(value + 0.5f), 0, 4);
@@ -886,6 +915,15 @@ void RegisterModSettings() {
               force);
         };
         button(u"Convert All PC Bundles", []() { startConversion(false); });
+
+        header("Updates");
+        // Installs the newest numbered release in place of this build, for the
+        // next start of the game (0.15.12, VivifyUpdater.cpp).
+        button(u"Update Vivify", []() {
+          SetConvertStatusText("Checking for an update...");
+          Vivify::Updater::Install(Vivify::Updater::Channel::Stable, "",
+                                   [](std::string const& text) { SetConvertStatusText(text); });
+        });
 
         header("Diagnostics");
         toggle(u"Debug Logging", GetVivifyDebugLogging(),
@@ -955,6 +993,9 @@ void RegisterModSettings() {
         }
         // Experimental: geometry-stage effects are drawn without that stage
         // instead of as grey stand-ins. Changing it reconverts affected maps.
+        advanced(toggle(u"Geometry Effects In Right Eye", gGeometryEyeCopy, [](bool value) {
+          SetBoolConfigValue(kGeometryEyeCopyConfigKey, value, gGeometryEyeCopy);
+        }));
         advanced(toggle(u"Flat Geometry Effects", gGeometryBothEyes, [](bool value) {
           SetBoolConfigValue(kGeometryBothEyesConfigKey, value, gGeometryBothEyes);
         }));
@@ -998,6 +1039,46 @@ void RegisterModSettings() {
         // A cached conversion is keyed on the source bundle, so it is reused even
         // after the converter itself has been fixed. This picks fixes up.
         advanced(button(u"Force Reconvert All", []() { startConversion(true); }));
+        advanced(button(u"Install Nightly", []() {
+          SetConvertStatusText("Checking the nightly build...");
+          Vivify::Updater::Install(Vivify::Updater::Channel::Nightly, "",
+                                   [](std::string const& text) { SetConvertStatusText(text); });
+        }));
+        advanced(button(u"Install Dev Build", []() {
+          SetConvertStatusText("Checking the latest build of main...");
+          Vivify::Updater::Install(Vivify::Updater::Channel::Dev, "",
+                                   [](std::string const& text) { SetConvertStatusText(text); });
+        }));
+        // The converter is part of the mod, so an older converter means an older
+        // build of Vivify: this lists the releases from 0.13.5 on, filled in
+        // once GitHub answers.
+        {
+          static std::string chosenVersion = "Latest";
+          std::vector<std::string_view> initial = {"Latest"};
+          auto* versions = BSML::Lite::CreateDropdown(parent, u"Converter Version", StringW("Latest"),
+                                                      std::span<std::string_view>(initial),
+                                                      [](StringW value) { chosenVersion = std::string(value); });
+          hinted(versions, u"Converter Version");
+          advanced(versions);
+          SafePtrUnity<BSML::DropdownListSetting> versionsPtr(versions);
+          Vivify::Updater::ListVersions([versionsPtr](std::vector<std::string> const& tags, std::string const& error) {
+            if (!versionsPtr) return;
+            if (!error.empty()) PaperLogger.warn("Vivify updater: release list: {}", error);
+            auto list = versionsPtr->values;
+            if (!list) return;
+            list->Clear();
+            list->Add(reinterpret_cast<System::Object*>(static_cast<Il2CppString*>(StringW("Latest"))));
+            for (auto const& tag : tags) list->Add(reinterpret_cast<System::Object*>(static_cast<Il2CppString*>(StringW(tag))));
+            versionsPtr->UpdateChoices();
+          });
+          advanced(button(u"Install Chosen Version", []() {
+            bool const latest = chosenVersion == "Latest";
+            SetConvertStatusText("Installing " + chosenVersion + "...");
+            Vivify::Updater::Install(latest ? Vivify::Updater::Channel::Stable : Vivify::Updater::Channel::Version,
+                                     latest ? std::string() : chosenVersion,
+                                     [](std::string const& text) { SetConvertStatusText(text); });
+          }));
+        }
         if constexpr (!kLiteBuild) {
           // Puts Vivify back to a fresh install's state, without touching the
           // maps. Two presses within five seconds, since it cannot be undone.
@@ -1106,6 +1187,10 @@ bool GetSaberLightsOnMapObjects() {
 
 bool GetGeometryEffectsBothEyes() {
   return gGeometryBothEyes;
+}
+
+bool GetGeometryRightEyeCopy() {
+  return gGeometryEyeCopy;
 }
 
 bool GetMapSabers() {
@@ -1305,11 +1390,17 @@ bool GetUsePcBundleForMissingShaders() {
 // behaviour whatever the saved value says, so a lite install never reads a
 // setting it does not show.
 bool GetOffscreenCulling() {
-  return !kLiteBuild && gOffscreenCulling;
+  // Off while the field of view is widened: it would freeze what the wider
+  // view now shows (0.15.12).
+  return !kLiteBuild && gOffscreenCulling && gFieldOfView <= 100;
 }
 
 int GetVivifyFoveationLevel() {
   return gFoveationLevel;
+}
+
+int GetFieldOfViewPercent() {
+  return gFieldOfView;
 }
 
 int GetFarCullingDistance() {
@@ -1407,6 +1498,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kPrepareShadersConfigKey, false, gPrepareShaders);
   needsWrite |= EnsureBoolConfigValue(kGeometryEffectsConfigKey, false, gGeometryEffects);
   needsWrite |= EnsureBoolConfigValue(kGeometryBothEyesConfigKey, false, gGeometryBothEyes);
+  needsWrite |= EnsureBoolConfigValue(kGeometryEyeCopyConfigKey, true, gGeometryEyeCopy);
   needsWrite |= EnsureBoolConfigValue(kPcShadersForEmptyConfigKey, true, gPcShadersForEmpty);
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),
                                         gStandInShaderName);
@@ -1416,6 +1508,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kPcBundleForMissingShadersConfigKey, false, gPcBundleForMissingShaders);
   needsWrite |= EnsureIntConfigValue(kFarCullingConfigKey, 0, 0, 1000, gFarCullingDistance);
   needsWrite |= EnsureIntConfigValue(kFoveationConfigKey, 0, 0, 4, gFoveationLevel);
+  needsWrite |= EnsureIntConfigValue(kFieldOfViewConfigKey, 100, 100, 150, gFieldOfView);
   if (needsWrite) {
     config.Write();
   }

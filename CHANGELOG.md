@@ -11,6 +11,56 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.13] - 2026-11-13
+
+Not tried on a headset.
+
+### Added
+- **Update Vivify** (Settings > Updates): downloads the newest release from
+  GitHub and installs it for the next start of the game. Before it replaces
+  anything it checks that every mod the new build depends on is installed at
+  a version it accepts, and says which one is not. Mod managers go on showing
+  the old version number until they reinstall the mod.
+- In the advanced settings, under Maintenance:
+  - **Install Nightly**: the rolling nightly pre-release.
+  - **Install Dev Build**: the newest build of main, fetched through
+    nightly.link.
+  - **Converter Version**: a list of releases from 0.13.5 on, and **Install
+    Chosen Version**. The converter is part of the mod, so choosing an older
+    converter installs that whole version of Vivify (the oldest release
+    available is 0.14.5).
+- **Field Of View %** (Performance, 100 to 150): during Vivify maps, both eyes'
+  views are widened by this much, the way a flat game's FOV slider works, so
+  effects at the edges of a narrower headset's view come into it. Culling is
+  widened to match, and Offscreen Culling is off while it is above 100. The
+  world no longer moves exactly with your head above 100, which some players
+  find uncomfortable.
+- The build workflow takes a release title (`release_name`), for releases
+  such as "Vivify 0.15.8 - full".
+
+## [0.15.12] - 2026-11-12
+
+Converted maps are reconverted once (conversion version 25). Not tried on a
+headset.
+
+### Fixed
+- **Geometry-shader effects in the right eye** (grass, 743 Aether's
+  sparkles, wireframes). Reported: what they draw in the left eye is right;
+  the right eye had nothing. The Quest's driver runs a geometry stage once,
+  for the left eye, and sends its output there only. The stage now runs a
+  second time, which moves each vertex from the left eye's view into the
+  right eye's and draws it there. Every program of Yoi Okashi, 743 Aether
+  and Through The Screen links under glslang with it. New advanced setting
+  **Geometry Effects In Right Eye** (on); turn it off if these effects look
+  doubled.
+- Kept from 0.15.8 to 0.15.11: particle systems without GPU instancing,
+  saber lights off, map trails, and the rest.
+
+### Not changed
+- **The z-fighting** that was seen: where it shows is not known yet. Raising
+  the shadow bias of a map's lights was tried and is not possible: the
+  game's build of Unity has no bias setting on lights.
+
 ## [0.15.11] - 2026-11-12
 
 Converted maps are reconverted once (conversion version 24). Nothing here is
