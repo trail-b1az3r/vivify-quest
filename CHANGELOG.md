@@ -11,6 +11,47 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.16] - 2026-11-13
+
+Not tried on a headset.
+
+### Fixed
+- **Updater: only "Latest" in the version list, and every install said the
+  release could not be found.** The download library percent-escapes a URL
+  unless told not to, so GitHub got `releases%3Fper_page%3D100` and refused
+  it. That broke the version list, Update Vivify, Install Nightly and Install
+  Chosen Version. URLs now go out as written. The messages name the site
+  rather than the whole URL, which goes to the log.
+- **Settings list pushed far to the right after pressing an update button.**
+  The status line had no width limit, and a long word with nowhere to break,
+  such as that URL, widened the whole list. It now wraps within the list.
+- **Settings moved a tab's width to the right**, as asked.
+- **Map sabers flickering (743 Aether).** Saber mods and the game's own trail
+  switch their renderers back on, and Vivify re-hid them only every half
+  second, so both sabers drew in the same place in between. Renderers already
+  known to be hidden are now kept hidden every frame. The half-second sweep
+  still finds new ones.
+- **Field Of View % did nothing.** It applies only during Vivify maps. On top
+  of that, the projection was set once, and the headset's runtime can hand the
+  camera its own projection again each frame. It is now set every frame. Half
+  a second into a map, the log says whether the headset **kept** the widened
+  projection or **replaced** it, so if it still does nothing that line says
+  why.
+- **Culling with a wider field of view.** The culling frustum was the left
+  eye's, widened a fixed quarter, which leans left and could cut off the right
+  edge of the right eye. It is now the union of both eyes' views, with a small
+  margin.
+- **Objects culled from a map's own cameras at the edge of the view.** Those
+  cameras culled with the headset camera's single, centred projection, which
+  is narrower than either eye at the outer edge. They now use both eyes' view.
+  Whether this is what hides 743 Aether's wind lines when you look right is
+  not confirmed.
+
+### Not fixed (needs a log of 743 Aether on this version)
+- 743 Aether: the lag and the too many lines on the last note before the
+  pause after the wireframe section, and the second part of the short tunnel
+  after it that is missing.
+
 ## [0.15.15] - 2026-11-13
 
 From logs_5 (0.15.14). Not tried on a headset.

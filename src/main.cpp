@@ -769,8 +769,9 @@ void RegisterModSettings() {
         gAdvancedWidgets.clear();
         // The list sat off the left edge of the panel and ran its full width:
         // room on both sides makes it narrower and keeps it inside (0.15.10).
+        // Moved a further tab's width to the right (0.15.16).
         if (auto* layout = container->GetComponent<UnityEngine::UI::VerticalLayoutGroup*>(); layout != nullptr) {
-          layout->set_padding(UnityEngine::RectOffset::New_ctor(9, 9, 0, 0));
+          layout->set_padding(UnityEngine::RectOffset::New_ctor(15, 3, 0, 0));
         }
 
         // Which build is actually running, in the headset, without a file.
@@ -912,6 +913,13 @@ void RegisterModSettings() {
         // installed map in one pass instead.
         gConvertStatusText = BSML::Lite::CreateText(parent, u"Idle");
         FixTextHeight(gConvertStatusText.ptr(), 3);
+        // Never wider than the list (0.15.16): a long word with nowhere to
+        // break -- a URL in an updater message -- otherwise widened the whole
+        // list and pushed the settings off to the right.
+        if (auto* layout = gConvertStatusText->get_gameObject()->GetComponent<UnityEngine::UI::LayoutElement*>()) {
+          layout->set_preferredWidth(1.0f);
+          layout->set_flexibleWidth(1.0f);
+        }
         SetConvertStatusText(Vivify::IsBulkPcBundleConversionRunning() && gConvertStatus == "Idle" ? "Converting..."
                                                                                                     : gConvertStatus);
         // One progress callback for both buttons; they differ only in whether an

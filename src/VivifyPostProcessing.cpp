@@ -1767,22 +1767,34 @@ void Runtime::ApplyFieldOfView(UnityEngine::Camera* mainCam) {
   }
   if (_fovCamera != mainCam || _fovAppliedPercent != percent) {
     if (_fovCamera != nullptr) RestoreFieldOfView();
-    mainCam->ResetStereoProjectionMatrices();
-    float const scale = 100.0f / static_cast<float>(percent);
-    for (int eye = 0; eye < 2; eye++) {
-      auto const which = UnityEngine::Camera_StereoscopicEye(eye);
-      auto projection = mainCam->GetStereoProjectionMatrix(which);
-      if (eye == 0) _fovLeftProjection = ScaledXY(projection, scale, scale);
-      mainCam->SetStereoProjectionMatrix(which, ScaledXY(projection, scale, scale));
-    }
     _fovCamera = mainCam;
     _fovAppliedPercent = percent;
+    _fovFramesChecked = 0;
+    _fovReported = false;
     PaperLogger.info("Vivify field of view: {}% for this map", percent);
+  } else if (!_fovReported && ++_fovFramesChecked >= 30) {
+    // Whether the headset's runtime kept last frame's projection or put its
+    // own back: "the setting does nothing" (0.15.15) is one or the other.
+    float const now = mainCam->GetStereoProjectionMatrix(UnityEngine::Camera_StereoscopicEye(0)).m00;
+    bool const kept = std::abs(now - _fovSetM00[0]) < 1e-4f;
+    PaperLogger.info("Vivify field of view: the headset {} the widened projection (set m00 {:.4f}, now {:.4f})",
+                     kept ? "kept" : "replaced", _fovSetM00[0], now);
+    _fovReported = true;
   }
-  // Both eyes' widened views, from the head: the left eye's, widened a
-  // further quarter sideways to take in the right eye's too.
-  mainCam->set_cullingMatrix(UnityEngine::Matrix4x4::op_Multiply(ScaledXY(_fovLeftProjection, 0.8f, 1.0f),
-                                                                 mainCam->get_worldToCameraMatrix()));
+  // Set every frame from the headset's own projection: the runtime can hand
+  // the camera a new one each frame (0.15.16; 0.15.13 set it once).
+  mainCam->ResetStereoProjectionMatrices();
+  float const scale = 100.0f / static_cast<float>(percent);
+  UnityEngine::Matrix4x4 widened[2];
+  for (int eye = 0; eye < 2; eye++) {
+    auto const which = UnityEngine::Camera_StereoscopicEye(eye);
+    widened[eye] = ScaledXY(mainCam->GetStereoProjectionMatrix(which), scale, scale);
+    mainCam->SetStereoProjectionMatrix(which, widened[eye]);
+    _fovSetM00[eye] = widened[eye].m00;
+  }
+  _fovLeftProjection = widened[0];
+  mainCam->set_cullingMatrix(
+      UnityEngine::Matrix4x4::op_Multiply(BothEyesCulling(widened[0], widened[1]), mainCam->get_worldToCameraMatrix()));
 }
 
 void Runtime::RestoreFieldOfView() {
