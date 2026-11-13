@@ -1,6 +1,6 @@
-Vivify Quest Session Logs
+# Vivify Quest Session Logs
 
-The Vivify Session Log is the most important log
+### The Vivify Session Log is the most important log
 
 When reporting a problem with Vivify Quest, the Vivify session log is vastly more important than a normal Android Logcat log.
 
@@ -14,7 +14,7 @@ Vivify stores its diagnostic files here:
 
 /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/
 
-The two most important files are:
+#### The two most important files are:
 
 VivifySession.txt
 VivifyReport.txt
@@ -27,7 +27,7 @@ The repository’s README specifically lists these files as the diagnostics to p
 
 ⸻
 
-1. VivifySession.txt — REQUIRED
+## 1. VivifySession.txt — REQUIRED
 
 The main file you should provide is:
 
@@ -58,7 +58,7 @@ It is especially useful for problems involving:
 
 Vivify Quest also has a Debug logging setting. Turning this on provides more detail in the session log.
 
-How to get it
+## How to get it
 
 Use a Quest file manager, QuestPatcher, or another method that allows you to access the Quest’s files.
 
@@ -80,7 +80,7 @@ If GitHub does not accept the file upload, upload it somewhere accessible and pr
 
 ⸻
 
-2. VivifyReport.txt — ALSO IMPORTANT
+## 2. VivifyReport.txt — ALSO IMPORTANT
 
 Vivify Quest also generates:
 
@@ -103,7 +103,7 @@ The session log gives maintainers the broader Vivify runtime information, while 
 
 ⸻
 
-2. vivify_global.txt — PERSISTENT HISTORY, ESPECIALLY USEFUL AFTER A RESTART
+## 2. vivify_global.txt — PERSISTENT HISTORY, ESPECIALLY USEFUL AFTER A RESTART
 
 Vivify also writes a persistent global log in the same folder:
 
@@ -247,7 +247,7 @@ Make sure the diagnostic files have been written.
 
 4. Collect these files
 
-At minimum:
+### At minimum:
 
 VivifySession.txt
 VivifyReport.txt
