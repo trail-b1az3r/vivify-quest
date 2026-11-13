@@ -1,5 +1,6 @@
 #include "VivifyUpdater.hpp"
 #include "main.hpp"
+#include "VivifySeparateEye.hpp"
 #include "VivifyGlobalLog.hpp"
 #include "VivifyCrashReport.hpp"
 #include <sstream>
@@ -7,6 +8,7 @@
 #include <ctime>
 #include <cerrno>
 #include <cstring>
+#include <cstdlib>
 #include "VivifyRuntime.hpp"
 #include "VivifyReport.hpp"
 #include "VivifyRecovery.hpp"
@@ -115,6 +117,10 @@ constexpr std::string_view kCrashGuardConfigKey = "crashGuard";
 constexpr std::string_view kPcBundleForMissingShadersConfigKey = "pcBundleForMissingShaders";
 constexpr std::string_view kFarCullingConfigKey = "farCullingDistance";
 bool gMultipassRenderingEnabled = true;
+bool gExperimentalSeparateEye = false;
+constexpr std::string_view kExperimentalSeparateEyeKey = "experimentalSeparateEyeRenderer";
+bool gUniformTriangleTessellation = false;
+constexpr std::string_view kUniformTriangleTessellationKey = "uniformTriangleTessellation";
 bool gVivifyDebugLogging = false;
 bool gDisableBeat0FilmgrainBlit = false;
 bool gDisableAllBlits = false;
@@ -507,15 +513,18 @@ SafePtrUnity<HMUI::CurvedTextMeshPro> gConvertStatusText;
 // (0.15.4). Keyed by the control's label; nullptr when there is none.
 char const* SettingHint(std::u16string_view label) {
   static std::pair<std::u16string_view, char const*> const kHints[] = {
+      {u"Separate-Eye Renderer (prototype)",
+       "Experimental: renders depth and screen effects per eye, with separate shaders for map texture cameras. "
+       "Off by default; visual and performance validation required. Reuses native multiview when compatible, otherwise uses two replacement views. Effects stay at 100%."},
       {u"Use Windows Bundle",
        "For the selected map only: use its PC (Windows) bundle, converted on the headset, instead of its Quest "
        "bundle. Try it when a map's Quest version looks wrong or is missing things."},
       {u"Effect Resolution %",
        "Draws full-screen map effects at this share of the eye resolution, then scales them up. Lower is "
-       "faster and blurrier; 50% is a quarter of the work."},
+       "faster and blurrier; 50% is a quarter of the work. The separate-eye prototype uses 100%."},
       {u"Auto Effect Resolution",
        "Lowers the effect resolution by itself while a map runs slowly, and raises it again when there is "
-       "room."},
+       "room. The separate-eye prototype keeps effects at 100% and ignores automatic scaling."},
       {u"Offscreen Culling (can hide objects)",
        "Stops animating map objects you are not looking at, to save time. Can leave some objects hidden, so "
        "turn it off if things go missing."},
@@ -533,7 +542,8 @@ char const* SettingHint(std::u16string_view label) {
        "effect covers the screen or makes a map lag."},
       {u"Flat-Screen Effect Guard",
        "Every 2 seconds while a map's screen effect is on, checks 16 spots of the view. If they are all one or two "
-       "colours (and the scene itself is not), turns every screen effect off for the rest of the level."},
+       "colours (and the scene itself is not), turns every screen effect off for the rest of the level. "
+       "Inactive with the Separate-Eye Renderer."},
       {u"Submit Scores On Vivify Maps",
        "Lets scores from Vivify maps go to leaderboards, and lets replays be recorded. Off stops both."},
       {u"Disable Custom Note Visuals",
@@ -587,6 +597,11 @@ char const* SettingHint(std::u16string_view label) {
        "Draws grass, fur and wireframe effects of PC maps without their geometry shader: plain meshes, and "
        "some effects then draw nothing. Only for a map where those effects still go wrong. Changing it "
        "reconverts the map."},
+      {u"Triangle Tessellation (heavy, exp.)",
+       "Optional dense geometry for supported uniform triangle patterns, using the Separate-Eye Renderer. "
+       "Very heavy: it can sharply reduce frame rate. Unsupported maps keep the usual renderer. "
+       "Only the main view is covered; effects on map screens and reflections may still be missing. "
+       "Changing this reselects the song."},
       {u"Geometry-Shader Effects (exp.)",
        "Experimental. Draws effects that need a geometry shader (wireframes, exploding triangles) as plain "
        "meshes when they cannot be converted. Changing it reconverts affected maps."},
@@ -950,6 +965,18 @@ void RegisterModSettings() {
         });
 
         advanced(header("Shaders"));
+        if constexpr (!kLiteBuild) {
+          advanced(toggle(u"Separate-Eye Renderer (prototype)", gExperimentalSeparateEye, [](bool value) {
+            SetBoolConfigValue(kExperimentalSeparateEyeKey, value, gExperimentalSeparateEye);
+            Vivify::SeparateEye::Reset(true);
+            Vivify::ReselectSelectedMap();
+          }));
+          advanced(toggle(u"Triangle Tessellation (heavy, exp.)", gUniformTriangleTessellation, [](bool value) {
+            SetBoolConfigValue(kUniformTriangleTessellationKey, value, gUniformTriangleTessellation);
+            Vivify::SeparateEye::Reset(true);
+            Vivify::ReselectSelectedMap();
+          }));
+        }
         advanced(toggle(u"Convert PC Bundles On Device", GetConvertPcBundlesOnDevice(), [](bool value) {
           SetBoolConfigValue(kConvertPcBundlesOnDeviceConfigKey, value, gConvertPcBundlesOnDevice);
         }));
@@ -1163,6 +1190,9 @@ bool GetMultipassRenderingEnabled() {
   // for single-pass-instanced rendering and verified on-device.
   return false;
 }
+
+bool GetExperimentalSeparateEye() { return !kLiteBuild && gExperimentalSeparateEye; }
+bool GetUniformTriangleTessellation() { return !kLiteBuild && gUniformTriangleTessellation; }
 
 bool GetVivifyDebugLogging() {
   return gVivifyDebugLogging;
@@ -1416,7 +1446,7 @@ void ResetAutoEffectResolution() {
 }
 
 void ReportGameplayFrame(float seconds) {
-  if (kLiteBuild || !gAutoEffectResolution) return;
+  if (kLiteBuild || !gAutoEffectResolution || GetExperimentalSeparateEye()) return;
   if (!(seconds > 0.0f) || seconds > 0.5f) return;  // a pause or a stall, not pacing
   auto& s = gAutoEffect;
   s.elapsed += seconds;
@@ -1452,6 +1482,9 @@ void ReportGameplayFrame(float seconds) {
 
 int GetEffectResolutionPercent() {
   if (kLiteBuild) return 100;
+  // This experiment targets original effects, including their full resolution.
+  // Keep the saved user controls intact for the ordinary renderer/recovery.
+  if (GetExperimentalSeparateEye() && !GetRecoveryModeActive()) return 100;
   int percent = std::clamp(gEffectResolution, 25, 100);
   if (gAutoEffectResolution) percent = std::min(percent, gAutoEffectPercent.load());
   // Crash recovery mode: half resolution or less (0.15.2).
@@ -1473,6 +1506,8 @@ void EnsureConfigDefaults() {
   bool needsWrite = false;
 
   needsWrite |= EnsureBoolConfigValue(kMultipassRenderingConfigKey, false, gMultipassRenderingEnabled);
+  needsWrite |= EnsureBoolConfigValue(kExperimentalSeparateEyeKey, false, gExperimentalSeparateEye);
+  needsWrite |= EnsureBoolConfigValue(kUniformTriangleTessellationKey, false, gUniformTriangleTessellation);
 
   needsWrite |= EnsureBoolConfigValue(kVivifyDebugLoggingConfigKey, false, gVivifyDebugLogging);
   needsWrite |= EnsureBoolConfigValue(kDisableBeat0FilmgrainBlitConfigKey, false, gDisableBeat0FilmgrainBlit);
@@ -1519,8 +1554,22 @@ void EnsureConfigDefaults() {
 
 MOD_EXTERN_FUNC void setup(CModInfo *info) noexcept {
   *info = modInfo.to_c();
+#ifndef VIVIFY_GAME_1_45_3
+  // The 1.40.8 custom-types debug liveness hook reads filterClass at +0x10
+  // (Unity 2019 layout); this game's matching native traversal uses +0x8.
+  // Its supported process-only bypass skips those debug checks and calls
+  // original Unity traversal. Registration and garbage collection stay active.
+  // Set before late_load/AutoRegister; never alter another mod or device file.
+  bool const livenessBypass = ::setenv("CT_DISABLE_LIVENESS_CHECKS", "1", 0) == 0;
+#endif
   try {
     InstallVivifyFileLogSink();
+#ifndef VIVIFY_GAME_1_45_3
+    if (livenessBypass)
+      PaperLogger.info("Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active");
+    else
+      PaperLogger.warn("Vivify startup compatibility: could not set the process-only liveness debug bypass");
+#endif
   } catch (...) {
   }
   // What the previous run left behind: a Vivify map that crashed, or froze and

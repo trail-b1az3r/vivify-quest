@@ -344,6 +344,16 @@ struct GlslOptions {
   // stage rather than written as gl_Layer, which GLSL ES has no vertex-stage
   // form of.
   bool multiview = false;
+  // Experimental separate-eye backend. -1 preserves the existing renderer;
+  // 0/1 bake the logical eye into a shader drawn to a NON-LAYERED target.
+  // This does not change Unity's XR mode. The caller must render each eye
+  // separately and supply its camera/matrix uniforms before compositing.
+  // Mutually exclusive with multiview. Geometry layer writes are discarded:
+  // the render target, rather than gl_Layer, selects the destination eye.
+  int singleViewStereoEye = -1;
+  // Render-texture globals used by a non-layered camera. Only these array
+  // resources lose their layer coordinate; authored texture arrays stay arrays.
+  std::vector<std::string> singleViewTextures;
   // The program is the STEREO_INSTANCING_ON (single-pass instanced) variant,
   // or a plain variant given that variant's code. Its vertex stage takes the
   // eye from SV_InstanceID even when it does not write

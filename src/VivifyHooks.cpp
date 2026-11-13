@@ -1,12 +1,23 @@
 #include "VivifyRuntimeInternal.hpp"
 #include <set>
 #include "VivifyComponents.hpp"
+#include "VivifySeparateEye.hpp"
+#include "VivifySeparateEyePolicy.hpp"
+#include "VivifyCameraBindings.hpp"
+#include "GlobalNamespace/MirrorRendererSO.hpp"
 #include "GlobalNamespace/UserInfo.hpp"
 
 using namespace Vivify;
 using namespace std::string_view_literals;
 
 namespace {
+thread_local SeparateEye::MirrorRenderStack mirrorRenders;
+struct MirrorRenderScope {
+  MirrorRenderScope(GlobalNamespace::MirrorRendererSO* source, GlobalNamespace::MirrorRendererSO* target) {
+    mirrorRenders.Push(reinterpret_cast<uintptr_t>(source), reinterpret_cast<uintptr_t>(target));
+  }
+  ~MirrorRenderScope() { mirrorRenders.Pop(); }
+};
 
 // Vivify's part of a hook, run so that nothing it throws leaves the hook
 // (0.14.25). A hook sits in a chain shared with other mods (custom sabers and
@@ -100,6 +111,42 @@ MAKE_HOOK_MATCH(ImageEffectController_OnRenderImage, &GlobalNamespace::ImageEffe
     return;
   }
   ImageEffectController_OnRenderImage(self, src, dest);
+}
+
+MAKE_HOOK_MATCH(MirrorRendererSO_RenderMirrorTexture, &GlobalNamespace::MirrorRendererSO::RenderMirrorTexture,
+                UnityW<UnityEngine::Texture>, GlobalNamespace::MirrorRendererSO* self,
+                UnityEngine::Vector3 position, UnityEngine::Vector3 normal) {
+  auto* target = self;
+  CameraBindings bindings;
+  VivifyPart("MirrorRendererSO.RenderMirrorTexture", [&] {
+    auto active = mirrorRenders.Resolve(reinterpret_cast<uintptr_t>(self));
+    auto* candidate = active ? reinterpret_cast<GlobalNamespace::MirrorRendererSO*>(active) : SeparateEye::MirrorForCurrentCamera(self);
+    if (candidate != self) bindings.Capture(UnityEngine::Camera::get_current().unsafePtr());
+    target = candidate;
+  });
+  MirrorRenderScope const scope(self, target);
+  auto result = MirrorRendererSO_RenderMirrorTexture(target, position, normal);
+  if (!bindings.Restore()) SeparateEye::RejectCameraBindings();
+  return result;
+}
+MAKE_HOOK_MATCH(MirrorRendererSO_PrepareForNextFrame, &GlobalNamespace::MirrorRendererSO::PrepareForNextFrame,
+                void, GlobalNamespace::MirrorRendererSO* self) {
+  MirrorRendererSO_PrepareForNextFrame(self);
+  VivifyPart("MirrorRendererSO.PrepareForNextFrame", [&] {
+    for (auto* copy : SeparateEye::MirrorCopies(self)) MirrorRendererSO_PrepareForNextFrame(copy);
+  });
+}
+MAKE_HOOK_MATCH(MirrorRendererSO_OnDisable, &GlobalNamespace::MirrorRendererSO::OnDisable,
+                void, GlobalNamespace::MirrorRendererSO* self) {
+  VivifyPart("MirrorRendererSO.OnDisable", [&] { SeparateEye::ForgetMirrorCopies(self); });
+  MirrorRendererSO_OnDisable(self);
+}
+MAKE_HOOK_MATCH(MirrorRendererSO_CreateOrUpdateMirrorCamera, &GlobalNamespace::MirrorRendererSO::CreateOrUpdateMirrorCamera,
+                void, GlobalNamespace::MirrorRendererSO* self, UnityEngine::Camera* camera, UnityEngine::RenderTexture* texture) {
+  MirrorRendererSO_CreateOrUpdateMirrorCamera(self, camera, texture);
+  VivifyPart("MirrorRendererSO.CreateOrUpdateMirrorCamera", [&] {
+    if (SeparateEye::IsPrivateMirror(self)) Runtime::Instance().ConfigureMirrorCamera(self->____mirrorCamera.unsafePtr());
+  });
 }
 
 MAKE_HOOK_MATCH(PauseController_Pause, &GlobalNamespace::PauseController::Pause, void, GlobalNamespace::PauseController* self) {
@@ -214,6 +261,10 @@ void LateLoad() {
   INSTALL_HOOK(PaperLogger, NoteDebris_Init);
   INSTALL_HOOK(PaperLogger, AlwaysVisibleQuad_OnEnable);
   INSTALL_HOOK(PaperLogger, ImageEffectController_OnRenderImage);
+  INSTALL_HOOK(PaperLogger, MirrorRendererSO_RenderMirrorTexture);
+  INSTALL_HOOK(PaperLogger, MirrorRendererSO_PrepareForNextFrame);
+  INSTALL_HOOK(PaperLogger, MirrorRendererSO_OnDisable);
+  INSTALL_HOOK(PaperLogger, MirrorRendererSO_CreateOrUpdateMirrorCamera);
   INSTALL_HOOK(PaperLogger, VRCenterAdjust_Start);
   INSTALL_HOOK(PaperLogger, VRCenterAdjust_OnEnable);
   INSTALL_HOOK(PaperLogger, VRCenterAdjust_OnDisable);

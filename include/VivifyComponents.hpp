@@ -134,6 +134,7 @@ public:
 
 public:
   UnityEngine::Camera* GetCamera();
+  void ReleaseGlobalBindings();
 
   std::unordered_map<int, UnityEngine::RenderTexture*> colorTextures;
   std::optional<int> colorKey;
@@ -145,6 +146,7 @@ public:
   std::optional<int> depthKey;
 
 private:
+  std::unordered_map<int, RenderTexturePolicy::Descriptor> _colorAllocations, _depthAllocations;
   UnityEngine::RenderTexture* EnsureEyeTexture(std::unordered_map<int, UnityEngine::RenderTexture*>& textures,
                                                int eye, UnityEngine::RenderTexture* src, bool depth);
 
@@ -156,9 +158,19 @@ private:
 DECLARE_CLASS_CODEGEN(Vivify, SingleViewCameraShaders, UnityEngine::MonoBehaviour) {
   DECLARE_DEFAULT_CTOR();
   DECLARE_SIMPLE_DTOR();
+  DECLARE_INSTANCE_METHOD(void, OnPreCull);
   DECLARE_INSTANCE_METHOD(void, OnPreRender);
   DECLARE_INSTANCE_METHOD(void, OnPostRender);
   DECLARE_INSTANCE_METHOD(void, OnDisable);
+private:
+  bool _separateEyeScope = false;
+  bool _legacyScope = false;
+};
+
+DECLARE_CLASS_CODEGEN(Vivify, SeparateEyeCapture, UnityEngine::MonoBehaviour) {
+  DECLARE_DEFAULT_CTOR();
+  DECLARE_SIMPLE_DTOR();
+  DECLARE_INSTANCE_METHOD(void, OnRenderImage, UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest);
 };
 
 DECLARE_CLASS_CODEGEN(Vivify, CameraApplier, UnityEngine::MonoBehaviour) {
@@ -167,14 +179,20 @@ DECLARE_CLASS_CODEGEN(Vivify, CameraApplier, UnityEngine::MonoBehaviour) {
   DECLARE_INSTANCE_METHOD(void, OnPreCull);
   DECLARE_INSTANCE_METHOD(void, OnPreRender);
   DECLARE_INSTANCE_METHOD(void, OnPostRender);
+  DECLARE_INSTANCE_METHOD(void, OnDisable);
   DECLARE_INSTANCE_METHOD(void, OnRenderImage, UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest);
 public:
+  void RenderEffects(UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest);
   std::string cameraName = "_Main";
   bool hasMainEffect = false;
   GlobalNamespace::MainEffectController* mainEffectController = nullptr;
 };
 
 namespace Vivify {
+
+GlobalNamespace::BloomPrePass* SyncCameraBloom(UnityEngine::Camera* source, UnityEngine::Camera* target,
+                                             GlobalNamespace::BloomPrePass* previous = nullptr,
+                                             bool inheritEnabled = true);
 
 void SetMultipassShaderState(bool enabled,
                              UnityEngine::XR::XRSettings_StereoRenderingMode stereoMode =

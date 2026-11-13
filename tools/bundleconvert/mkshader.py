@@ -320,7 +320,7 @@ def texture_object(name="tex", *, width=4, height=4, texture_format=10, mip_coun
 
 def serialized_file_with_shaders(shaders, *, sf_version=21, target=19,
                                  unity="2021.3.16f1", enable_type_tree=True,
-                                 extra_class_id=None, textures=None, shader_tree=None):
+                                 extra_class_id=None, textures=None, shader_tree=None, extra_records=()):
     """shaders: list of (name, [platform, ...]), or of already-serialized Shader
     bodies when shader_tree gives the type tree they were written against (see
     mkshader2021). textures: list of kwargs for texture_object. Returns the
@@ -329,7 +329,7 @@ def serialized_file_with_shaders(shaders, *, sf_version=21, target=19,
     tree = shader_tree if shader_tree is not None else shader_type_tree(sf_version)
 
     types = bytearray()
-    type_count = 1 + (1 if textures else 0) + (1 if extra_class_id is not None else 0)
+    type_count = 1 + (1 if textures else 0) + (1 if extra_class_id is not None else 0) + len(extra_records)
     types += struct.pack('<i', type_count)
 
     def emit_type(class_id, with_tree):
@@ -361,6 +361,10 @@ def serialized_file_with_shaders(shaders, *, sf_version=21, target=19,
         other.add(0, "Mesh", "Base", -1)
         other.add(1, "unsigned int", "m_Dummy", 4)
         types += emit_type(extra_class_id, other)
+    record_type_indices = []
+    for class_id, record_tree, _ in extra_records:
+        record_type_indices.append(1 + bool(textures) + (extra_class_id is not None) + len(record_type_indices))
+        types += emit_type(class_id, record_tree)
 
     # A fixture entry is (name, platforms) or (name, platforms, platform_blobs).
     bodies = [bytes(entry) if isinstance(entry, (bytes, bytearray)) else
@@ -373,6 +377,9 @@ def serialized_file_with_shaders(shaders, *, sf_version=21, target=19,
     if extra_class_id is not None:
         bodies.append(struct.pack('<I', 0xDEADBEEF))
         type_indices.append(extra_type_index)
+    for (_, _, body), type_index in zip(extra_records, record_type_indices):
+        bodies.append(body)
+        type_indices.append(type_index)
 
     cursor = 0
     placements = []

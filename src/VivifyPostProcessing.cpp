@@ -2,6 +2,12 @@
 #include "VivifyRecovery.hpp"
 #include <ctime>
 #include "VivifyComponents.hpp"
+#include "VivifySeparateEye.hpp"
+#include "VivifyDepthCopy.hpp"
+#include "VivifyCameraBindings.hpp"
+#include "VivifyRenderTextureDescriptor.hpp"
+#include "VivifyTextureBindings.hpp"
+#include "VivifyBlitPolicy.hpp"
 #include "UnityEngine/Rendering/CameraEvent.hpp"
 #include "UnityEngine/Rendering/TextureDimension.hpp"
 #include "UnityEngine/RenderTextureDescriptor.hpp"
@@ -14,8 +20,19 @@
 #include "UnityEngine/Texture2D.hpp"
 #include "UnityEngine/TextureFormat.hpp"
 #include "UnityEngine/VRTextureUsage.hpp"
+#include "UnityEngine/RenderTextureMemoryless.hpp"
 
 namespace Vivify {
+
+bool Runtime::CanUseNativeStereoEffects() const {
+  for (auto const* effects : {&_preEffects, &_postEffects}) for (auto const& effect : *effects) {
+    auto* material = effect.data.material;
+    if (!SeparateEye::CanUseNativeMaterial(material)) return false;
+    if (material && (material->get_passCount() <= 0 ||
+                     (effect.data.pass >= 0 && effect.data.pass >= material->get_passCount()))) return false;
+  }
+  return true;
+}
 
 namespace {
 // One slice of a texture array into a plain texture, or the reverse, through
@@ -30,8 +47,55 @@ void BlitSlice(UnityEngine::Rendering::CommandBuffer* cb, UnityEngine::Rendering
                       UnityEngine::Vector2(0.0f, 0.0f), sourceSlice, destSlice);
 }
 
-UnityEngine::Rendering::RenderTargetIdentifier ToTargetId(UnityEngine::Texture* texture) {
-  return UnityEngine::Rendering::RenderTargetIdentifier::op_Implicit___UnityEngine__Rendering__RenderTargetIdentifier(texture);
+int ScreenParamsId() {
+  static int const id = UnityEngine::Shader::PropertyToID(u"_ScreenParams");
+  return id;
+}
+void RecordScreenParams(UnityEngine::Rendering::CommandBuffer* cb, int width, int height) {
+  auto const values = BlitPolicy::ScreenParams(width, height);
+  cb->SetGlobalVector(ScreenParamsId(), UnityEngine::Vector4(values[0], values[1], values[2], values[3]));
+}
+void RecordScreenParams(UnityEngine::Rendering::CommandBuffer* cb, UnityEngine::RenderTexture* target) {
+  RecordScreenParams(cb, target->get_width(), target->get_height());
+}
+
+struct BlitResources {
+  UnityEngine::Rendering::CommandBuffer* cb;
+  std::vector<UnityEngine::RenderTexture*> temporaries;
+  SafePtr<UnityEngine::RenderTexture> active = UnityEngine::RenderTexture::get_active().unsafePtr();
+  UnityEngine::Vector4 screenParams = UnityEngine::Shader::GetGlobalVector(ScreenParamsId());
+  bool completed = false;
+  explicit BlitResources(UnityEngine::Rendering::CommandBuffer* commands) : cb(commands) {}
+  ~BlitResources() noexcept {
+    // Discard partially recorded work before releasing any texture it names.
+    try { cb->Clear(); } catch (...) { PaperLogger.error("Vivify: clearing failed blit commands failed"); }
+    try {
+      if (!completed) UnityEngine::Shader::SetGlobalVector(ScreenParamsId(), screenParams);
+      UnityEngine::RenderTexture::set_active(active && IsManagedAlive(active.ptr()) ? active.ptr() : nullptr);
+    } catch (...) { PaperLogger.error("Vivify: restoring blit state failed"); }
+    for (auto* texture : temporaries) {
+      try { if (IsManagedAlive(texture)) UnityEngine::RenderTexture::ReleaseTemporary(texture); }
+      catch (...) { PaperLogger.error("Vivify: releasing a blit temporary failed"); }
+    }
+  }
+};
+UnityEngine::Rendering::RenderTargetIdentifier ToTargetId(UnityEngine::RenderTexture* texture) {
+  auto id = UnityEngine::Rendering::RenderTargetIdentifier::op_Implicit___UnityEngine__Rendering__RenderTargetIdentifier(texture);
+  if (IsManagedAlive(texture) && texture->get_descriptor().get_dimension() == UnityEngine::Rendering::TextureDimension::Tex2DArray)
+    id.m_DepthSlice = -1;
+  return id;
+}
+// Unity's convenience CommandBuffer.Blit overload supplies destDepthSlice=0,
+// even for a layered target. Preserve both eye layers explicitly. Ordinary
+// 2D texture-camera blits retain their original path.
+void RecordBlit(UnityEngine::Rendering::CommandBuffer* cb,
+                UnityEngine::Rendering::RenderTargetIdentifier source,
+                UnityEngine::Rendering::RenderTargetIdentifier destination,
+                UnityEngine::Material* material = nullptr, int pass = -1) {
+  if (destination.m_DepthSlice == -1) {
+    BlitSlice(cb, source, -1, destination, -1, material, pass);
+  } else if (material) cb->Blit(source, destination, material, pass);
+  else cb->Blit(source, destination);
 }
 // An eye-resolution size scaled by the Effect Resolution setting.
 int EffectSize(int size) {
@@ -40,15 +104,101 @@ int EffectSize(int size) {
   return std::max(1, static_cast<int>(static_cast<float>(size) * scale + 0.5f));
 }
 UnityEngine::Rendering::RenderTargetIdentifier CameraTargetId() {
-  return UnityEngine::Rendering::RenderTargetIdentifier::op_Implicit___UnityEngine__Rendering__RenderTargetIdentifier(
+  auto id = UnityEngine::Rendering::RenderTargetIdentifier::op_Implicit___UnityEngine__Rendering__RenderTargetIdentifier(
       UnityEngine::Rendering::BuiltinRenderTextureType::CameraTarget);
+  auto* camera = UnityEngine::Camera::get_current().unsafePtr();
+  if (IsManagedAlive(camera) && camera->get_stereoEnabled()) id.m_DepthSlice = -1;
+  return id;
 }
+}
+
+bool Runtime::TryApplyStereoBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest,
+                                 std::string const& cameraName, int phase) {
+  auto descriptor = src->get_descriptor();
+  if (!GetExperimentalSeparateEye() || SeparateEye::IsRenderingEye() || cameraName != kMainCameraId ||
+      HasSharedEyeEffectTargets() || descriptor.get_dimension() != UnityEngine::Rendering::TextureDimension::Tex2DArray ||
+      descriptor.get_volumeDepth() != 2 || descriptor.get_msaaSamples() != 1) return false;
+  auto* camera = UnityEngine::Camera::get_current().unsafePtr();
+  if (!IsAlive(camera) && IsAlive(_lastMainCameraGO)) camera = _lastMainCameraGO->GetComponent<UnityEngine::Camera*>();
+  if (!IsAlive(camera) || camera->get_gameObject().unsafePtr() != _lastMainCameraGO) return false;
+  // A PC effect can declare sampler2D even in its stereo program. An array
+  // bound to it supplies default/unrelated pixels (Dealer becomes solid yellow).
+  // Use the explicit-eye blit donors on ordinary slices of the native image.
+  struct Temporary {
+    SafePtr<UnityEngine::RenderTexture> value;
+    explicit Temporary(UnityEngine::RenderTextureDescriptor d)
+        : value(UnityEngine::RenderTexture::GetTemporary(d).unsafePtr()) {
+      if (!value || !IsManagedAlive(value.ptr())) throw std::runtime_error("stereo effect texture allocation failed");
+    }
+    ~Temporary() { if (value && IsManagedAlive(value.ptr())) UnityEngine::RenderTexture::ReleaseTemporary(value.ptr()); }
+    UnityEngine::RenderTexture* get() const { return value.ptr(); }
+  };
+  struct EyeScope { ~EyeScope() { SeparateEye::EndBlitEye(); } } eyeScope;
+  CameraBindings bindings;
+  try {
+    if (!SeparateEye::BeginBlitEye(camera, 0)) return false;
+    bindings.Capture(camera);
+    descriptor.set_vrUsage(UnityEngine::VRTextureUsage::None);
+    descriptor.set_memoryless(UnityEngine::RenderTextureMemoryless::None);
+    descriptor.set_useDynamicScale(false);
+    descriptor.set_useMipMap(false); descriptor.set_autoGenerateMips(false);
+    descriptor.set_depthBufferBits(0);
+    Temporary stereo(descriptor);
+    descriptor.set_dimension(UnityEngine::Rendering::TextureDimension::Tex2D);
+    descriptor.set_volumeDepth(1);
+    Temporary input(descriptor), output(descriptor);
+    constexpr char const* names[] = {"_CameraDepthTexture", "_CameraDepthNormalsTexture", "_CameraOpaqueTexture",
+                                    "_CameraMotionVectorsTexture", "_LastCameraDepthTexture"};
+    std::array<SafePtr<UnityEngine::RenderTexture>, 5> globals;
+    std::array<std::unique_ptr<Temporary>, 5> slices;
+    for (size_t i = 0; i != globals.size(); ++i) {
+      if ((i == 0 || i == 4) && !MapShadersNeedSceneDepth().value_or(true)) continue;
+      auto* texture = UnityEngine::Shader::GetGlobalTexture(StringW(std::string(names[i]))).unsafePtr();
+      if (!IsAlive(texture)) continue;
+      auto* rt = il2cpp_utils::try_cast<UnityEngine::RenderTexture>(texture).value_or(nullptr);
+      if (!IsAlive(rt)) continue;
+      auto d = rt->get_descriptor();
+      if (d.get_dimension() != UnityEngine::Rendering::TextureDimension::Tex2DArray) continue;
+      if (d.get_volumeDepth() != 2 || d.get_msaaSamples() != 1) throw std::runtime_error("unsupported stereo effect camera texture layout");
+      globals[i] = rt;
+      d.set_dimension(UnityEngine::Rendering::TextureDimension::Tex2D); d.set_volumeDepth(1);
+      d.set_vrUsage(UnityEngine::VRTextureUsage::None); d.set_memoryless(UnityEngine::RenderTextureMemoryless::None);
+      d.set_useDynamicScale(false);
+      slices[i] = std::make_unique<Temporary>(d);
+    }
+    for (int eye = 0; eye != 2; ++eye) {
+      if (eye != 0 && !SeparateEye::BeginBlitEye(camera, eye)) throw std::runtime_error("right-eye screen effect scope unavailable");
+      for (size_t i = 0; i != globals.size(); ++i) if (slices[i]) {
+        UnityEngine::Graphics::CopyTexture(globals[i].ptr(), eye, 0, slices[i]->get(), 0, 0);
+        UnityEngine::Shader::SetGlobalTexture(StringW(std::string(names[i])), slices[i]->get());
+      }
+      UnityEngine::Graphics::CopyTexture(src, eye, 0, input.get(), 0, 0);
+      ApplyBlits(input.get(), output.get(), cameraName, phase);
+      UnityEngine::Graphics::CopyTexture(output.get(), 0, 0, stereo.get(), eye, 0);
+      SeparateEye::EndBlitEye();
+    }
+    if (!bindings.Restore()) { SeparateEye::RejectCameraBindings(); return false; }
+    ApplyBlits(stereo.get(), dest, cameraName, -1);
+    static bool reported = false;
+    if (!reported) { PaperLogger.info("Vivify stereo screen effects: explicit-eye image processing; reusing the native multiview scene"); reported = true; }
+    return true;
+  } catch (std::exception const& ex) {
+    static bool reported = false;
+    if (!reported) { PaperLogger.error("Vivify stereo screen effect processing failed: {}", ex.what()); reported = true; }
+  } catch (Il2CppExceptionWrapper const& ex) {
+    static bool reported = false;
+    if (!reported) { PaperLogger.error("Vivify stereo screen effect processing failed: {}", il2cpp_utils::ExceptionToString(ex.ex)); reported = true; }
+  } catch (...) {
+    static bool reported = false;
+    if (!reported) { PaperLogger.error("Vivify stereo screen effect processing failed with a native exception"); reported = true; }
+  }
+  return false;
 }
 
 void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest,
                          std::string const& cameraName, int phase) {
   if (!IsAlive(src) || (dest != nullptr && !IsAlive(dest))) return;
-  bool const passthroughOnly = GetDisableAllBlits() || _blitGuardAllOff || _isResetting || _pauseMenuActive ||
+  bool const passthroughOnly = phase < 0 || GetDisableAllBlits() || _blitGuardAllOff || _isResetting || _pauseMenuActive ||
                                _currentBeatmapData == nullptr ||
                                (phase == 1 ? _preEffects.empty()
                                            : (phase == 2 ? _postEffects.empty()
@@ -56,26 +206,27 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
   auto destId = (dest != nullptr) ? ToTargetId(dest) : CameraTargetId();
   if (passthroughOnly) {
     auto* cb = ImmediateCommandBuffer();
-    cb->Blit(ToTargetId(src), destId);
+    RecordBlit(cb, ToTargetId(src), destId);
     UnityEngine::Graphics::ExecuteCommandBuffer(cb);
     cb->Clear();
     return;
   }
-  auto* main = EnsureCachedBlitTexture(_mainBlitTexture, src);
-  auto* scratch = EnsureCachedBlitTexture(_scratchBlitTexture, src);
+  if (TryApplyStereoBlits(src, dest, cameraName, phase)) return;
+  auto* main = EnsureCachedBlitTexture(_mainBlitTexture, _mainBlitAllocation, src);
+  auto* scratch = EnsureCachedBlitTexture(_scratchBlitTexture, _scratchBlitAllocation, src);
   if (!IsAlive(main) || !IsAlive(scratch)) {
     auto* cb = ImmediateCommandBuffer();
-    cb->Blit(ToTargetId(src), destId);
+    RecordBlit(cb, ToTargetId(src), destId);
     UnityEngine::Graphics::ExecuteCommandBuffer(cb);
     cb->Clear();
     return;
   }
 
   auto* cb = ImmediateCommandBuffer();
+  BlitResources resources(cb);
+  auto& selfBlitTemps = resources.temporaries;
 
-  std::vector<UnityEngine::RenderTexture*> selfBlitTemps;
-
-  cb->Blit(ToTargetId(src), ToTargetId(main));
+  RecordBlit(cb, ToTargetId(src), ToTargetId(main));
 
   // _ScreenParams for the effects (0.15.8): the size of the picture they work
   // on. It is a built-in that only a camera's own setup writes, so inside
@@ -84,19 +235,16 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
   // size. Breezer's VHS effect snaps its sampling to a grid of _ScreenParams
   // pixels; with a wrong size the whole view samples a handful of points, or
   // one, and the screen goes a single colour.
-  static int const screenParamsId = UnityEngine::Shader::PropertyToID(u"_ScreenParams");
-  _blitGuardScreenParams = UnityEngine::Shader::GetGlobalVector(screenParamsId);
+  _blitGuardScreenParams = resources.screenParams;
   auto setScreenParams = [&](UnityEngine::RenderTexture* target) {
-    float const width = static_cast<float>(std::max(target->get_width(), 1));
-    float const height = static_cast<float>(std::max(target->get_height(), 1));
-    cb->SetGlobalVector(screenParamsId, UnityEngine::Vector4(width, height, 1.0f + 1.0f / width, 1.0f + 1.0f / height));
+    RecordScreenParams(cb, target);
   };
   setScreenParams(main);
 
   // Flat-screen guard (0.15.7): now and then, a 16x16 sample of the picture
   // before and after this call's effects (BlitGuard* below).
   std::vector<UnityEngine::Material*> guardMaterials;
-  if (GetFlatScreenGuard()) {
+  if (GetFlatScreenGuard() && !GetExperimentalSeparateEye()) {
     auto collect = [&](std::vector<ActiveBlitEffect> const& effects) {
       for (auto const& effect : effects) {
         if (effect.data.material != nullptr && effect.data.source == kMainCameraId &&
@@ -139,27 +287,45 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
   auto* mainCurrent = main;
   auto* mainScratch = scratch;
 
-  auto emitBlit = [&](UnityEngine::Rendering::RenderTargetIdentifier srcId, UnityEngine::RenderTexture* dst,
+  auto emitBlit = [&](UnityEngine::RenderTexture* sourceTexture, UnityEngine::RenderTexture* dst,
                       UnityEngine::Material* material, int pass) {
+    auto const srcId = ToTargetId(sourceTexture);
     auto const dstId = ToTargetId(dst);
+    setScreenParams(dst);
     material = BlitMaterialFor(material, dst);
     // A Quest-built effect shader with no two-eye program (0.15.5): drawn
     // into the two-eye texture it draws nothing, and the frame after it is
     // whatever the scratch texture last held. Run it once per eye through
     // single textures instead.
     if (material != nullptr && NeedsPerEyeBlit(material, dst)) {
+      auto sourceDesc = sourceTexture->get_descriptor();
+      bool const sourceArray = sourceDesc.get_dimension() == UnityEngine::Rendering::TextureDimension::Tex2DArray;
+      bool const sourceFlat = sourceDesc.get_dimension() == UnityEngine::Rendering::TextureDimension::Tex2D;
+      auto const rightElement = BlitPolicy::SourceElement(sourceFlat, sourceArray, sourceDesc.get_volumeDepth(),
+                                                         sourceDesc.get_msaaSamples(), 1);
+      if (!rightElement) {
+        RecordBlit(cb, srcId, dstId, material, pass);
+        return;
+      }
       auto desc = dst->get_descriptor();
       desc.set_dimension(UnityEngine::Rendering::TextureDimension::Tex2D);
       desc.set_volumeDepth(1);
       desc.set_vrUsage(UnityEngine::VRTextureUsage::None);
       desc.set_msaaSamples(1);
       desc.set_depthBufferBits(0);
-      auto* eyeIn = UnityEngine::RenderTexture::GetTemporary(desc).unsafePtr();
+      desc.set_memoryless(UnityEngine::RenderTextureMemoryless::None);
+      // A named screen can differ in size and format from the main view.
+      // Copy source layers into matching storage; the blit then scales them.
+      auto inputDesc = sourceDesc;
+      inputDesc.set_dimension(UnityEngine::Rendering::TextureDimension::Tex2D);
+      inputDesc.set_volumeDepth(1); inputDesc.set_vrUsage(UnityEngine::VRTextureUsage::None);
+      inputDesc.set_depthBufferBits(0); inputDesc.set_memoryless(UnityEngine::RenderTextureMemoryless::None);
+      auto* eyeIn = sourceArray ? UnityEngine::RenderTexture::GetTemporary(inputDesc).unsafePtr() : nullptr;
+      if (IsManagedAlive(eyeIn)) selfBlitTemps.emplace_back(eyeIn);
       auto* eyeOut = UnityEngine::RenderTexture::GetTemporary(desc).unsafePtr();
-      if (IsManagedAlive(eyeIn) && IsManagedAlive(eyeOut)) {
-        selfBlitTemps.emplace_back(eyeIn);
-        selfBlitTemps.emplace_back(eyeOut);
-        auto eyeInId = ToTargetId(eyeIn);
+      if (IsManagedAlive(eyeOut)) selfBlitTemps.emplace_back(eyeOut);
+      if ((!sourceArray || IsManagedAlive(eyeIn)) && IsManagedAlive(eyeOut)) {
+        auto eyeInId = sourceArray ? ToTargetId(eyeIn) : srcId;
         auto eyeOutId = ToTargetId(eyeOut);
         auto source = srcId;
         auto target = dstId;
@@ -171,33 +337,35 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
         UnityEngine::Graphics::ExecuteCommandBuffer(cb);
         cb->Clear();
         bool const stereoWasOn = UnityEngine::Shader::IsKeywordEnabled(StringW("STEREO_MULTIVIEW_ON"));
-        if (stereoWasOn) UnityEngine::Shader::DisableKeyword(StringW("STEREO_MULTIVIEW_ON"));
-        // A converted map's material is on two-eye programs only: its copy
-        // on the single-view build is the one that can draw here.
-        auto* eyeMaterial = BlitMaterialFor(material, eyeOut);
-        for (int eye = 0; eye < 2; eye++) {
-          BlitSlice(cb, source, eye, eyeInId, -1);
-          if (pass >= 0) {
-            cb->Blit(eyeInId, eyeOutId, eyeMaterial, pass);
-          } else {
-            cb->Blit(eyeInId, eyeOutId, eyeMaterial);
+        BlitPolicy::DrawSingleView(stereoWasOn, [](bool enabled) {
+          if (enabled) UnityEngine::Shader::EnableKeyword(StringW("STEREO_MULTIVIEW_ON"));
+          else UnityEngine::Shader::DisableKeyword(StringW("STEREO_MULTIVIEW_ON"));
+        }, [&] {
+          // A converted map's multiview material cannot draw into an eye's
+          // ordinary texture. Resolve its single-view companion inside the
+          // keyword scope while preserving any active explicit-eye donor.
+          auto* eyeMaterial = BlitMaterialFor(material, eyeOut);
+          for (int eye = 0; eye < 2; eye++) {
+            if (sourceArray) BlitSlice(cb, source, eye, eyeInId, -1);
+            if (pass >= 0) {
+              cb->Blit(eyeInId, eyeOutId, eyeMaterial, pass);
+            } else {
+              cb->Blit(eyeInId, eyeOutId, eyeMaterial);
+            }
+            BlitSlice(cb, eyeOutId, -1, target, eye);
           }
-          BlitSlice(cb, eyeOutId, -1, target, eye);
-        }
-        UnityEngine::Graphics::ExecuteCommandBuffer(cb);
-        cb->Clear();
-        if (stereoWasOn) UnityEngine::Shader::EnableKeyword(StringW("STEREO_MULTIVIEW_ON"));
+          UnityEngine::Graphics::ExecuteCommandBuffer(cb);
+          cb->Clear();
+        });
         return;
       }
-      if (IsManagedAlive(eyeIn)) UnityEngine::RenderTexture::ReleaseTemporary(eyeIn);
-      if (IsManagedAlive(eyeOut)) UnityEngine::RenderTexture::ReleaseTemporary(eyeOut);
     }
     if (material == nullptr) {
-      cb->Blit(srcId, dstId);
+      RecordBlit(cb, srcId, dstId);
     } else if (pass >= 0) {
-      cb->Blit(srcId, dstId, material, pass);
+      RecordBlit(cb, srcId, dstId, material, pass);
     } else {
-      cb->Blit(srcId, dstId, material);
+      RecordBlit(cb, srcId, dstId, material);
     }
   };
   auto renderEffects = [&](std::vector<ActiveBlitEffect> const& effects) {
@@ -215,18 +383,16 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
         blitSrc = SecondaryCameraColorRT(found->second);
       }
       if (!IsAlive(blitSrc)) continue;
-      auto blitSrcId = ToTargetId(blitSrc);
       for (auto const& targetName : data.targets) {
         if (targetName == kMainCameraId) {
           if (sourceIsMain) {
-            emitBlit(blitSrcId, mainScratch, data.material, data.pass);
+            emitBlit(blitSrc, mainScratch, data.material, data.pass);
             std::swap(mainCurrent, mainScratch);
 
             blitSrc = mainCurrent;
-            blitSrcId = ToTargetId(mainCurrent);
           } else {
 
-            emitBlit(blitSrcId, mainCurrent, data.material, data.pass);
+            emitBlit(blitSrc, mainCurrent, data.material, data.pass);
           }
         } else if (auto found = _declaredTextures.find(targetName); found != _declaredTextures.end()) {
           auto* target = found->second.texture;
@@ -238,10 +404,10 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
             auto* tempPtr = temp.unsafePtr();
             if (!IsManagedAlive(tempPtr)) continue;
             selfBlitTemps.emplace_back(tempPtr);
-            emitBlit(blitSrcId, tempPtr, data.material, data.pass);
-            cb->Blit(ToTargetId(tempPtr), ToTargetId(target));
+            emitBlit(blitSrc, tempPtr, data.material, data.pass);
+            RecordBlit(cb, ToTargetId(tempPtr), ToTargetId(target));
           } else {
-            emitBlit(blitSrcId, target, data.material, data.pass);
+            emitBlit(blitSrc, target, data.material, data.pass);
           }
         }
       }
@@ -256,58 +422,20 @@ void Runtime::ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTex
 
   if (guardProbe) emitProbe(mainCurrent, _blitGuardOut);
   setScreenParams(src);
-  cb->Blit(ToTargetId(mainCurrent), destId);
+  RecordBlit(cb, ToTargetId(mainCurrent), destId);
   UnityEngine::Graphics::ExecuteCommandBuffer(cb);
   cb->Clear();
   if (guardProbe) BlitGuardEvaluate(guardMaterials, src);
-  for (auto* temp : selfBlitTemps) {
-    UnityEngine::RenderTexture::ReleaseTemporary(temp);
-  }
+  resources.completed = true;
 }
 
 // Flat-screen guard (0.15.7). Reported: a map's screen effect turns the whole
 // view one colour, and the map is only playable with every effect off (Why's
-// This Dealer goes all yellow). The effect's translation checks out, so what
-// it is being fed has to be measured on the headset. While an effect that
-// reads the screen has been on for a second or more, the picture going into
-// the effects and the picture coming out are each sampled at 16x16, at 1 s,
-// 2 s and 3 s. The first sample is logged. If all three show a varied picture
-// going in and a single flat colour coming out -- one that is neither black
-// nor white, which a fade is -- those effects are switched off for the rest
-// of the level, so the map can be seen and played, and the log says so.
+// Upstream 0.15.11's normal-renderer guard samples 16 blocks every 2 s.
+// The explicit-eye backend keeps guard sampling inactive for authored fades.
 namespace {
 constexpr int kGuardSize = 16;
 
-struct GuardSample {
-  bool ok = false;
-  int mean[3] = {0, 0, 0};
-  int spread = 0;  // largest difference from the mean in any channel
-};
-
-GuardSample ReadGuardSample(UnityEngine::RenderTexture* probe, UnityEngine::Texture2D* reader) {
-  GuardSample sample;
-  if (!IsManagedAlive(probe) || !IsManagedAlive(reader)) return sample;
-  auto previous = UnityEngine::RenderTexture::get_active();
-  UnityEngine::RenderTexture::set_active(probe);
-  reader->ReadPixels(UnityEngine::Rect(0.0f, 0.0f, static_cast<float>(kGuardSize), static_cast<float>(kGuardSize)),
-                     0, 0, false);
-  UnityEngine::RenderTexture::set_active(previous);
-  auto pixels = reader->GetPixels32();
-  if (!pixels || pixels.size() == 0) return sample;
-  long sum[3] = {0, 0, 0};
-  for (int i = 0; i < pixels.size(); i++) {
-    sum[0] += pixels[i].r;
-    sum[1] += pixels[i].g;
-    sum[2] += pixels[i].b;
-  }
-  for (int c = 0; c < 3; c++) sample.mean[c] = static_cast<int>(sum[c] / pixels.size());
-  for (int i = 0; i < pixels.size(); i++) {
-    int const channels[3] = {pixels[i].r, pixels[i].g, pixels[i].b};
-    for (int c = 0; c < 3; c++) sample.spread = std::max(sample.spread, std::abs(channels[c] - sample.mean[c]));
-  }
-  sample.ok = true;
-  return sample;
-}
 }  // namespace
 
 bool Runtime::EnsureBlitGuardTextures() {
@@ -424,33 +552,42 @@ void Runtime::BlitGuardEvaluate(std::vector<UnityEngine::Material*> const& mater
 
 void Runtime::CacheMainRenderDescriptor(UnityEngine::RenderTexture* src) {
   if (!IsAlive(src)) return;
+  // Eye callbacks process ordinary 2D images, but that must not resize shared
+  // main-camera feedback arrays or replace the real XR descriptor.
+  if (SeparateEye::IsRenderingEye()) return;
+  auto* camera = UnityEngine::Camera::get_current().unsafePtr();
+  if (IsAlive(camera) && IsAlive(_lastMainCameraGO) && camera->get_gameObject().unsafePtr() != _lastMainCameraGO) return;
   auto desc = src->get_descriptor();
 
   desc.set_msaaSamples(1);
-  desc.set_depthBufferBits(0);
-  desc.set_width(EffectSize(desc.get_width()));
-  desc.set_height(EffectSize(desc.get_height()));
+  // Keep the real camera layout and precision for CreateScreenTexture.
+  // Individual effect scratch targets apply their own scale/depth policy.
   _cachedMainDescriptor = desc;
-  _cachedMainVrUsage = src->get_vrUsage().value__;
   _hasMainDescriptor = true;
+  PrepareDeclaredTextures();
 }
 
 bool Runtime::EnsureMidRenderTextures() {
   if (!_hasMainDescriptor) return false;
-  bool const mismatch = !IsAlive(_midMainRT) || !IsAlive(_midScratchRT) ||
-                        _midMainRT->get_width() != _cachedMainDescriptor.get_width() ||
-                        _midMainRT->get_height() != _cachedMainDescriptor.get_height() ||
-                        _midMainRT->get_vrUsage().value__ != _cachedMainVrUsage;
+  auto desc = _cachedMainDescriptor;
+  desc.set_depthBufferBits(0);
+  desc.set_width(EffectSize(desc.get_width()));
+  desc.set_height(EffectSize(desc.get_height()));
+  auto const requested = RenderTexturePolicy::Describe(desc);
+  bool const alive = IsAlive(_midMainRT) && IsAlive(_midScratchRT);
+  bool const mismatch = RenderTexturePolicy::NeedsAllocation(_midAllocation, requested, alive,
+                                                             alive && _midMainRT->IsCreated() && _midScratchRT->IsCreated());
   if (!mismatch) return true;
   ReleaseMidRenderTextures();
-  _midMainRT = UnityEngine::RenderTexture::New_ctor(_cachedMainDescriptor);
-  _midScratchRT = UnityEngine::RenderTexture::New_ctor(_cachedMainDescriptor);
+  _midMainRT = UnityEngine::RenderTexture::New_ctor(desc);
+  _midScratchRT = UnityEngine::RenderTexture::New_ctor(desc);
   if (!IsAlive(_midMainRT) || !IsAlive(_midScratchRT) || !_midMainRT->Create() || !_midScratchRT->Create()) {
     ReleaseMidRenderTextures();
     return false;
   }
   ClearRenderTexture(_midMainRT);
   ClearRenderTexture(_midScratchRT);
+  _midAllocation = requested;
   return true;
 }
 
@@ -465,6 +602,7 @@ void Runtime::ReleaseMidRenderTextures() {
   }
   _midMainRT = nullptr;
   _midScratchRT = nullptr;
+  _midAllocation.reset();
 }
 
 UnityEngine::Rendering::CommandBuffer* Runtime::ImmediateCommandBuffer() {
@@ -486,21 +624,22 @@ UnityEngine::Rendering::CommandBuffer* Runtime::BuildMidRenderCommandBuffer(
   RTI srcId{};
   srcId._ctor(UnityEngine::Rendering::BuiltinRenderTextureType::CurrentActive);
   RTI dstId{};
-  dstId._ctor(UnityEngine::Rendering::BuiltinRenderTextureType::CameraTarget);
-  cb->Blit(srcId, ToTargetId(_midMainRT));
+  dstId = CameraTargetId();
+  RecordBlit(cb, srcId, ToTargetId(_midMainRT));
 
   auto* mainCurrent = _midMainRT;
   auto* mainScratch = _midScratchRT;
 
   auto emitBlit = [&](RTI blitSrc, UnityEngine::RenderTexture* dst, UnityEngine::Material* material, int pass) {
     RTI const blitDst = ToTargetId(dst);
+    RecordScreenParams(cb, dst);
     material = BlitMaterialFor(material, dst);
     if (material == nullptr) {
-      cb->Blit(blitSrc, blitDst);
+      RecordBlit(cb, blitSrc, blitDst);
     } else if (pass >= 0) {
-      cb->Blit(blitSrc, blitDst, material, pass);
+      RecordBlit(cb, blitSrc, blitDst, material, pass);
     } else {
-      cb->Blit(blitSrc, blitDst, material);
+      RecordBlit(cb, blitSrc, blitDst, material);
     }
   };
 
@@ -539,7 +678,7 @@ UnityEngine::Rendering::CommandBuffer* Runtime::BuildMidRenderCommandBuffer(
           if (!IsManagedAlive(tempPtr)) continue;
           _midSelfBlitTemps.emplace_back(tempPtr);
           emitBlit(blitSrcId, tempPtr, data.material, data.pass);
-          cb->Blit(ToTargetId(tempPtr), ToTargetId(target));
+          RecordBlit(cb, ToTargetId(tempPtr), ToTargetId(target));
         } else {
           emitBlit(blitSrcId, target, data.material, data.pass);
         }
@@ -547,7 +686,8 @@ UnityEngine::Rendering::CommandBuffer* Runtime::BuildMidRenderCommandBuffer(
     }
   }
 
-  cb->Blit(ToTargetId(mainCurrent), dstId);
+  RecordScreenParams(cb, _cachedMainDescriptor.get_width(), _cachedMainDescriptor.get_height());
+  RecordBlit(cb, ToTargetId(mainCurrent), dstId);
 
   // CommandBuffer.Blit binds its destination as a colour-only render target, so
   // once this buffer has run the camera is left rendering into the camera
@@ -615,30 +755,22 @@ void Runtime::RemoveMidRenderCommandBuffers() {
 }
 
 UnityEngine::RenderTexture* Runtime::EnsureCachedBlitTexture(UnityEngine::RenderTexture*& texture,
+                                                             std::optional<RenderTexturePolicy::Descriptor>& allocation,
                                                              UnityEngine::RenderTexture* src) {
   auto desc = src->get_descriptor();
   desc.set_msaaSamples(1);
   desc.set_depthBufferBits(0);
   desc.set_width(EffectSize(desc.get_width()));
   desc.set_height(EffectSize(desc.get_height()));
-  int const width = desc.get_width();
-  int const height = desc.get_height();
-  int const format = desc.get_graphicsFormat().value__;
-  if (IsAlive(texture)) {
-    if (_cachedBlitWidth == width &&
-        _cachedBlitHeight == height &&
-        _cachedBlitFormat == format &&
-        texture->IsCreated()) {
-      return texture;
-    }
-    ReleaseRenderTexture(texture);
-  }
+  auto const requested = RenderTexturePolicy::Describe(desc);
+  bool const alive = IsAlive(texture);
+  if (!RenderTexturePolicy::NeedsAllocation(allocation, requested, alive, alive && texture->IsCreated())) return texture;
+  ReleaseRenderTexture(texture);
+  allocation.reset();
   texture = UnityEngine::RenderTexture::New_ctor(desc);
   if (!IsAlive(texture)) { texture = nullptr; return nullptr; }
   if (!texture->Create()) { ReleaseRenderTexture(texture); return nullptr; }
-  _cachedBlitWidth = width;
-  _cachedBlitHeight = height;
-  _cachedBlitFormat = format;
+  allocation = requested;
   ClearRenderTexture(texture);
   return texture;
 }
@@ -656,52 +788,43 @@ void Runtime::ReleaseCachedBlitTextures() {
   ReleaseRenderTexture(_scratchBlitTexture);
   ReleaseRenderTexture(_blitGuardIn);
   ReleaseRenderTexture(_blitGuardOut);
+  _mainBlitAllocation.reset();
+  _scratchBlitAllocation.reset();
 }
 
 bool Runtime::CanUseBlitMaterial(UnityEngine::Material* material, int pass) const {
+  material = SeparateEye::BlitMaterial(material);
   if (!IsAlive(material)) {
     return false;
   }
-  if (_blitGuardKilled.contains(material)) return false;
-  if (auto it = _blitMaterialValidCache.find(material); it != _blitMaterialValidCache.end()) {
-    return it->second;
-  }
-  if (_fallbackShadedMaterials.contains(material)) {
-    // The map's own post-processing shader could not run here and was replaced
-    // with a generic stand-in. A stand-in is fine on a mesh but meaningless as
-    // a screen effect -- running it would paint the frame with an unrelated
-    // shader. Skipping the blit leaves the frame untouched instead, which is
-    // the closest thing to "this effect is unavailable".
-    PaperLogger.warn("Vivify blit skipped: material '{}' is using a stand-in shader, so its screen effect "
-                     "cannot be reproduced (this is expected for a converted PC bundle)",
-                     ToStdString(material->get_name()));
-    _blitMaterialValidCache[material] = false;
-    return false;
-  }
-  auto shader = material->get_shader();
-  auto* rawShader = shader.unsafePtr();
-  auto shaderName = ShaderNameForLog(rawShader);
-  if (!IsAlive(rawShader) || !rawShader->get_isSupported() || IsInternalErrorShaderName(shaderName)) {
-    if (GetVivifyDebugLogging()) {
-      PaperLogger.warn("Vivify blit material invalid: material='{}' shader='{}' supported={} internalError={} pass={}",
-                       ToStdString(material->get_name()), shaderName,
-                       BoolText(IsAlive(rawShader) && rawShader->get_isSupported()),
-                       BoolText(IsInternalErrorShaderName(shaderName)), pass);
-    }
-    _blitMaterialValidCache[material] = false;
-    return false;
-  }
+  if (!GetExperimentalSeparateEye() && _blitGuardKilled.contains(material)) return false;
+  // Validate the requested pass on every call. One invalid pass must not
+  // poison other passes, and a cached valid pass must not authorize another.
   int const passCount = material->get_passCount();
-  if (passCount <= 0 || (pass >= 0 && pass >= passCount)) {
+  if (passCount <= 0 || pass < -1 || pass >= passCount) {
     if (GetVivifyDebugLogging()) {
       PaperLogger.warn("Vivify blit material invalid pass: material='{}' pass={} passCount={}",
                        ToStdString(material->get_name()), pass, passCount);
     }
-    _blitMaterialValidCache[material] = false;
     return false;
   }
-  _blitMaterialValidCache[material] = true;
-  return true;
+  auto* shader = material->get_shader().unsafePtr();
+  bool const supported = IsAlive(shader) && shader->get_isSupported();
+  bool const fallback = _fallbackShadedMaterials.contains(material);
+  if (auto it = _blitMaterialValidCache.find(material); it != _blitMaterialValidCache.end()) {
+    auto const& cached = it->second;
+    if (cached.shader.ptr() == shader && cached.supported == supported && cached.fallback == fallback) return cached.valid;
+  }
+  auto shaderName = ShaderNameForLog(shader);
+  bool const valid = supported && !fallback && !IsInternalErrorShaderName(shaderName);
+  auto& cached = _blitMaterialValidCache[material];
+  cached.material = material; cached.shader = shader;
+  cached.supported = supported; cached.fallback = fallback; cached.valid = valid;
+  if (!valid && (fallback || GetVivifyDebugLogging())) {
+    PaperLogger.warn("Vivify blit material unavailable: material='{}' shader='{}' supported={} standIn={}",
+                     ToStdString(material->get_name()), shaderName, supported, fallback);
+  }
+  return valid;
 }
 
 bool Runtime::SameBlitData(BlitMaterialData const& left, BlitMaterialData const& right) {
@@ -912,6 +1035,8 @@ void Runtime::HandleBlit(CustomJSONData::CustomEventData* customEventData, rapid
 // programs already and are never in _singleViewShaders.
 UnityEngine::Material* Runtime::BlitMaterialFor(UnityEngine::Material* material,
                                                 UnityEngine::RenderTexture* destination) {
+  auto* separate = SeparateEye::BlitMaterial(material);
+  if (separate != material) return separate;
   if (material == nullptr || _singleViewShaders.empty() || !IsAlive(material) || !IsAlive(destination)) {
     return material;
   }
@@ -927,11 +1052,16 @@ UnityEngine::Material* Runtime::BlitMaterialFor(UnityEngine::Material* material,
   auto& copy = _singleViewBlitMaterials[material];
   if (!IsAlive(copy)) {
     copy = UnityEngine::Material::New_ctor(material);
-    copy->set_shader(singleView->second);
     copy->set_hideFlags(UnityEngine::HideFlags::DontUnloadUnusedAsset);
     PaperLogger.info("Vivify Blit: material '{}' draws into single-screen textures with the single-view build "
                      "of '{}'", ToStdString(material->get_name()), singleView->first);
   }
+  // Event and camera callbacks can change properties between blits.
+  // Refresh on use without sweeping inactive cached copies. A live source
+  // shader change must also select its new companion on this cached object;
+  // CopyPropertiesFromMaterial deliberately does not copy the shader.
+  copy->CopyPropertiesFromMaterial(material);
+  if (copy->get_shader().unsafePtr() != singleView->second) copy->set_shader(singleView->second);
   return copy;
 }
 
@@ -962,17 +1092,7 @@ bool Runtime::NeedsPerEyeBlit(UnityEngine::Material* material, UnityEngine::Rend
   return true;
 }
 
-// Keeps each single-view blit copy in step with its original, which the map
-// animates (SetMaterialProperty, AnimateTrack). Once a frame, before blits run.
-void Runtime::SyncSingleViewBlitMaterials() {
-  for (auto const& [original, copy] : _singleViewBlitMaterials) {
-    if (!IsAlive(original) || !IsAlive(copy)) continue;
-    copy->CopyPropertiesFromMaterial(original);
-  }
-}
-
 void Runtime::UpdateBlitEffects() {
-  SyncSingleViewBlitMaterials();
   if (GetDisableAllBlits() || _blitGuardAllOff) {
     if ((!_preEffects.empty() || !_postEffects.empty() || HasMidRenderEffects()) && GetVivifyDebugLogging()) {
       PaperLogger.info("Vivify Blit effects cleared: Disable All Blits enabled pre={} post={}",
@@ -1057,58 +1177,55 @@ void Runtime::HandleCreateScreenTexture(rapidjson::Value const& json) {
       if (s == "Trilinear") return UnityEngine::FilterMode::Trilinear;
       return std::nullopt;
     }();
-  if (dt.xRatio <= 0.0f) dt.xRatio = 1.0f;
-  if (dt.yRatio <= 0.0f) dt.yRatio = 1.0f;
-  int baseW = 1024;
-  int baseH = 512;
-  auto mainCam = UnityEngine::Camera::get_main();
-  if (IsAlive(mainCam.unsafePtr())) {
-    baseW = std::max(1, mainCam->get_pixelWidth());
-    baseH = std::max(1, mainCam->get_pixelHeight());
-  }
-  baseW = EffectSize(baseW);
-  baseH = EffectSize(baseH);
-  int w = std::clamp(dt.width.value_or(baseW), 1, kMaxRenderTextureSize);
-  int h = std::clamp(dt.height.value_or(baseH), 1, kMaxRenderTextureSize);
-  w = std::clamp(static_cast<int>(w / dt.xRatio), 1, kMaxRenderTextureSize);
-  h = std::clamp(static_cast<int>(h / dt.yRatio), 1, kMaxRenderTextureSize);
-  auto requestedFmt = dt.format.value_or(UnityEngine::RenderTextureFormat::ARGB32);
-  auto fmt = SupportedRenderTextureFormat(requestedFmt, "CreateScreenTexture:" + name);
-  if (GetVivifyDebugLogging()) {
-    PaperLogger.info("Vivify CreateScreenTexture: id='{}' size={}x{} requestedFormat={} finalFormat={} filter={} propertyId={}",
-                     name, w, h, requestedFmt.value__, fmt.value__,
-                     dt.filterMode.has_value() ? dt.filterMode->value__ : -1, dt.propertyId);
-  }
-
-  UnityEngine::RenderTextureDescriptor desc{};
-  desc._ctor(w, h, fmt, 0);
-  if (IsAlive(mainCam.unsafePtr()) && mainCam->get_stereoEnabled()) {
-    desc.set_vrUsage(UnityEngine::VRTextureUsage::TwoEyes);
-  }
-  dt.texture = UnityEngine::RenderTexture::New_ctor(desc);
-  if (IsAlive(dt.texture) && dt.filterMode.has_value()) dt.texture->set_filterMode(dt.filterMode.value());
-  if (!IsAlive(dt.texture) || !dt.texture->Create()) {
-    if (GetVivifyDebugLogging()) {
-      PaperLogger.warn("Vivify CreateScreenTexture failed: id='{}' size={}x{} format={}", name, w, h, fmt.value__);
-    }
-    ReleaseDeclaredTextureData(dt);
-    return;
-  }
-  ClearRenderTexture(dt.texture);
-  UnityEngine::Shader::SetGlobalTexture(dt.propertyId, static_cast<UnityEngine::Texture*>(dt.texture));
+  if (!std::isfinite(dt.xRatio) || dt.xRatio <= 0.0f) dt.xRatio = 1.0f;
+  if (!std::isfinite(dt.yRatio) || dt.yRatio <= 0.0f) dt.yRatio = 1.0f;
+  if (dt.format) dt.format = SupportedRenderTextureFormat(*dt.format, "CreateScreenTexture:" + name);
   _declaredTextures[name] = std::move(dt);
+  // Like PC Vivify, allocation needs the camera's actual image descriptor.
+  // A window-sized ARGB32 Tex2D guess loses HDR and the right-eye layer.
+  PrepareDeclaredTextures();
+}
+
+void Runtime::PrepareDeclaredTextures() {
+  if (!_hasMainDescriptor) return;
+  for (auto& [name, data] : _declaredTextures) {
+    auto desc = _cachedMainDescriptor;
+    desc.set_msaaSamples(1);
+    desc.set_width(RenderTexturePolicy::DeclaredDimension(data.width, EffectSize(desc.get_width()), data.xRatio, kMaxRenderTextureSize));
+    desc.set_height(RenderTexturePolicy::DeclaredDimension(data.height, EffectSize(desc.get_height()), data.yRatio, kMaxRenderTextureSize));
+    if (data.format) desc.set_colorFormat(*data.format);
+    auto const requested = RenderTexturePolicy::Describe(desc);
+    bool const alive = IsAlive(data.texture);
+    if (RenderTexturePolicy::NeedsAllocation(data.allocation, requested, alive, alive && data.texture->IsCreated())) {
+      ReleaseDeclaredTextureData(data);
+      data.texture = UnityEngine::RenderTexture::New_ctor(desc);
+      if (IsAlive(data.texture) && data.filterMode) data.texture->set_filterMode(*data.filterMode);
+      if (!IsAlive(data.texture) || !data.texture->Create()) {
+        ReleaseDeclaredTextureData(data);
+        continue;
+      }
+      data.allocation = requested;
+      ClearRenderTexture(data.texture);
+      if (GetVivifyDebugLogging()) {
+        PaperLogger.info("Vivify CreateScreenTexture: id='{}' size={}x{} layers={} dimension={} graphicsFormat={} filter={}",
+                         name, desc.get_width(), desc.get_height(), desc.get_volumeDepth(), desc.get_dimension().value__,
+                         desc.get_graphicsFormat().value__, data.filterMode ? data.filterMode->value__ : -1);
+      }
+    }
+    // Rebind when the rendering camera resumes; another camera may have
+    // replaced shader globals. Existing feedback contents remain untouched.
+    if (IsAlive(data.texture)) UnityEngine::Shader::SetGlobalTexture(data.propertyId, data.texture);
+  }
 }
 
 void Runtime::ReleaseDeclaredTextureData(DeclaredTextureData& data) {
-
-  if (data.propertyId != 0) {
-    UnityEngine::Shader::SetGlobalTexture(data.propertyId, static_cast<UnityEngine::Texture*>(nullptr));
-  }
+  if (data.propertyId != 0) ClearOwnedTextureBinding(data.propertyId, data.texture);
   if (IsAlive(data.texture)) {
     data.texture->Release();
     UnityEngine::Object::Destroy(data.texture);
   }
   data.texture = nullptr;
+  data.allocation.reset();
 }
 
 bool Runtime::DestroyDeclaredTextureById(std::string const& id) {
@@ -1156,7 +1273,10 @@ void Runtime::HandleCreateCamera(rapidjson::Value const& json) {
     go->get_transform()->SetParent(mainCam->get_transform(), false);
   }
   cam.camera = go->AddComponent<UnityEngine::Camera*>();
-  if (IsAlive(mainCamPtr)) cam.camera->CopyFrom(mainCamPtr);
+  if (IsAlive(mainCamPtr)) {
+    cam.camera->CopyFrom(mainCamPtr);
+    SyncCameraBloom(mainCamPtr, cam.camera, nullptr, false);
+  }
   cam.camera->set_depth(IsAlive(mainCamPtr) ? mainCam->get_depth() - 1 : -2.0f);
   EnsureMultipassKeywordController(go);
   int w = 1024, h = 512;
@@ -1193,11 +1313,8 @@ void Runtime::HandleCreateCamera(rapidjson::Value const& json) {
   if (GetVivifyDebugLogging()) {
     PaperLogger.info("Vivify CreateCamera: id='{}' colorTexture='{}' depthTexture='{}' size={}x{} mainEffect={}",
                      name, cam.textureName.value_or("<none>"), cam.depthTextureName.value_or("<none>"),
-                     w, h, BoolText(cam.properties.mainEffect.value_or(false)));
+                     w, h, BoolText(cam.properties.mainEffect.value_or(true)));
   }
-  ApplyCameraProperties(cam.camera, cam.properties);
-  ApplyCameraGameObjectProperties(cam.camera, cam.properties);
-
   // A camera asked for a depth texture is useless without Unity generating one,
   // and _CameraDepthTexture only exists when the camera's depthTextureMode says
   // so. Upstream leaves this to the map declaring depthTextureMode itself;
@@ -1211,15 +1328,28 @@ void Runtime::HandleCreateCamera(rapidjson::Value const& json) {
     }
   }
 
+  // The depth requirement is part of this camera's baseline, so clearing
+  // a later override cannot disable an outstanding depth-texture capture.
+  ApplyCameraProperties(cam.camera, cam.properties);
+  ApplyCameraGameObjectProperties(cam.camera, cam.properties);
+
   _secondaryCameras[name] = std::move(cam);
 }
 
 void Runtime::ReleaseSecondaryCameraData(SecondaryCameraData& data) {
+  _cameraDefaults.erase(data.camera);
+  // Captures live in the controller's per-eye maps. Unbind them before
+  // destroying the GameObject; its OnDestroy also covers external destruction.
+  if (IsAlive(data.camera)) {
+    auto* go = data.camera->get_gameObject().unsafePtr();
+    auto* controller = IsAlive(go) ? go->GetComponent<SecondaryCameraController*>() : nullptr;
+    if (IsAlive(controller)) controller->ReleaseGlobalBindings();
+  }
   if (data.texturePropertyId.has_value()) {
-    UnityEngine::Shader::SetGlobalTexture(data.texturePropertyId.value(), static_cast<UnityEngine::Texture*>(nullptr));
+    ClearOwnedTextureBinding(data.texturePropertyId.value(), data.colorRT);
   }
   if (data.depthTexturePropertyId.has_value()) {
-    UnityEngine::Shader::SetGlobalTexture(data.depthTexturePropertyId.value(), static_cast<UnityEngine::Texture*>(nullptr));
+    ClearOwnedTextureBinding(data.depthTexturePropertyId.value(), data.depthRT);
   }
   if (IsAlive(data.colorRT)) {
     data.colorRT->Release();
@@ -1265,6 +1395,7 @@ UnityEngine::RenderTexture* Runtime::SecondaryCameraColorRT(SecondaryCameraData 
 // skipped entirely and its depth texture was never bound to the name the map's
 // shader samples.
 void Runtime::BindSecondaryCameraTextures() {
+  PrepareDeclaredTextures();
   if (_secondaryCameras.empty()) return;
   auto* mainCam = IsAlive(_lastMainCameraGO) ? _lastMainCameraGO->GetComponent<UnityEngine::Camera*>() : nullptr;
   int const eye = IsAlive(mainCam) ? mainCam->get_stereoActiveEye().value__ : 0;
@@ -1318,37 +1449,52 @@ bool Runtime::DestroySecondaryCameraById(std::string const& id) {
   return true;
 }
 
-void Runtime::ApplySecondaryCameraMainEffects(GlobalNamespace::MainEffectController* mainEffectController) {
-  if (_secondaryCameras.empty() || _isResetting || _pauseMenuActive || _currentBeatmapData == nullptr) return;
+void Runtime::CaptureSecondaryDepth(UnityEngine::RenderTexture* destination) {
+  try { if (DepthCopy::Copy(destination)) return; }
+  catch (...) { PaperLogger.error("Vivify secondary-camera depth-copy draw threw"); }
+  ClearRenderTexture(destination);
+  NoteVisualProblem("Secondary-camera depth capture failed: PC depth-copy shader or slice binding unavailable.");
+}
+
+void Runtime::ConfigureMirrorCamera(UnityEngine::Camera* camera) {
+  if (!_currentBeatmapData || _isResetting || !IsAlive(camera)) return;
+  auto* go = camera->get_gameObject().unsafePtr();
+  if (!IsAlive(go)) return;
+  EnsureCullingController(go);
+  if (!IsAlive(go->GetComponent<SingleViewCameraShaders*>())) go->AddComponent<SingleViewCameraShaders*>();
+  // PC's mirror CameraPropertyController has no separate id, so it inherits
+  // the map's main-camera properties while keeping its reflected matrices.
+  if (auto properties = _cameraProperties.find(std::string(kMainCameraId)); properties != _cameraProperties.end()) {
+    ApplyCameraProperties(camera, properties->second);
+    ApplyCameraGameObjectProperties(camera, properties->second);
+  }
+}
+
+bool Runtime::RenderSecondaryCameraMainEffect(UnityEngine::Camera* camera, UnityEngine::RenderTexture* src,
+                                             UnityEngine::RenderTexture* dest) {
+  if (_isResetting || _pauseMenuActive || !_currentBeatmapData || !IsAlive(camera) || !IsAlive(src) || !IsAlive(dest)) return false;
+  auto at = std::find_if(_secondaryCameras.begin(), _secondaryCameras.end(),
+                         [camera](auto const& item) { return item.second.camera == camera; });
+  if (at == _secondaryCameras.end() || !at->second.properties.mainEffect.value_or(true)) return false;
+  auto* mainEffectController = IsAlive(_lastMainCameraGO)
+      ? _lastMainCameraGO->GetComponent<GlobalNamespace::MainEffectController*>() : nullptr;
   if (!IsManagedAlive(mainEffectController) ||
       mainEffectController->_mainEffectContainer.ptr() == nullptr ||
       !IsManagedAlive(mainEffectController->_mainEffectContainer)) {
-    return;
+    return false;
   }
   auto mainEffectSO = mainEffectController->_mainEffectContainer->get_mainEffect();
   if (mainEffectSO.ptr() == nullptr || !IsManagedAlive(mainEffectSO) || !mainEffectSO->get_hasPostProcessEffect()) {
-    return;
+    return false;
   }
-  for (auto& [name, cam] : _secondaryCameras) {
-
-    if (!cam.properties.mainEffect.value_or(false)) continue;
-    // Secondary cameras no longer own a single RenderTexture -- capture is
-    // per-eye and lives on the controller -- so resolve the texture for the eye
-    // currently being rendered.
-    auto* colorRT = SecondaryCameraColorRT(cam);
-    if (!IsAlive(colorRT)) continue;
-    auto desc = colorRT->get_descriptor();
-    desc.set_msaaSamples(1);
-    desc.set_depthBufferBits(0);
-    auto temp = UnityEngine::RenderTexture::GetTemporary(desc);
-    auto* tempPtr = temp.unsafePtr();
-    if (!IsManagedAlive(tempPtr)) continue;
-    mainEffectController->OnPreRender();
-    mainEffectSO->Render(colorRT, tempPtr, mainEffectController->____fadeValue);
-    mainEffectController->OnPostRender();
-    UnityEngine::Graphics::Blit(static_cast<UnityEngine::Texture*>(tempPtr), colorRT);
-    UnityEngine::RenderTexture::ReleaseTemporary(tempPtr);
-  }
+  // Match PC MainEffectRenderer: execute while THIS secondary camera's
+  // depth, projection and bloom data are current. Filtering it later from
+  // the main camera also processed stale captures repeatedly.
+  mainEffectController->OnPreRender();
+  try { mainEffectSO->Render(src, dest, mainEffectController->____fadeValue); }
+  catch (...) { mainEffectController->OnPostRender(); throw; }
+  mainEffectController->OnPostRender();
+  return true;
 }
 
 std::optional<UnityEngine::DepthTextureMode> Runtime::ParseDepthTextureModeName(std::string_view s) {
@@ -1403,11 +1549,9 @@ void Runtime::ParseCameraPropertyData(rapidjson::Value const& json, CameraProper
       bool const v2 = _currentBeatmapData != nullptr && _currentBeatmapData->v2orEarlier;
       culling.tracks = ReadTracks(*cullingVal, v2);
       culling.whitelist = ReadBool(*cullingVal, "whitelist").value_or(false);
-      if (culling.tracks.empty()) {
-        out.culling.reset();
-      } else {
-        out.culling = std::move(culling);
-      }
+      // An empty whitelist still excludes everything. Only JSON null removes
+      // the culling selection; an object with no tracks remains a selection.
+      out.culling = std::move(culling);
     } else {
       out.culling.reset();
     }
@@ -1423,25 +1567,42 @@ void Runtime::ParseCameraPropertyData(rapidjson::Value const& json, CameraProper
 void Runtime::ApplyCameraProperties(UnityEngine::Camera* camera, CameraPropertyData const& props) {
   if (!IsAlive(camera)) return;
   bool const isMainCamera = camera->get_gameObject().unsafePtr() == _lastMainCameraGO;
+  CameraDefaults const* defaults = nullptr;
+  if (!isMainCamera) {
+    auto& saved = _cameraDefaults[camera];
+    int const id = camera->GetInstanceID();
+    if (!saved.camera || !IsAlive(saved.camera.ptr()) || saved.instanceId != id) {
+      saved.camera = camera; saved.instanceId = id;
+      saved.depthMode = camera->get_depthTextureMode().value__;
+      saved.clearFlags = camera->get_clearFlags(); saved.backgroundColor = camera->get_backgroundColor();
+    }
+    defaults = &saved;
+  }
   if (props.depthTextureMode.has_value()) {
     int mode = props.depthTextureMode->value__;
 
     if (isMainCamera && _mainCamOriginalDepthMode.has_value()) {
       mode |= _mainCamOriginalDepthMode.value();
-    }
+    } else if (defaults) mode |= defaults->depthMode;
     camera->set_depthTextureMode(UnityEngine::DepthTextureMode(mode));
   } else if (isMainCamera && _mainCamOriginalDepthMode.has_value()) {
     camera->set_depthTextureMode(UnityEngine::DepthTextureMode(_mainCamOriginalDepthMode.value()));
+  } else if (defaults) {
+    camera->set_depthTextureMode(UnityEngine::DepthTextureMode(defaults->depthMode));
   }
   if (props.clearFlags.has_value()) {
     camera->set_clearFlags(props.clearFlags.value());
   } else if (isMainCamera && _mainCamOriginalClearFlags.has_value()) {
     camera->set_clearFlags(UnityEngine::CameraClearFlags(_mainCamOriginalClearFlags.value()));
+  } else if (defaults) {
+    camera->set_clearFlags(defaults->clearFlags);
   }
   if (props.backgroundColor.has_value()) {
     camera->set_backgroundColor(props.backgroundColor.value());
   } else if (isMainCamera && _mainCamOriginalBackgroundColor.has_value()) {
     camera->set_backgroundColor(_mainCamOriginalBackgroundColor.value());
+  } else if (defaults) {
+    camera->set_backgroundColor(defaults->backgroundColor);
   }
 }
 
@@ -1539,7 +1700,18 @@ void Runtime::CaptureMainCameraOriginals(UnityEngine::Camera* mainCam, UnityEngi
   }
 }
 
-void Runtime::RestoreMainCameraOriginals() {
+void Runtime::RestoreMainCameraOriginals(bool restoreAuxiliary) {
+  if (restoreAuxiliary) {
+    for (auto const& [_, saved] : _cameraDefaults) {
+      if (!saved.camera || !IsAlive(saved.camera.ptr()) || saved.camera->GetInstanceID() != saved.instanceId) continue;
+      saved.camera->set_depthTextureMode(UnityEngine::DepthTextureMode(saved.depthMode));
+      saved.camera->set_clearFlags(saved.clearFlags);
+      saved.camera->set_backgroundColor(saved.backgroundColor);
+      ApplyCullingProperty(saved.camera->get_gameObject().unsafePtr(), std::nullopt);
+      if (auto* bloom = saved.camera->GetComponent<GlobalNamespace::BloomPrePass*>(); IsAlive(bloom)) bloom->set_enabled(true);
+    }
+    _cameraDefaults.clear();
+  }
   if (IsAlive(_lastMainCameraGO)) {
     auto* mainCam = _lastMainCameraGO->GetComponent<UnityEngine::Camera*>();
     if (IsAlive(mainCam)) {
@@ -1667,11 +1839,17 @@ void Runtime::ApplyFarCulling(UnityEngine::Camera* mainCam) {
 }
 
 void Runtime::RefreshCameraComponents(bool allowCameraApplier) {
+  for (auto it = _cameraDefaults.begin(); it != _cameraDefaults.end();) {
+    if (!it->second.camera || !IsAlive(it->second.camera.ptr())) it = _cameraDefaults.erase(it);
+    else ++it;
+  }
   auto mainCam = UnityEngine::Camera::get_main();
   auto* mainCamPtr = mainCam.unsafePtr();
   auto* mainCamGO = IsAlive(mainCamPtr) ? mainCam->get_gameObject().unsafePtr() : nullptr;
   bool const cameraChanged = mainCamGO != _lastMainCameraGO;
   if (cameraChanged) {
+    SeparateEye::CancelFrame();
+    RestoreMainCameraOriginals(false);
     _lastMainCameraGO = mainCamGO;
     _appliedFarCulling = 0;
     _mainCamOriginalCullDistances.reset();
@@ -1842,7 +2020,8 @@ void Runtime::RefreshCameraApplier(UnityEngine::GameObject* mainCamGO, bool allo
   bool const needsBlit = !GetDisableAllBlits() &&
                          (!_preEffects.empty() || !_postEffects.empty() || HasMidRenderEffects() ||
                           !_secondaryCameras.empty());
-  if (_cameraApplier->get_enabled() != needsBlit) _cameraApplier->set_enabled(needsBlit);
+  bool const needsCamera = needsBlit || GetExperimentalSeparateEye();
+  if (_cameraApplier->get_enabled() != needsCamera) _cameraApplier->set_enabled(needsCamera);
 }
 
 void Runtime::DestroyCameraApplier() {

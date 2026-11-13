@@ -15,6 +15,7 @@
 #include "UnityEngine/Canvas.hpp"
 #include <exception>
 #include "UnityEngine/AnimatorCullingMode.hpp"
+#include "VivifySeparateEye.hpp"
 #include "UnityEngine/Camera.hpp"
 #include "UnityEngine/RenderTexture.hpp"
 #include "UnityEngine/StereoTargetEyeMask.hpp"
@@ -55,6 +56,7 @@ int CullOffscreenAnimators(UnityEngine::GameObject* root) {
 // it renders into its texture once per frame, as it does on PC.
 int MakeTextureCamerasSingleView(UnityEngine::GameObject* root) {
   if (!IsManagedAlive(root)) return 0;
+  Vivify::SeparateEye::RememberRenderers(root);
   int changed = 0;
   auto cameras = root->GetComponentsInChildren<UnityEngine::Camera*>(true);
   for (int i = 0; i < cameras.size(); i++) {
@@ -1325,7 +1327,7 @@ void Runtime::HideOtherSaberRenderers(GlobalNamespace::SaberModelController* smc
 // converted two-eye programs draw nothing -- Get Your Wish's water reflected
 // the notes and none of the map. With the marker the map's single-view
 // shaders are prepared at selection and swapped in while a probe renders
-// (OnAnyCameraPreRender).
+// (OnAnyCameraPreCull), before culling and depth generation.
 void Runtime::NoteReflectionProbes(UnityEngine::GameObject* root) {
   if (!IsAlive(root)) return;
   int realtime = 0;
@@ -1365,14 +1367,20 @@ void Runtime::RefreshSlowProbes() {
 
 // Called for every camera Unity renders, the hidden ones a reflection probe
 // uses included: those draw with the map's single-view shaders.
-void Runtime::OnAnyCameraPreRender(UnityEngine::Camera* camera) {
-  if (_singleViewSwaps.empty() || _currentBeatmapData == nullptr || !GetSingleViewMapCameras()) return;
+void Runtime::OnAnyCameraPreCull(UnityEngine::Camera* camera) {
+  if (_currentBeatmapData == nullptr || !GetSingleViewMapCameras()) return;
   if (!IsAlive(camera) || camera->get_cameraType().value__ != 16) return;  // CameraType.Reflection
+  // Hidden probe cameras have no SingleViewCameraShaders component. Use the
+  // same scoped, full-geometry mono donors as authored texture cameras.
+  if (SeparateEye::BeginTextureCamera(camera, camera)) return;
+  if (_singleViewSwaps.empty()) return;
   _probeCameraRendering = true;
   BeginSingleViewCamera();
 }
 
-void Runtime::OnAnyCameraPostRender(UnityEngine::Camera*) {
+void Runtime::OnAnyCameraPostRender(UnityEngine::Camera* camera) {
+  if (!IsAlive(camera) || camera->get_cameraType().value__ != 16) return;
+  SeparateEye::EndTextureCamera(camera);
   if (!_probeCameraRendering) return;
   _probeCameraRendering = false;
   EndSingleViewCamera();
@@ -1385,7 +1393,7 @@ void Runtime::InstallCameraCallbacks() {
   auto pre = custom_types::MakeDelegate<UnityEngine::Camera_CameraCallback*>(
       std::function<void(UnityEngine::Camera*)>([](UnityEngine::Camera* camera) {
         try {
-          Runtime::Instance().OnAnyCameraPreRender(camera);
+          Runtime::Instance().OnAnyCameraPreCull(camera);
         } catch (...) {
         }
       }));
@@ -1396,8 +1404,8 @@ void Runtime::InstallCameraCallbacks() {
         } catch (...) {
         }
       }));
-  UnityEngine::Camera::setStaticF_onPreRender(reinterpret_cast<UnityEngine::Camera_CameraCallback*>(
-      System::Delegate::Combine(reinterpret_cast<System::Delegate*>(UnityEngine::Camera::getStaticF_onPreRender()),
+  UnityEngine::Camera::setStaticF_onPreCull(reinterpret_cast<UnityEngine::Camera_CameraCallback*>(
+      System::Delegate::Combine(reinterpret_cast<System::Delegate*>(UnityEngine::Camera::getStaticF_onPreCull()),
                                 reinterpret_cast<System::Delegate*>(pre))));
   UnityEngine::Camera::setStaticF_onPostRender(reinterpret_cast<UnityEngine::Camera_CameraCallback*>(
       System::Delegate::Combine(reinterpret_cast<System::Delegate*>(UnityEngine::Camera::getStaticF_onPostRender()),
@@ -1477,28 +1485,46 @@ void Runtime::ApplyVivifyFoveation() {
     _foveationBefore = Unity::XR::Oculus::Utils::GetFoveationLevel();
     bool const eyeTracked = Unity::XR::Oculus::Utils::get_eyeTrackedFoveatedRenderingSupported();
     _eyeTrackedBefore = eyeTracked && Unity::XR::Oculus::Utils::get_eyeTrackedFoveatedRenderingEnabled();
-    if (eyeTracked && !_eyeTrackedBefore) Unity::XR::Oculus::Utils::set_eyeTrackedFoveatedRenderingEnabled(true);
-    bool const ok = Unity::XR::Oculus::Utils::SetFoveationLevel(wanted);
+    // Capture everything before the first mutation. Keep restoration pending
+    // even if a native setter changes state and then throws.
+    _foveationEyeTracked = eyeTracked && !_eyeTrackedBefore;
     _foveationApplied = true;
-    _foveationEyeTracked = eyeTracked;
+    if (_foveationEyeTracked) Unity::XR::Oculus::Utils::set_eyeTrackedFoveatedRenderingEnabled(true);
+    bool const ok = Unity::XR::Oculus::Utils::SetFoveationLevel(wanted);
+    if (!ok) {
+      RestoreVivifyFoveation();
+      PaperLogger.warn("Vivify foveated rendering: the requested level was not accepted; restoring the game's settings");
+      return;
+    }
     PaperLogger.info("Vivify foveated rendering: level {} for this map (was {}), eye-tracked {}, accepted {}; "
                      "device '{}'", wanted, _foveationBefore, BoolText(eyeTracked), BoolText(ok),
                      ToStdString(UnityEngine::SystemInfo::get_deviceModel()));
   } catch (...) {
+    RestoreVivifyFoveation();
     PaperLogger.warn("Vivify foveated rendering: the headset's foveation could not be set");
   }
 }
 
 void Runtime::RestoreVivifyFoveation() {
   if (!_foveationApplied) return;
-  _foveationApplied = false;
+  bool restored = false;
   try {
-    Unity::XR::Oculus::Utils::SetFoveationLevel(_foveationBefore);
-    if (_foveationEyeTracked && !_eyeTrackedBefore) {
-      Unity::XR::Oculus::Utils::set_eyeTrackedFoveatedRenderingEnabled(false);
-    }
+    restored = Unity::XR::Oculus::Utils::SetFoveationLevel(_foveationBefore);
   } catch (...) {
   }
+  // Restore each setting independently: a failed level restore must not
+  // prevent eye tracking rollback. Only write it if our setter changed it.
+  if (_foveationEyeTracked) {
+    try {
+      if (Unity::XR::Oculus::Utils::get_eyeTrackedFoveatedRenderingEnabled() != _eyeTrackedBefore)
+        Unity::XR::Oculus::Utils::set_eyeTrackedFoveatedRenderingEnabled(_eyeTrackedBefore);
+      _foveationEyeTracked = false;
+    } catch (...) {
+      restored = false;
+    }
+  }
+  // A later reset retries failed restoration using the original snapshot.
+  if (restored && !_foveationEyeTracked) _foveationApplied = false;
 }
 
 void Runtime::RestoreForeignSaberLights() {

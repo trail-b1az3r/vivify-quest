@@ -1,4 +1,5 @@
 #include "VivifyRuntimeInternal.hpp"
+#include "VivifySeparateEye.hpp"
 #include "VivifyRecovery.hpp"
 #include <ctime>
 #include <chrono>
@@ -529,6 +530,7 @@ void Runtime::RefreshIsolationSettings() {
 }
 
 void Runtime::ResetRuntime(std::string_view reason) {
+  SeparateEye::Reset();
   // Breadcrumbs through a level's teardown, each flushed to disk (0.15.0):
   // "the game crashes after a Vivify level" came with no log, and a native
   // crash here loses whatever was still buffered. The last "level end:" line
@@ -621,9 +623,8 @@ void Runtime::ResetRuntime(std::string_view reason) {
   _blitGuardAllOff = false;
   _blitGuardLogged = false;
   _blitGuardLastSample = 0.0f;
-  _cachedBlitWidth = 0;
-  _cachedBlitHeight = 0;
-  _cachedBlitFormat = 0;
+  _mainBlitAllocation.reset();
+  _scratchBlitAllocation.reset();
   _materialAnimations.clear();
   _globalAnimations.clear();
   _animatorAnimations.clear();
@@ -643,6 +644,7 @@ void Runtime::ResetRuntime(std::string_view reason) {
   _slowFrameStreak = 0;
   _worstFrameMs = 0.0;
   _decodedTextures.clear();
+  ReleaseRetainedBundleAssets();
   _assets.clear();
   _assetsByName.clear();
   _supportedShadersByName.clear();

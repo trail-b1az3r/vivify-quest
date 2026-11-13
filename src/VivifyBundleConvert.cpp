@@ -1,6 +1,10 @@
 #include "VivifyBundleConvert.hpp"
+#include "VivifyGeometrySpecialization.hpp"
+#include "VivifyMaterialSpecialization.hpp"
 #include "VivifySerializedFile.hpp"
 #include "VivifyDxbc.hpp"
+#include "VivifyStereoBindings.hpp"
+#include "VivifyTriangleTessellation.hpp"
 
 #include <algorithm>
 #include <map>
@@ -1246,22 +1250,24 @@ std::string InsertDeclarations(std::string const& source, std::string const& dec
   return source.substr(0, at) + declarations + source.substr(at);
 }
 
-// Every "<qualifiers>in vec4 vs_X;" a stage declares, with its qualifiers.
+// Every "<qualifiers>in vec4 vs_X/gs_X;" a stage declares, with qualifiers.
 std::map<std::string, std::string> DeclaredVaryings(std::string const& source, std::string const& storage) {
   std::map<std::string, std::string> out;
-  size_t pos = 0;
-  std::string const needle = storage + " vec4 vs_";
-  while ((pos = source.find(needle, pos)) != std::string::npos) {
-    size_t const lineStart = source.rfind('\n', pos);
-    size_t const begin = lineStart == std::string::npos ? 0 : lineStart + 1;
-    size_t const nameStart = pos + needle.size() - 3;  // at "vs_"
-    size_t const nameEnd = source.find(';', nameStart);
-    if (nameEnd == std::string::npos) break;
-    // Only a whole declaration line counts, not a use of the name.
-    if (source.find('\n', begin) > nameEnd) {
-      out[source.substr(nameStart, nameEnd - nameStart)] = source.substr(begin, pos - begin);
+  for (char const* prefix : {"vs_", "gs_"}) {
+    size_t pos = 0;
+    std::string const needle = storage + " vec4 " + prefix;
+    while ((pos = source.find(needle, pos)) != std::string::npos) {
+      size_t const lineStart = source.rfind('\n', pos);
+      size_t const begin = lineStart == std::string::npos ? 0 : lineStart + 1;
+      size_t const nameStart = pos + needle.size() - 3;  // at "vs_" or "gs_"
+      size_t const nameEnd = source.find(';', nameStart);
+      if (nameEnd == std::string::npos) break;
+      // Only a whole declaration line counts, not a use of the name.
+      if (source.find('\n', begin) > nameEnd) {
+        out[source.substr(nameStart, nameEnd - nameStart)] = source.substr(begin, pos - begin);
+      }
+      pos = nameEnd;
     }
-    pos = nameEnd;
   }
   return out;
 }
@@ -1294,10 +1300,12 @@ void RenameIdentifier(std::string& text, std::string const& from, std::string co
 }
 
 std::string LinkStages(Vivify::Dxbc::GlslResult const& vertex, Vivify::Dxbc::GlslResult const* fragment,
-                       Vivify::Dxbc::GlslResult const* geometry, int& version) {
+                       Vivify::Dxbc::GlslResult const* geometry, int& version,
+                       Vivify::Dxbc::TriangleTessellationResult const* tessellation = nullptr) {
   version = vertex.version;
   if (fragment != nullptr) version = std::max(version, fragment->version);
   if (geometry != nullptr) version = std::max(version, geometry->version);
+  if (tessellation != nullptr) version = std::max(version, 320);
 
   std::string vs = WithVersion(vertex.source, version);
   std::string fs = fragment != nullptr ? WithVersion(fragment->source, version) : std::string();
@@ -1331,6 +1339,12 @@ std::string LinkStages(Vivify::Dxbc::GlslResult const& vertex, Vivify::Dxbc::Gls
   std::string linked = "#ifdef VERTEX\n" + vs + "#endif\n";
   if (fragment != nullptr) linked += "#ifdef FRAGMENT\n" + fs + "#endif\n";
   if (geometry != nullptr) linked += "#ifdef GEOMETRY\n" + gs + "#endif\n";
+  if (tessellation != nullptr) {
+    // Exact section names read by this Unity player's
+    // GlslGpuProgramGLES::Create (libunity 0x13e9c0c..0x13e9d0c).
+    linked += "#ifdef HULL\n" + WithVersion(tessellation->control.source, version) + "#endif\n";
+    linked += "#ifdef DOMAIN\n" + WithVersion(tessellation->evaluation.source, version) + "#endif\n";
+  }
   return linked;
 }
 
@@ -1391,7 +1405,7 @@ bool WithProjectedPosition(std::string& vs) {
 
 // Turns a variant's m_ParsedForm parameters into the reflection its DXBC lost
 // when Unity stripped RDEF out of it.
-Vivify::Dxbc::ExternalReflection ReflectionFrom(SerializedFileParse::ProgramParameters const& parameters) {
+Vivify::Dxbc::ExternalReflection ReflectionFrom(SerializedFileParse::ProgramParameters const& parameters, bool explicitEye = false) {
   Vivify::Dxbc::ExternalReflection reflection;
   auto variableType = [](int32_t unityType) -> uint32_t {
     switch (unityType) {
@@ -1424,9 +1438,11 @@ Vivify::Dxbc::ExternalReflection ReflectionFrom(SerializedFileParse::ProgramPara
     // plausible but wrong place: Burning Sands' scenery and custom notes,
     // chords and chains included. The block is declared over Unity's full
     // layout (the same in 2019 and 2021): eight float4x4[2] then two
-    // float4[2], 1088 bytes.
+    // float4[2], 1088 bytes. Explicit-eye cameras cannot rely on XR updating
+    // this block; retain the reflected named variables so Material setters
+    // can supply both eye matrices/positions without touching engine globals.
     if (buffer.name == "UnityStereoGlobals") {
-      info.uniformBlock = true;
+      info.uniformBlock = !explicitEye;
       info.size = std::max<uint32_t>(info.size, 1088u);
     }
     // A shader's own named cbuffer too big for loose uniforms becomes a
@@ -1509,6 +1525,8 @@ struct LinkedShader {
   int geometryDropped = 0;  // variants linked without their geometry stage
   int variantsSkipped = 0;  // program refs a Quest never selects, left alone
   int programsTranslated = 0;
+  bool tessellationUntranslated = false;
+  bool tessellationTranslated = false;
   std::set<std::string> variantReasons;  // why individual variants stayed on DirectX
 };
 
@@ -1687,6 +1705,30 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
     // Replay render mode: every program single-view, each variant its own
     // code, no keyword renamed. Only single-screen cameras can draw these.
     std::fill(multiviewRef.begin(), multiviewRef.end(), false);
+    if (conversionOptions.singleViewStereoEye >= 0) {
+      // Unlike a spectator camera, an eye-specific camera must retain stereo
+      // logic. The mono variant may have eye zero folded into its bytecode.
+      // Use its stereo twin where available, then bake the requested eye.
+      for (char const* name : {"STEREO_INSTANCING_ON", "UNITY_SINGLE_PASS_STEREO"}) {
+        auto keyword = std::find(keywordNames.begin(), keywordNames.end(), name);
+        if (keyword == keywordNames.end()) continue;
+        auto const index = static_cast<int32_t>(keyword - keywordNames.begin());
+        for (size_t r = 0; r < refs.size(); ++r) {
+          auto& plain = refs[r];
+          if (plain.stereoRemapped || hasKeyword(plain, index)) continue;
+          auto const* twin = twinOf(plain, index);
+          if (twin == nullptr) continue;
+          if (plain.blobIndex != twin->blobIndex) {
+            plain.blobIndex = twin->blobIndex;
+            plain.parameters = twin->parameters;
+            patchU32(plain.blobIndexFileOffset, plain.blobIndex);
+            out.stereoRemapped++;
+          }
+          plain.stereoRemapped = true;
+          spiRef[r] = std::string_view(name) == "STEREO_INSTANCING_ON";
+        }
+      }
+    }
   } else if (splitKeyword >= 0) {
     // Plain variants that have a stereo twin get single-view code of their
     // own program; the twins keep theirs, translated for multiview, under
@@ -1760,12 +1802,19 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
   // Keyed by entry and mode: one entry can be translated both ways when a
   // plain and a stereo variant share it.
   std::map<std::tuple<uint32_t, bool, bool>, Vivify::Dxbc::GlslResult> translated;
-  auto translate = [&](ParsedProgramRef const& ref) -> Vivify::Dxbc::GlslResult const* {
+  auto translate = [&](ParsedProgramRef const& ref, bool forceMultiview = false) -> Vivify::Dxbc::GlslResult const* {
     uint32_t const blob = ref.blobIndex;
-    bool const multiview = multiviewRef[indexOf(ref)];
+    bool const multiview = forceMultiview || multiviewRef[indexOf(ref)];
     Vivify::Dxbc::GlslOptions options;
     options.multiview = multiview;
-    bool const spi = multiview && spiRef[indexOf(ref)];
+    options.singleViewStereoEye = forceMultiview ? -1 : conversionOptions.singleViewStereoEye;
+    if (options.singleViewStereoEye >= 0) {
+      options.singleViewTextures = {"_CameraDepthTexture", "_CameraDepthNormalsTexture",
+                                   "_CameraMotionVectorsTexture", "_CameraOpaqueTexture", "_GrabTexture"};
+      options.singleViewTextures.insert(options.singleViewTextures.end(), shader.grabTextures.begin(), shader.grabTextures.end());
+      if (conversionOptions.singleViewBlit) options.singleViewTextures.push_back("_MainTex");
+    }
+    bool const spi = (multiview || options.singleViewStereoEye >= 0) && spiRef[indexOf(ref)];
     options.stereoInstancedProgram = spi;
     options.geometryRightEyeCopy = conversionOptions.geometryRightEyeCopy;
     auto cached = translated.find({blob, multiview, spi});
@@ -1779,7 +1828,7 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
         if (program.raw || !IsTranslatableDirectXProgram(program.programType)) {
           result.error = "entry " + std::to_string(blob) + " is not DirectX bytecode";
         } else {
-          auto const reflection = ReflectionFrom(ref.parameters);
+          auto const reflection = ReflectionFrom(ref.parameters, options.singleViewStereoEye >= 0);
           Vivify::Dxbc::GlslOptions withReflection = options;
           withReflection.reflection = &reflection;
           result = Vivify::Dxbc::TranslateDxbcToGlsl(program.code.empty() ? nullptr : program.code.data(),
@@ -1815,7 +1864,7 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
     return false;
   };
 
-  std::map<VariantKey, std::vector<ParsedProgramRef const*>> byStage[3];
+  std::map<VariantKey, std::vector<ParsedProgramRef const*>> byStage[5];
   bool tessellation = false;
   for (auto const& ref : refs) {
     VariantKey const key{ref.subShader, ref.pass, ref.player, ref.list};
@@ -1825,9 +1874,13 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
     }
     if (ref.stage == SerializedFileParse::kProgramStageHull || ref.stage == SerializedFileParse::kProgramStageDomain) {
       tessellation = true;
-      continue;
+      if (!conversionOptions.uniformTriangleTessellation) {
+        out.tessellationUntranslated = true;
+        out.variantReasons.insert("hull/domain tessellation stages remain DirectX; linked vertex/fragment/geometry programs are partial coverage");
+        continue;
+      }
     }
-    if (ref.stage >= 0 && ref.stage <= 2) byStage[ref.stage][key].push_back(&ref);
+    if (ref.stage >= 0 && ref.stage <= 4) byStage[ref.stage][key].push_back(&ref);
   }
 
   // What each store entry has been assigned, so an entry shared by variants
@@ -1836,7 +1889,9 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
   std::vector<SerializedFileParse::ShaderSubProgram> added;
   auto place = [&](ParsedProgramRef const& ref, std::string const& linked, int version) {
     uint32_t blob = ref.blobIndex;
-    std::string const& source = linked;
+    std::string source = linked;
+    if (conversionOptions.specializeImmutableMaterialFeatures)
+      MaterialSpecialization::Specialize(source);
     auto existing = assigned.find(blob);
     if (existing != assigned.end() && existing->second != source) {
       // Another variant already wrote a different program here: give this one
@@ -1860,17 +1915,139 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
   for (auto const& stage : byStage) {
     for (auto const& [key, _] : stage) keys.insert(key);
   }
+  bool perspectiveEmpty = conversionOptions.nativePerspectiveDonor && !tessellation && !byStage[2].empty();
+  if (perspectiveEmpty) {
+    for (auto const& ref : refs) if (ref.stage < 0 || ref.stage > 2) perspectiveEmpty = false;
+    for (auto const& program : decoded.programs) if (!program.raw && program.groupIndex == group &&
+        program.programType != SerializedFileParse::kGpuProgramDX11VertexSM40 && program.programType != SerializedFileParse::kGpuProgramDX11VertexSM50 &&
+        program.programType != SerializedFileParse::kGpuProgramDX11PixelSM40 && program.programType != SerializedFileParse::kGpuProgramDX11PixelSM50 &&
+        program.programType != SerializedFileParse::kGpuProgramDX11GeometrySM40 && program.programType != SerializedFileParse::kGpuProgramDX11GeometrySM50) perspectiveEmpty = false;
+  }
+  if (perspectiveEmpty) for (auto const& key : keys) {
+    auto const& vertices = byStage[0][key]; auto const& fragments = byStage[1][key]; auto const& geometries = byStage[2][key];
+    if (vertices.empty()) { perspectiveEmpty = false; break; }
+    if (geometries.empty()) continue; // ordinary passes retain their full native programs
+    for (auto const* geometry : geometries) {
+      auto const* translatedGeometry = translate(*geometry);
+      if (!translatedGeometry || !GeometrySpecialization::EmptyForPerspective(translatedGeometry->source)) perspectiveEmpty = false;
+    }
+    for (auto const* vertex : vertices) {
+      auto const* translatedVertex = translate(*vertex);
+      if (!BestMatch(geometries, *vertex) || !translatedVertex || !GeometrySpecialization::SideEffectFreeVertex(translatedVertex->source)) perspectiveEmpty = false;
+    }
+    for (auto const* fragment : fragments) if (!BestMatch(geometries, *fragment)) perspectiveEmpty = false;
+  }
   for (auto const& key : keys) {
     auto const& vertices = byStage[0][key];
     auto const& fragments = byStage[1][key];
     auto const& geometries = byStage[2][key];
+    auto const& hulls = byStage[3][key];
+    auto const& domains = byStage[4][key];
+    if (conversionOptions.uniformTriangleTessellation && (!hulls.empty() || !domains.empty())) {
+      auto refuse = [&](std::string const& reason) {
+        out.tessellationUntranslated = true;
+        out.reason = "uniform triangle tessellation refused: " + reason;
+        out.variantReasons.insert(out.reason);
+        ++out.variantsRefused;
+      };
+      // Every stage must identify exactly the same authored variant. The
+      // ordinary best-keyword fallback is not evidence for a five-stage pair.
+      auto exact = [](auto const& candidates, ParsedProgramRef const& wanted) -> ParsedProgramRef const* {
+        auto keywords = wanted.keywordIndices;
+        std::sort(keywords.begin(), keywords.end());
+        ParsedProgramRef const* result = nullptr;
+        for (auto* candidate : candidates) {
+          auto other = candidate->keywordIndices;
+          std::sort(other.begin(), other.end());
+          if (candidate->hardwareTier != wanted.hardwareTier || other != keywords) continue;
+          if (result) return nullptr;
+          result = candidate;
+        }
+        return result;
+      };
+      bool complete = !vertices.empty() && !fragments.empty() && !geometries.empty() && !hulls.empty() && !domains.empty();
+      for (auto const* list : {&vertices, &fragments, &geometries, &hulls, &domains})
+        for (auto const* ref : *list)
+          for (auto const* stage : {&vertices, &fragments, &geometries, &hulls, &domains})
+            complete &= exact(*stage, *ref) != nullptr;
+      if (!complete) { refuse("missing, ambiguous or nonidentical five-stage variant"); return out; }
+      auto parse = [&](ParsedProgramRef const& ref) {
+        auto found = entryAt.find(ref.blobIndex);
+        if (found == entryAt.end()) return Vivify::Dxbc::Program{};
+        auto const& program = decoded.programs[found->second];
+        if (program.raw) return Vivify::Dxbc::Program{};
+        return Vivify::Dxbc::ParseProgram(program.code.data(), program.code.size());
+      };
+      auto feeds = [](auto const& outputs, auto const& inputs) {
+        for (auto const& input : inputs) {
+          if (input.systemValueType == 7) continue; // geometry primitive ID is generated by the raster pipeline
+          bool found = false;
+          for (auto const& output : outputs) {
+            if (output.semanticName == input.semanticName && output.semanticIndex == input.semanticIndex &&
+                output.componentType == input.componentType && output.systemValueType == input.systemValueType &&
+                (output.mask & input.mask) == input.mask) found = true;
+          }
+          if (!found) return false;
+        }
+        return true;
+      };
+      for (auto const* vertex : vertices) {
+        auto const* fragment = exact(fragments, *vertex);
+        auto const* geometry = exact(geometries, *vertex);
+        auto const* hull = exact(hulls, *vertex);
+        auto const* domain = exact(domains, *vertex);
+        auto const vp = parse(*vertex), hp = parse(*hull), dp = parse(*domain), gp = parse(*geometry), fp = parse(*fragment);
+        auto const reflection = ReflectionFrom(hull->parameters, true);
+        // Unity's actual stage parameter table is the binding authority.
+        // RDEF, when retained, must not override its scalar name/address.
+        auto reflectedHull = hp;
+        reflectedHull.constantBuffers.clear();
+        auto pair = Vivify::Dxbc::TranslateTriangleTessellation(reflectedHull, dp, &reflection);
+        if (!pair.ok) { refuse(pair.error); return out; }
+        if (!vp.ok || vp.stage != Vivify::Dxbc::Stage::Vertex || !gp.ok || gp.stage != Vivify::Dxbc::Stage::Geometry ||
+            !fp.ok || fp.stage != Vivify::Dxbc::Stage::Pixel ||
+            !feeds(vp.outputSignature, hp.inputSignature) || !feeds(dp.outputSignature, gp.inputSignature)) {
+          refuse("vertex/hull or domain/geometry signature mismatch"); return out;
+        }
+        auto const* vs = translate(*vertex);
+        auto const* fs = translate(*fragment);
+        auto const* gs = translate(*geometry);
+        if (!vs || !fs || !gs) { refuse("vertex, geometry or fragment translation failed"); return out; }
+        // Do not make an incomplete tessellation pipeline link by inventing
+        // undefined fragment outputs, as the legacy partial fallback can do.
+        auto fragmentSource = fs->source;
+        for (auto const& [from, to] : gs->renamedVaryings) RenameIdentifier(fragmentSource, from, to);
+        auto const writes = DeclaredVaryings(gs->source, "out");
+        for (auto const& [name, _] : DeclaredVaryings(fragmentSource, "in"))
+          if (!writes.contains(name)) { refuse("fragment varying has no geometry output"); return out; }
+        int version = 320;
+        auto const source = LinkStages(*vs, fs, gs, version, &pair);
+        for (auto const* ref : {vertex, fragment, geometry, hull, domain})
+          if (!place(*ref, source, version)) { refuse("could not atomically replace all five references"); return out; }
+        ++out.variantsLinked;
+        out.programsTranslated += 2;
+      }
+      out.tessellationTranslated = true;
+      continue;
+    }
     if (vertices.empty()) continue;
+    if (perspectiveEmpty && !geometries.empty()) {
+      auto const source = GeometrySpecialization::NativeEmptyProgram();
+      for (auto const* vertex : vertices) {
+        if (place(*vertex, source, 300)) ++out.variantsLinked;
+        else ++out.variantsRefused;
+      }
+      for (auto const* fragment : fragments) if (!place(*fragment, source, 300)) ++out.variantsRefused;
+      // Geometry refs retain their DirectX type; Unity skips that stage, as
+      // in the existing geometry-drop path. This pass is provably empty.
+      continue;
+    }
 
     auto link = [&](ParsedProgramRef const& vertex, ParsedProgramRef const* fragment,
                     ParsedProgramRef const* geometry, std::string& source, int& version) {
-      auto const* vs = translate(vertex);
-      auto const* fs = fragment != nullptr ? translate(*fragment) : nullptr;
-      auto const* gs = geometry != nullptr ? translate(*geometry) : nullptr;
+      auto const* vs = translate(vertex, perspectiveEmpty);
+      auto const* fs = fragment != nullptr ? translate(*fragment, perspectiveEmpty) : nullptr;
+      auto const* gs = geometry != nullptr ? translate(*geometry, perspectiveEmpty) : nullptr;
       if (vs == nullptr || (fragment != nullptr && fs == nullptr) || (geometry != nullptr && gs == nullptr)) {
         return false;
       }
@@ -1982,6 +2159,43 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
     out.reason = rebuilt.message;
     return out;
   }
+  if (conversionOptions.namespaceEyeShaders || conversionOptions.namespaceSingleViewShaders ||
+      conversionOptions.specializeImmutableMaterialFeatures) {
+    std::string prefix;
+    if (conversionOptions.namespaceEyeShaders || conversionOptions.namespaceSingleViewShaders) prefix = conversionOptions.nativePerspectiveDonor ?
+        (perspectiveEmpty ? "__VivifyNativePerspective__/" : "__VivifyNativeOther__/") :
+        conversionOptions.namespaceSingleViewShaders ? "__VivifyMono__/" :
+        std::string(conversionOptions.singleViewBlit ? "__VivifyBlitEye" : "__VivifyEye") +
+        std::to_string(conversionOptions.singleViewStereoEye) + "__/";
+    if (conversionOptions.specializeImmutableMaterialFeatures) prefix += MaterialSpecialization::kPrefix;
+    std::vector<size_t> offsets;
+    if (shader.objectNameStringOffset) offsets.push_back(shader.objectNameStringOffset);
+    if (shader.parsedFormNameStringOffset) offsets.push_back(shader.parsedFormNameStringOffset);
+    std::sort(offsets.begin(), offsets.end(), std::greater<size_t>());
+    offsets.erase(std::unique(offsets.begin(), offsets.end()), offsets.end());
+    if (offsets.empty()) { out.reason = "shader name fields could not be isolated"; return out; }
+    // Name fields precede the replaced program store. Splice from back to
+    // front, preserving four-byte alignment. RewriteSerializedFile updates
+    // object byte sizes and offsets around the larger body afterwards.
+    for (size_t absolute : offsets) {
+      if (absolute < shader.bodyFileOffset) { out.reason = "invalid shader name offset"; return out; }
+      size_t const at = absolute - shader.bodyFileOffset;
+      if (at > rebuilt.body.size() || rebuilt.body.size() - at < 4) { out.reason = "truncated shader name"; return out; }
+      uint32_t length = 0;
+      for (int i = 0; i != 4; ++i) length |= uint32_t(rebuilt.body[at + i]) << (i * 8);
+      size_t const oldSpan = 4 + ((size_t(length) + 3) & ~size_t(3));
+      if (oldSpan > rebuilt.body.size() - at || length > 65536) { out.reason = "invalid shader name length"; return out; }
+      std::vector<uint8_t> replacement;
+      if (prefix.size() > 65536 - length) { out.reason = "isolated shader name is too long"; return out; }
+      uint32_t const newLength = static_cast<uint32_t>(prefix.size() + length);
+      for (int i = 0; i != 4; ++i) replacement.push_back(static_cast<uint8_t>(newLength >> (i * 8)));
+      replacement.insert(replacement.end(), prefix.begin(), prefix.end());
+      replacement.insert(replacement.end(), rebuilt.body.begin() + at + 4, rebuilt.body.begin() + at + 4 + length);
+      while (replacement.size() % 4) replacement.push_back(0);
+      rebuilt.body.erase(rebuilt.body.begin() + at, rebuilt.body.begin() + at + oldSpan);
+      rebuilt.body.insert(rebuilt.body.begin() + at, replacement.begin(), replacement.end());
+    }
+  }
   out.converted = true;
   out.body = std::move(rebuilt.body);
   return out;
@@ -1993,6 +2207,24 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
                                       std::string const& destPath,
                                       ShaderConversionOptions const& options) {
   ShaderConversion conversion;
+  if (options.uniformTriangleTessellation && (!options.singleViewOnly || options.singleViewStereoEye < 0 ||
+      options.singleViewStereoEye > 1 || !options.namespaceEyeShaders || options.singleViewBlit ||
+      options.nativePerspectiveDonor || options.dropGeometryStages || options.dropUntranslatableGeometry)) {
+    conversion.status = Status::Corrupt;
+    conversion.message = "uniform triangle tessellation requires an isolated single-view scene-eye donor with complete geometry";
+    return conversion;
+  }
+  if (options.singleViewStereoEye < -1 || options.singleViewStereoEye > 1 ||
+      (options.singleViewStereoEye >= 0 && !options.singleViewOnly) ||
+      (options.namespaceEyeShaders && options.singleViewStereoEye < 0) ||
+      (options.namespaceSingleViewShaders && (!options.singleViewOnly || options.singleViewStereoEye >= 0 || options.namespaceEyeShaders)) ||
+      (options.singleViewBlit && options.singleViewStereoEye < 0) ||
+      (options.nativePerspectiveDonor && (!options.namespaceEyeShaders || !options.singleViewOnly ||
+                                        options.singleViewStereoEye != 0 || options.singleViewBlit || options.namespaceSingleViewShaders))) {
+    conversion.status = Status::Corrupt;
+    conversion.message = "singleViewStereoEye requires singleViewOnly and an eye index of 0 or 1";
+    return conversion;
+  }
   ArchiveHeader header;
   std::vector<DirectoryNode> nodes;
   std::vector<uint8_t> data;
@@ -2016,6 +2248,19 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
   }
 
   constexpr size_t kMaxLoggedRefusals = 8;
+  std::vector<SerializedFileParse::FileReport> safety;
+  bool immutableBundle = options.specializeImmutableMaterialFeatures;
+  if (immutableBundle) {
+    safety.resize(nodes.size());
+    for (size_t i = 0; i < nodes.size(); ++i) {
+      if (nodes[i].offset > data.size() || nodes[i].size > data.size() - nodes[i].offset) {
+        immutableBundle = false; continue;
+      }
+      safety[i] = SerializedFileParse::InspectSerializedFile(data.data() + nodes[i].offset, nodes[i].size, true);
+      if (safety[i].isSerializedFile) immutableBundle &= safety[i].parsed && safety[i].immutableMaterialSafetyRead;
+      else if (!nodes[i].path.ends_with(".resS") && !nodes[i].path.ends_with(".resource")) immutableBundle = false;
+    }
+  }
   int filesRewritten = 0;
   for (size_t index = 0; index < nodes.size(); index++) {
     if (nodes[index].offset > data.size() ||
@@ -2027,7 +2272,8 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
     uint8_t const* const nodeData = data.data() + nodes[index].offset;
     size_t const nodeSize = static_cast<size_t>(nodes[index].size);
 
-    auto file = SerializedFileParse::InspectSerializedFile(nodeData, nodeSize);
+    auto file = options.specializeImmutableMaterialFeatures ? std::move(safety[index]) :
+                SerializedFileParse::InspectSerializedFile(nodeData, nodeSize);
     if (!file.isSerializedFile) continue;
 
     // Make the block-compressed textures readable before anything moves.
@@ -2063,18 +2309,35 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
         if (SerializedFileParse::ShaderPlatformRunsOnQuest(platform)) alreadyRuns = true;
       }
       if (alreadyRuns) {
+        if (options.namespaceEyeShaders || options.namespaceSingleViewShaders) {
+          conversion.shadersRefused++;
+          conversion.refusals.push_back(shader.name + ": isolated eye donors require a DirectX source shader");
+          continue;
+        }
         conversion.shadersLeftAlone++;
         continue;
       }
 
       if (shader.parsedFormRead) {
-        auto linked = ConvertThroughParsedForm(nodeData, nodeSize, shader, options);
+        auto shaderOptions = options;
+        int matchingMaterials = 0;
+        bool profile = immutableBundle && shader.name == MaterialSpecialization::kShader && shader.materialPropertiesRead;
+        if (profile) for (auto const& [name, _] : MaterialSpecialization::kFlags)
+          profile &= shader.floatMaterialProperties.contains(std::string(name));
+        if (profile) for (auto const& material : file.materialFeatures) {
+          if (material.shaderPathID != shader.pathID) continue;
+          ++matchingMaterials;
+          profile &= MaterialSpecialization::Matches(material.floats);
+        }
+        shaderOptions.specializeImmutableMaterialFeatures = profile && matchingMaterials > 0;
+        auto linked = ConvertThroughParsedForm(nodeData, nodeSize, shader, shaderOptions);
         conversion.variantsLinked += linked.variantsLinked;
         conversion.variantsRefused += linked.variantsRefused;
         conversion.stereoVariantsRemapped += linked.stereoRemapped;
         conversion.stereoVariantsSplit += linked.stereoSplit;
         conversion.geometryStagesDropped += linked.geometryDropped;
         conversion.variantsSkipped += linked.variantsSkipped;
+        conversion.tessellationShadersUntranslated += linked.tessellationUntranslated ? 1 : 0;
         for (auto const& reason : linked.variantReasons) {
           if (conversion.variantRefusals.size() >= kMaxLoggedRefusals * 2) break;
           conversion.variantRefusals.push_back(
@@ -2087,15 +2350,31 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
                 (shader.name.empty() ? ("shader@" + std::to_string(shader.pathID)) : shader.name) + ": " +
                 linked.reason);
           }
+          if (options.uniformTriangleTessellation && linked.tessellationUntranslated) {
+            conversion.status = Status::Corrupt;
+            conversion.message = "requested tessellation donor refused atomically: " + linked.reason;
+            return conversion;
+          }
           continue;
         }
         edits.push_back({shader.pathID, std::move(linked.body)});
         conversion.shadersTranslated++;
         conversion.shadersLinked++;
+        conversion.tessellationShadersTranslated += linked.tessellationTranslated ? 1 : 0;
+        if (linked.tessellationTranslated) conversion.tessellationShaderNamesTranslated.push_back(shader.name);
+        if (shaderOptions.specializeImmutableMaterialFeatures) ++conversion.immutableMaterialShaders;
         conversion.programsTranslated += linked.programsTranslated;
         continue;
       }
 
+      if (options.singleViewStereoEye >= 0 || options.namespaceSingleViewShaders) {
+        // Without the parsed form, there is no reliable stereo-keyword
+        // information. Guessing would silently give both eyes eye zero.
+        conversion.shadersRefused++;
+        if (conversion.refusals.size() < kMaxLoggedRefusals)
+          conversion.refusals.push_back(shader.name + ": eye-specific conversion requires parsed shader variants");
+        continue;
+      }
       auto decoded = SerializedFileParse::DecodeShaderPrograms(nodeData, nodeSize, shader);
       if (!decoded.ok || decoded.programs.empty()) {
         conversion.shadersRefused++;
@@ -2137,6 +2416,18 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
       conversion.programsTranslated += translatedHere;
     }
 
+    if (options.exposeRenderDependencies) {
+      std::vector<int64_t> translated;
+      for (auto const& edit : edits) translated.push_back(edit.pathID);
+      auto dependencies = SerializedFileParse::ExposeRenderDependencies(nodeData, nodeSize, translated);
+      if (!dependencies.ok) {
+        conversion.status = Status::Corrupt;
+        conversion.message = "render dependency lookup could not be safely extended in '" + nodes[index].path + "'";
+        return conversion;
+      }
+      conversion.renderDependencyEntries += dependencies.added;
+      for (auto& edit : dependencies.edits) edits.push_back(std::move(edit));
+    }
     if (edits.empty()) continue;
     auto rewritten = SerializedFileParse::RewriteSerializedFile(nodeData, nodeSize, edits);
     if (!rewritten.ok) {
@@ -2164,7 +2455,12 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
       size_t const at = node.path.find("CAB-");
       if (at == std::string::npos || at + 4 >= node.path.size()) continue;
       char& c = node.path[at + 4];
-      c = c == 'f' ? '0' : (c == '9' ? 'a' : static_cast<char>(c + 1));
+      // Distinct namespaces for ordinary companions, left and right eye.
+      // They must all coexist with the main bundle and with one another.
+      int const steps = options.nativePerspectiveDonor ? 7 : options.singleViewStereoEye >= 0 ? options.singleViewStereoEye + (options.singleViewBlit ? 5 : 2) :
+                        (options.namespaceSingleViewShaders ? 4 : 1);
+      for (int i = 0; i < steps; ++i)
+        c = c == 'f' ? '0' : (c == '9' ? 'a' : static_cast<char>(c + 1));
     }
   }
 
@@ -2199,6 +2495,9 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
                        std::to_string(conversion.texturesSeen) +
                        " block-compressed texture(s) marked readable (" +
                        std::to_string(conversion.texturesStreamed) + " streamed)";
+  if (conversion.tessellationShadersUntranslated)
+    conversion.message += "; " + std::to_string(conversion.tessellationShadersUntranslated) +
+                          " shader(s) retain untranslated tessellation stages";
   return conversion;
 }
 
@@ -2418,6 +2717,7 @@ ShaderScan ScanShaders(std::string const& bundlePath) {
 
   std::set<int32_t> platforms;
   std::set<int32_t> programTypes;
+  int shadersWithStageInfo = 0;
   for (auto const& node : nodes) {
     if (node.offset >= data.size()) continue;
     size_t const available = static_cast<size_t>(
@@ -2429,6 +2729,18 @@ ShaderScan ScanShaders(std::string const& bundlePath) {
     if (!file.typeTreePresent) scan.typeTreeStripped = true;
     scan.shaderObjects += file.shaderObjectCount;
     for (auto const& shader : file.shaders) {
+      bool needsSeparateEye = false;
+      bool needsTessellation = false;
+      if (shader.parsedFormRead) {
+        ++shadersWithStageInfo;
+        needsSeparateEye = std::any_of(shader.programRefs.begin(), shader.programRefs.end(), [](auto const& ref) {
+              return ref.stage == SerializedFileParse::kProgramStageGeometry ||
+                     ref.stage == SerializedFileParse::kProgramStageHull || ref.stage == SerializedFileParse::kProgramStageDomain;
+            });
+        needsTessellation = std::any_of(shader.programRefs.begin(), shader.programRefs.end(), [](auto const& ref) {
+          return ref.stage == SerializedFileParse::kProgramStageHull || ref.stage == SerializedFileParse::kProgramStageDomain;
+        });
+      }
       if (!shader.name.empty()) scan.shaderNames.push_back(shader.name);
       bool runsHere = false;
       for (int32_t platform : shader.platforms) {
@@ -2444,10 +2756,75 @@ ShaderScan ScanShaders(std::string const& bundlePath) {
       auto decoded = SerializedFileParse::DecodeShaderPrograms(
           data.data() + node.offset, available, shader);
       if (!decoded.ok) scan.undecodableShaders++;
+      StereoBindings::Mask bindings = 0;
+      if (!decoded.ok || !shader.parsedFormRead || shader.platforms.size() != 1 || shader.programRefs.empty()) {
+        bindings = StereoBindings::All;
+      } else {
+        std::map<uint32_t, StereoBindings::Mask> referenced;
+        for (auto const& ref : shader.programRefs) {
+          // Original DX11 entries remain in the archive, but the GLES player
+          // cannot select them. Include every runnable GLES variant instead.
+          if (!SerializedFileParse::GpuProgramIsGlslSource(ref.gpuProgramType)) continue;
+          auto& required = referenced[ref.blobIndex];
+          auto parameters = ref.parameters;
+          bool parametersRead = !parameters.empty();
+          if (ref.hasParameterBlob) {
+            SerializedFileParse::ShaderSubProgram const* parameterBlob = nullptr;
+            bool unique = true;
+            for (auto const& program : decoded.programs) if (program.blobIndex == static_cast<int32_t>(ref.parameterBlobIndex)) {
+              if (parameterBlob) unique = false;
+              parameterBlob = &program;
+            }
+            SerializedFileParse::ProgramParameters fromBlob;
+            parametersRead = unique && parameterBlob && parameterBlob->raw &&
+                SerializedFileParse::ParseParameterBlob(shader.parameterSchema, parameterBlob->rawBytes.data(),
+                                                       parameterBlob->rawBytes.size(), fromBlob);
+            if (parametersRead) {
+              if (auto names = shader.passNames.find({ref.subShader, ref.pass}); names != shader.passNames.end())
+                fromBlob.ResolveNames(names->second);
+              fromBlob.Merge(parameters);
+              parameters = std::move(fromBlob);
+            }
+          }
+          if (!parametersRead) required = StereoBindings::All;
+          auto collect = [&](auto const& parameters) {
+            for (auto const& parameter : parameters) {
+              if (parameter.name.empty()) { required = StereoBindings::All; continue; }
+              std::string_view name = parameter.name;
+              if (name.starts_with(StereoBindings::MatrixPrefix)) name.remove_prefix(StereoBindings::MatrixPrefix.size());
+              for (unsigned i = 0; i < StereoBindings::Names.size(); ++i)
+                if (name == StereoBindings::Names[i]) required |= StereoBindings::Mask(1) << i;
+            }
+          };
+          collect(parameters.vectors); collect(parameters.matrices); collect(parameters.textures);
+          for (auto const& buffer : parameters.constantBuffers) { collect(buffer.vectors); collect(buffer.matrices); }
+        }
+        if (referenced.empty()) bindings = StereoBindings::All;
+        for (auto [blob, required] : referenced) {
+          SerializedFileParse::ShaderSubProgram const* found = nullptr;
+          for (auto const& program : decoded.programs) if (!program.raw && program.blobIndex == static_cast<int32_t>(blob)) {
+            if (found) { bindings = StereoBindings::All; break; }
+            found = &program;
+          }
+          if (!found || found->code.empty() || !SerializedFileParse::GpuProgramIsGlslSource(found->programType)) { bindings = StereoBindings::All; break; }
+          bindings |= StereoBindings::UsedByProgram(std::string_view(reinterpret_cast<char const*>(found->code.data()), found->code.size()), required);
+        }
+      }
+      if (!shader.name.empty()) scan.stereoBindingMasks[shader.name] |= bindings;
       size_t realPrograms = 0;
       for (auto const& program : decoded.programs) {
         if (!program.raw) realPrograms++;
+        if (!program.raw && (program.programType == SerializedFileParse::kGpuProgramDX11HullSM50 ||
+                             program.programType == SerializedFileParse::kGpuProgramDX11DomainSM50)) needsTessellation = true;
+        // Check the store as well as pass references. An unused/legacy geometry
+        // entry may survive even when pass metadata was incomplete or removed.
+        if (!program.raw && (program.programType == SerializedFileParse::kGpuProgramDX11GeometrySM40 ||
+            program.programType == SerializedFileParse::kGpuProgramDX11GeometrySM50 ||
+            program.programType == SerializedFileParse::kGpuProgramDX11HullSM50 ||
+            program.programType == SerializedFileParse::kGpuProgramDX11DomainSM50)) needsSeparateEye = true;
       }
+      if (needsSeparateEye) scan.separateEyeShaderNames.push_back(shader.name);
+      if (needsTessellation) scan.tessellationShaderNames.push_back(shader.name.empty() ? "shader@" + std::to_string(shader.pathID) : shader.name);
       if (decoded.ok && realPrograms == 0 && !shader.name.empty()) scan.emptyShaderNames.push_back(shader.name);
       bool depthHere = false;
       for (auto const& program : decoded.programs) {
@@ -2583,7 +2960,11 @@ ShaderScan ScanShaders(std::string const& bundlePath) {
   }
 
   scan.parsed = scan.serializedFiles > 0;
+  scan.sceneStageInfoComplete = scan.parsed && !scan.typeTreeStripped && scan.shaderObjects > 0 &&
+                                shadersWithStageInfo == scan.shaderObjects && scan.undecodableShaders == 0;
   scan.platforms.assign(platforms.begin(), platforms.end());
+  std::sort(scan.tessellationShaderNames.begin(), scan.tessellationShaderNames.end());
+  scan.tessellationShaderNames.erase(std::unique(scan.tessellationShaderNames.begin(), scan.tessellationShaderNames.end()), scan.tessellationShaderNames.end());
   scan.programTypes.assign(programTypes.begin(), programTypes.end());
   if (!scan.parsed && scan.message.empty()) {
     scan.message = "no SerializedFile found inside the archive";
@@ -2606,7 +2987,8 @@ std::string DescribeShaderScan(ShaderScan const& scan) {
   text += "]";
   text += " programs=" + std::to_string(scan.programs) +
           " glslSource=" + std::to_string(scan.glslSourcePrograms) +
-          " binary=" + std::to_string(scan.binaryPrograms);
+          " binary=" + std::to_string(scan.binaryPrograms) +
+          " shadersWithTessellation=" + std::to_string(scan.tessellationShaderNames.size());
   if (!scan.programTypes.empty()) {
     text += " programTypes=[";
     for (size_t i = 0; i < scan.programTypes.size(); i++) {

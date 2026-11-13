@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.22)
+project(VivifyGeometryProbe LANGUAGES CXX)
+add_executable(geometry-probe probe.cpp)
+target_compile_features(geometry-probe PRIVATE cxx_std_17)
+target_compile_options(geometry-probe PRIVATE -Wall -Wextra -Werror)
+target_link_libraries(geometry-probe PRIVATE EGL GLESv3)

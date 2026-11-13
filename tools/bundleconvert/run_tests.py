@@ -21,6 +21,7 @@ def _build_default_binary() -> str:
         os.path.join(root, "src", "VivifyBundleConvert.cpp"),
         os.path.join(root, "src", "VivifySerializedFile.cpp"),
         os.path.join(root, "src", "VivifyDxbc.cpp"),
+        os.path.join(root, "src", "VivifyTriangleTessellation.cpp"),
     ]
     subprocess.run(cmd, check=True)
     return out
@@ -304,8 +305,9 @@ def shader_case(name, check, shaders, **kw):
     cases += 1
     src = os.path.join(TMP, "sh_src.vivify")
     dst = os.path.join(TMP, "sh_dst.vivify")
+    mode = kw.pop("mode", "--shaders")
     shader_bundle(src, shaders, **kw)
-    proc, fields, refusals = run_shaders(src, dst)
+    proc, fields, refusals = run_shaders(src, dst, mode)
     problem = check(proc, fields, refusals, dst)
     if problem:
         print(f"FAIL {name}: {problem}\n{proc.stdout}{proc.stderr}")
@@ -563,7 +565,7 @@ def _ps(spi, flat=True):
 
 def pc_shader_2021(name, vertex_programs, fragment_programs, keyword_names=("STEREO_INSTANCING_ON",),
                    share_vertex=False, vertex_params=None, fragment_params_blobs=None, pass_names=None,
-                   entry_keywords=None, dependencies=(), geometry_programs=()):
+                   entry_keywords=None, dependencies=(), geometry_programs=(), grab_texture="", properties=()):
     """A PC (Direct3D 11) shader in 2021.3.16's layout. *_programs: list of
     (dxbc, keyword index list). Every program gets a parameter blob after it,
     as 2021.3.10+ stores them, and fragments live in a second segment. With
@@ -603,7 +605,7 @@ def pc_shader_2021(name, vertex_programs, fragment_programs, keyword_names=("STE
         stages[mkshader2021.GEOMETRY] = {"player": [geometry_refs], "params": [geometry_params]}
     store = mkshader.build_program_store([mkshader.segmented_chunks(entries)])
     return mkshader2021.shader_body(name, [4], store, [stages], keyword_names, pass_names=pass_names,
-                                    dependencies=dependencies), entries
+                                    dependencies=dependencies, grab_texture=grab_texture, properties=properties), entries
 
 
 def inspect_converted(dst):
@@ -997,11 +999,24 @@ def expect_passthrough_linked(proc, fields, refusals, dst):
         return "no geometry entry in the converted shader"
     if by_stage["2"]["type"] == "20":
         return "the geometry entry was left on DirectX; it should have been translated"
+    code = entries[int(by_stage["0"]["blob"])]["code"]
+    if "flat in vec4 gs_TEXCOORD0;" not in code or "flat out vec4 gs_TEXCOORD0;" not in code:
+        return "geometry pass-through interpolation does not match the flat fragment input (Adreno rejects this)"
     return None
 
 
 pc_shader_case("a geometry stage that passes a varying through links with the fragment stage",
                gs_pass_body, expect_passthrough_linked)
+
+# Upstream 0.15.9 flattens even translatable geometry for its ordinary
+# multiview renderer. Explicit-eye donors must still retain the full stage.
+os.environ["VIVIFY_DROP_ALL_GEOMETRY"] = "1"
+pc_shader_case("upstream flat geometry option drops a translatable stage",
+               gs_pass_body, expect_geometry_dropped)
+del os.environ["VIVIFY_DROP_ALL_GEOMETRY"]
+for donor_mode in ("--shaders-eye-left-isolated", "--shaders-eye-right-isolated", "--shaders-mono-isolated"):
+    pc_shader_case("full geometry survives in donor " + donor_mode,
+                   gs_pass_body, expect_passthrough_linked, mode=donor_mode)
 
 # The blit companion: single-view programs in a bundle whose internal files
 # are renamed, so it can be loaded beside the main conversion.
@@ -1023,6 +1038,136 @@ def expect_companion(proc, fields, refusals, dst):
 
 pc_shader_case("the blit companion is single-view with its internal files renamed",
                stereo_body, expect_companion, mode="--shaders-companion")
+
+def expect_eye_companion(eye):
+    def validate(proc, fields, refusals, dst):
+        if fields.get("refused") != "0" or fields.get("variantsRefused") != "0":
+            return f"eye conversion refused programs: {fields} {refusals}"
+        _, refs, entries = inspect_converted(dst)
+        code = "\n".join(e["code"] for e in entries.values())
+        if "gl_ViewID_OVR" in code or "num_views" in code or "gl_Layer" in code:
+            return "eye companion still requires multiview or a layered target"
+        if f"gl_InstanceID * 2 + {eye}" not in code:
+            return "eye companion lost SPI instance/eye selection"
+        plain_vertices = [r for r in refs if r["stage"] == "0" and not r["keywords"]]
+        if not plain_vertices or any(f"gl_InstanceID * 2 + {eye}" not in
+                                    entries[int(r["blob"])]["code"] for r in plain_vertices):
+            return "the selected plain variant did not inherit its stereo twin's eye logic"
+        # All three companions must be loadable beside the original and each
+        # other, even when the archive's first hash digit wraps around f.
+        paths = [[n[3] for n in read_converted(dst)[3]]]
+        for mode in ("--shaders-companion", "--shaders-eye-left" if eye else "--shaders-eye-right"):
+            other = os.path.join(TMP, mode + ".vivify")
+            run_shaders(os.path.join(TMP, "pc_src.vivify"), other, mode)
+            paths.append([n[3] for n in read_converted(other)[3]])
+        for names in zip(*paths):
+            if "CAB-" in names[0] and len(set(names)) != len(names):
+                return f"companions have colliding archive names: {names}"
+            if len(set(map(len, names))) != 1:
+                return f"renaming changed a path length: {names}"
+        return None
+    return validate
+
+for eye, side in enumerate(("left", "right")):
+    pc_shader_case(f"{side} eye companion preserves its eye without multiview or layer routing",
+                   spi2019_body, expect_eye_companion(eye), mode="--shaders-eye-" + side)
+    shader_case(f"{side} eye refuses legacy shaders with no parsed variant metadata",
+                lambda proc, fields, refusals, dst: None if fields.get("translated") == "0" and
+                fields.get("refused") == "1" and any("requires parsed shader variants" in r for r in refusals)
+                else f"{fields} {refusals}", [("Legacy/Test", [4], one_program)], mode="--shaders-eye-" + side)
+
+os.environ["VIVIFY_SKIP_UNUSED"] = "1"
+pc_shader_case("right eye survives stereo-variant pruning in the shader Unity actually selects",
+               spi2019_body, expect_eye_companion(1), mode="--shaders-eye-right")
+del os.environ["VIVIFY_SKIP_UNUSED"]
+
+def expect_isolated_eye(eye):
+    def check(proc, fields, refusals, dst):
+        problem = expect_eye_companion(eye)(proc, fields, refusals, dst)
+        if problem: return problem
+        _, _, _, nodes, data = read_converted(dst)
+        off, size, _, _ = nodes[0]
+        path = os.path.join(TMP, "isolated.sf")
+        with open(path, "wb") as handle: handle.write(data[off:off + size])
+        inspected = subprocess.run([CONV, "--inspect", path], capture_output=True, text=True, check=True)
+        names = [line[7:].split(" platforms=")[0] for line in inspected.stdout.splitlines() if line.startswith("shader=")]
+        if not names or any(not n.startswith(f"__VivifyEye{eye}__/") for n in names):
+            return f"donor shader names were not isolated: {names}"
+        return None
+    return check
+
+for eye, side in enumerate(("left", "right")):
+    pc_shader_case(f"{side} eye shader names are isolated without breaking serialized program offsets",
+                   spi2019_body, expect_isolated_eye(eye), mode="--shaders-eye-" + side + "-isolated")
+
+anonymous_body, _ = pc_shader_2021(
+    "", [(_vs(spi=False), []), (_vs(spi=True), [0])],
+    [(_ps(spi=False), []), (_ps(spi=True), [0])],
+    keyword_names=(), entry_keywords=("STEREO_INSTANCING_ON",),
+    pass_names={"STEREO_INSTANCING_ON": 7, "_Color": 8})
+pc_shader_case("an anonymous shader receives an isolated name and retains valid program offsets",
+               anonymous_body, expect_isolated_eye(1), mode="--shaders-eye-right-isolated")
+
+# All normal/mono/eye/blit donors must coexist, with matching root and parsed
+# names and intact program offsets. Blits retain SPI eyes rather than using a
+# plain mono program that can constant-fold eye-dependent effects away.
+def expect_new_donor(prefix, eye=None):
+    def validate(proc, fields, refusals, dst):
+        problem = expect_eye_companion(eye)(proc, fields, refusals, dst) if eye is not None else (None if fields.get("refused") == "0" and fields.get("variantsRefused") == "0" else str((fields, refusals)))
+        if problem: return problem
+        _, _, _, nodes, data = read_converted(dst)
+        for off, size, _, path in nodes:
+            if path.endswith(".resS"): continue
+            body = data[off:off + size]
+            if body.count(prefix.encode()) < 2: return "root/parsed shader names are not both isolated"
+        paths = [[n[3] for n in read_converted(dst)[3]]]
+        own = "--shaders-mono-isolated" if eye is None else "--shaders-blit-" + ("left" if eye == 0 else "right") + "-isolated"
+        for mode in ("--shaders-companion", "--shaders-eye-left-isolated", "--shaders-eye-right-isolated", "--shaders-mono-isolated", "--shaders-blit-left-isolated", "--shaders-blit-right-isolated", "--shaders-native-perspective-isolated"):
+            if mode == own: continue
+            other = os.path.join(TMP, mode + ".vivify")
+            run_shaders(os.path.join(TMP, "pc_src.vivify"), other, mode)
+            paths.append([n[3] for n in read_converted(other)[3]])
+        if any(len(set(names)) != len(names) for names in zip(*paths)):
+            return "a donor shares an internal archive name with another mode"
+        if eye is None:
+            _, _, entries = inspect_converted(dst)
+            if any("gl_InstanceID * 2" in e["code"] for e in entries.values()): return "authored mono camera uses SPI eye remapping"
+        return None
+    return validate
+pc_shader_case("isolated mono camera shaders coexist with every eye and blit donor",
+               spi2019_body, expect_new_donor("__VivifyMono__/"), mode="--shaders-mono-isolated")
+for eye, side in enumerate(("left", "right")):
+    pc_shader_case(f"{side} blit donor preserves eye logic and has its own shader/archive names",
+                   spi2019_body, expect_new_donor(f"__VivifyBlitEye{eye}__/", eye), mode=f"--shaders-blit-{side}-isolated")
+
+# A named GrabPass is a camera capture, while an arbitrary texture array in the
+# very same program remains a real array. Exercise this through serialization.
+from pathlib import Path
+sys.path.insert(0, str(Path(HERE).parent / "dxbc"))
+import mkdxbc as dx
+resources = ["_CameraDepthTexture", "_CapturedScene", "_MainTex", "_Atlas"]
+bindings = [{"name": name, "type": 2, "dimension": 5, "bind_point": i} for i, name in enumerate(resources)]
+body = []
+for i in range(len(resources)):
+    body += dx.insn(69, dx.dest(2, 0), dx.imm_float(.25, .5, 1., 0.), dx.src(7, i), dx.src(6, i))
+body += dx.insn(62)
+ps_array = dx.container([dx.rdef_chunk(bindings=bindings),
+    dx.signature_chunk([{"name": "SV_Target", "register": 0, "sv": 64}], b"OSGN"), dx.shex_chunk([body], stage=0)])
+camera_body, _ = pc_shader_2021("Test/CameraArray", [(_vs(spi=False), []), (_vs(spi=True), [0])],
+                               [(ps_array, []), (ps_array, [0])], grab_texture="_CapturedScene")
+def expect_camera_textures(blit):
+    def validate(proc, fields, refusals, dst):
+        if fields.get("refused") != "0" or fields.get("variantsRefused") != "0": return str((fields, refusals))
+        _, _, entries = inspect_converted(dst)
+        code = "\n".join(e["code"] for e in entries.values())
+        for name in resources:
+            shape = "2D" if name in ("_CameraDepthTexture", "_CapturedScene") or (blit and name == "_MainTex") else "2DArray"
+            if f"sampler{shape} {name};" not in code: return f"wrong shape for {name}: expected {shape}"
+        return None
+    return validate
+for blit, mode in ((False, "--shaders-eye-right-isolated"), (True, "--shaders-blit-right-isolated")):
+    pc_shader_case(f"camera textures lower to 2D without changing authored array assets (blit={blit})",
+                   camera_body, expect_camera_textures(blit), mode=mode)
 
 # Variants a Quest never selects are left untranslated when asked (the mod
 # asks for converted maps): here the stereo copy of an unsplit 2019 shader.
@@ -1402,6 +1547,380 @@ depth_body, _ = pc_shader_2021(
 scan_depth_case("a shader naming _CameraDepthTexture is reported as reading scene depth", depth_body, True)
 scan_depth_case("it still is after conversion", depth_body, True, convert_first=True)
 scan_depth_case("a shader that names no depth texture is not", stereo_body, False)
+
+# Metadata-based native scene reuse must classify all geometry stages,
+# including unused store entries and anonymous shaders, and reject legacy metadata.
+def scan_stages_case(label, bodies, expected, complete=True, tree=None, tessellation=()):
+    global fails, cases
+    cases += 1
+    path = os.path.join(TMP, "scan_stages.vivify")
+    sf = mkshader.serialized_file_with_shaders(bodies, sf_version=22,
+                    shader_tree=tree if tree is not None else mkshader2021.RealTypeTree())
+    build(path, sf_bytes=[sf], with_resource=False)
+    proc = subprocess.run([CONV, "--scan", path], capture_output=True, text=True)
+    names = [line.split("=", 1)[1] for line in proc.stdout.splitlines() if line.startswith("separateEyeShader=")]
+    tessellation_names = [line.split("=", 1)[1] for line in proc.stdout.splitlines() if line.startswith("tessellationShader=")]
+    confidence = "sceneStageInfoComplete=" + str(int(complete))
+    if proc.returncode or set(names) != set(expected) or set(tessellation_names) != set(tessellation) or confidence not in proc.stdout:
+        print(f"FAIL {label}: {proc.stdout} {proc.stderr}"); fails += 1
+    else: print(f"ok   {label}")
+scan_stages_case("native stage scan classifies a vertex/fragment shader", [stereo_body], [])
+scan_stages_case("native stage scan identifies geometry shader passes", [gs_pass_body], ["Swifter/GeometryPassthrough"])
+# Use the existing shader and replace both length-prefixed names without
+# changing store/program offsets; changing bytes at equal length keeps it valid.
+# A mixed shader file must retain the geometry classification of just one shader.
+scan_stages_case("native stage scan handles mixed geometry and ordinary shaders", [stereo_body, gs_pass_body], ["Swifter/GeometryPassthrough"])
+legacy_store = [[mkshader.program_blob([mkshader.sub_program(20, b"placeholder geometry program")])]]
+legacy_body = mkshader.shader_object("Legacy/Geometry", [4], platform_blobs=legacy_store)
+scan_stages_case("legacy metadata cannot authorize native reuse, and its stored geometry is detected", [legacy_body], ["Legacy/Geometry"], False, mkshader.shader_type_tree(22))
+
+# The 0.15.9 native-Quest scan metadata must coexist with the conservative
+# stage classification used by our renderer. Legacy pass metadata stays unknown.
+def scan_native_case(label, programs, expected):
+    global cases, fails
+    cases += 1
+    path = os.path.join(TMP, "native_scan.vivify")
+    store = [[mkshader.program_blob([mkshader.sub_program(GLES3_TYPE, code) for code in programs])]]
+    body = mkshader.shader_object("Test/Native", [GLES3_PLATFORM], platform_blobs=store)
+    sf = mkshader.serialized_file_with_shaders([body], sf_version=22, shader_tree=mkshader.shader_type_tree(22))
+    build(path, sf_bytes=[sf], with_resource=False)
+    proc = subprocess.run([CONV, "--scan", path], capture_output=True, text=True)
+    actual = {line for line in proc.stdout.splitlines() if line.startswith(("singleViewShader=", "stereoDropsTextureShader=", "intUniform="))}
+    if proc.returncode or actual != set(expected) or "sceneStageInfoComplete=0" not in proc.stdout:
+        print(f"FAIL {label}: {proc.stdout} {proc.stderr}"); fails += 1
+    else: print(f"ok   {label}")
+
+scan_native_case("native mono metadata preserves int uniforms without authorizing native scene reuse",
+    [b"uniform highp int _Mode;\nuniform int unity_Internal;\nuniform int _Array[2];\nuniform float _Float;\n"],
+    ["singleViewShader=Test/Native", "intUniform=Test/Native:_Mode"])
+scan_native_case("native stereo texture omissions survive the merged stage scan",
+    [b"uniform sampler2D _Overlay;\n", b"#extension GL_OVR_multiview2 : require\n"],
+    ["stereoDropsTextureShader=Test/Native"])
+scan_native_case("matching mono and stereo textures do not request redundant per-eye blits",
+    [b"uniform sampler2D _Overlay;\n", b"#extension GL_OVR_multiview2 : require\nuniform sampler2D _Overlay;\n"], [])
+
+# A successful GLES link of VS/FS must not hide unconverted hull/domain stages.
+# The retained stage payloads are deliberately opaque: translation must not
+# silently relabel or remove them while reporting their missing coverage.
+partial_entries = [
+    (mkshader.sub_program(DX11_VERTEX_SM50, _vs(spi=False)), 0),
+    (mkshader2021.inline_parameter_blob(), 0),
+    (mkshader.sub_program(DX11_PIXEL_SM50, _ps(spi=False)), 0),
+    (mkshader2021.inline_parameter_blob(), 0),
+    (mkshader.sub_program(21, b"original-hull-stage"), 0),
+    (mkshader2021.inline_parameter_blob(), 0),
+    (mkshader.sub_program(22, b"original-domain-stage"), 0),
+    (mkshader2021.inline_parameter_blob(), 0),
+]
+partial_stages = {}
+for stage, blob, program_type in [(mkshader2021.VERTEX,0,DX11_VERTEX_SM50),
+                                 (mkshader2021.FRAGMENT,2,DX11_PIXEL_SM50),
+                                 ("progHull",4,21), ("progDomain",6,22)]:
+    partial_stages[stage] = {"player":[[mkshader2021.player_sub_program(blob,program_type)]],"params":[[blob+1]]}
+partial_body = mkshader2021.shader_body("Test/PartialTessellation",[4],
+                mkshader.build_program_store([mkshader.segmented_chunks(partial_entries)]),[partial_stages],())
+scan_stages_case("tessellation stage presence is reported separately from geometry", [partial_body],
+                 ["Test/PartialTessellation"], tessellation=["Test/PartialTessellation"])
+legacy_tess_store = [[mkshader.program_blob([mkshader.sub_program(21,b"retained hull"),
+                                            mkshader.sub_program(22,b"retained domain")])]]
+legacy_tess_body = mkshader.shader_object("Legacy/Tessellation",[4],platform_blobs=legacy_tess_store)
+scan_stages_case("legacy hull and domain stores cannot hide incomplete stage coverage", [legacy_tess_body],
+                 ["Legacy/Tessellation"],False,mkshader.shader_type_tree(22),tessellation=["Legacy/Tessellation"])
+
+def expect_partial_tessellation(proc, fields, refusals, dst):
+    if fields.get("untranslatedTessellationShaders") != "1" or "retain untranslated tessellation" not in fields.get("message", ""):
+        return "partial tessellation coverage was not reported: " + proc.stdout
+    _, refs, entries = inspect_converted(dst)
+    for stage, program_type, text in [("3","21","original-hull-stage"),("4","22","original-domain-stage")]:
+        selected = [r for r in refs if r["stage"]==stage]
+        if not selected or any(r["type"]!=program_type or entries[int(r["blob"])]["code"]!=text for r in selected):
+            return "an untranslated tessellation stage was relabelled or modified"
+    scanned = subprocess.run([CONV,"--scan",dst],capture_output=True,text=True)
+    if scanned.returncode or "tessellationShader=Test/PartialTessellation" not in scanned.stdout:
+        return "converted bundle lost its unsupported-stage classification: " + scanned.stdout
+    return None
+
+pc_shader_case("linked GLES programs retain and disclose unsupported tessellation stages",
+               partial_body,expect_partial_tessellation)
+
+# Shader specialization is a per-pass equivalence: every geometry variant
+# must return without emitting on perspective views; ordinary passes are kept.
+def _perspective_guard_geometry(valid=True):
+    shape = {"name": "unity_OrthoParams", "offset": 0, "size": 16, "class": 1, "type": 3, "rows": 1, "columns": 4}
+    reflection = dx.rdef_chunk(constant_buffers=[{"name": "UnityPerCamera", "size": 16, "variables": [shape]}],
+        bindings=[{"name": "UnityPerCamera", "type": 0, "dimension": 0, "bind_point": 0}])
+    code = dx.insn(DCL_GS_INPUT_PRIMITIVE_B, controls=3) + dx.insn(DCL_MAXOUT_B, extra=[3]) + dx.insn(DCL_GS_OUTPUT_TOPOLOGY_B, controls=5)
+    code += dx.insn(104, extra=[1])
+    code += dx.insn(57 if valid else 24, dx.dest(dx.OPERAND_TEMP, 0, 1), dx.src_cb(0, 0, (3,3,3,3)), dx.imm_float(1.0))
+    code += dx.insn(31, dx.src(dx.OPERAND_TEMP, 0, (0,0,0,0)), controls=128) + dx.insn(RET) + dx.insn(21)
+    code += dx.insn(MOV, dx.dest(dx.OPERAND_OUTPUT, 0), dx._operand(dx.OPERAND_INPUT, [0,0])) + dx.insn(EMIT_B) + dx.insn(RET)
+    signature = dx.signature_chunk([{"name":"SV_Position","register":0,"sv":1}], b"OSGN")
+    return dx.unity_program([reflection, dx.signature_chunk([{"name":"SV_Position","register":0,"sv":1}], b"ISGN"), signature, dx.shex_chunk([code], stage=2)])
+
+def specialization_case(valid, ordinary_pass=False, mixed_guard=False):
+    global fails, cases
+    cases += 1
+    body, entries = pc_shader_2021("Test/Perspective", [(_vs(spi=False),[])], [(_ps(spi=False),[])],
+            keyword_names=(), geometry_programs=[(_perspective_guard_geometry(valid),[])])
+    if mixed_guard:
+        body, entries = pc_shader_2021("Test/Perspective", [(_vs(spi=False),[]),(_vs(spi=False),[0])],
+             [(_ps(spi=False),[]),(_ps(spi=False),[0])], keyword_names=("ALTERNATE",),
+             geometry_programs=[(_perspective_guard_geometry(True),[]),(_perspective_guard_geometry(False),[0])])
+    if ordinary_pass:
+        # Same vertex/fragment entries are deliberately shared by two passes:
+        # their new linked sources differ, so conversion must clone store entries.
+        stages = {mkshader2021.VERTEX:{"player":[[mkshader2021.player_sub_program(0,16)]],"params":[[1]]},
+                  mkshader2021.FRAGMENT:{"player":[[mkshader2021.player_sub_program(2,18)]],"params":[[3]]}}
+        with_geometry = dict(stages)
+        with_geometry[mkshader2021.GEOMETRY] = {"player":[[mkshader2021.player_sub_program(4,20)]],"params":[[5]]}
+        store = mkshader.build_program_store([mkshader.segmented_chunks(entries)])
+        body = mkshader2021.shader_body("Test/Perspective",[4],store,[with_geometry,stages],())
+    path = os.path.join(TMP,"specialize_src.vivify"); dest = os.path.join(TMP,"specialize_dst.vivify")
+    sf = mkshader.serialized_file_with_shaders([body],sf_version=22,shader_tree=mkshader2021.RealTypeTree())
+    build(path,sf_bytes=[sf],with_resource=False)
+    proc, fields, refusals = run_shaders(path,dest,"--shaders-native-perspective-isolated")
+    problem = None
+    if fields.get("refused") != "0" or fields.get("variantsRefused") != "0":problem=str((fields,refusals))
+    else:
+        _, _, _, nodes, data = read_converted(dest); off,size,_,_=nodes[0]
+        inspect_path = os.path.join(TMP,"specialize.sf");open(inspect_path,"wb").write(data[off:off+size])
+        inspected = subprocess.run([CONV,"--inspect",inspect_path],capture_output=True,text=True,check=True).stdout
+        proved = valid and not mixed_guard
+        prefix = "__VivifyNativePerspective__/" if proved else "__VivifyNativeOther__/"
+        if "shader="+prefix+"Test/Perspective" not in inspected:problem="wrong proof classification: "+inspected[:300]
+        _, refs, programs = inspect_converted(dest)
+        code = "\n".join(e["code"] for e in programs.values())
+        if proved:
+            if "layout(num_views = 2)" not in code or "gl_Position = vec4(2.0, 2.0, 2.0, 1.0)" not in code:problem="native empty pass missing"
+            if any(r["type"] != "20" for r in refs if r["stage"]=="2"):problem="geometry was retained in the native program"
+            if ordinary_pass:
+                vertex_codes = [programs[int(r["blob"])]["code"] for r in refs if r["stage"]=="0"]
+                if len(set(vertex_codes)) != 2 or not all("num_views" in c for c in vertex_codes):problem="ordinary pass was not preserved separately in native multiview"
+        elif "#ifdef GEOMETRY" not in code:problem="unproved geometry was erased"
+    if problem:print(f"FAIL specialization valid={valid} mixed={ordinary_pass}: {problem}");fails+=1
+    else:print(f"ok   perspective specialization valid={valid} mixed={ordinary_pass}")
+specialization_case(True)
+specialization_case(False)
+specialization_case(True,True)
+specialization_case(True,mixed_guard=True)
+
+def expect_explicit_stereo_uniforms(proc, fields, refusals, dst):
+    if fields.get("refused") != "0" or fields.get("variantsRefused") != "0":return str((fields,refusals))
+    _, refs, entries = inspect_converted(dst)
+    code = "\n".join(e["code"] for e in entries.values() if e["type"] in ("3","4","5","6"))
+    if "uniform UnityStereoGlobals" in code or "vivify_cb_UnityStereoGlobals" in code:return "explicit eyes still depend on XR's stereo UBO"
+    if "uniform vec4 hlslcc_mtx4x4unity_StereoMatrixVP[8];" not in code:return "material-addressable stereo matrix array missing"
+    return None
+for side in ("left","right"):
+    pc_shader_case(f"{side} explicit eye receives named matrices rather than the native XR block",
+                   inline_body,expect_explicit_stereo_uniforms,mode=f"--shaders-eye-{side}-isolated")
+
+def expect_stereo_binding_analysis(proc, fields, refusals, dst):
+    problem = expect_explicit_stereo_uniforms(proc, fields, refusals, dst)
+    if problem:
+        return problem
+    before = open(dst, "rb").read()
+    scan = subprocess.run([CONV, "--scan", dst], capture_output=True, text=True)
+    masks = [int(line.rsplit(":", 1)[1]) for line in scan.stdout.splitlines()
+             if line.startswith("stereoBindings=")]
+    if scan.returncode or masks != [1 << 2]:
+        return "expected only the active VP matrix binding across all GLES variants: " + scan.stdout
+    if open(dst, "rb").read() != before:
+        return "read-only binding analysis changed shader bytes"
+    return None
+
+pc_shader_case("GLES binding analysis ignores retained DX11 entries and preserves the live stereo matrix",
+               inline_body, expect_stereo_binding_analysis, mode="--shaders-eye-left-isolated")
+
+# Immutable material feature specialization must be authorized AND proved.
+# These are authored synthetic records, not private map assets.
+_fixed_flags = {name: (1.0 if name == "_MatCapMaskEnable" else 0.0) for name in (
+    "_DecalEnable", "_EmissionEnable", "_FurEnable", "_LimitterEnable", "_MatCapMaskEnable",
+    "_OutLineEnable", "_ParallaxEnable", "_ReflectionEnable", "_RimLitEnable", "_SubTexEnable",
+    "_ToonEnable", "_ToonGlossEnable")}
+
+def _material_record(values=None, file_id=0, duplicate=False, color_shadow=None):
+    t = mkshader.TypeTree().add(0, "Material", "Base", -1)
+    t.add(1, "PPtr<Shader>", "m_Shader", 12).add(2, "int", "m_FileID", 4).add(2, "SInt64", "m_PathID", 8)
+    t.add(1, "SavedProperties", "m_SavedProperties", -1).add(2, "map", "m_Floats", -1)
+    t.add(3, "Array", "Array", -1, is_array=True).add(4, "int", "size", 4).add(4, "pair", "data", -1)
+    t.add(5, "string", "first", -1, align=True).add(6, "Array", "Array", -1, is_array=True, align=True)
+    t.add(7, "int", "size", 4).add(7, "char", "data", 1).add(5, "float", "second", 4)
+    values = list((_fixed_flags if values is None else values).items())
+    if duplicate: values.append(values[0])
+    body = bytearray(struct.pack("<iqI", file_id, 1, len(values)))
+    for name, value in values:
+        text = name.encode(); body.extend(struct.pack("<I", len(text)) + text)
+        mkshader._align4(body); body.extend(struct.pack("<f", value))
+    if color_shadow:
+        t.add(2, "map", "m_Colors", -1).add(3, "Array", "Array", -1, is_array=True)
+        t.add(4, "int", "size", 4).add(4, "pair", "data", -1)
+        t.add(5, "string", "first", -1, align=True).add(6, "Array", "Array", -1, is_array=True, align=True)
+        t.add(7, "int", "size", 4).add(7, "char", "data", 1)
+        t.add(5, "Color", "second", 16)
+        for component in "rgba":t.add(6, "float", component, 4)
+        name=color_shadow.encode();body.extend(struct.pack("<II", 1, len(name))+name)
+        mkshader._align4(body);body.extend(struct.pack("<ffff",1,1,1,1))
+    return (21, t, bytes(body))
+
+def _clip_record(type_id=4, script_id=0, attribute=4, custom_type=0, event_count=0):
+    t = mkshader.TypeTree().add(0, "AnimationClip", "Base", -1)
+    for name in ("m_FloatCurves", "m_PPtrCurves", "m_Events"):
+        t.add(1, "vector", name, -1).add(2, "Array", "Array", -1, is_array=True)
+        t.add(3, "int", "size", 4).add(3, "int", "data", 4)
+    t.add(1, "Bindings", "m_ClipBindingConstant", -1).add(2, "vector", "genericBindings", -1)
+    t.add(3, "Array", "Array", -1, is_array=True).add(4, "int", "size", 4).add(4, "Binding", "data", -1)
+    t.add(5, "int", "typeID", 4).add(5, "int", "isPPtrCurve", 4)
+    t.add(5, "int", "attribute", 4).add(5, "int", "customType", 4).add(5, "PPtr", "script", 12)
+    t.add(6, "int", "m_FileID", 4).add(6, "SInt64", "m_PathID", 8)
+    t.add(2, "vector", "pptrCurveMapping", -1).add(3, "Array", "Array", -1, is_array=True)
+    t.add(4, "int", "size", 4).add(4, "int", "data", 4)
+    body = struct.pack("<III", 0, 0, event_count) + struct.pack("<i", 0) * event_count
+    body += struct.pack("<IiiiiiqI", 1, type_id, 0, attribute, custom_type, 0, script_id, 0)
+    return (74, t, body)
+
+_fixed_body, _ = pc_shader_2021("Sunao Shader/Cutout", [(_vs(spi=False), [])], [(_ps(spi=False), [])], keyword_names=(), properties=[(name,2) for name in _fixed_flags])
+def _fixed_case(name, records, expected, authorize=True, extra_class_id=None, other_file=False, shader_body=None):
+    global cases, fails
+    cases += 1
+    src, dst = os.path.join(TMP, "fixed_src.vivify"), os.path.join(TMP, "fixed_dst.vivify")
+    sf = mkshader.serialized_file_with_shaders([_fixed_body if shader_body is None else shader_body], sf_version=22,
+        shader_tree=mkshader2021.RealTypeTree(), extra_records=records, extra_class_id=extra_class_id)
+    files = [sf]
+    if other_file: files.append(mkshader.serialized_file_with_shaders([], extra_class_id=114))
+    build(src, sf_bytes=files, with_resource=False)
+    env = dict(os.environ)
+    if authorize: env["VIVIFY_IMMUTABLE_MATERIAL_FEATURES"] = "1"
+    else: env.pop("VIVIFY_IMMUTABLE_MATERIAL_FEATURES", None)
+    proc = subprocess.run([CONV, "--shaders", src, dst], capture_output=True, text=True, env=env)
+    actual = re.search(r"^immutableMaterialShaders=(\d+)$", proc.stdout, re.M)
+    good = proc.returncode == 0 and actual and int(actual[1]) == expected
+    if good: print("ok   immutable material: " + name)
+    else: print("FAIL immutable material: " + name + "\n" + proc.stdout + proc.stderr); fails += 1
+
+_fixed_case("matching material and transform animation", [_material_record(), _clip_record()], 1)
+_fixed_case("caller authorization required", [_material_record()], 0, authorize=False)
+_fixed_case("no material evidence", [], 0)
+_changed = dict(_fixed_flags, _EmissionEnable=1.0)
+_fixed_case("changed material setting", [_material_record(_changed)], 0)
+_fixed_case("every material must agree", [_material_record(), _material_record(_changed)], 0)
+_missing = dict(_fixed_flags); _missing.pop("_ReflectionEnable")
+_fixed_case("missing flag", [_material_record(_missing)], 0)
+_fixed_case("duplicate property", [_material_record(duplicate=True)], 0)
+_fixed_case("external shader reference", [_material_record(file_id=1)], 0)
+_fixed_case("renderer animation", [_material_record(), _clip_record(type_id=23)], 0)
+_fixed_case("scripted animation", [_material_record(), _clip_record(script_id=8)], 0)
+_fixed_case("script component", [_material_record()], 0, extra_class_id=114)
+_fixed_case("unknown component", [_material_record()], 0, extra_class_id=99999)
+_fixed_case("unsafe second serialized file", [_material_record()], 0, other_file=True)
+_bad_clip = _clip_record(); _bad_clip = (*_bad_clip[:2], _bad_clip[2][:-4])
+_fixed_case("truncated clip", [_material_record(), _bad_clip], 0)
+_bad_material = _material_record(); _bad_material = (*_bad_material[:2], _bad_material[2][:-4])
+_fixed_case("truncated material", [_bad_material], 0)
+_fixed_case("animation event callback", [_material_record(), _clip_record(event_count=1)], 0)
+_fixed_case("unknown transform attribute", [_material_record(), _clip_record(attribute=900)], 0)
+_fixed_case("unknown animation binding type", [_material_record(), _clip_record(custom_type=99)], 0)
+_no_props, _ = pc_shader_2021("Sunao Shader/Cutout", [(_vs(spi=False), [])], [(_ps(spi=False), [])], keyword_names=())
+_fixed_case("missing shader property definitions", [_material_record()], 0, shader_body=_no_props)
+_wrong_props, _ = pc_shader_2021("Sunao Shader/Cutout", [(_vs(spi=False), [])], [(_ps(spi=False), [])], keyword_names=(), properties=[(name,5) for name in _fixed_flags])
+_fixed_case("integer property layout is not a float profile", [_material_record()], 0, shader_body=_wrong_props)
+_fixed_case("baked flag cannot have a second saved value type", [_material_record(color_shadow="_EmissionEnable")], 0)
+_legacy_values = dict(_fixed_flags, _EmissionBlink=0.0)
+_fixed_case("unrelated legacy saved properties remain intact", [_material_record(_legacy_values, color_shadow="_EmissionBlink")], 1)
+
+def expect_both_isolated_names(name):
+    def check(proc, fields, refusals, dst):
+        if fields.get("refused") != "0":return str(refusals)
+        _,_,_,_,data=read_converted(dst)
+        text=("__VivifyMono__/"+name).encode("utf-8")
+        if data.count(struct.pack("<I",len(text))+text)!=2:return "object and parsed-form shader names were not both isolated"
+    return check
+for authored_name in ("Test/DrosteObject\r\n", "Test/色のShader"):
+    name_body,_=pc_shader_2021(authored_name,[(_vs(spi=False),[])],[(_ps(spi=False),[])],keyword_names=())
+    pc_shader_case("typed shader name preserves and isolates "+repr(authored_name),name_body,expect_both_isolated_names(authored_name),mode="--shaders-mono-isolated")
+
+def expect_bounded_isolated_name(proc,fields,refusals,dst):
+    if fields.get("refused")!="1" or not any("isolated shader name is too long" in reason for reason in refusals):return "oversized isolated name was not refused"
+long_name_body,_=pc_shader_2021("Test/"+"x"*65531,[(_vs(spi=False),[])],[(_ps(spi=False),[])],keyword_names=())
+pc_shader_case("isolated shader names remain within the parser length bound",long_name_body,expect_bounded_isolated_name,mode="--shaders-mono-isolated")
+
+# Animation-only materials/shaders are dependencies, rather than named bundle
+# assets. Expose them without changing preload tables or authored references.
+def _dependency_bundle_record(preload=(1, 2, 4), roots=None, malformed=False):
+    roots = [("authored.prefab", 0, len(preload), 0, 4)] if roots is None else roots
+    t = mkshader.TypeTree().add(0, "AssetBundle", "Base", -1)
+    def text(level, name):
+        t.add(level,"string",name,-1,align=True).add(level+1,"Array","Array",-1,is_array=True,align=True)
+        t.add(level+2,"int","size",4).add(level+2,"char","data",1)
+    def ptr(level, name):
+        t.add(level,"PPtr<Object>",name,12).add(level+1,"int","m_FileID",4).add(level+1,"SInt64","m_PathID",8)
+    text(1,"m_Name")
+    t.add(1,"vector","m_PreloadTable",-1).add(2,"Array","Array",-1,is_array=True)
+    t.add(3,"int","size",4);ptr(3,"data")
+    t.add(1,"map","m_Container",-1).add(2,"Array","Array",-1,is_array=True)
+    t.add(3,"int","size",4).add(3,"pair","data",-1);text(4,"first")
+    t.add(4,"AssetInfo","second",-1).add(5,"int","preloadIndex",4).add(5,"int","preloadSize",4);ptr(5,"asset")
+    t.add(1,"unsigned int","unchangedSentinel",4)
+    body=bytearray()
+    def string(value):
+        b=value.encode();body.extend(struct.pack("<I",len(b))+b);mkshader._align4(body)
+    string("dependency-fixture")
+    body.extend(struct.pack("<I",len(preload)))
+    for p in preload:body.extend(struct.pack("<iq",*(p if isinstance(p,tuple) else (0,p))))
+    body.extend(struct.pack("<I",len(roots)))
+    for key,index,count,file_id,path in roots:
+        string(key);body.extend(struct.pack("<iiiq",index,count,file_id,path))
+    body.extend(struct.pack("<I",0xaabbccdd))
+    if malformed:body=body[:-1]
+    return 142,t,bytes(body)
+
+def dependency_case(label, *, enabled=True, sf_version=22, preload=(1,2,4), roots=None, malformed=False, rejected=False):
+    global cases,fails
+    cases+=1
+    bundle=_dependency_bundle_record(preload,roots,malformed)
+    dummy=(1,mkshader.TypeTree().add(0,"GameObject","Base",-1).add(1,"int","sentinel",4),struct.pack("<I",17))
+    sf=mkshader.serialized_file_with_shaders([stereo_body],sf_version=sf_version,shader_tree=mkshader2021.RealTypeTree(),extra_records=[_material_record(),bundle,dummy])
+    src=os.path.join(TMP,"dependency-src.vivify");dst=os.path.join(TMP,"dependency-dst.vivify")
+    if os.path.exists(dst):os.remove(dst)
+    build(src,sf_bytes=[sf],with_resource=False)
+    env=dict(os.environ)
+    if enabled:env["VIVIFY_EXPOSE_RENDER_DEPENDENCIES"]="1"
+    else:env.pop("VIVIFY_EXPOSE_RENDER_DEPENDENCIES",None)
+    p=subprocess.run([CONV,"--shaders",src,dst],env=env,text=True,capture_output=True)
+    problem=None
+    if rejected:
+        if p.returncode == 0 or "render dependency lookup could not be safely extended" not in p.stdout or os.path.exists(dst):problem="unrecognized container was not refused: "+p.stdout
+    elif p.returncode or "status=converted" not in p.stdout:problem=p.stdout+p.stderr
+    else:
+        _,_,_,nodes,data=read_converted(dst)
+        original_roots=[("authored.prefab",0,len(preload),0,4)] if roots is None else list(roots)
+        existing={path for _,_,_,file_id,path in original_roots if file_id==0}
+        ranges={}
+        for _,index,count,_,_ in original_roots:
+            for pointer in preload[index:index+count]:
+                file_id,path=(0,pointer) if isinstance(pointer,int) else pointer
+                if file_id==0 and (path not in ranges or count<ranges[path][1]):ranges[path]=(index,count)
+        expected_roots=original_roots+[("assets/__vivify_internal__/render/"+str(path),*ranges[path],0,path) for path in (1,2) if enabled and path in ranges]
+        expected=_dependency_bundle_record(preload,expected_roots)[2]
+        if data.count(expected)!=1:problem="bundle container/preload/trailer differs from the expected preserved record"
+        if data.count(dummy[2])<1:problem="unrelated object was lost"
+    if problem:print("FAIL "+label+": "+problem);fails+=1
+    else:
+        print("ok   "+label)
+        if enabled and not rejected:shutil.copyfile(src,os.path.join(TMP,"fuzz_seed_dependencies.vivify"))
+
+dependency_case("private lookup exposes animation-only material and translated shader")
+dependency_case("dependency lookup leaves ordinary conversion unchanged when disabled",enabled=False)
+dependency_case("dependency lookup supports serialized file version 21",sf_version=21)
+dependency_case("dependency lookup preserves existing root assets",roots=[("shader.shader",0,1,0,1),("authored.prefab",2,1,0,4)])
+dependency_case("dependency lookup preserves the smallest complete authored preload range",roots=[("scene",0,3,0,4),("material.mat",0,2,0,2)])
+dependency_case("dependency lookup ignores unused preload records",roots=[("authored.prefab",2,1,0,4)])
+dependency_case("dependency lookup excludes external preload references",preload=(1,(1,2),4))
+dependency_case("dependency lookup excludes unreachable local objects",preload=(1,4))
+dependency_case("dependency lookup refuses invalid preload ranges",roots=[("bad.prefab",8,1,0,4)],rejected=True)
+dependency_case("dependency lookup preserves duplicate authored sub-asset keys",roots=[("same",0,1,0,1),("same",1,1,0,2)])
+dependency_case("dependency lookup refuses reserved-key collisions",roots=[("assets/__vivify_internal__/authored",0,1,0,1)],rejected=True)
+dependency_case("dependency lookup refuses truncated container record",malformed=True,rejected=True)
 
 print(f"\n{cases - fails}/{cases} passed")
 sys.exit(1 if fails else 0)

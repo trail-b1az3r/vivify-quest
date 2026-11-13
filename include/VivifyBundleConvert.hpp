@@ -41,8 +41,17 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <unordered_map>
 
 namespace Vivify::BundleConvert {
+inline constexpr int kShaderConversionVersion = 27;
+inline constexpr std::string_view kRenderDependencyCacheProof = "render-dependencies-v5-unique-asset-identity";
+inline constexpr std::string_view kRenderDependencyAssetPrefix = "assets/__vivify_internal__/render/";
+// Main, companion and explicit-eye caches must agree on translator changes.
+inline std::string ShaderCacheVersion(std::string_view scope) {
+  return std::string(scope) + "-converter" + std::to_string(kShaderConversionVersion) + "-" +
+      std::string(kRenderDependencyCacheProof);
+}
 
 // Unity BuildTarget ids that show up in SerializedFile headers.
 inline constexpr int32_t kBuildTargetStandaloneOSX = 2;
@@ -162,6 +171,16 @@ struct ShaderScan {
   // pre-pass that renders it.
   bool samplesCameraDepth = false;
   std::vector<std::string> cameraDepthShaderNames;
+  // Conservative stage classification for runtime multiview reuse. Complete
+  // only when every shader has readable parsed pass/program metadata.
+  bool sceneStageInfoComplete = false;
+  std::vector<std::string> separateEyeShaderNames;
+  // Stage presence is not stage translation. GLES links for VS/FS/GS do not
+  // establish that retained DirectX hull/domain programs can run on Quest.
+  std::vector<std::string> tessellationShaderNames;
+  // Union of bindings read by every referenced GLES variant of each shader.
+  // Unknown/unreadable forms use the full mask. Duplicate names are unioned.
+  std::unordered_map<std::string, uint16_t> stereoBindingMasks;
 };
 
 // What a shader-translating conversion did.
@@ -185,6 +204,11 @@ struct ShaderConversion {
   int stereoVariantsSplit = 0;  // separateStereoVariants: variants renamed to STEREO_MULTIVIEW_ON
   int geometryStagesDropped = 0;  // variants linked without the geometry stage they could not use
   int variantsSkipped = 0;  // program refs of variants a Quest never selects, left untranslated
+  int tessellationShadersUntranslated = 0;
+  int tessellationShadersTranslated = 0;
+  std::vector<std::string> tessellationShaderNamesTranslated;
+  int immutableMaterialShaders = 0;
+  int renderDependencyEntries = 0;
   // Block-compressed textures seen, and how many had their m_IsReadable flag
   // set so the mod can decode them on device. A texture that is already
   // readable, or in a format a Quest can sample, is not counted as marked.
@@ -218,6 +242,11 @@ struct ShaderConversion {
 // means the bundle was rewritten and is loadable, and the counters say how much
 // of it will actually render.
 struct ShaderConversionOptions {
+  bool exposeRenderDependencies = false;
+  // Explicit chart-level authorization is required. The converter additionally
+  // proves the bundle's component/animation/material conditions before use.
+  // Runtime callers must validate the named material flags before rendering.
+  bool specializeImmutableMaterialFeatures = false;
   // Give each stereo-aware shader separate single-view and multiview programs,
   // the way Unity builds its own Quest shaders. The plain variants get a
   // single-view translation of the plain program -- what blits, render
@@ -249,6 +278,29 @@ struct ShaderConversionOptions {
   // converted maps invisible, and 0.14.8's merged Hold My Hand kaleidoscope
   // drew nothing. The mod no longer turns them on.)
   bool singleViewOnly = false;
+  // Experimental eye-specific shader companions, not replacement main bundles.
+  // Requires singleViewOnly; -1 is the existing single-view behavior, 0/1
+  // selects the left/right logical eye for the experimental renderer.
+  int singleViewStereoEye = -1;
+  // Donors loaded into the game must not shadow normal shaders by name.
+  // Prefix both serialized shader-name fields; leave ordinary modes alone.
+  bool namespaceEyeShaders = false;
+  // Isolated plain shaders for authored texture cameras (no SPI remapping).
+  bool namespaceSingleViewShaders = false;
+  // Eye-specific post effects draw a mono _MainTex while retaining logical-eye
+  // instructions. Scene materials may use real _MainTex arrays, so keep these
+  // in a separate donor rather than changing every scene shader's sampler.
+  bool singleViewBlit = false;
+  // An isolated donor: replace geometry passes with exact empty multiview
+  // programs only if all geometry variants prove a perspective-camera early
+  // return; retain ordinary passes as native multiview programs. Other shaders
+  // remain isolated ordinary eye-zero donors.
+  bool nativePerspectiveDonor = false;
+  // Optional, default off. Translate the narrowly verified uniform
+  // triangle HS/DS pair only in isolated explicit scene-eye donors. A failed
+  // tessellation shader rejects the entire requested output, never emits a
+  // partial VS/GS approximation. Native multiview and blit donors are excluded.
+  bool uniformTriangleTessellation = false;
   // Give the output's internal files ("CAB-...") new names, so it can be
   // loaded beside the main conversion of the same bundle. Its textures do not
   // load (their streams name the old files); it is for its shaders.
@@ -318,7 +370,7 @@ std::string_view StatusText(Status status);
 // The converter's revision: bumped whenever a change alters what it writes,
 // so a cached conversion from an older revision is redone. The mod keys its
 // cache on it; the standalone library reports it (vivify_convert_revision).
-inline constexpr int kConverterRevision = 25;
+inline constexpr int kConverterRevision = kShaderConversionVersion;
 
 // A path given as UTF-8 text. On Windows a narrow std::string path is read in
 // the system code page, so a non-ASCII folder name (a map title, a user name)

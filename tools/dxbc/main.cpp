@@ -7,17 +7,20 @@
 //
 // Build (matching CI):
 //   g++ -std=gnu++20 -fsanitize=address,undefined -g -I include \
-//       tools/dxbc/main.cpp src/VivifyDxbc.cpp -o /tmp/dxbctool
+//       tools/dxbc/main.cpp src/VivifyDxbc.cpp src/VivifyTriangleTessellation.cpp -o /tmp/dxbctool
 //
 // Modes:
 //   dxbctool parse  <file>   container, signatures, reflection
 //   dxbctool disasm <file>   one line per decoded instruction
 //   dxbctool glsl   <file>   translated GLSL ES, or the reason there is none
 #include "VivifyDxbc.hpp"
+#include "VivifyGeometrySpecialization.hpp"
+#include "VivifyTriangleTessellation.hpp"
 
 #include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -69,8 +72,42 @@ void PrintProgram(Vivify::Dxbc::Program const& program) {
 }  // namespace
 
 int main(int argc, char** argv) {
+  // Offline prototype only. Optional scalar reflection is explicit input,
+  // checked against the bytecode's actual constant-buffer address. Real-map
+  // audits must obtain it from that hull program's Unity parameter table.
+  if ((argc == 5 || argc == 8) && std::string(argv[1]) == "tess-pair") {
+    auto h = ReadFile(argv[2]), d = ReadFile(argv[3]);
+    Vivify::Dxbc::ExternalReflection reflection;
+    try {
+      if (argc == 8) {
+        auto number = [](char const* text) {
+          std::string s(text); size_t end = 0; auto n = std::stoul(s, &end);
+          if (end != s.size() || n > 1048576 || s.starts_with('-')) throw std::runtime_error("invalid scalar reflection address");
+          return static_cast<uint32_t>(n);
+        };
+        Vivify::Dxbc::ConstantBufferInfo b; b.bindPoint = number(argv[5]);
+        Vivify::Dxbc::ConstantBufferVariable v; v.startOffset = number(argv[6]);
+        v.name = argv[7]; v.size = 4; v.rows = v.columns = 1; v.variableType = 3;
+        b.size = v.startOffset + 4; b.variables.push_back(v); reflection.constantBuffers.push_back(b);
+      }
+      auto result = Vivify::Dxbc::TranslateTriangleTessellation(
+          Vivify::Dxbc::ParseProgram(h.data(), h.size()), Vivify::Dxbc::ParseProgram(d.data(), d.size()),
+          argc == 8 ? &reflection : nullptr);
+      std::cout << "ok=" << result.ok << "\nerror=" << result.error << "\nfactor=" << result.factorUniform << "\n";
+      if (result.ok) {
+        std::ofstream control(std::string(argv[4]) + ".tesc"), evaluation(std::string(argv[4]) + ".tese");
+        control << result.control.source; evaluation << result.evaluation.source;
+        if (!control || !evaluation) return 2;
+      }
+      return 0;
+    } catch (std::exception const& ex) { std::cerr << ex.what() << "\n"; return 2; }
+  }
+  if (argc == 2 && std::string(argv[1]) == "native-empty-program") {
+    std::cout << Vivify::GeometrySpecialization::NativeEmptyProgram();
+    return 0;
+  }
   if (argc < 3) {
-    std::cerr << "usage: dxbctool <parse|disasm|glsl|glsl-mv> <file>\n";
+    std::cerr << "usage: dxbctool <parse|disasm|glsl|glsl-mv|glsl-eye-left|glsl-eye-right> <file>\n";
     return 2;
   }
   std::string const mode = argv[1];
@@ -89,10 +126,20 @@ int main(int argc, char** argv) {
     if (program.ok) std::cout << Vivify::Dxbc::DisassembleProgram(program);
     return 0;
   }
-  if (mode == "glsl" || mode == "glsl-mv" || mode == "glsl-mv-spi") {
+  if (mode == "glsl" || mode == "glsl-mv" || mode == "glsl-mv-spi" ||
+      mode == "glsl-eye-left" || mode == "glsl-eye-right" ||
+      mode == "glsl-eye-left-spi" || mode == "glsl-eye-right-spi" ||
+      mode == "glsl-eye-left-blit" || mode == "glsl-eye-right-blit") {
     Vivify::Dxbc::GlslOptions options;
     options.multiview = mode == "glsl-mv" || mode == "glsl-mv-spi";
-    options.stereoInstancedProgram = mode == "glsl-mv-spi";
+    options.stereoInstancedProgram = mode == "glsl-mv-spi" || mode == "glsl-eye-left-spi" ||
+                                    mode == "glsl-eye-right-spi";
+    if (mode.starts_with("glsl-eye-left")) options.singleViewStereoEye = 0;
+    if (mode.starts_with("glsl-eye-right")) options.singleViewStereoEye = 1;
+    if (options.singleViewStereoEye >= 0)
+      options.singleViewTextures = {"_CameraDepthTexture", "_CameraDepthNormalsTexture", "_CameraMotionVectorsTexture",
+                                    "_CameraOpaqueTexture", "_GrabTexture"};
+    if (mode.ends_with("-blit")) options.singleViewTextures.push_back("_MainTex");
     options.geometryRightEyeCopy = std::getenv("VIVIFY_GEOMETRY_EYE_COPY") != nullptr;
     Vivify::Dxbc::GlslResult const result = Vivify::Dxbc::TranslateToGlsl(program, options);
     std::cout << "ok=" << (result.ok ? 1 : 0) << "\n";

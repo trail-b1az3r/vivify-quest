@@ -8,6 +8,30 @@ on:
   workflow_dispatch:
 
 jobs:
+  arm64-relocation-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Check signed fields and recorded startup crash vectors
+      run: |
+        g++ -std=c++20 -O2 -Wall -Wextra -Werror -fsanitize=address,undefined \
+            -I include tools/startup/relocation_test.cpp -o /tmp/relocation-test
+        /tmp/relocation-test
+
+    - name: Check the generated SDK relocator without executing its output
+      run: CXX=g++ python3 tools/startup/run_integration.py
+
+    - name: Check data-free hook targets and legacy-stub recognition
+      run: |
+        g++ -std=c++20 -O2 -Wall -Wextra -Werror -fsanitize=address,undefined \
+            -I include tools/startup/hook_stub_test.cpp -o /tmp/hook-stub-test
+        /tmp/hook-stub-test
+
+    - name: Check the pinned offline literal repair's instruction semantics
+      run: python3 -B tools/startup/binary_patch_test.py
+
   validate-json:
     runs-on: ubuntu-latest
     steps:
@@ -53,7 +77,7 @@ jobs:
         g++ -std=c++20 -O1 -g -fsanitize=address,undefined \
             -I include -o /tmp/conv \
             tools/bundleconvert/main.cpp src/VivifyBundleConvert.cpp \
-            src/VivifySerializedFile.cpp src/VivifyDxbc.cpp
+            src/VivifySerializedFile.cpp src/VivifyDxbc.cpp src/VivifyTriangleTessellation.cpp
 
     - name: Round-trip and structure tests
       working-directory: tools/bundleconvert
@@ -135,10 +159,58 @@ jobs:
       run: |
         g++ -std=c++20 -O1 -g -fsanitize=address,undefined \
             -I include -o /tmp/dxbctool \
-            tools/dxbc/main.cpp src/VivifyDxbc.cpp
+            tools/dxbc/main.cpp src/VivifyDxbc.cpp src/VivifyTriangleTessellation.cpp
 
     - name: DXBC translator tests
       run: python3 tools/dxbc/run_tests.py /tmp/dxbctool
+
+    - name: Offline triangle tessellation prototype tests
+      run: python3 tools/dxbc/tessellation_tests.py /tmp/dxbctool
+
+    - name: Compile and link the separate-eye geometry device fixtures
+      run: python3 tools/separate-eye/make_probe.py /tmp/dxbctool /tmp/geometry-shaders
+
+    - name: Check separate-eye renderer eligibility guards
+      run: |
+        g++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -I include \
+            tools/separate-eye/policy_test.cpp -o /tmp/eye-policy-test
+        /tmp/eye-policy-test
+
+    - name: Check actual renderer material refresh methods
+      run: CXX=g++ python3 tools/separate-eye/material_refresh_test.py
+
+    - name: Check actual texture cleanup ownership and lifecycle methods
+      run: CXX=g++ python3 tools/separate-eye/texture_ownership_test.py
+
+    - name: Check optional tessellation pair-cache transactions
+      run: |
+        g++ -std=c++20 -Wall -Wextra -Werror -fsanitize=address,undefined -I include \
+            tools/separate-eye/tessellation_cache_test.cpp -o /tmp/tessellation-cache-test
+        /tmp/tessellation-cache-test
+
+    - name: Check camera texture layouts and persistent feedback
+      run: |
+        g++ -std=c++20 -Wall -Wextra -Werror -fsanitize=address,undefined -I include \
+            tools/separate-eye/render_texture_test.cpp -o /tmp/render-texture-test
+        /tmp/render-texture-test
+
+    - name: Check conservative stereo-uniform binding analysis
+      run: |
+        g++ -std=c++20 -Wall -Wextra -Werror -fsanitize=address,undefined -I include \
+            tools/separate-eye/stereo_binding_test.cpp -o /tmp/stereo-binding-test
+        /tmp/stereo-binding-test
+
+    - name: Check screen texture routing and stereo restoration on failure
+      run: |
+        g++ -std=c++20 -Wall -Wextra -Werror -fsanitize=address,undefined -I include \
+            tools/separate-eye/blit_policy_test.cpp -o /tmp/blit-policy-test
+        /tmp/blit-policy-test
+
+    - name: Check geometry and immutable material specialization proofs
+      run: |
+        g++ -std=c++20 -Wall -Wextra -Werror -fsanitize=address,undefined -I include \
+            tools/separate-eye/specialization_test.cpp -o /tmp/geometry-specialization-test
+        /tmp/geometry-specialization-test
 
   zip-extractor-tests:
     runs-on: ubuntu-latest
