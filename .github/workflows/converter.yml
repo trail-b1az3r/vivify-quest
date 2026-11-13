@@ -1,0 +1,106 @@
+name: Converter library
+
+# The converter as a desktop library, command-line tool and Unity Editor
+# package (converter/), for Windows, Linux and macOS. The mod's own build is
+# build.yml; this does not touch it.
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'converter/**'
+      - 'src/VivifyBundleConvert.cpp'
+      - 'src/VivifySerializedFile.cpp'
+      - 'src/VivifyDxbc.cpp'
+      - 'include/VivifyBundleConvert.hpp'
+      - 'include/VivifySerializedFile.hpp'
+      - 'include/VivifyDxbc.hpp'
+      - '.github/workflows/converter.yml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'converter/**'
+      - 'src/VivifyBundleConvert.cpp'
+      - 'src/VivifySerializedFile.cpp'
+      - 'src/VivifyDxbc.cpp'
+      - 'include/VivifyBundleConvert.hpp'
+      - 'include/VivifySerializedFile.hpp'
+      - 'include/VivifyDxbc.hpp'
+      - '.github/workflows/converter.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            name: linux-x64
+            configure: ''
+          - os: windows-latest
+            name: windows-x64
+            configure: '-A x64'
+          - os: macos-latest
+            name: macos-universal
+            configure: '"-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"'
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Configure
+      shell: bash
+      run: cmake -S converter -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.configure }}
+
+    - name: Build
+      run: cmake --build build --config Release --parallel
+
+    - name: C API smoke test
+      run: ctest --test-dir build -C Release --output-on-failure
+
+    - name: Install
+      run: cmake --install build --config Release --prefix out
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: vivify-convert-${{ matrix.name }}
+        path: out/
+        if-no-files-found: error
+
+  unity-package:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - uses: actions/download-artifact@v4
+      with:
+        path: libs
+
+    - name: Assemble the Unity package
+      # The native libraries go under Editor/Plugins, which Unity loads in the
+      # Editor only. Install it from Package Manager > Add package from disk
+      # (package.json), or copy the folder into Assets/.
+      run: |
+        set -e
+        pkg=package/VivifyQuestConverter
+        mkdir -p "$pkg"
+        cp -r converter/unity/. "$pkg/"
+        mkdir -p "$pkg/Editor/Plugins"
+        cp libs/vivify-convert-windows-x64/bin/vivifyconvert.dll "$pkg/Editor/Plugins/"
+        cp libs/vivify-convert-linux-x64/lib/libvivifyconvert.so "$pkg/Editor/Plugins/"
+        cp libs/vivify-convert-macos-universal/lib/libvivifyconvert.dylib "$pkg/Editor/Plugins/"
+        cp converter/README.md "$pkg/README.md"
+        ls -la "$pkg" "$pkg/Editor/Plugins"
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: VivifyQuestConverter-unity-package
+        path: package/
+        if-no-files-found: error

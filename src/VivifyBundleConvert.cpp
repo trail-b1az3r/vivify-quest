@@ -601,13 +601,13 @@ class FileSource {
  public:
   bool Open(std::string const& path, Result& result) {
     std::error_code ec;
-    auto const fileSize = std::filesystem::file_size(path, ec);
+    auto const fileSize = std::filesystem::file_size(Utf8Path(path), ec);
     if (ec) {
       result.status = Status::SourceUnreadable;
       result.message = "could not stat '" + path + "'";
       return false;
     }
-    _stream.open(path, std::ios::binary);
+    _stream.open(Utf8Path(path), std::ios::binary);
     if (!_stream.is_open()) {
       result.status = Status::SourceUnreadable;
       result.message = "could not open '" + path + "'";
@@ -971,7 +971,7 @@ bool WriteConverted(std::string const& destPath, ArchiveHeader const& header,
   }
 
   std::error_code ec;
-  auto const parent = std::filesystem::path(destPath).parent_path();
+  auto const parent = Utf8Path(destPath).parent_path();
   if (!parent.empty()) std::filesystem::create_directories(parent, ec);
 
   // Write to a scratch name and rename into place, so a conversion that is cut
@@ -979,10 +979,10 @@ bool WriteConverted(std::string const& destPath, ArchiveHeader const& header,
   // truncated file that a later run would treat as a finished, cached bundle.
   std::string const tempPath = destPath + ".part";
   ec.clear();
-  std::filesystem::remove(tempPath, ec);
+  std::filesystem::remove(Utf8Path(tempPath), ec);
 
   {
-    std::ofstream os(tempPath, std::ios::binary | std::ios::trunc);
+    std::ofstream os(Utf8Path(tempPath), std::ios::binary | std::ios::trunc);
     if (!os.is_open()) {
       result.status = Status::DestUnwritable;
       result.message = "could not open '" + tempPath + "' for writing";
@@ -994,7 +994,7 @@ bool WriteConverted(std::string const& destPath, ArchiveHeader const& header,
     if (!os.good()) {
       os.close();
       ec.clear();
-      std::filesystem::remove(tempPath, ec);
+      std::filesystem::remove(Utf8Path(tempPath), ec);
       result.status = Status::DestUnwritable;
       result.message = "write to '" + tempPath + "' failed (out of space?)";
       return false;
@@ -1002,10 +1002,10 @@ bool WriteConverted(std::string const& destPath, ArchiveHeader const& header,
   }
 
   ec.clear();
-  std::filesystem::rename(tempPath, destPath, ec);
+  std::filesystem::rename(Utf8Path(tempPath), Utf8Path(destPath), ec);
   if (ec) {
     ec.clear();
-    std::filesystem::remove(tempPath, ec);
+    std::filesystem::remove(Utf8Path(tempPath), ec);
     result.status = Status::DestUnwritable;
     result.message = "could not move the converted bundle into '" + destPath + "'";
     return false;
@@ -1077,8 +1077,8 @@ std::string BuildTargetName(int32_t target) {
 
 bool IsUnityBundleFile(std::string const& path) {
   std::error_code ec;
-  if (!std::filesystem::is_regular_file(path, ec) || ec) return false;
-  std::ifstream in(path, std::ios::binary);
+  if (!std::filesystem::is_regular_file(Utf8Path(path), ec) || ec) return false;
+  std::ifstream in(Utf8Path(path), std::ios::binary);
   if (!in.is_open()) return false;
   char signature[8] = {};
   if (!in.read(signature, sizeof(signature))) return false;

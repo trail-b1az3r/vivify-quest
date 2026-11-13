@@ -11,6 +11,30 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.14] - 2026-11-13
+
+The mod itself is unchanged apart from file paths (below), and not tried on a headset.
+
+### Added
+- **The converter as a standalone library** (`converter/`), for other Beat Saber
+  Unity projects and tools. It builds from the mod's own converter sources, so
+  it converts exactly as the mod does on the headset. It comes in four forms:
+  - **Unity Editor package**: **Vivify > Quest Converter** converts a PC bundle into
+    `bundleAndroid2021.vivify` from inside a map's Unity project, and
+    `VivifyQuestConverter.ConvertForQuest(...)` does the same from a build script.
+    A map that ships that file needs no conversion on the headset.
+  - **Command-line tool**: `vivify-convert`.
+  - **C API**: `vivify_convert.h`, usable from any language with a C FFI.
+  - **CMake target**: for `add_subdirectory`.
+- **Converter library** workflow: builds the library for Windows, Linux and macOS,
+  runs a smoke test of the C API on each, and assembles the Unity package as an
+  artifact.
+
+### Changed
+- On Windows, the converter now opens and writes file paths as UTF-8, so a
+  folder name with non-ASCII characters works there as well. Android builds
+  are unaffected.
+
 ## [0.15.13] - 2026-11-13
 
 Not tried on a headset.
