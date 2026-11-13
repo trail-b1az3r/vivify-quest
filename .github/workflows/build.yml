@@ -18,6 +18,10 @@ on:
         type: boolean
         required: false
         default: false
+      release_name:
+        description: 'Title for the release (optional, defaults to "Vivify <version>"), e.g. "Vivify 0.15.8 - full"'
+        required: false
+        default: ''
       dependency_source:
         description: 'Where to resolve dependencies from'
         type: choice
@@ -237,7 +241,7 @@ jobs:
         # A tag push releases under the tag that was pushed; a manual run tags
         # from the version, creating the tag if it does not exist yet.
         tag_name: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) && github.ref_name || format('v{0}', steps.mod_version.outputs.version) }}
-        name: Vivify ${{ steps.mod_version.outputs.version }}
+        name: ${{ github.event.inputs.release_name != '' && github.event.inputs.release_name || format('Vivify {0}', steps.mod_version.outputs.version) }}
         generate_release_notes: true
         body: |
           Personal Quest build of Vivify (merge of axo-lotl/Vivifhy-Quest,

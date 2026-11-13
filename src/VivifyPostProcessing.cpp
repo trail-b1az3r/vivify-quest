@@ -6,6 +6,8 @@
 #include "UnityEngine/Rendering/TextureDimension.hpp"
 #include "UnityEngine/RenderTextureDescriptor.hpp"
 #include "UnityEngine/HideFlags.hpp"
+#include "UnityEngine/Matrix4x4.hpp"
+#include "UnityEngine/Camera.hpp"
 #include "UnityEngine/Color32.hpp"
 #include "UnityEngine/Rect.hpp"
 #include "UnityEngine/RenderTextureFormat.hpp"
@@ -1566,6 +1568,58 @@ void Runtime::RestoreMainCameraOriginals() {
   _mainCamOriginalClearFlags.reset();
   _mainCamOriginalBackgroundColor.reset();
   _addedMainCamLayers = 0;
+  RestoreFieldOfView();
+}
+
+// Field Of View % (0.15.12): during a Vivify map the main camera's two eye
+// projections are widened by this factor, the way a flat game's FOV slider
+// works. Each eye's picture then holds more of the scene, shown smaller, so a
+// map's effects that sit at the edge of a narrower headset's view come into
+// it. The scene no longer matches head movement exactly, which some players
+// feel; 100 % leaves the projection as the headset gives it. Culling is
+// widened with it, or what the wider view takes in would not be drawn.
+namespace {
+UnityEngine::Matrix4x4 ScaledXY(UnityEngine::Matrix4x4 m, float sx, float sy) {
+  m.m00 *= sx; m.m01 *= sx; m.m02 *= sx; m.m03 *= sx;
+  m.m10 *= sy; m.m11 *= sy; m.m12 *= sy; m.m13 *= sy;
+  return m;
+}
+}  // namespace
+
+void Runtime::ApplyFieldOfView(UnityEngine::Camera* mainCam) {
+  int const percent = GetFieldOfViewPercent();
+  bool const wanted = percent > 100 && _currentBeatmapData != nullptr && !_isResetting && IsAlive(mainCam);
+  if (!wanted) {
+    if (_fovCamera != nullptr) RestoreFieldOfView();
+    return;
+  }
+  if (_fovCamera != mainCam || _fovAppliedPercent != percent) {
+    if (_fovCamera != nullptr) RestoreFieldOfView();
+    mainCam->ResetStereoProjectionMatrices();
+    float const scale = 100.0f / static_cast<float>(percent);
+    for (int eye = 0; eye < 2; eye++) {
+      auto const which = UnityEngine::Camera_StereoscopicEye(eye);
+      auto projection = mainCam->GetStereoProjectionMatrix(which);
+      if (eye == 0) _fovLeftProjection = ScaledXY(projection, scale, scale);
+      mainCam->SetStereoProjectionMatrix(which, ScaledXY(projection, scale, scale));
+    }
+    _fovCamera = mainCam;
+    _fovAppliedPercent = percent;
+    PaperLogger.info("Vivify field of view: {}% for this map", percent);
+  }
+  // Both eyes' widened views, from the head: the left eye's, widened a
+  // further quarter sideways to take in the right eye's too.
+  mainCam->set_cullingMatrix(UnityEngine::Matrix4x4::op_Multiply(ScaledXY(_fovLeftProjection, 0.8f, 1.0f),
+                                                                 mainCam->get_worldToCameraMatrix()));
+}
+
+void Runtime::RestoreFieldOfView() {
+  if (IsAlive(_fovCamera)) {
+    _fovCamera->ResetStereoProjectionMatrices();
+    _fovCamera->ResetCullingMatrix();
+  }
+  _fovCamera = nullptr;
+  _fovAppliedPercent = 0;
 }
 
 void Runtime::RestoreFarCulling(UnityEngine::Camera* mainCam) {
@@ -1650,6 +1704,8 @@ void Runtime::RefreshCameraComponents(bool allowCameraApplier) {
                        missing);
     }
   }
+
+  ApplyFieldOfView(mainCamPtr);
 
   if (IsAlive(mainCamPtr)) {
     static int sLastLoggedCullingMask = -2;
