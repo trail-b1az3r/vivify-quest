@@ -41,6 +41,7 @@
 
 #include <cstdint>
 #include <map>
+#include <set>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -313,6 +314,12 @@ struct ShaderObject {
   // m_ParsedForm.m_Name, the shader's real name ("Custom/Foo"), when the walk
   // reached it.
   std::string parsedFormName;
+  // Named GrabPass render textures, read from each pass's m_TextureName.
+  std::vector<std::string> grabTextures;
+  // Length-prefixed shader-name strings, file absolute. Used to isolate
+  // experimental shader donors from the process-wide Shader.Find registry.
+  size_t parsedFormNameStringOffset = 0;
+  size_t objectNameStringOffset = 0;
   // Where each keyword name's length field sits in the file, parallel to
   // keywordNames (0 where not seen), so a name can be rewritten in place.
   std::vector<size_t> keywordNameFileOffsets;
@@ -320,6 +327,8 @@ struct ShaderObject {
   std::map<std::pair<int32_t, int32_t>, std::map<int32_t, std::string>> passNames;
   // The SerializedProgramParameters layout, for ParseParameterBlob.
   std::vector<ParameterSchemaNode> parameterSchema;
+  bool materialPropertiesRead = false;
+  std::set<std::string> floatMaterialProperties;
   // Every object reference (PPtr: m_FileID then m_PathID) outside
   // m_ParsedForm -- m_Dependencies, m_NonModifiableTextures -- as the file
   // offset of its m_FileID. A body moved into another file has to have these
@@ -408,6 +417,17 @@ struct ObjectEdit {
   int64_t pathID = 0;
   std::vector<uint8_t> body;
 };
+
+// Adds private lookup entries for local material/shader dependencies already
+// reachable through authored assets' preload ranges. Objects and authored references
+// are preserved. Unknown container layouts are declined without edits.
+struct RenderDependencyEntries {
+  bool ok = true;
+  int added = 0;
+  std::vector<ObjectEdit> edits;
+};
+RenderDependencyEntries ExposeRenderDependencies(uint8_t const* data, size_t size,
+                                                std::vector<int64_t> const& translatedShaders);
 
 struct RewriteResult {
   bool ok = false;
@@ -532,6 +552,15 @@ struct FileReport {
   int32_t textureObjectCount = 0;
   std::vector<ShaderObject> shaders;
   std::vector<TextureObject> textures;
+  struct MaterialFeatures {
+    int64_t shaderPathID = 0;
+    std::map<std::string, float> floats;
+  };
+  // Optional conservative proof input. Unknown components, non-transform
+  // animation bindings, external material references or unreadable records
+  // invalidate the proof rather than authorizing a specialization.
+  bool immutableMaterialSafetyRead = false;
+  std::vector<MaterialFeatures> materialFeatures;
   std::string unityVersion;
   std::string message;
 };
@@ -540,6 +569,6 @@ struct FileReport {
 //
 // Returns isSerializedFile=false for a node that is not a serialized file at
 // all, which is normal: bundles carry raw .resS/.resource payload nodes too.
-FileReport InspectSerializedFile(uint8_t const* data, size_t size);
+FileReport InspectSerializedFile(uint8_t const* data, size_t size, bool inspectMaterialSafety = false);
 
 }  // namespace SerializedFileParse

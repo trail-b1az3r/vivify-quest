@@ -31,6 +31,8 @@ add_compile_definitions(MOD_ID="${CMAKE_PROJECT_NAME}")
 add_compile_definitions(VERSION="${CMAKE_PROJECT_VERSION}")
 # Linked into the library by src/VivifyAudioLinkBundle.cpp (.incbin).
 add_compile_definitions(VIVIFY_AUDIOLINK_BUNDLE="${CMAKE_CURRENT_SOURCE_DIR}/assets/audiolink/AudioLink.bundle")
+add_compile_definitions(VIVIFY_DEPTH_BUNDLE="${CMAKE_CURRENT_SOURCE_DIR}/assets/depth/DepthBlitQuest.bundle")
+set_property(SOURCE src/VivifyDepthCopy.cpp APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/assets/depth/DepthBlitQuest.bundle")
 # The lite build (VIVIFY_LITE=1 in the environment, set by build.yml for the
 # lite QMOD) keeps 0.14.7's feature set; see include/main.hpp.
 #
@@ -72,6 +74,21 @@ add_library(
 	${c_file_list}
 )
 
+# Local diagnostics are excluded from distributable builds. Gameplay control
+# additionally requires its own explicit opt-in, authorized for regression tests.
+option(VIVIFY_MENU_DIAGNOSTICS "Enable file-triggered menu bundle diagnostics" OFF)
+option(VIVIFY_GAMEPLAY_DIAGNOSTICS "Enable explicitly authorized bounded practice runs (diagnostic builds only)" OFF)
+if(VIVIFY_GAMEPLAY_DIAGNOSTICS AND NOT VIVIFY_MENU_DIAGNOSTICS)
+  message(FATAL_ERROR "Gameplay diagnostics require the separate menu diagnostic build")
+endif()
+if(VIVIFY_MENU_DIAGNOSTICS)
+  target_sources(${CMAKE_PROJECT_NAME} PRIVATE tools/separate-eye/menu_diagnostics.cpp)
+  set_property(SOURCE src/VivifyComponents.cpp APPEND PROPERTY COMPILE_DEFINITIONS VIVIFY_MENU_DIAGNOSTICS=1)
+  if(VIVIFY_GAMEPLAY_DIAGNOSTICS)
+    set_property(SOURCE tools/separate-eye/menu_diagnostics.cpp APPEND PROPERTY COMPILE_DEFINITIONS VIVIFY_GAMEPLAY_DIAGNOSTICS=1)
+  endif()
+endif()
+
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE -llog -lz)
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${INCLUDE_DIR})
@@ -80,6 +97,15 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${SHARED_DIR})
 # beatsaber hook inline hook
 RECURSE_FILES(src_inline_hook_beatsaber_hook_local_extra_c ${EXTERN_DIR}/includes/beatsaber-hook/shared/inline-hook/*.c)
 RECURSE_FILES(src_inline_hook_beatsaber_hook_local_extra_cpp ${EXTERN_DIR}/includes/beatsaber-hook/shared/inline-hook/*.cpp)
+
+set(vivify_hook_dir "${EXTERN_DIR}/includes/beatsaber-hook/shared/inline-hook")
+set(vivify_fixed_hook "${CMAKE_CURRENT_BINARY_DIR}/generated/And64InlineHook.cpp")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${vivify_hook_dir}/And64InlineHook.cpp")
+include(cmake/FixArm64Relocator.cmake)
+vivify_fix_arm64_relocator("${vivify_hook_dir}/And64InlineHook.cpp" "${vivify_fixed_hook}")
+list(REMOVE_ITEM src_inline_hook_beatsaber_hook_local_extra_cpp "${vivify_hook_dir}/And64InlineHook.cpp")
+target_sources(${COMPILE_ID} PRIVATE "${vivify_fixed_hook}")
+target_include_directories(${COMPILE_ID} PRIVATE "${vivify_hook_dir}")
 
 target_sources(${COMPILE_ID} PRIVATE ${src_inline_hook_beatsaber_hook_local_extra_c})
 target_sources(${COMPILE_ID} PRIVATE ${src_inline_hook_beatsaber_hook_local_extra_cpp})

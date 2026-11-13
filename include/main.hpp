@@ -27,6 +27,8 @@ inline constexpr bool kLiteBuild = false;
 #include "_config.hpp"
 Configuration &getConfig();
 bool GetMultipassRenderingEnabled();
+bool GetExperimentalSeparateEye();
+bool GetUniformTriangleTessellation();
 bool GetVivifyDebugLogging();
 bool GetDisableBeat0FilmgrainBlit();
 bool GetDisableAllBlits();
@@ -83,6 +85,8 @@ bool GetBlitScreenTextureFix();
 bool GetPrepareShadersBeforePlaying();
 // Draw geometry-shader effects without their geometry stage (opt-in, 0.14.17).
 bool GetDrawGeometryShaderEffects();
+// Conservative chart proof, shared by every main/helper/donor conversion.
+namespace Vivify { bool MapAllowsImmutableMaterialFeatures(std::string const& sourceBundlePath); }
 // Whether a shader a map's Quest bundle shipped empty is replaced by the PC
 // build of it, converted (VivifyAssets.cpp).
 bool GetUsePcShadersForEmptyShaders();

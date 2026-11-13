@@ -1,6 +1,9 @@
 #include "VivifyRuntimeInternal.hpp"
+#include "VivifySeparateEye.hpp"
 #include "VivifyComponents.hpp"
 #include "VivifyAudioLink.hpp"
+#include "VivifyRenderTextureDescriptor.hpp"
+#include "VivifyTextureBindings.hpp"
 #include "UnityEngine/Renderer.hpp"
 #include "UnityEngine/Matrix4x4.hpp"
 // Defines SaberMovementData's interface conversion that InitFromSaber calls;
@@ -12,11 +15,42 @@ DEFINE_TYPE(Vivify, FollowedSaberTrail);
 DEFINE_TYPE(Vivify, RuntimeBehaviour);
 DEFINE_TYPE(Vivify, MultipassKeywordController);
 DEFINE_TYPE(Vivify, CameraApplier);
+DEFINE_TYPE(Vivify, SeparateEyeCapture);
 DEFINE_TYPE(Vivify, SingleViewCameraShaders);
 DEFINE_TYPE(Vivify, CullingCameraController);
 DEFINE_TYPE(Vivify, SecondaryCameraController);
 
 namespace Vivify {
+
+GlobalNamespace::BloomPrePass* SyncCameraBloom(UnityEngine::Camera* sourceCamera, UnityEngine::Camera* target,
+                                             GlobalNamespace::BloomPrePass* previous, bool inheritEnabled) {
+  if (!IsManagedAlive(sourceCamera) || !IsManagedAlive(target)) return previous;
+  auto* source = sourceCamera->GetComponent<GlobalNamespace::BloomPrePass*>();
+  auto* copy = IsManagedAlive(previous) ? previous : target->GetComponent<GlobalNamespace::BloomPrePass*>();
+  if (!IsManagedAlive(source)) {
+    if (IsManagedAlive(copy)) copy->set_enabled(false);
+    return copy;
+  }
+  bool const enabled = inheritEnabled ? source->get_enabled() : (!IsManagedAlive(copy) || copy->get_enabled());
+  bool const changed = IsManagedAlive(copy) &&
+      (copy->____bloomPrepassRenderer != source->____bloomPrepassRenderer ||
+       copy->____bloomPrePassEffectContainer != source->____bloomPrePassEffectContainer ||
+       copy->____bloomPrePassRenderData != source->____bloomPrePassRenderData);
+  if (changed) { copy->set_enabled(false); UnityEngine::Object::Destroy(copy); copy = nullptr; }
+  if (!IsManagedAlive(copy)) {
+    // The same serialized fields PC Vivify copies onto LateBloomPrePass.
+    // Quest 1.40.8 initializes in LazyInit, so supplying them before its
+    // first OnPreRender preserves a private _renderData and render texture.
+    copy = target->get_gameObject()->AddComponent<GlobalNamespace::BloomPrePass*>();
+    copy->set_enabled(false);
+    copy->____bloomPrepassRenderer = source->____bloomPrepassRenderer;
+    copy->____bloomPrePassEffectContainer = source->____bloomPrePassEffectContainer;
+    copy->____bloomPrePassRenderData = source->____bloomPrePassRenderData;
+  }
+  copy->____mode = source->____mode;
+  copy->set_enabled(enabled);
+  return copy;
+}
 
 namespace {
 inline int StereoActiveEyePropertyId() {
@@ -227,20 +261,21 @@ namespace {
 
 constexpr int kCullingLayer = 22;
 
-bool HasSecondaryCameraController(UnityEngine::MonoBehaviour* self) {
+bool HasOwnedCullingScope(UnityEngine::MonoBehaviour* self) {
   auto go = self->get_gameObject();
   if (!IsManagedAlive(go.unsafePtr())) return false;
-  return go->GetComponent<SecondaryCameraController*>() != nullptr;
+  return go->GetComponent<SecondaryCameraController*>() != nullptr ||
+         go->GetComponent<SingleViewCameraShaders*>() != nullptr;
 }
 }
 
 void CullingCameraController::OnPreCull() {
-  if (HasSecondaryCameraController(this)) return;
+  if (HasOwnedCullingScope(this)) return;
   CullingPreCull();
 }
 
 void CullingCameraController::OnPostRender() {
-  if (HasSecondaryCameraController(this)) return;
+  if (HasOwnedCullingScope(this)) return;
   CullingPostRender();
 }
 
@@ -306,21 +341,20 @@ void SecondaryCameraController::OnPreCull() {
   auto mainCam = UnityEngine::Camera::get_main();
   auto* other = mainCam.unsafePtr();
   if (IsManagedAlive(other) && other != camera) {
+    SyncCameraBloom(other, camera, nullptr, false);
 
-    if (camera->get_cullingMask() != other->get_cullingMask() ||
-        camera->get_fieldOfView() != other->get_fieldOfView() ||
-        camera->get_nearClipPlane() != other->get_nearClipPlane() ||
-        camera->get_farClipPlane() != other->get_farClipPlane()) {
-      camera->set_stereoTargetEye(other->get_stereoTargetEye());
-      camera->set_fieldOfView(other->get_fieldOfView());
-      camera->set_aspect(other->get_aspect());
-      camera->set_depth(other->get_depth() - 1.0f);
-      camera->set_nearClipPlane(other->get_nearClipPlane());
-      camera->set_farClipPlane(other->get_farClipPlane());
-      camera->set_layerCullDistances(other->get_layerCullDistances());
-      camera->set_targetTexture(nullptr);
-      camera->set_cullingMask(other->get_cullingMask());
-    }
+    // Match PC RefreshCamera: aspect, eye target, depth or culling distances
+    // can change without changing the mask/FOV/clips. Refresh every copied
+    // property so secondary color/depth captures never keep that stale state.
+    camera->set_stereoTargetEye(other->get_stereoTargetEye());
+    camera->set_fieldOfView(other->get_fieldOfView());
+    camera->set_aspect(other->get_aspect());
+    camera->set_depth(other->get_depth() - 1.0f);
+    camera->set_nearClipPlane(other->get_nearClipPlane());
+    camera->set_farClipPlane(other->get_farClipPlane());
+    camera->set_layerCullDistances(other->get_layerCullDistances());
+    camera->set_targetTexture(nullptr);
+    camera->set_cullingMask(other->get_cullingMask());
     auto transform = get_transform();
     if (IsManagedAlive(transform.unsafePtr())) {
       transform->set_localPosition(UnityEngine::Vector3::get_zero());
@@ -366,16 +400,6 @@ UnityEngine::RenderTexture* SecondaryCameraController::EnsureEyeTexture(
     std::unordered_map<int, UnityEngine::RenderTexture*>& textures, int eye, UnityEngine::RenderTexture* src,
     bool depth) {
   if (!IsManagedAlive(src)) return nullptr;
-  auto it = textures.find(eye);
-  UnityEngine::RenderTexture* tex = (it != textures.end()) ? it->second : nullptr;
-  bool const mismatch = !IsManagedAlive(tex) || tex->get_width() != src->get_width() ||
-                        tex->get_height() != src->get_height() || tex->get_vrUsage() != src->get_vrUsage();
-  if (!mismatch) return tex;
-
-  if (IsManagedAlive(tex)) {
-    tex->Release();
-    UnityEngine::Object::Destroy(tex);
-  }
   auto descriptor = src->get_descriptor();
   descriptor.set_msaaSamples(1);
   if (depth) {
@@ -384,10 +408,29 @@ UnityEngine::RenderTexture* SecondaryCameraController::EnsureEyeTexture(
                                    : UnityEngine::RenderTextureFormat::ARGBHalf);
     descriptor.set_depthBufferBits(0);
   }
+  auto const requested = RenderTexturePolicy::Describe(descriptor);
+  auto& allocations = depth ? _depthAllocations : _colorAllocations;
+  auto it = textures.find(eye);
+  UnityEngine::RenderTexture* tex = it == textures.end() ? nullptr : it->second;
+  auto allocation = allocations.find(eye);
+  std::optional<RenderTexturePolicy::Descriptor> prior;
+  if (allocation != allocations.end()) prior = allocation->second;
+  bool const alive = IsManagedAlive(tex);
+  if (!RenderTexturePolicy::NeedsAllocation(prior, requested, alive, alive && tex->IsCreated())) return tex;
+  // Reallocation is also a release path. Do not leave the retired image bound
+  // if replacement allocation fails, or erase a different camera's binding.
+  auto const key = depth ? depthKey : colorKey;
+  if (key) ClearOwnedTextureBinding(*key, tex);
+  if (alive) {
+    tex->Release();
+    UnityEngine::Object::Destroy(tex);
+  }
+  textures.erase(eye); allocations.erase(eye);
   tex = UnityEngine::RenderTexture::New_ctor(descriptor);
   if (!IsManagedAlive(tex)) return nullptr;
-  tex->Create();
+  if (!tex->Create()) { UnityEngine::Object::Destroy(tex); return nullptr; }
   textures[eye] = tex;
+  allocations[eye] = requested;
   return tex;
 }
 
@@ -397,35 +440,35 @@ void SecondaryCameraController::OnRenderImage(UnityEngine::RenderTexture* src, U
 
   if (colorKey.has_value()) {
     if (auto* tex = EnsureEyeTexture(colorTextures, stereoActiveEye, src, false); IsManagedAlive(tex)) {
-      UnityEngine::Graphics::Blit(src, tex);
+      if (!Runtime::Instance().RenderSecondaryCameraMainEffect(camera, src, tex)) UnityEngine::Graphics::Blit(src, tex);
     }
   }
 
   if (depthKey.has_value()) {
     if (auto* tex = EnsureEyeTexture(depthTextures, stereoActiveEye, src, true); IsManagedAlive(tex)) {
-      // Copy the camera's depth texture into the RFloat target. Upstream does
-      // this with its own DepthBlit shader, which is shipped as a Windows-built
-      // AssetBundle and so cannot be reused here; BuiltinRenderTextureType::Depth
-      // names the same source and the default blit copies it without needing a
-      // shader of our own.
-      auto* cb = Runtime::Instance().ImmediateCommandBuffer();
-      if (cb != nullptr) {
-        UnityEngine::Rendering::RenderTargetIdentifier depthSource{};
-        depthSource._ctor(UnityEngine::Rendering::BuiltinRenderTextureType::Depth);
-        UnityEngine::Rendering::RenderTargetIdentifier depthTarget =
-            UnityEngine::Rendering::RenderTargetIdentifier::op_Implicit___UnityEngine__Rendering__RenderTargetIdentifier(
-                static_cast<UnityEngine::Texture*>(tex));
-        cb->Blit(depthSource, depthTarget);
-        UnityEngine::Graphics::ExecuteCommandBuffer(cb);
-        cb->Clear();
-      }
+      Runtime::Instance().CaptureSecondaryDepth(tex);
     }
   }
 
-  UnityEngine::Graphics::Blit(src, dest);
+  // PC's capture controller writes its named textures, not the headset target.
+  // Copying this scene into dest adds a full-screen pass and leaks the capture
+  // into a main camera that clears only depth (or does not clear at all).
+  (void)dest;
+}
+
+void SecondaryCameraController::ReleaseGlobalBindings() {
+  auto clear = [](std::optional<int> key, auto const& textures) {
+    if (!key) return;
+    for (auto const& [_, texture] : textures)
+      if (ClearOwnedTextureBinding(*key, texture)) break;
+  };
+  clear(colorKey, colorTextures);
+  clear(depthKey, depthTextures);
 }
 
 void SecondaryCameraController::OnDestroy() {
+  ReleaseGlobalBindings();
+  _colorAllocations.clear(); _depthAllocations.clear();
   for (auto* textures : {&colorTextures, &depthTextures}) {
     for (auto& [eye, tex] : *textures) {
       if (IsManagedAlive(tex)) {
@@ -456,7 +499,15 @@ void MultipassKeywordController::OnDisable() {
   SetMultipassShaderState(false);
 }
 
+#ifdef VIVIFY_MENU_DIAGNOSTICS
+void PollMenuDiagnostics();
+#endif
+
 void RuntimeBehaviour::Update() {
+#ifdef VIVIFY_MENU_DIAGNOSTICS
+  PollMenuDiagnostics();
+#endif
+  Runtime::Instance().ValidateFixedMaterialFeatures();
   // Before the runtime's own update, which returns early in the menu and when
   // its watchdog stands down; AudioLink has to run regardless (song previews).
   try {
@@ -477,6 +528,7 @@ void RuntimeBehaviour::Update() {
   try {
     Runtime::Instance().PollBlitCompanion();
     Runtime::Instance().PollBlitCompanionPrefabs();
+    SeparateEye::Poll();
   } catch (...) {
     static int reported = 0;
     if (reported++ < 3) PaperLogger.error("Vivify Blit companion update threw");
@@ -488,28 +540,45 @@ void RuntimeBehaviour::OnDestroy() {
   Runtime::Instance().OnBehaviourDestroyed(this);
 }
 
+void SingleViewCameraShaders::OnPreCull() {
+  if (auto* culling = GetComponent<CullingCameraController*>(); IsManagedAlive(culling)) culling->CullingPreCull();
+  Runtime::Instance().ValidateFixedMaterialFeatures();
+  if (!_separateEyeScope) _separateEyeScope = SeparateEye::BeginTextureCamera(this, GetComponent<UnityEngine::Camera*>());
+}
+
 void SingleViewCameraShaders::OnPreRender() {
-  if (GetSingleViewMapCameras()) Runtime::Instance().BeginSingleViewCamera();
+  if (!_separateEyeScope && !_legacyScope && GetSingleViewMapCameras()) {
+    Runtime::Instance().BeginSingleViewCamera();
+    _legacyScope = true;
+  }
 }
 
 void SingleViewCameraShaders::OnPostRender() {
-  Runtime::Instance().EndSingleViewCamera();
+  if (_separateEyeScope) SeparateEye::EndTextureCamera(this);
+  if (_legacyScope) Runtime::Instance().EndSingleViewCamera();
+  _separateEyeScope = _legacyScope = false;
+  if (auto* culling = GetComponent<CullingCameraController*>(); IsManagedAlive(culling)) culling->CullingPostRender();
 }
 
 void SingleViewCameraShaders::OnDisable() {
-  Runtime::Instance().EndSingleViewCamera();
+  OnPostRender();
+}
+
+void SeparateEyeCapture::OnRenderImage(UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest) {
+  SeparateEye::RenderEyeImage(GetComponent<UnityEngine::Camera*>(), src, dest);
 }
 
 void CameraApplier::OnPreCull() {
+  Runtime::Instance().ValidateFixedMaterialFeatures();
 
   Runtime::Instance().RestoreSecondaryCullingLayers();
+  if (cameraName == "_Main") SeparateEye::PrepareFrame(GetComponent<UnityEngine::Camera*>(), this);
 }
 
 void CameraApplier::OnPreRender() {
 
   auto& runtime = Runtime::Instance();
   runtime.BindSecondaryCameraTextures();
-  runtime.ApplySecondaryCameraMainEffects(mainEffectController);
 
   auto go = get_gameObject();
   auto* camera = IsManagedAlive(go.unsafePtr()) ? go->GetComponent<UnityEngine::Camera*>() : nullptr;
@@ -517,10 +586,29 @@ void CameraApplier::OnPreRender() {
 }
 
 void CameraApplier::OnPostRender() {
+  if (cameraName == "_Main") SeparateEye::RestoreMainCamera(GetComponent<UnityEngine::Camera*>());
   Runtime::Instance().RemoveMidRenderCommandBuffers();
 }
 
+void CameraApplier::OnDisable() {
+  if (cameraName == "_Main") SeparateEye::CancelFrame();
+}
+
 void CameraApplier::OnRenderImage(UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest) {
+  auto& runtime = Runtime::Instance();
+  if (cameraName == "_Main" && GetExperimentalSeparateEye()) {
+    auto go = get_gameObject();
+    auto* camera = IsManagedAlive(go.unsafePtr()) ? go->GetComponent<UnityEngine::Camera*>() : nullptr;
+    if (SeparateEye::TryRender(camera, src, this)) {
+      runtime.CacheMainRenderDescriptor(src);
+      runtime.ApplyBlits(src, dest, cameraName, -1);
+      return; // both eye images already include pre/main/post effects
+    }
+  }
+  RenderEffects(src, dest);
+}
+
+void CameraApplier::RenderEffects(UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest) {
   auto& runtime = Runtime::Instance();
   runtime.CacheMainRenderDescriptor(src);
   if (hasMainEffect && IsManagedAlive(mainEffectController) &&
@@ -528,47 +616,44 @@ void CameraApplier::OnRenderImage(UnityEngine::RenderTexture* src, UnityEngine::
       IsManagedAlive(mainEffectController->_mainEffectContainer)) {
     auto mainEffectSO = mainEffectController->_mainEffectContainer->get_mainEffect();
     if (mainEffectSO.ptr() != nullptr && IsManagedAlive(mainEffectSO) && mainEffectSO->get_hasPostProcessEffect()) {
+      auto renderMain = [&](UnityEngine::RenderTexture* from, UnityEngine::RenderTexture* to) {
+        mainEffectController->OnPreRender();
+        try { mainEffectSO->Render(from, to, mainEffectController->____fadeValue); }
+        catch (...) { mainEffectController->OnPostRender(); throw; }
+        mainEffectController->OnPostRender();
+      };
       if (runtime.IsResetting() || GetDisableAllBlits() ||
           (runtime.GetPreEffectsEmpty() && runtime.GetPostEffectsEmpty())) {
-        mainEffectController->OnPreRender();
-        mainEffectSO->Render(src, dest, mainEffectController->____fadeValue);
-        mainEffectController->OnPostRender();
+        renderMain(src, dest);
         return;
       }
       auto desc = src->get_descriptor();
       desc.set_msaaSamples(1);
       desc.set_depthBufferBits(0);
-      auto temp = UnityEngine::RenderTexture::GetTemporary(desc);
-      auto temp2 = UnityEngine::RenderTexture::GetTemporary(desc);
+      struct Temporary {
+        SafePtr<UnityEngine::RenderTexture> value;
+        explicit Temporary(UnityEngine::RenderTextureDescriptor descriptor) : value(UnityEngine::RenderTexture::GetTemporary(descriptor).unsafePtr()) {}
+        ~Temporary() { if (value && IsManagedAlive(value.ptr())) UnityEngine::RenderTexture::ReleaseTemporary(value.ptr()); }
+        UnityEngine::RenderTexture* unsafePtr() const { return value ? value.ptr() : nullptr; }
+      };
+      Temporary temp(desc), temp2(desc);
 
       bool const tempValid = IsManagedAlive(temp.unsafePtr());
       bool const temp2Valid = IsManagedAlive(temp2.unsafePtr());
 
       if (tempValid && temp2Valid) {
         runtime.ApplyBlits(src, temp.unsafePtr(), cameraName, 1);
-        mainEffectController->OnPreRender();
-        mainEffectSO->Render(temp.unsafePtr(), temp2.unsafePtr(), mainEffectController->____fadeValue);
-        mainEffectController->OnPostRender();
+        renderMain(temp.unsafePtr(), temp2.unsafePtr());
         runtime.ApplyBlits(temp2.unsafePtr(), dest, cameraName, 2);
       } else if (tempValid) {
         runtime.ApplyBlits(src, temp.unsafePtr(), cameraName, 1);
-        mainEffectController->OnPreRender();
-        mainEffectSO->Render(temp.unsafePtr(), dest, mainEffectController->____fadeValue);
-        mainEffectController->OnPostRender();
+        renderMain(temp.unsafePtr(), dest);
         runtime.ApplyBlits(dest, dest, cameraName, 2);
       } else {
-        mainEffectController->OnPreRender();
-        mainEffectSO->Render(src, dest, mainEffectController->____fadeValue);
-        mainEffectController->OnPostRender();
+        renderMain(src, dest);
         runtime.ApplyBlits(dest, dest, cameraName, 2);
       }
 
-      if (tempValid) {
-        UnityEngine::RenderTexture::ReleaseTemporary(temp.unsafePtr());
-      }
-      if (temp2Valid) {
-        UnityEngine::RenderTexture::ReleaseTemporary(temp2.unsafePtr());
-      }
       return;
     }
   }

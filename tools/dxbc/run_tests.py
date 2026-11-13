@@ -520,6 +520,39 @@ proc, fields, _, source = run("glsl", pixel_shader(body, temps=0))
 check("sample offset survives", "textureOffset(_MainTex, vs_TEXCOORD0.xy, ivec2(1, -2))" in source,
       source + fields.get("error", ""))
 
+# Offset overloads do not all use the same argument order. Bias follows the
+# offset, while explicit LOD precedes it. Shadow gathers put refZ before it.
+def texture_offset_instruction(opcode, *operands):
+    instruction = m.insn(opcode, *operands)
+    instruction = [instruction[0] | 0x80000000, offset_token] + instruction[1:]
+    instruction[0] = (instruction[0] & ~(0x7F << 24)) | (len(instruction) << 24)
+    return instruction
+
+
+for dimension, coordinates, offset in ((4, "xy", "ivec2(1, -2)"),
+                                       (5, "xyz", "ivec2(1, -2)"),
+                                       (8, "xyz", "ivec3(1, -2, 0)")):
+    for opcode, function, tail in ((74, "textureOffset", offset + ", 2.0"),
+                                    (SAMPLE_L, "textureLodOffset", "2.0, " + offset)):
+        body = texture_offset_instruction(opcode, m.dest(OUTPUT, 0), m.src(INPUT, 0),
+            m.src(RESOURCE, 0), m.src(SAMPLER_T, 0), m.imm_float(2.0))
+        proc, fields, _, source = run("glsl", pixel_shader(body, textures=(("_MainTex", dimension),), temps=0))
+        expected = f"{function}(_MainTex, vs_TEXCOORD0.{coordinates}, {tail})"
+        check(f"offset argument order opcode {opcode} shape {dimension}", fields.get("ok") == "1" and expected in source,
+              source + fields.get("error", ""))
+
+for dimension, coordinates in ((4, "xy"), (5, "xyz")):
+    for comparison in (False, True):
+        operands = [m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0), m.src(SAMPLER_T, 0)]
+        if comparison:
+            operands.append(m.imm_float(0.5))
+        body = texture_offset_instruction(126 if comparison else GATHER4, *operands)
+        proc, fields, _, source = run("glsl", pixel_shader(body, textures=(("_Tex", dimension),), temps=0))
+        tail = "0.5, ivec2(1, -2)" if comparison else "ivec2(1, -2), 0"
+        expected = f"textureGatherOffset(_Tex, vs_TEXCOORD0.{coordinates}, {tail})"
+        check(f"gather offset argument order comparison {comparison} shape {dimension}",
+              fields.get("ok") == "1" and expected in source, source + fields.get("error", ""))
+
 # nointerpolation on an input is not cosmetic: an integer varying interpolated
 # linearly arrives as garbage, which is why D3D marks those constant.
 body = m.insn(MOV, m.dest(OUTPUT, 0), m.src(INPUT, 0))
@@ -555,7 +588,66 @@ proc, fields, _, source = run("glsl", pixel_shader(body, textures=(("_ShadowMap"
 check("shadow sampler declared", "uniform highp sampler2DShadow _ShadowMap;" in source,
       source + fields.get("error", ""))
 check("comparison folds into the coordinate",
-      "texture(_ShadowMap, vec3(vs_TEXCOORD0.xy, _Color.x))" in source, source)
+      "textureLod(_ShadowMap, vec3(vs_TEXCOORD0.xy, _Color.x), 0.0)" in source, source)
+
+# A level-zero comparison cannot become an implicit derivative-based sample.
+# Validate both the 2D explicit-LOD and array/cube zero-gradient core overloads.
+for dimension, coordinates, tail in ((4, "xy", "0.0"),
+                                      (5, "xyz", "vec2(0.0), vec2(0.0)"),
+                                      (9, "xyz", "vec3(0.0), vec3(0.0)")):
+    for offset in (False, True):
+        if dimension == 9 and offset:
+            continue  # Cube offsets have no core overload.
+        for implicit in (False, True):
+            opcode = SAMPLE_C if implicit else SAMPLE_C_LZ
+            operands = (m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0),
+                        m.src(SAMPLER_T, 0), m.imm_float(0.5))
+            body = texture_offset_instruction(opcode, *operands) if offset else m.insn(opcode, *operands)
+            proc, fields, _, source = run("glsl", pixel_shader(body, textures=(("_Shadow", dimension),), temps=0))
+            function = "texture" if implicit else ("textureLod" if dimension == 4 else "textureGrad")
+            implicit_array_offset = implicit and dimension == 5 and offset
+            if implicit_array_offset: function = "textureGrad"
+            if offset: function += "Offset"
+            vector = "vec3" if dimension == 4 else "vec4"
+            expected = f"{function}(_Shadow, {vector}(vs_TEXCOORD0.{coordinates}, 0.5)"
+            if not implicit: expected += ", " + tail
+            elif implicit_array_offset: expected += ", dFdx(vs_TEXCOORD0.xy), dFdy(vs_TEXCOORD0.xy)"
+            if offset: expected += ", ivec2(1, -2)"
+            expected += ")"
+            check(f"shadow sample keeps LOD mode shape {dimension} offset {offset} implicit {implicit}",
+                  fields.get("ok") == "1" and expected in source, source + fields.get("error", ""))
+
+
+def comparison_vertex(body, dimension):
+    isgn = m.signature_chunk([{"name": "TEXCOORD", "index": 0, "register": 0}], b"ISGN")
+    osgn = m.signature_chunk([{"name": "SV_POSITION", "index": 0, "register": 0, "sv": 1}], b"OSGN")
+    rdef = rdef_with_texture([], 16, [("_Shadow", dimension)])
+    code = m.insn(DCL_GLOBAL_FLAGS, controls=1)
+    code += m.insn(DCL_INPUT, m.dest(INPUT, 0))
+    code += m.insn(DCL_OUTPUT_SIV, m.dest(OUTPUT, 0), extra=[1])
+    code += m.insn(DCL_RESOURCE, m.dest(RESOURCE, 0), extra=[0x5555])
+    code += m.insn(DCL_SAMPLER, m.dest(SAMPLER_T, 0))
+    return m.container([rdef, isgn, osgn, m.shex_chunk([code + body + m.insn(RET)], stage=1)])
+
+
+for dimension, offset, implicit in ((4, False, False), (4, True, False),
+                                     (5, False, False), (5, True, False),
+                                     (9, False, False), (5, True, True)):
+    opcode = SAMPLE_C if implicit else SAMPLE_C_LZ
+    operands = (m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0), m.src(SAMPLER_T, 0), m.imm_float(0.5))
+    body = texture_offset_instruction(opcode, *operands) if offset else m.insn(opcode, *operands)
+    proc, fields, _, source = run("glsl", comparison_vertex(body, dimension))
+    expected = "textureLod" if dimension == 4 else "textureGrad"
+    if offset: expected += "Offset"
+    check(f"nonfragment shadow base sampling shape {dimension} offset {offset} implicit {implicit}",
+          fields.get("ok") == "1" and expected + "(_Shadow" in source and "dFdx(" not in source and "dFdy(" not in source,
+          source + fields.get("error", ""))
+
+# Keep malformed comparisons out of GLSL rather than using the sampler as refZ.
+for opcode in (SAMPLE_C, SAMPLE_C_LZ, 126):
+    body = m.insn(opcode, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0), m.src(SAMPLER_T, 0))
+    proc, fields, _, source = run("glsl", pixel_shader(body, textures=(("_Shadow", 4),), temps=0))
+    check(f"comparison opcode {opcode} requires refZ", fields.get("ok") == "0", source)
 
 # gather4 is GLSL ES 3.10, so the version escalates on its own.
 body = m.insn(GATHER4, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0, (Y, Y, Y, Y)),
@@ -943,6 +1035,64 @@ check("eye-index pixel translates without multiview", fields.get("ok") == "1",
       fields.get("error", ""))
 check("eye index is 0 without multiview", "ivec4 vRTArrayIndex = ivec4(0)" in source,
       source)
+
+# Separate-eye geometry prototype: the right eye must not silently become
+# eye zero, and layer writes must not route into a missing array layer.
+for eye, side in enumerate(("left", "right")):
+    mode = "glsl-eye-" + side
+    for label, data in (("vertex", spi), ("geometry", geometry_layer(True)), ("fragment", eye_pixel)):
+        proc, fields, _, source = run(mode, data)
+        check(f"{side} eye {label} translates", fields.get("ok") == "1", fields.get("error", ""))
+        check(f"{side} eye {label} uses no multiview or layer routing",
+              "gl_ViewID_OVR" not in source and "num_views" not in source and "gl_Layer" not in source,
+              source)
+        if label == "vertex":
+            check(f"{side} eye SPI instance numbering", f"gl_InstanceID * 2 + {eye}" in source, source)
+        else:
+            check(f"{side} eye survives {label} input", f"ivec4 vRTArrayIndex = ivec4({eye});" in source, source)
+    proc, fields, _, source = run(mode + "-spi", instance_id_vertex())
+    check(f"{side} eye vertex feeding geometry keeps its logical eye",
+          fields.get("ok") == "1" and f"gl_InstanceID * 2 + {eye}" in source, source)
+    proc, fields, _, source = run(mode, vertex)
+    check(f"{side} eye non-SPI vertex keeps normal instancing",
+          fields.get("ok") == "1" and "gl_InstanceID * 2" not in source, source)
+    for stage in (3, 4):
+        unsupported = m.container([m.shex_chunk([m.insn(RET)], stage=stage)])
+        proc, fields, _, source = run(mode, unsupported)
+        check(f"{side} eye still refuses tessellation stage {stage}",
+              fields.get("ok") == "0" and "tessellation" in fields.get("error", ""), fields)
+    # Legacy double-wide shaders read the eye from a constant buffer rather
+    # than from InstanceID. Both forms need the selected eye, without changing
+    # globals used by the game's notes or menu shaders.
+    uniform_eye = m.container([
+        globals_cbuffer([variable("unity_StereoEyeIndex", 0, 4, SCALAR_INT)], 16),
+        m.signature_chunk([{"name": "SV_Target", "register": 0, "sv": 64}], b"OSGN"),
+        m.shex_chunk([m.insn(ITOF, m.dest(OUTPUT, 0), m.src_cb(0, 0, (X, X, X, X))) + m.insn(RET)], stage=0)])
+    proc, fields, _, source = run(mode, uniform_eye)
+    check(f"{side} eye overrides a legacy eye uniform locally",
+          fields.get("ok") == "1" and f"unity_StereoEyeIndex = int({eye});" in source and
+          "uniform int unity_StereoEyeIndex" not in source, source or fields)
+
+# Camera-owned arrays become single-layer camera textures; actual asset arrays
+# retain their dimensions. Check fetch, gather, integer load and size queries.
+for side in ("left", "right"):
+    for name in ("_CameraDepthTexture", "_CameraDepthNormalsTexture", "_CameraMotionVectorsTexture", "_CameraOpaqueTexture", "_GrabTexture", "_MainTex", "_Atlas"):
+        code = pixel_shader(m.insn(SAMPLE, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0), m.src(SAMPLER_T, 0)), textures=((name, 5),))
+        for suffix in ("", "-blit"):
+            _, f, _, source = run("glsl-eye-" + side + suffix, code)
+            lowered = name not in ("_MainTex", "_Atlas") or (name == "_MainTex" and suffix == "-blit")
+            shape, coord = ("2D", "xy") if lowered else ("2DArray", "xyz")
+            check(f"{side}{suffix} {name} has correct texture shape", f.get("ok") == "1" and
+                  f"sampler{shape} {name};" in source and f"texture({name}, vs_TEXCOORD0.{coord})" in source, source or f)
+    operations = [
+        ("lod", m.insn(SAMPLE_L, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0), m.src(SAMPLER_T, 0), m.imm_float(0)), "textureLod(_CameraDepthTexture, vs_TEXCOORD0.xy, 0.0)"),
+        ("gather", m.insn(GATHER4, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0), m.src(SAMPLER_T, 0)), "textureGather(_CameraDepthTexture, vs_TEXCOORD0.xy, 0)"),
+        ("load", m.insn(LD, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0)), "texelFetch(_CameraDepthTexture, ivec2("),
+        ("size", m.insn(RESINFO, m.dest(OUTPUT, 0), m.imm_int(0), m.src(RESOURCE, 0), controls=1), "textureSize(_CameraDepthTexture, 0).y, 1, 1"),
+    ]
+    for label, body, expected in operations:
+        _, f, _, source = run("glsl-eye-" + side, pixel_shader(body, textures=(("_CameraDepthTexture", 5),)))
+        check(f"{side} mono camera array {label} preserves addressing", f.get("ok") == "1" and expected in source, source or f)
 
 glslang_enabled = False
 truncation_failures = 0

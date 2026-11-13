@@ -1,4 +1,5 @@
 #include "VivifySerializedFile.hpp"
+#include "VivifyMaterialSpecialization.hpp"
 
 #include <algorithm>
 #include <cstring>
@@ -6,6 +7,7 @@
 #include <map>
 #include <set>
 #include <tuple>
+#include <cmath>
 
 namespace SerializedFileParse {
 namespace {
@@ -487,13 +489,14 @@ struct Record {
   std::map<std::string, int64_t> ints;
   std::map<std::string, std::string> strings;
   std::map<std::string, std::vector<Record>> lists;
+  std::map<std::string, uint32_t> arrayLengths;
 };
 
 class RecordReader {
  public:
   RecordReader(Reader& reader, std::vector<ParameterSchemaNode> const& nodes,
-               std::vector<std::vector<size_t>> const& children)
-      : _reader(reader), _nodes(nodes), _children(children) {}
+               std::vector<std::vector<size_t>> const& children, uint32_t maxArrayElements = 1000000)
+      : _reader(reader), _nodes(nodes), _children(children), _maxArrayElements(maxArrayElements) {}
 
   // Reads nodes[index] into `into` under its own field name.
   void Read(size_t index, Record& into, int depth = 0) {
@@ -538,6 +541,8 @@ class RecordReader {
     if (kids.size() < 2) { _reader.skip(_reader.remaining()); return; }
     uint32_t const count = _reader.u32();
     if (!_reader.ok()) return;
+    if (count > _maxArrayElements) { _reader.skip(_reader.remaining()); (void)_reader.u8(); return; }
+    owner.arrayLengths[name] = count;
     size_t const dataIndex = kids[1];
     ParameterSchemaNode const& element = _nodes[dataIndex];
     if (element.byteSize > 0 && _children[dataIndex].empty()) {
@@ -573,6 +578,7 @@ class RecordReader {
   Reader& _reader;
   std::vector<ParameterSchemaNode> const& _nodes;
   std::vector<std::vector<size_t>> const& _children;
+  uint32_t _maxArrayElements;
 };
 
 std::vector<std::vector<size_t>> SchemaChildren(std::vector<ParameterSchemaNode> const& nodes) {
@@ -585,6 +591,83 @@ std::vector<std::vector<size_t>> SchemaChildren(std::vector<ParameterSchemaNode>
     open.push_back(i);
   }
   return children;
+}
+
+bool ReadMaterialSafetyRecord(uint8_t const* data, size_t size, SerializedTypeInfo const& type,
+                              int32_t classID, FileReport& report) {
+  if (type.nodes.empty()) return false;
+  std::vector<ParameterSchemaNode> schema;
+  for (auto const& node : type.nodes)
+    schema.push_back({node.level, node.typeFlags, node.byteSize, node.metaFlag, NodeName(type, node)});
+  auto const children = SchemaChildren(schema);
+  Reader reader(data, size);
+  Record record;
+  RecordReader records(reader, schema, children, 4096);
+  for (size_t child : children[0]) {
+    auto const& name = schema[child].name;
+    if ((classID == 21 && (name == "m_Shader" || name == "m_SavedProperties")) ||
+        (classID == 74 && (name == "m_ClipBindingConstant" || name == "m_FloatCurves" || name == "m_PPtrCurves" || name == "m_Events")))
+      records.Read(child, record);
+    else WalkNode(reader, type, child, nullptr, 1);
+    if (!reader.ok()) return false;
+  }
+  if (reader.remaining() > 3) return false;
+  auto one = [](Record const& r, char const* name) -> Record const* {
+    auto found = r.lists.find(name);
+    return found != r.lists.end() && found->second.size() == 1 ? &found->second[0] : nullptr;
+  };
+  if (classID == 21) {
+    auto shader = one(record, "m_Shader");
+    auto props = one(record, "m_SavedProperties");
+    if (!shader || !props || !shader->ints.contains("m_FileID") || shader->ints.at("m_FileID") != 0 ||
+        !shader->ints.contains("m_PathID") || !props->lists.contains("m_Floats") ||
+        !props->arrayLengths.contains("m_Floats") || props->arrayLengths.at("m_Floats") != props->lists.at("m_Floats").size()) return false;
+    FileReport::MaterialFeatures material;
+    material.shaderPathID = shader->ints.at("m_PathID");
+    for (auto const& entry : props->lists.at("m_Floats")) {
+      if (!entry.strings.contains("first") || !entry.ints.contains("second")) return false;
+      uint32_t bits = static_cast<uint32_t>(entry.ints.at("second"));
+      float value; std::memcpy(&value, &bits, sizeof(value));
+      if (!std::isfinite(value) || !material.floats.emplace(entry.strings.at("first"), value).second) return false;
+    }
+    std::set<std::string> propertyNames;
+    for (auto const& [name, _] : material.floats) propertyNames.insert(name);
+    for (auto const& [kind, entries] : props->lists) {
+      if (kind == "m_Floats") continue;
+      if (kind != "m_Ints" && kind != "m_Colors" && kind != "m_TexEnvs") return false;
+      if (!props->arrayLengths.contains(kind) || props->arrayLengths.at(kind) != entries.size()) return false;
+      for (auto const& entry : entries) {
+        auto name = entry.strings.find("first");
+        if (name == entry.strings.end()) return false;
+        bool const fixedFlag = std::any_of(Vivify::MaterialSpecialization::kFlags.begin(), Vivify::MaterialSpecialization::kFlags.end(),
+            [&](auto const& flag) { return flag.first == name->second; });
+        if (!propertyNames.insert(name->second).second && fixedFlag) return false;
+      }
+    }
+    report.materialFeatures.push_back(std::move(material));
+    return true;
+  }
+  // Runtime curves must be completely described, and only touch Transforms.
+  // Legacy/editor curve lists are rejected rather than guessed from hashes.
+  for (auto const* key : {"m_FloatCurves", "m_PPtrCurves", "m_Events"}) {
+    auto found = record.arrayLengths.find(key);
+    if (found == record.arrayLengths.end() || found->second != 0) return false;
+  }
+  auto binding = one(record, "m_ClipBindingConstant");
+  if (!binding || !binding->lists.contains("genericBindings") ||
+      !binding->arrayLengths.contains("genericBindings") ||
+      binding->arrayLengths.at("genericBindings") != binding->lists.at("genericBindings").size() ||
+      !binding->arrayLengths.contains("pptrCurveMapping") || binding->arrayLengths.at("pptrCurveMapping") != 0) return false;
+  for (auto const& curve : binding->lists.at("genericBindings")) {
+    if (!curve.ints.contains("typeID") || curve.ints.at("typeID") != 4 ||
+        !curve.ints.contains("isPPtrCurve") || curve.ints.at("isPPtrCurve") != 0 ||
+        !curve.ints.contains("attribute") || curve.ints.at("attribute") < 1 || curve.ints.at("attribute") > 4 ||
+        !curve.ints.contains("customType") || (curve.ints.at("customType") != 0 && curve.ints.at("customType") != 4)) return false;
+    auto script = one(curve, "script");
+    if (!script || !script->ints.contains("m_FileID") || !script->ints.contains("m_PathID") ||
+        script->ints.at("m_FileID") != 0 || script->ints.at("m_PathID") != 0) return false;
+  }
+  return true;
 }
 
 ProgramParameter ParameterFrom(Record const& record, bool matrix) {
@@ -702,9 +785,9 @@ int32_t StageForProgramField(std::string_view name) {
 class ParsedFormWalker {
  public:
   ParsedFormWalker(Reader& reader, SerializedTypeInfo const& type, size_t fileOffset,
-                   ShaderObject& shader)
+                   ShaderObject& shader, bool materialSafety)
       : _reader(reader), _type(type), _fileOffset(fileOffset), _shader(shader),
-        _children(BuildChildLists(type.nodes)) {
+        _children(BuildChildLists(type.nodes)), _materialSafety(materialSafety) {
     _schema.reserve(type.nodes.size());
     for (auto const& node : type.nodes) {
       _schema.push_back({node.level, node.typeFlags, node.byteSize, node.metaFlag,
@@ -868,6 +951,15 @@ class ParsedFormWalker {
     }
 
     if (elementSize == 1) {
+      // SerializedPass.m_TextureName names a GrabPass target. It is a
+      // per-camera render texture, not an authored array texture asset.
+      for (auto it = _path.rbegin(); it != _path.rend(); ++it) {
+        if (it->name.empty()) continue;
+        int32_t subShader, pass;
+        if (it->name == "m_TextureName" && PassOf(subShader, pass) && count > 0)
+          _shader.grabTextures.emplace_back(reinterpret_cast<char const*>(at), count);
+        break;
+      }
       // m_ParsedForm.m_Name: the shader's real name. The Shader object's own
       // m_Name is empty in bundles built by recent Unity, so without this
       // every shader went nameless. Only the one directly under m_ParsedForm
@@ -878,12 +970,14 @@ class ParsedFormWalker {
           if (!frame.name.empty()) named.push_back(frame.name);
         }
         if (named.size() == 2 && named[0] == "m_ParsedForm" && named[1] == "m_Name") {
+          if (count > 65536) return;
           std::string candidate(reinterpret_cast<char const*>(at), count);
-          bool printable = !candidate.empty();
-          for (char c : candidate) {
-            if (c < 0x20 || c > 0x7e) printable = false;
+          // This is a structurally identified string, not a heuristic scan.
+          // Preserve authored UTF-8 and line breaks in both name fields.
+          if (count <= 65536 && candidate.find('\0') == std::string::npos) {
+            _shader.parsedFormName = candidate;
+            _shader.parsedFormNameStringOffset = _fileOffset + position - 4;
           }
-          if (printable) _shader.parsedFormName = candidate;
           return;
         }
       }
@@ -1038,6 +1132,24 @@ class ParsedFormWalker {
   // pass's name table -- instead of walking them leaf by leaf. Returns true
   // when it consumed the node.
   bool Intercept(size_t nodeIndex, std::string_view name) {
+    if (_materialSafety && name == "m_PropInfo" && _path.size() == 2) {
+      // Decode through an independent reader: a failed optional proof must
+      // not disturb ordinary shader parsing or conversion.
+      Reader proof(_reader.base(), _reader.position() + _reader.remaining());
+      proof.skip(_reader.position());
+      Record record;
+      RecordReader(proof, _schema, _children, 4096).Read(nodeIndex, record);
+      auto info = record.lists.find("m_PropInfo");
+      bool valid = proof.ok() && info != record.lists.end() && info->second.size() == 1 && info->second[0].lists.contains("m_Props");
+      std::set<std::string> names;
+      if (valid) for (auto const& property : info->second[0].lists.at("m_Props")) {
+        auto n = property.strings.find("m_Name"); auto t = property.ints.find("m_Type");
+        if (n == property.strings.end() || t == property.ints.end() || !names.insert(n->second).second) { valid = false; break; }
+        if (t->second == 2 || t->second == 3) _shader.floatMaterialProperties.insert(n->second);
+      }
+      _shader.materialPropertiesRead = valid;
+      // Continue the ordinary walk without consuming its reader.
+    }
     if (name == "m_CommonParameters") CaptureSchema(nodeIndex);
 
     if (name == "m_NameIndices") {
@@ -1149,12 +1261,13 @@ class ParsedFormWalker {
   std::vector<ParameterBlob> _parameterBlobs;
   std::vector<ParameterSchemaNode> _schema;  // the whole type, names resolved
   std::map<std::tuple<int32_t, int32_t, int32_t>, ProgramParameters> _common;
+  bool _materialSafety;
 };
 
 // Reads a Shader object: walks its top-level fields in order, capturing the one
 // named "platforms" and the shader's name if it is reachable by name.
 ShaderObject ReadShaderObject(uint8_t const* data, size_t size, size_t fileOffset,
-                              SerializedTypeInfo const& type) {
+                              SerializedTypeInfo const& type, bool materialSafety) {
   ShaderObject shader;
   if (type.nodes.empty()) return shader;
 
@@ -1206,30 +1319,36 @@ ShaderObject ReadShaderObject(uint8_t const* data, size_t size, size_t fileOffse
     } else {
       size_t const before = reader.position();
       if (name == "m_ParsedForm") {
-        ParsedFormWalker walker(reader, type, fileOffset, shader);
+        ParsedFormWalker walker(reader, type, fileOffset, shader, materialSafety);
         walker.Walk(child);
       } else {
         std::vector<size_t> pptrs;
         WalkForPPtrs(reader, type, child, pptrs, 1);
         for (size_t offset : pptrs) shader.pptrFileOffsets.push_back(fileOffset + offset);
       }
-      // A real Shader object starts with its NamedObject m_Name, whose field
-      // name comes from Unity's common string table and so resolves empty
-      // here. It is the only unnamed variable-size field before m_ParsedForm.
+      // Prefer the typed NamedObject string. Authored names may contain UTF-8
+      // or line breaks (Through the Screen's DrosteObject does). The printable
+      // heuristic is only for an unresolved legacy field name.
       if (shader.name.empty() && (name.empty() || name == "m_Name") &&
           child == ChildIndices(type.nodes, 0).front() &&
           type.nodes[child].byteSize < 0 && reader.position() >= before + 4) {
         Reader nameReader(data + before, reader.position() - before);
         uint32_t const length = nameReader.u32();
-        if (nameReader.ok() && length > 0 && length <= 256 && length <= nameReader.remaining()) {
+        if (nameReader.ok() && length <= 65536 && length <= nameReader.remaining()) {
           std::string candidate;
           bool printable = true;
           for (uint32_t i = 0; i < length; i++) {
             char const c = static_cast<char>(nameReader.u8());
-            if (c < 0x20 || c > 0x7e) { printable = false; break; }
+            if (c < 0x20 || c > 0x7e) printable = false;
             candidate.push_back(c);
           }
-          if (printable) shader.name = candidate;
+          auto stringTypeNode = type.nodes[child];
+          stringTypeNode.nameStrOffset = stringTypeNode.typeStrOffset;
+          bool const typedString = name == "m_Name" && NodeName(type, stringTypeNode) == "string";
+          if ((printable || typedString) && candidate.find('\0') == std::string::npos) {
+            shader.name = candidate;
+            shader.objectNameStringOffset = fileOffset + before;
+          }
         }
       }
       // m_ParsedForm carries the shader's name. Rather than decode that whole
@@ -2524,7 +2643,7 @@ bool ParseLayout(uint8_t const* data, size_t size, Layout& layout) {
 
 }  // namespace
 
-FileReport InspectSerializedFile(uint8_t const* data, size_t size) {
+FileReport InspectSerializedFile(uint8_t const* data, size_t size, bool inspectMaterialSafety) {
   FileReport report;
   Layout layout;
   bool const ok = ParseLayout(data, size, layout);
@@ -2535,10 +2654,25 @@ FileReport InspectSerializedFile(uint8_t const* data, size_t size) {
   if (!ok) return report;
 
   report.parsed = true;
+  report.immutableMaterialSafetyRead = inspectMaterialSafety && layout.typeTreePresent;
   report.objectCount = static_cast<int32_t>(layout.objects.size());
   for (auto const& object : layout.objects) {
-    if (object.typeIndex < 0 || static_cast<size_t>(object.typeIndex) >= layout.types.size()) continue;
+    if (object.typeIndex < 0 || static_cast<size_t>(object.typeIndex) >= layout.types.size()) {
+      report.immutableMaterialSafetyRead = false; continue;
+    }
     SerializedTypeInfo const& type = layout.types[static_cast<size_t>(object.typeIndex)];
+    if (inspectMaterialSafety) {
+      // Deliberately narrow. Unknown native components, scripts and playable
+      // assets are outside the immutability proof, even if they render fine.
+      static std::set<int32_t> const allowed{1,4,21,23,28,33,43,48,64,74,89,91,95,135,142,198,199};
+      if (!allowed.contains(type.classID) || type.nodes.empty()) report.immutableMaterialSafetyRead = false;
+      if (type.classID == 21 || type.classID == 74) {
+        uint64_t const start = static_cast<uint64_t>(object.byteStart) + layout.dataOffset;
+        if (start >= size || object.byteSize > size - start ||
+            !ReadMaterialSafetyRecord(data + start, object.byteSize, type, type.classID, report))
+          report.immutableMaterialSafetyRead = false;
+      }
+    }
     bool const isShader = type.classID == kClassIdShader;
     bool const isTexture = type.classID == kClassIdTexture2D;
     if (!isShader && !isTexture) continue;
@@ -2550,7 +2684,7 @@ FileReport InspectSerializedFile(uint8_t const* data, size_t size) {
     if (start >= size || object.byteSize > size - start) continue;
     if (isShader) {
       ShaderObject shader =
-          ReadShaderObject(data + start, object.byteSize, static_cast<size_t>(start), type);
+          ReadShaderObject(data + start, object.byteSize, static_cast<size_t>(start), type, inspectMaterialSafety);
       shader.pathID = object.pathID;
       report.shaders.push_back(std::move(shader));
     } else {
@@ -2565,6 +2699,109 @@ FileReport InspectSerializedFile(uint8_t const* data, size_t size) {
     report.message = "type tree stripped: shader objects found but their contents cannot be decoded";
   }
   return report;
+}
+
+RenderDependencyEntries ExposeRenderDependencies(uint8_t const* data, size_t size,
+                                                std::vector<int64_t> const& translatedShaders) {
+  RenderDependencyEntries result;
+  Layout layout;
+  if (!ParseLayout(data, size, layout) || !layout.typeTreePresent) { result.ok = false; return result; }
+  std::set<int64_t> shaders(translatedShaders.begin(), translatedShaders.end()), candidates;
+  for (auto const& object : layout.objects) {
+    if (object.typeIndex < 0 || static_cast<size_t>(object.typeIndex) >= layout.types.size()) { result.ok = false; return result; }
+    auto id = layout.types[object.typeIndex].classID;
+    if (id == 21 || (id == kClassIdShader && shaders.contains(object.pathID))) candidates.insert(object.pathID);
+  }
+  for (auto const& object : layout.objects) {
+    auto const& type = layout.types[object.typeIndex];
+    if (type.classID != 142) continue;
+    uint64_t const start = layout.dataOffset + object.byteStart;
+    if (object.byteStart < 0 || start > size || object.byteSize > size - start) { result.ok = false; result.edits.clear(); return result; }
+    std::vector<ParameterSchemaNode> schema;
+    for (auto const& node : type.nodes) schema.push_back({node.level, node.typeFlags, node.byteSize, node.metaFlag, NodeName(type, node)});
+    auto const children = SchemaChildren(schema);
+    if (children.empty()) { result.ok = false; result.edits.clear(); return result; }
+    Reader reader(data + start, object.byteSize);
+    Record record;
+    RecordReader records(reader, schema, children, 65536);
+    size_t containerStart = 0, containerEnd = 0;
+    for (auto child : children[0]) {
+      auto const& name = schema[child].name;
+      if (name == "m_Container" || name == "m_PreloadTable") {
+        size_t const before = reader.position();
+        records.Read(child, record);
+        if (name == "m_Container") { containerStart = before; containerEnd = reader.position(); }
+      } else WalkNode(reader, type, child, nullptr, 1);
+    }
+    auto decline = [&]() { result.ok = false; result.edits.clear(); result.added = 0; };
+    if (!reader.ok() || reader.position() != object.byteSize || containerEnd <= containerStart ||
+        !record.lists.contains("m_PreloadTable") || !record.lists.contains("m_Container")) { decline(); return result; }
+    auto const& preload = record.lists.at("m_PreloadTable");
+    auto const& container = record.lists.at("m_Container");
+    if (preload.size() != record.arrayLengths["m_PreloadTable"] || container.size() != record.arrayLengths["m_Container"]) { decline(); return result; }
+    auto pointer = [](Record const& r) { return r.ints.size() == 2 && r.ints.contains("m_FileID") && r.ints.contains("m_PathID") && r.lists.empty() && r.strings.empty(); };
+    auto one = [](Record const& r, std::string const& key) -> Record const* {
+      auto at = r.lists.find(key); return at != r.lists.end() && at->second.size() == 1 ? &at->second[0] : nullptr;
+    };
+    std::map<int64_t, std::pair<int64_t, int64_t>> dependencyRanges;
+    for (auto const& p : preload) {
+      if (!pointer(p)) { decline(); return result; }
+    }
+    std::vector<uint8_t> encoded;
+    auto integer = [&](uint64_t v, int n) { for (int i = 0; i < n; ++i) encoded.push_back(static_cast<uint8_t>(v >> (i * 8))); };
+    auto entry = [&](std::string const& key, int64_t index, int64_t count, int64_t file, int64_t path) {
+      integer(key.size(), 4); encoded.insert(encoded.end(), key.begin(), key.end());
+      while (encoded.size() % 4) encoded.push_back(0);
+      integer(index, 4); integer(count, 4); integer(file, 4); integer(path, 8);
+    };
+    integer(container.size(), 4);
+    uint64_t dependencyVisits = 0;
+    for (auto const& item : container) {
+      auto* info = one(item, "second"); auto* asset = info ? one(*info, "asset") : nullptr;
+      if (item.strings.size() != 1 || !item.strings.contains("first") || item.lists.size() != 2 || !info || !asset ||
+          info->ints.size() != 2 || !info->ints.contains("preloadIndex") || !info->ints.contains("preloadSize") ||
+          info->lists.size() != 1 || !pointer(*asset)) { decline(); return result; }
+      auto const& key = item.strings.at("first");
+      // Unity containers may repeat a path for sub-assets. Preserve every
+      // authored entry in order; only our reserved namespace is forbidden.
+      if (key.starts_with("assets/__vivify_internal__/")) { decline(); return result; }
+      auto const index = info->ints.at("preloadIndex"), count = info->ints.at("preloadSize");
+      if (index < 0 || count < 0 || static_cast<uint64_t>(index + count) > preload.size()) { decline(); return result; }
+      if (static_cast<uint64_t>(count) > 8000000 - dependencyVisits) { decline(); return result; }
+      dependencyVisits += static_cast<uint64_t>(count);
+      for (int64_t i = index; i < index + count; ++i) {
+        auto const& dependency = preload[static_cast<size_t>(i)];
+        if (dependency.ints.at("m_FileID") != 0) continue;
+        auto const path = dependency.ints.at("m_PathID");
+        if (!path) continue;
+        if (auto old = dependencyRanges.find(path); old == dependencyRanges.end() || old->second.second > count)
+          dependencyRanges[path] = {index, count};
+      }
+      entry(key, index, count, asset->ints.at("m_FileID"), asset->ints.at("m_PathID"));
+    }
+    // Re-encoding must reproduce the entire original field exactly before
+    // extending it. This rejects unknown layouts, padding or schema changes.
+    if (encoded.size() != containerEnd - containerStart ||
+        !std::equal(encoded.begin(), encoded.end(), data + start + containerStart)) { decline(); return result; }
+    int added = 0;
+    // Even named root assets need a unique alias: authored containers can
+    // repeat a path for different sub-assets, and shader names can collide.
+    for (auto path : candidates) if (dependencyRanges.contains(path)) {
+      if (container.size() + added >= 65536) { decline(); return result; }
+      std::string const key = "assets/__vivify_internal__/render/" + std::to_string(path);
+      auto const [index, count] = dependencyRanges.at(path);
+      entry(key, index, count, 0, path); ++added;
+    }
+    if (!added) continue;
+    uint32_t const count = static_cast<uint32_t>(container.size() + added);
+    for (int i = 0; i != 4; ++i) encoded[i] = static_cast<uint8_t>(count >> (i * 8));
+    ObjectEdit edit; edit.pathID = object.pathID;
+    edit.body.insert(edit.body.end(), data + start, data + start + containerStart);
+    edit.body.insert(edit.body.end(), encoded.begin(), encoded.end());
+    edit.body.insert(edit.body.end(), data + start + containerEnd, data + start + object.byteSize);
+    result.edits.push_back(std::move(edit)); result.added += added;
+  }
+  return result;
 }
 
 RewriteResult RewriteSerializedFile(uint8_t const* data, size_t size,

@@ -28,6 +28,7 @@ set(VIVIFY_CONVERT_SOURCES
     ${VIVIFY_ROOT}/src/VivifyBundleConvert.cpp
     ${VIVIFY_ROOT}/src/VivifySerializedFile.cpp
     ${VIVIFY_ROOT}/src/VivifyDxbc.cpp
+    ${VIVIFY_ROOT}/src/VivifyTriangleTessellation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vivify_convert.cpp)
 
 option(VIVIFY_CONVERT_LTO "Link-time optimisation" ON)

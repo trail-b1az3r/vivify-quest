@@ -202,6 +202,9 @@ ships a Quest bundle, for a Quest build that draws less than its PC build (the c
 | Blit Fix For Screen Textures (experimental) | off | Builds converted maps' shaders a second time for blits into screen textures, where they otherwise draw nothing. |
 | Prepare Shaders Before Playing | off | Compiles a converted map's shaders in the menu after you select it, instead of freezing at song start. |
 | Draw Geometry-Shader Effects (experimental) | off | Draws wireframe/exploding-triangle style effects on converted maps without their geometry stage instead of grey. |
+| Flat Geometry Effects | off | Upstream fallback that drops geometry stages. Leave off to use the current upstream eye routing; some geometry-generated shapes disappear when enabled. |
+| Separate-Eye Renderer (prototype) | off | Uses supported native multiview materials first, including upstream geometry. Retains separate eye renders for unsupported native materials or the optional paired tessellation feature. Experimental; fallback sections can be substantially slower. |
+| Triangle Tessellation (heavy, exp.) | off | Adds supported uniform triangle tessellation to the Separate-Eye Renderer's main views. Yoi grass was verified on Quest 3, with substantial frame-time cost. Adaptive tessellation and tessellation in map cameras/blits remain unsupported. |
 | Disable Custom Note Visuals | off | Keeps the game's own notes, sabers and debris. |
 | Disable All Blits | off | Turns off post-processing effects. |
 | Disable Beat 0 Filmgrain Blit | off | Skips film-grain blits that start at beat 0. |
@@ -239,8 +242,15 @@ The map's bundle helps too:
 
 ### Known limits
 
-- **Geometry-shader and tessellation effects** can't run on the Quest under
-  multiview. They are drawn with a stand-in.
+- **Native geometry eye routing** uses upstream's `gl_Layer` fix and 0.15.12's
+  optional right-eye geometry copy.
+  Its shaders link offline; both-eye output and performance still need Quest
+  validation. Supported native geometry no longer forces separate scene renders.
+- **Tessellation** remains partial. The optional Separate-Eye Renderer and
+  Triangle Tessellation setting cover a narrow uniform-factor pattern in the
+  main view; Lifelike's adaptive pattern and tessellation in authored map
+  cameras/blits remain unsupported. Full PC parity and native speed are not
+  established. See [the upstream integration record](tools/separate-eye/UPSTREAM_0_15_11.md).
 - **A map that needs a feature the Quest's GPU lacks** can look different
   from PC.
 

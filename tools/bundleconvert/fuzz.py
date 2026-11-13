@@ -26,23 +26,28 @@ for comp in (0, 1, 2, 3):
 # m_ParsedForm, the segmented program store and the in-place program-list
 # patches over hostile bytes. The mutations are kept inside the serialized
 # file, where they reach the parser rather than only the archive header.
-seed = os.path.join(TMP, "fuzz_seed_2021.vivify")
-if os.path.exists(seed):
+for seed_name in ("2021", "dependencies"):
+    seed = os.path.join(TMP, "fuzz_seed_" + seed_name + ".vivify")
+    if not os.path.exists(seed):
+        print("note: missing", seed_name, "seed; run run_tests.py first")
+        continue
     base = bytearray(open(seed, 'rb').read())
     lo = len(base) // 8
+    env = dict(os.environ)
+    if seed_name == "dependencies":env["VIVIFY_EXPOSE_RENDER_DEPENDENCIES"] = "1"
     for trial in range(300):
         b = bytearray(base)
         for _ in range(rnd.randrange(1, 10)):
             b[rnd.randrange(lo, len(b))] = rnd.randrange(256)
         open(mut, 'wb').write(bytes(b))
-        p = subprocess.run([CONV, "--shaders", mut, os.path.join(TMP, "fz.out")], capture_output=True)
-        if p.returncode not in (0, 1):
-            crashes += 1
-            print(f"CRASH parsed-form trial={trial} rc={p.returncode}")
-            print(p.stderr[:3000].decode("utf-8", "replace"))
-            open(os.path.join(TMP, f"crash_pf_{trial}.bin"), 'wb').write(bytes(b))
-            if crashes > 3: sys.exit(1)
-else:
-    print("note: no fuzz_seed_2021.vivify (run run_tests.py first); m_ParsedForm fuzzing skipped")
+        for mode in ("--shaders", "--shaders-eye-left-isolated", "--shaders-eye-right-isolated", "--shaders-mono-isolated", "--shaders-blit-left-isolated", "--shaders-blit-right-isolated", "--shaders-native-perspective-isolated"):
+            p = subprocess.run([CONV, mode, mut, os.path.join(TMP, "fz.out")], capture_output=True, env=env)
+            if p.returncode not in (0, 1):
+                crashes += 1
+                print(f"CRASH {seed_name} mode={mode} trial={trial} rc={p.returncode}")
+                print(p.stderr[:3000].decode("utf-8", "replace"))
+                open(os.path.join(TMP, f"crash_{seed_name}_{mode}_{trial}.bin"), 'wb').write(bytes(b))
+                if crashes > 3: sys.exit(1)
+    print(seed_name, "mutation runs: 2100 (ordinary, scene eyes, mono camera, blit eyes, native perspective)")
 print("crashes:", crashes)
 sys.exit(1 if crashes else 0)

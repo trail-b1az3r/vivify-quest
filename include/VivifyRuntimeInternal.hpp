@@ -14,6 +14,7 @@
 #include "UnityEngine/Rendering/CommandBuffer.hpp"
 #include "UnityEngine/AssetBundleCreateRequest.hpp"
 #include "UnityEngine/AssetBundleRequest.hpp"
+#include "System/Collections/Generic/List_1.hpp"
 #include "beatsaber-hook/shared/utils/typedefs-wrappers.hpp"
 
 namespace Vivify {
@@ -34,8 +35,20 @@ public:
 
   CustomJSONData::CustomBeatmapData* GetCurrentBeatmapData() const { return _currentBeatmapData; }
   bool IsResetting() const { return _isResetting; }
+  bool IsPauseMenuActive() const { return _pauseMenuActive; }
+  void ValidateFixedMaterialFeatures();
+  bool HasSecondaryCameras() const { return !_secondaryCameras.empty(); }
+  bool IsMultiplayerGameplayForEyeRenderer() { return IsInMultiplayerGameplay(); }
   bool GetPreEffectsEmpty() const { return _preEffects.empty(); }
   bool GetPostEffectsEmpty() const { return _postEffects.empty(); }
+  // Replaying effects twice must not advance shared render-texture state twice.
+  bool HasSharedEyeEffectTargets() const {
+    for (auto const* effects : {&_preEffects, &_postEffects}) for (auto const& effect : *effects) {
+      if (effect.data.source != kMainCameraId) return true;
+      for (auto const& target : effect.data.targets) if (target != kMainCameraId) return true;
+    }
+    return false;
+  }
 
   void AddMidRenderCommandBuffers(UnityEngine::Camera* camera);
   void RemoveMidRenderCommandBuffers();
@@ -105,17 +118,24 @@ public:
                          UnityEngine::Transform* parent);
   void ReplaceDebrisVisuals(GlobalNamespace::NoteDebris* debris);
 
+  // phase: -1 passthrough, 0 all, 1 pre-main-effect, 2 post-main-effect.
   void ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest,
                   std::string const& cameraName = "_Main", int phase = 0);
 
   bool ShouldBypassImageEffect(GlobalNamespace::ImageEffectController* controller);
+  bool CanUseNativeStereoEffects() const;
 
-  void ApplySecondaryCameraMainEffects(GlobalNamespace::MainEffectController* mainEffectController);
+  bool RenderSecondaryCameraMainEffect(UnityEngine::Camera* camera, UnityEngine::RenderTexture* src,
+                                       UnityEngine::RenderTexture* dest);
+  void CaptureSecondaryDepth(UnityEngine::RenderTexture* destination);
+  void ConfigureMirrorCamera(UnityEngine::Camera* camera);
 
   void BindSecondaryCameraTextures();
   void RestoreSecondaryCullingLayers();
 
 private:
+  friend struct MenuDiagnostics;
+  friend struct PlaybackDiagnostics;
   Runtime() = default;
 
   static void OnCustomEventStatic(GlobalNamespace::BeatmapCallbacksController* callbackController,
@@ -166,12 +186,12 @@ private:
   // shaders, for blits into single-screen textures, which the multiview
   // programs of the main conversion cannot draw into.
   void PrepareBlitCompanion(std::string const& levelPath, std::string const& pcBundlePath);
-  void LoadBlitCompanion(std::string const& levelPath, std::string const& companionPath, bool wantsPrefabs);
-  void ClearBlitCompanion();
+  void LoadBlitCompanion(std::string const& levelPath, std::string const& companionPath, bool wantsPrefabs,
+                         uint64_t generation);
+  void ClearBlitCompanion(bool resetSeparateEye = true);
   // The material a blit into `destination` should draw with: `material`, or
   // for a single-screen destination a copy of it on the single-view shader.
   UnityEngine::Material* BlitMaterialFor(UnityEngine::Material* material, UnityEngine::RenderTexture* destination);
-  void SyncSingleViewBlitMaterials();
   // Kicks off an off-thread PC->Android bundle conversion for the currently
   // selected level and re-enables the play button when it lands.
   void ConvertPcBundleAsync(std::string const& levelPath, std::string const& sourceBundlePath);
@@ -199,10 +219,12 @@ private:
   void LogBundleShaderAudit(int seen, int runnable, int noProgram, int deviceRejected,
                             std::vector<std::string> const& deviceRejectedNames);
   UnityEngine::Object* GetAssetObject(std::string_view assetName) const;
+  void RetainBundleAsset(UnityEngine::Object* asset);
+  void ReleaseRetainedBundleAssets();
   template <typename T>
   T* GetAssetAs(std::string_view assetName) const {
     auto* asset = GetAssetObject(assetName);
-    if (asset == nullptr) {
+    if (!IsManagedAlive(asset)) {
       return nullptr;
     }
     return il2cpp_utils::try_cast<T>(asset).value_or(nullptr);
@@ -291,6 +313,9 @@ private:
   void HandleBlit(CustomJSONData::CustomEventData* customEventData, rapidjson::Value const& json);
   void UpdateBlitEffects();
   void HandleCreateScreenTexture(rapidjson::Value const& json);
+  void PrepareDeclaredTextures();
+  bool TryApplyStereoBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest,
+                           std::string const& cameraName, int phase);
   void HandleCreateCamera(rapidjson::Value const& json);
   std::optional<UnityEngine::DepthTextureMode> ParseDepthTextureModeName(std::string_view s);
   std::optional<UnityEngine::DepthTextureMode> ParseDepthTextureModeValue(rapidjson::Value const& value);
@@ -299,12 +324,20 @@ private:
   void ApplyCameraGameObjectProperties(UnityEngine::Camera* camera, CameraPropertyData const& props);
   void HandleSetCameraProperty(rapidjson::Value const& json);
   void CaptureMainCameraOriginals(UnityEngine::Camera* mainCam, UnityEngine::GameObject* mainCamGO);
-  void RestoreMainCameraOriginals();
+  void RestoreMainCameraOriginals(bool restoreAuxiliary = true);
+  struct CameraDefaults {
+    SafePtr<UnityEngine::Camera> camera;
+    int instanceId = 0, depthMode = 0;
+    UnityEngine::CameraClearFlags clearFlags;
+    UnityEngine::Color backgroundColor;
+  };
+  std::unordered_map<UnityEngine::Camera*, CameraDefaults> _cameraDefaults;
   UnityEngine::Rendering::CommandBuffer* BuildMidRenderCommandBuffer(std::vector<ActiveBlitEffect> const& effects,
                                                                      int bucket);
   bool EnsureMidRenderTextures();
   void ReleaseMidRenderTextures();
   UnityEngine::RenderTexture* EnsureCachedBlitTexture(UnityEngine::RenderTexture*& texture,
+                                                      std::optional<RenderTexturePolicy::Descriptor>& allocation,
                                                       UnityEngine::RenderTexture* src);
   void ReleaseRenderTexture(UnityEngine::RenderTexture*& texture);
   void ReleaseCachedBlitTextures();
@@ -391,7 +424,7 @@ private:
   float _lastSaberLightSweep = 0.0f;
   void NoteReflectionProbes(UnityEngine::GameObject* root);
   void RefreshSlowProbes();
-  void OnAnyCameraPreRender(UnityEngine::Camera* camera);
+  void OnAnyCameraPreCull(UnityEngine::Camera* camera);
   void OnAnyCameraPostRender(UnityEngine::Camera* camera);
   void InstallCameraCallbacks();
   std::vector<UnityEngine::ReflectionProbe*> _slowProbes;
@@ -438,6 +471,14 @@ private:
   bool _selectedMapHasVivifyRequirement = false;
   std::unordered_map<std::string, UnityEngine::Object*> _assets;
   std::unordered_map<std::string, UnityEngine::Object*> _assetsByName;
+  struct RetainedBundleAsset {
+    SafePtr<UnityEngine::Object> object;
+    int originalHideFlags;
+  };
+  // Native caches are invisible to Unity's unused-resource scan. Keep assets
+  // needed by later events alive until this selection is released, including
+  // materials that no currently instantiated prefab references.
+  std::unordered_map<UnityEngine::Object*, RetainedBundleAsset> _retainedBundleAssets;
   std::unordered_map<std::string, UnityEngine::Shader*> _supportedShadersByName;
   // Every runnable shader in the process, by name. Rebuilt per level, because
   // the objects behind it are Unity's to destroy.
@@ -479,11 +520,11 @@ private:
 
   UnityEngine::RenderTextureDescriptor _cachedMainDescriptor{};
 
-  int _cachedMainVrUsage = -1;
   bool _hasMainDescriptor = false;
 
   UnityEngine::RenderTexture* _midMainRT = nullptr;
   UnityEngine::RenderTexture* _midScratchRT = nullptr;
+  std::optional<RenderTexturePolicy::Descriptor> _midAllocation;
 
   std::vector<UnityEngine::RenderTexture*> _midSelfBlitTemps;
   std::vector<ActiveRenderSettingAnimation> _renderSettingAnimations;
@@ -532,10 +573,13 @@ private:
   bool EnsureBlitGuardTextures();
   bool BlitGuardDue(std::vector<UnityEngine::Material*> const& materials);
   void BlitGuardEvaluate(std::vector<UnityEngine::Material*> const& materials, UnityEngine::RenderTexture* src);
-  int _cachedBlitWidth = 0;
-  int _cachedBlitHeight = 0;
-  int _cachedBlitFormat = 0;
-  mutable std::unordered_map<UnityEngine::Material*, bool> _blitMaterialValidCache;
+  std::optional<RenderTexturePolicy::Descriptor> _mainBlitAllocation, _scratchBlitAllocation;
+  struct BlitMaterialValidity {
+    SafePtr<UnityEngine::Material> material;
+    SafePtr<UnityEngine::Shader> shader;
+    bool supported = false, fallback = false, valid = false;
+  };
+  mutable std::unordered_map<UnityEngine::Material*, BlitMaterialValidity> _blitMaterialValidCache;
   std::unordered_set<CustomJSONData::CustomEventData*> _catchUpAppliedCustomEvents;
   float _lastSongTime = -1.0f;
   float _lastKnownSongLength = -1.0f;
@@ -643,9 +687,24 @@ private:
   std::set<std::string> _perEyeBlitLogged;
   bool NeedsPerEyeBlit(UnityEngine::Material* material, UnityEngine::RenderTexture* destination);
   std::string _blitCompanionLevel;
+  struct FixedFeatureMaterial { SafePtr<UnityEngine::Material> material; SafePtr<UnityEngine::Shader> shader; };
+  std::unordered_map<UnityEngine::Material*, FixedFeatureMaterial> _fixedFeatureMaterials;
+  std::unordered_map<UnityEngine::Renderer*, SafePtr<UnityEngine::Renderer>> _fixedFeatureRenderers;
+  using FixedFeatureMaterialList = System::Collections::Generic::List_1<UnityW<UnityEngine::Material>>;
+  SafePtr<FixedFeatureMaterialList> _fixedFeatureMaterialList;
+  std::unordered_set<UnityEngine::Material*> _fixedFeatureChecked;
+  bool _fixedFeatureViolation = false;
+  std::optional<bool> _fixedFeatureChartProof;
+  bool RememberFixedMaterialFeatures(UnityEngine::Material* material);
+  static bool FixedMaterialFeaturesMatch(UnityEngine::Material* material);
+  void RegisterFixedFeatureRenderers(UnityEngine::GameObject* root);
+  void RejectFixedMaterialFeatures(UnityEngine::Material* material);
   // Shader preparation queue for the selected converted bundle.
   std::vector<UnityEngine::Material*> _warmupQueue;
   size_t _warmupIndex = 0;
+  int _warmupPassAttempts = 0, _warmupPassFailures = 0;
+  struct WarmupUnboundPass { std::string shader; int pass, passCount; };
+  std::vector<WarmupUnboundPass> _warmupUnboundPasses;
   std::string _warmupLevel;
   std::string _warmupBundle;
   float _warmupStarted = 0.0f;
@@ -657,6 +716,14 @@ private:
   UnityEngine::AssetBundle* _blitCompanionBundle = nullptr;
   std::string _blitCompanionLoadingLevel;
   std::string _blitCompanionLoadingPath;
+  uint64_t _blitCompanionGeneration = 0;
+  uint64_t _blitCompanionLoadingGeneration = 0;
+  struct PendingBlitCompanion {
+    std::string level, path;
+    bool wantsPrefabs;
+    uint64_t generation;
+  };
+  std::optional<PendingBlitCompanion> _pendingBlitCompanion;
   // Single-view shaders for a map's own texture cameras (0.15.3): the
   // companion's prefabs are loaded too when the map is known to have such
   // cameras, so every shader its prefabs use has a single-view twin.

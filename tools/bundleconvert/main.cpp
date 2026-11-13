@@ -14,9 +14,21 @@ static std::string fmt_hex(uint8_t c) {
   return {digits[c >> 4], digits[c & 15]};
 }
 
+static std::string line_text(std::string const& value) {
+  std::string result;
+  for (unsigned char c : value) {
+    if (c == '\n') result += "\\n";
+    else if (c == '\r') result += "\\r";
+    else if (c == '\\') result += "\\\\";
+    else if (c < 0x20 || c == 0x7f) result += "\\x" + fmt_hex(c);
+    else result += static_cast<char>(c);
+  }
+  return result;
+}
+
 int main(int argc, char** argv) {
   if (argc < 3) {
-    std::fprintf(stderr, "usage: conv [--repack|--shaders] <src> <dst>\n");
+    std::fprintf(stderr, "usage: conv [--repack|--shaders|--shaders-eye-left|--shaders-eye-right] <src> <dst>\n");
     return 2;
   }
   // --inspect <serialized-file> prints every shader's m_ParsedForm program
@@ -27,10 +39,11 @@ int main(int argc, char** argv) {
     std::vector<uint8_t> bytes((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     auto report = SerializedFileParse::InspectSerializedFile(bytes.data(), bytes.size());
     for (auto const& shader : report.shaders) {
-      std::printf("shader=%s platforms=", shader.name.c_str());
+      std::printf("shader=%s platforms=", line_text(shader.name).c_str());
       for (size_t i = 0; i < shader.platforms.size(); i++) std::printf("%s%d", i ? "," : "", shader.platforms[i]);
       std::printf("\n");
       std::printf("pptrs=%zu\n", shader.pptrFileOffsets.size());
+      for (auto const& name : shader.grabTextures) std::printf("grabTexture=%s\n", name.c_str());
       for (auto const& ref : shader.programRefs) {
         std::string keywords;
         for (uint16_t k : ref.keywordIndices) {
@@ -67,7 +80,15 @@ int main(int argc, char** argv) {
     auto const scan = Vivify::BundleConvert::ScanShaders(argv[2]);
     std::printf("parsed=%d\nunity=%s\nshaders=%d\nprograms=%d\nsamplesCameraDepth=%d\n", scan.parsed ? 1 : 0,
                 scan.unityVersion.c_str(), scan.shaderObjects, scan.programs, scan.samplesCameraDepth ? 1 : 0);
-    for (auto const& name : scan.cameraDepthShaderNames) std::printf("depthShader=%s\n", name.c_str());
+    for (auto const& name : scan.cameraDepthShaderNames) std::printf("depthShader=%s\n", line_text(name).c_str());
+    std::printf("sceneStageInfoComplete=%d\n", scan.sceneStageInfoComplete ? 1 : 0);
+    for (auto const& name : scan.separateEyeShaderNames) std::printf("separateEyeShader=%s\n", line_text(name).c_str());
+    for (auto const& name : scan.tessellationShaderNames) std::printf("tessellationShader=%s\n", line_text(name).c_str());
+    for (auto const& name : scan.singleViewOnlyShaderNames) std::printf("singleViewShader=%s\n", line_text(name).c_str());
+    for (auto const& name : scan.stereoDropsTextureShaderNames) std::printf("stereoDropsTextureShader=%s\n", line_text(name).c_str());
+    for (auto const& [shader, names] : scan.intUniformNames)
+      for (auto const& name : names) std::printf("intUniform=%s:%s\n", line_text(shader).c_str(), line_text(name).c_str());
+    for (auto const& [name, mask] : scan.stereoBindingMasks) std::printf("stereoBindings=%s:%u\n", line_text(name).c_str(), unsigned(mask));
     return scan.parsed ? 0 : 1;
   }
   // --merge <quest> <converted-pc> <dst> <name>... puts the named shaders of
@@ -98,7 +119,14 @@ int main(int argc, char** argv) {
   bool const split = first == "--shaders-split" || split2019;
   // --shaders-single is replay render mode (singleViewOnly).
   // --shaders-companion is the blit companion: single-view, internal files renamed.
-  bool const companion = first == "--shaders-companion";
+  bool const mono = first == "--shaders-mono-isolated";
+  bool const native = first == "--shaders-native-perspective-isolated";
+  bool const blit = first == "--shaders-blit-left-isolated" || first == "--shaders-blit-right-isolated";
+  bool const tessellation = first == "--shaders-tess-eye-left-isolated" || first == "--shaders-tess-eye-right-isolated";
+  bool const isolated = first == "--shaders-eye-left-isolated" || first == "--shaders-eye-right-isolated" || blit || native || tessellation;
+  int const eye = first == "--shaders-eye-left" || first == "--shaders-eye-left-isolated" || first == "--shaders-blit-left-isolated" || first == "--shaders-tess-eye-left-isolated" || native ? 0 :
+                  first == "--shaders-eye-right" || first == "--shaders-eye-right-isolated" || first == "--shaders-blit-right-isolated" || first == "--shaders-tess-eye-right-isolated" ? 1 : -1;
+  bool const companion = first == "--shaders-companion" || eye >= 0 || mono;
   bool const single = first == "--shaders-single" || companion;
   bool const shaders = first == "--shaders" || split || single;
   bool const flagged = repack || shaders;
@@ -114,12 +142,28 @@ int main(int argc, char** argv) {
     options.separateStereoVariants = split;
     options.splitUnity2019 = split2019;
     options.singleViewOnly = single;
+    options.singleViewStereoEye = eye;
+    options.namespaceEyeShaders = isolated;
+    options.namespaceSingleViewShaders = mono;
+    options.singleViewBlit = blit;
+    options.nativePerspectiveDonor = native;
+    options.uniformTriangleTessellation = tessellation;
     options.renameArchiveFiles = companion;
     options.dropUntranslatableGeometry = std::getenv("VIVIFY_DROP_GEOMETRY") != nullptr;
     options.dropGeometryStages = std::getenv("VIVIFY_DROP_ALL_GEOMETRY") != nullptr;
     options.geometryRightEyeCopy = std::getenv("VIVIFY_GEOMETRY_EYE_COPY") != nullptr;
     options.skipQuestUnusedVariants = std::getenv("VIVIFY_SKIP_UNUSED") != nullptr;
+    // Explicit caller attestation: map event data has no material writers.
+    // The converter independently verifies bundle/material/animation inputs.
+    options.specializeImmutableMaterialFeatures = std::getenv("VIVIFY_IMMUTABLE_MATERIAL_FEATURES") != nullptr;
+    options.exposeRenderDependencies = std::getenv("VIVIFY_EXPOSE_RENDER_DEPENDENCIES") != nullptr;
     ShaderConversion c = ConvertShadersToGles(src, dst, options);
+    std::printf("immutableMaterialShaders=%d\n", c.immutableMaterialShaders);
+    std::printf("renderDependencyEntries=%d\n", c.renderDependencyEntries);
+    std::printf("untranslatedTessellationShaders=%d\n", c.tessellationShadersUntranslated);
+    std::printf("translatedTessellationShaders=%d\n", c.tessellationShadersTranslated);
+    for (auto const& name : c.tessellationShaderNamesTranslated)
+      std::printf("translatedTessellationShader=%s\n", line_text(name).c_str());
     std::printf("status=%s\nmessage=%s\nseen=%d translated=%d leftAlone=%d refused=%d "
                 "programs=%d outBytes=%llu\ntexSeen=%d texReadable=%d texStreamed=%d\n"
                 "linked=%d variantsLinked=%d variantsRefused=%d stereoRemapped=%d stereoSplit=%d geometryDropped=%d skipped=%d\n",

@@ -1171,6 +1171,7 @@ struct MappedTexture {
   int coordinateComponents = 0;
   bool comparison = false;  // declared as a shadow sampler
   bool multisample = false;
+  bool singleLayerArray = false;
 };
 
 // A read/write resource: a D3D UAV, or a structured/raw shader resource. These
@@ -1527,7 +1528,8 @@ bool GlslEmitter::BuildConstantBuffers() {
         entry.scalarDeclaration = columns == 1;
         entry.declaration = "uniform " + VecType(static_cast<int>(columns), prefix) + " " +
                             entry.name + ";";
-        if (_options.multiview && variable.name == "unity_StereoEyeIndex" && columns == 1) {
+        if ((_options.multiview || _options.singleViewStereoEye >= 0) &&
+            variable.name == "unity_StereoEyeIndex" && columns == 1) {
           // Single-pass (double-wide) stereo, what PC Beat Saber used before
           // 1.29.4, draws each eye separately and tells the shader which one
           // through this uniform. Under multiview both eyes are one draw and
@@ -1646,10 +1648,16 @@ bool GlslEmitter::BuildResources() {
     MappedTexture texture;
     texture.name = binding.name;
     texture.dimension = binding.dimension;
+    if ((binding.dimension == 5 || binding.dimension == 7) &&
+        std::find(_options.singleViewTextures.begin(), _options.singleViewTextures.end(), binding.name) !=
+            _options.singleViewTextures.end()) {
+      texture.dimension = binding.dimension == 5 ? 4 : 6;
+      texture.singleLayerArray = true;
+    }
     texture.comparison = comparisonTextures.count(binding.bindPoint) != 0;
 
     std::string shape;
-    switch (binding.dimension) {
+    switch (texture.dimension) {
       case 4: shape = "2D"; texture.coordinateComponents = 2; break;
       case 5: shape = "2DArray"; texture.coordinateComponents = 3; break;
       case 6:
@@ -1737,8 +1745,8 @@ bool GlslEmitter::BuildSignatures() {
   if (stage == Stage::Hull || stage == Stage::Domain) {
     // A hull shader is not one program: it is a control-point phase plus fork
     // and join phases with their own instruction streams and their own
-    // register spaces. Translating it wrong would be worse than not translating
-    // it, and no Vivify map has ever needed one on this target.
+    // register spaces. These stages occur in real maps (including Yoi's grass).
+    // Report their retained DirectX stages separately from linked VS/FS/GS.
     Fail("tessellation (" + std::string(StageName(stage)) +
          ") programs are not translated; the shader keeps its DirectX programs");
     return false;
@@ -1840,6 +1848,14 @@ bool GlslEmitter::BuildSignatures() {
             _declarations += "flat out highp int vivify_ViewIndex;\n";
             _emitViewIndexVarying = true;
           }
+          continue;
+        }
+        if (_options.singleViewStereoEye >= 0) {
+          // A donor drawing into one ordinary 2D eye target must not route
+          // that output to array layer 1. Native multiview uses upstream's
+          // layer routing below; explicit-eye donors keep ordinary output.
+          _writesRTArrayIndex = true;
+          _declarations += "vec4 vivify_RTArrayIndexOut;\n";
           continue;
         }
         // A geometry stage writes the layer the program computed for its eye,
@@ -2706,8 +2722,8 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
 
   // ---- texture fetches ----------------------------------------------------
   auto emitSample = [&](char const* function, char const* offsetFunction, int extraOperand,
-                        bool comparison) {
-    if (operands.size() < 4) {
+                        bool comparison, bool levelZero = false) {
+    if (operands.size() < (comparison ? 5u : 4u)) {
       Fail("a texture fetch with too few operands");
       return;
     }
@@ -2726,6 +2742,28 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       Fail("'" + OpcodeName(opcode) + "' filters texture '" + texture->name +
            "', which GLSL ES can only fetch by texel");
       return;
+    }
+    bool const implicitArrayOffset = comparison && !levelZero && texture->dimension == 5 && instruction.hasSampleOffsets;
+    if (implicitArrayOffset) {
+      // Core ES has no textureOffset(sampler2DArrayShadow, ...). Preserve
+      // implicit fragment LOD through its explicit-gradient offset overload;
+      // non-fragment implicit sampling uses the base image instead.
+      function = "textureGrad"; offsetFunction = "textureGradOffset";
+    }
+    if (levelZero) {
+      // sample_c_lz ignores derivatives. Ordinary texture() would choose a
+      // different mip as the screen/camera moves. The 2D shadow overload has
+      // explicit LOD; array/cube shadow overloads use zero gradients to select
+      // the base image without requiring texture_shadow_lod extensions.
+      if (texture->dimension == 4) {
+        function = "textureLod"; offsetFunction = "textureLodOffset";
+      } else if (texture->dimension == 5 || texture->dimension == 9) {
+        function = "textureGrad";
+        offsetFunction = texture->dimension == 5 ? "textureGradOffset" : nullptr;
+      } else {
+        Fail("level-zero comparison on this texture shape has no core GLSL ES form");
+        return;
+      }
     }
     int coordinateComponents = texture->coordinateComponents;
     if (comparison) {
@@ -2761,6 +2799,25 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
     } else {
       call += SrcFloat(operands[1], static_cast<uint8_t>((1u << coordinateComponents) - 1u));
     }
+    if (levelZero) {
+      if (texture->dimension == 4) call += ", 0.0";
+      else {
+        auto const zero = texture->dimension == 9 ? "vec3(0.0)" : "vec2(0.0)";
+        call += std::string(", ") + zero + ", " + zero;
+      }
+    } else if (implicitArrayOffset) {
+      if (_program.stage == Stage::Pixel) {
+        auto const uv = SrcFloat(operands[1], 0x3);
+        call += ", dFdx(" + uv + "), dFdy(" + uv + ")";
+      } else call += ", vec2(0.0), vec2(0.0)";
+    }
+    // textureOffset(..., offset, bias) differs from
+    // textureLodOffset(..., lod, offset). Preserve each overload's order.
+    int offsetComponents = texture->coordinateComponents;
+    if (texture->dimension == 5 || texture->dimension == 7) offsetComponents = 2;
+    if (texture->dimension == 10) offsetComponents = 3;
+    auto const offset = SampleOffsetArgument(instruction, offsetComponents);
+    if (opcode == OP_SAMPLE_B) call += offset;
     if (extraOperand >= 0) {
       if (operands.size() <= static_cast<size_t>(extraOperand)) {
         Fail("a texture fetch is missing its lod/bias operand");
@@ -2771,11 +2828,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
     // The offset is a separate argument in GLSL and rides on the instruction
     // in DXBC. Its component count follows the texture's addressable
     // dimensions, not the coordinate's -- an array layer takes no offset.
-    int offsetComponents = texture->coordinateComponents;
-    if (texture->dimension == 5) offsetComponents = 2;   // Texture2DArray
-    if (texture->dimension == 7) offsetComponents = 2;   // Texture2DMSArray
-    if (texture->dimension == 10) offsetComponents = 3;  // TextureCubeArray
-    call += SampleOffsetArgument(instruction, offsetComponents);
+    if (opcode != OP_SAMPLE_B) call += offset;
     call += ")";
 
     uint8_t const mask = destMask();
@@ -2789,7 +2842,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
   };
 
   auto emitGather = [&](bool comparison) {
-    if (operands.size() < 4) {
+    if (operands.size() < (comparison ? 5u : 4u)) {
       Fail("a gather4 with too few operands");
       return;
     }
@@ -2812,6 +2865,9 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
     std::string call = instruction.hasSampleOffsets ? "textureGatherOffset(" : "textureGather(";
     call += texture->name + ", " +
             SrcFloat(operands[1], static_cast<uint8_t>((1u << texture->coordinateComponents) - 1u));
+    // Shadow gather overloads take their comparison before the texel offset;
+    // non-shadow overloads take the selected channel after it.
+    if (comparison) call += ", " + ScalarFloat(operands[operands.size() - 1]);
     if (instruction.hasSampleOffsets) {
       int offsetComponents = texture->coordinateComponents;
       if (texture->dimension == 5) offsetComponents = 2;   // Texture2DArray
@@ -2821,9 +2877,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       }
       call += SampleOffsetArgument(instruction, offsetComponents);
     }
-    if (comparison) {
-      call += ", " + ScalarFloat(operands[operands.size() - 1]);
-    } else {
+    if (!comparison) {
       // Without a comparison, the channel gathered is the resource operand's
       // first swizzle slot: gather4 reads one channel of four neighbouring
       // texels, and the swizzle is how D3D says which.
@@ -3392,10 +3446,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       break;
     case OP_SAMPLE_C: emitSample("texture", "textureOffset", -1, true); break;
     case OP_SAMPLE_C_LZ:
-      // There is no textureLod for a 2D shadow sampler in GLSL ES, and
-      // sample_c_lz always reads mip zero. In a fragment shader the ordinary
-      // fetch is the closest thing and is what Unity's own translator emits.
-      emitSample("texture", "textureOffset", -1, true);
+      emitSample("texture", "textureOffset", -1, true, true);
       break;
     case OP_SAMPLE_D: {
       if (operands.size() < 6) {
@@ -3506,7 +3557,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
         if (i < sizeComponents) {
           components[i] = sizeComponents == 1 ? size : size + "." + kComponentNames[i];
         } else {
-          components[i] = i == 3 ? "1" : "0";
+          components[i] = (i == 3 || (i == 2 && texture->singleLayerArray)) ? "1" : "0";
         }
       }
       uint8_t const mask = destMask();
@@ -3841,6 +3892,11 @@ bool GlslEmitter::EmitBody() {
 
 GlslResult GlslEmitter::Run() {
   GlslResult result;
+  if (_options.singleViewStereoEye < -1 || _options.singleViewStereoEye > 1 ||
+      (_options.multiview && _options.singleViewStereoEye >= 0)) {
+    result.error = "singleViewStereoEye must be -1, 0 or 1 and cannot be combined with multiview";
+    return result;
+  }
   if (!_program.ok) {
     result.error = _program.error.empty() ? "the program did not parse" : _program.error;
     return result;
@@ -3893,7 +3949,11 @@ GlslResult GlslEmitter::Run() {
   }
   if (_usedVertexID) addPrologue("ivec4 vVertexID = ivec4(gl_VertexID);");
   if (_usedInstanceID) {
-    if (_options.multiview && (_stereoInstanced || (_options.stereoInstancedProgram && _program.stage == Stage::Vertex))) {
+    bool const spi = _stereoInstanced || (_options.stereoInstancedProgram && _program.stage == Stage::Vertex);
+    if (_options.singleViewStereoEye >= 0 && spi) {
+      addPrologue("ivec4 vInstanceID = ivec4(gl_InstanceID * 2 + " +
+                  std::to_string(_options.singleViewStereoEye) + ");");
+    } else if (_options.multiview && spi) {
       // One multiview draw per real instance stands in for SPI's two, so the
       // SPI numbering is rebuilt: eye in bit 0, real instance above it.
       addPrologue("ivec4 vInstanceID = ivec4(gl_InstanceID * 2 + int(gl_ViewID_OVR));");
@@ -3902,10 +3962,14 @@ GlslResult GlslEmitter::Run() {
     }
   }
   if (!_stereoEyeIndexType.empty()) {
-    addPrologue("unity_StereoEyeIndex = " + _stereoEyeIndexType + "(gl_ViewID_OVR);");
+    std::string const eye = _options.singleViewStereoEye >= 0
+                                ? std::to_string(_options.singleViewStereoEye) : "gl_ViewID_OVR";
+    addPrologue("unity_StereoEyeIndex = " + _stereoEyeIndexType + "(" + eye + ");");
   }
   if (_usedRTArrayIndexIn) {
-    if (!_options.multiview) {
+    if (_options.singleViewStereoEye >= 0) {
+      addPrologue("ivec4 vRTArrayIndex = ivec4(" + std::to_string(_options.singleViewStereoEye) + ");");
+    } else if (!_options.multiview) {
       addPrologue("ivec4 vRTArrayIndex = ivec4(0);");
     } else if (_program.stage == Stage::Geometry) {
       addPrologue("ivec4 vRTArrayIndex = ivec4(vivify_ViewIndex[0]);");

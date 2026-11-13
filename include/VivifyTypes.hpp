@@ -1,6 +1,8 @@
 #pragma once
 #include "VivifyRuntime.hpp"
 #include "main.hpp"
+#include "VivifyMaterialSpecialization.hpp"
+#include "VivifyRenderTexturePolicy.hpp"
 #include <algorithm>
 #include <array>
 #include <limits>
@@ -263,6 +265,7 @@ struct DeclaredTextureData {
   std::optional<UnityEngine::RenderTextureFormat> format;
   std::optional<UnityEngine::FilterMode> filterMode;
   UnityEngine::RenderTexture* texture = nullptr;
+  std::optional<RenderTexturePolicy::Descriptor> allocation;
 };
 
 struct CullingMaskData {
@@ -637,7 +640,7 @@ inline std::string BoolText(bool value) {
 }
 inline std::string ShaderNameForLog(UnityEngine::Shader* shader) {
   if (!IsManagedAlive(shader)) return "<null>";
-  return ToStdString(shader->get_name());
+  return MaterialSpecialization::Canonical(ToStdString(shader->get_name()));
 }
 inline bool IsInternalErrorShaderName(std::string_view shaderName) {
   return shaderName.find("Hidden/InternalErrorShader") != std::string_view::npos;
