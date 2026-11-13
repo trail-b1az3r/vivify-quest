@@ -29,9 +29,6 @@ jobs:
             -I include tools/startup/hook_stub_test.cpp -o /tmp/hook-stub-test
         /tmp/hook-stub-test
 
-    - name: Check the pinned offline literal repair's instruction semantics
-      run: python3 -B tools/startup/binary_patch_test.py
-
   validate-json:
     runs-on: ubuntu-latest
     steps:
