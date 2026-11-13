@@ -6,6 +6,7 @@
 #include "VivifyTextureBindings.hpp"
 #include "UnityEngine/Renderer.hpp"
 #include "UnityEngine/Matrix4x4.hpp"
+#include "UnityEngine/Camera.hpp"
 // Defines SaberMovementData's interface conversion that InitFromSaber calls;
 // Saber.hpp only declares it, which compiles and then fails to link.
 #include "GlobalNamespace/SaberMovementData.hpp"
@@ -360,8 +361,14 @@ void SecondaryCameraController::OnPreCull() {
       transform->set_localPosition(UnityEngine::Vector3::get_zero());
       transform->set_localRotation(UnityEngine::Quaternion::get_identity());
     }
-    camera->set_cullingMatrix(
-        UnityEngine::Matrix4x4::op_Multiply(other->get_projectionMatrix(), other->get_worldToCameraMatrix()));
+    // Both eyes' views for a headset camera (0.15.16): its mono projection is
+    // narrower than either eye at the outer edge, and objects there were
+    // culled from what this camera captures.
+    auto const culling = other->get_stereoEnabled()
+        ? BothEyesCulling(other->GetStereoProjectionMatrix(UnityEngine::Camera_StereoscopicEye(0)),
+                          other->GetStereoProjectionMatrix(UnityEngine::Camera_StereoscopicEye(1)))
+        : other->get_projectionMatrix();
+    camera->set_cullingMatrix(UnityEngine::Matrix4x4::op_Multiply(culling, other->get_worldToCameraMatrix()));
     camera->set_projectionMatrix(other->get_projectionMatrix());
     camera->set_nonJitteredProjectionMatrix(other->get_nonJitteredProjectionMatrix());
     camera->set_worldToCameraMatrix(other->get_worldToCameraMatrix());

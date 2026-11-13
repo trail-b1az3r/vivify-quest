@@ -93,17 +93,37 @@ void Report(std::function<void(std::string const&)> const& status, std::string c
   BSML::MainThreadScheduler::Schedule([status, text]() { status(text); });
 }
 
+// The URL exactly as written (0.15.16). web-utils percent-escapes a URL by
+// default, '?' and '=' included, so "releases?per_page=100" reached GitHub as
+// "releases%3Fper_page%3D100", which it refuses: the version list stayed at
+// "Latest" and every install said the release could not be found.
+WebUtils::URLOptions Request(std::string const& url, int timeoutSeconds) {
+  WebUtils::URLOptions options(url, std::nullopt, timeoutSeconds);
+  options.noEscape = true;
+  return options;
+}
+
+// Which site, for messages: the full URL is long enough to push the settings
+// list sideways, and says nothing a player can act on.
+std::string Host(std::string const& url) {
+  auto const start = url.find("://");
+  auto const from = start == std::string::npos ? 0 : start + 3;
+  return url.substr(from, url.find('/', from) - from);
+}
+
 std::optional<std::string> GetText(std::string const& url, std::string& error) {
-  auto response = WebUtils::Get<WebUtils::StringResponse>(WebUtils::URLOptions(url, std::nullopt, 30));
+  auto response = WebUtils::Get<WebUtils::StringResponse>(Request(url, 30));
   if (!response.IsSuccessful() || !response.responseData.has_value()) {
-    error = "could not reach " + url + " (http " + std::to_string(response.get_HttpCode()) + ")";
+    PaperLogger.warn("Vivify updater: {} failed: http {}, curl {}", url, response.get_HttpCode(),
+                     response.get_CurlStatus());
+    error = Host(url) + " did not answer (http " + std::to_string(response.get_HttpCode()) + ")";
     return std::nullopt;
   }
   return *response.responseData;
 }
 
 std::optional<std::vector<uint8_t>> GetData(std::string const& url, std::string& error) {
-  auto response = WebUtils::Get<WebUtils::DataResponse>(WebUtils::URLOptions(url, std::nullopt, 300));
+  auto response = WebUtils::Get<WebUtils::DataResponse>(Request(url, 300));
   if (!response.IsSuccessful() || !response.responseData.has_value()) {
     error = "download failed (http " + std::to_string(response.get_HttpCode()) + ", curl " +
             std::to_string(response.get_CurlStatus()) + ")";

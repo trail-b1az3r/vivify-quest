@@ -1193,6 +1193,15 @@ void Runtime::UpdateSaberReplacementColors() {
     auto it = _saberReplacements.find(target.controller);
     if (it != _saberReplacements.end()) {
       ApplySaberReplacementColor(target.controller, target.saber, it->second);
+      // What is already known to be hidden stays hidden every frame (0.15.16).
+      // A saber mod or the game's trail switches its renderer back on, and
+      // until the next sweep below both sabers drew in the same place:
+      // Aether's sabers flickered. The sweep still finds new renderers.
+      if (it->second.hideOriginal || it->second.hideTrails) {
+        for (auto* renderer : it->second.disabledRenderers) {
+          if (IsAlive(renderer) && renderer->get_enabled()) renderer->set_enabled(false);
+        }
+      }
       if (sweep && it->second.hideTrails) HideOtherSaberTrails(target.controller, target.saber, it->second);
       if (sweep && it->second.hideOriginal) {
         // Only while the map's own model can be seen: with nothing of it on

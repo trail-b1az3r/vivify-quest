@@ -10,12 +10,43 @@
 #include <mutex>
 #include "VivifyTypes.hpp"
 #include "UnityEngine/Matrix4x4.hpp"
+#include <algorithm>
 #include "UnityEngine/ReflectionProbe.hpp"
 #include "UnityEngine/Rendering/CommandBuffer.hpp"
 #include "UnityEngine/AssetBundleCreateRequest.hpp"
 #include "UnityEngine/AssetBundleRequest.hpp"
 #include "System/Collections/Generic/List_1.hpp"
 #include "beatsaber-hook/shared/utils/typedefs-wrappers.hpp"
+
+namespace Vivify {
+// One frustum holding both eyes' views: the widest left and right, up and
+// down tangents of the two projections, around the head (0.15.16). 0.15.13
+// used the left eye's projection widened a fixed quarter, which is skewed to
+// the left and could cut off the right edge of the right eye.
+inline UnityEngine::Matrix4x4 BothEyesCulling(UnityEngine::Matrix4x4 const& left, UnityEngine::Matrix4x4 const& right) {
+  auto tangents = [](UnityEngine::Matrix4x4 const& m, float& l, float& r, float& b, float& t) {
+    l = (m.m02 - 1.0f) / m.m00;
+    r = (m.m02 + 1.0f) / m.m00;
+    b = (m.m12 - 1.0f) / m.m11;
+    t = (m.m12 + 1.0f) / m.m11;
+  };
+  float l0, r0, b0, t0, l1, r1, b1, t1;
+  tangents(left, l0, r0, b0, t0);
+  tangents(right, l1, r1, b1, t1);
+  // A little extra for the eyes sitting either side of the head's centre.
+  float const margin = 0.05f;
+  float const l = std::min(l0, l1) - margin, r = std::max(r0, r1) + margin;
+  float const b = std::min(b0, b1) - margin, t = std::max(t0, t1) + margin;
+  UnityEngine::Matrix4x4 m = left;
+  m.m00 = 2.0f / (r - l);
+  m.m01 = 0.0f;
+  m.m02 = (r + l) / (r - l);
+  m.m10 = 0.0f;
+  m.m11 = 2.0f / (t - b);
+  m.m12 = (t + b) / (t - b);
+  return m;
+}
+}  // namespace Vivify
 
 namespace Vivify {
 struct FollowedSaberTrail;
@@ -414,6 +445,10 @@ private:
   UnityEngine::Camera* _fovCamera = nullptr;
   int _fovAppliedPercent = 0;
   UnityEngine::Matrix4x4 _fovLeftProjection{};
+  // What was set last frame, to tell whether the headset kept it (0.15.16).
+  float _fovSetM00[2] = {0.0f, 0.0f};
+  int _fovFramesChecked = 0;
+  bool _fovReported = false;
   void ApplyVivifyFoveation();
   void RestoreVivifyFoveation();
   bool _foveationApplied = false;
