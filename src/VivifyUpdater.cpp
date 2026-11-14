@@ -13,6 +13,8 @@
 #include "VivifyZip.hpp"
 #include "main.hpp"
 
+#include <dlfcn.h>
+
 #include <algorithm>
 #include <atomic>
 #include <cctype>
@@ -28,6 +30,7 @@ namespace {
 
 constexpr char const* kRepo = "trail-b1az3r/vivify-quest";
 constexpr char const* kModId = "vivify";
+constexpr char const* kModloaderDir = "/sdcard/ModData/com.beatgames.beatsaber/Modloader";
 constexpr char const* kStagingDir = "/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/Update";
 
 std::atomic<bool> gBusy = false;
@@ -243,22 +246,22 @@ bool InstallQmod(std::vector<uint8_t> const& qmod, std::string& version, std::st
     }
   }
 
-  // Where this library was loaded from: the new one takes its place.
-  CModInfo self{kModId, nullptr, 0};
-  auto const selfResult = modloader_get_mod(&self, MatchType_IdOnly);
-  if (selfResult.path == nullptr) {
-    error = "the game did not say where Vivify's library is";
-    return false;
-  }
-  std::filesystem::path const target(selfResult.path);
+  // Which file to replace (0.15.17). The loader runs a copy of each mod from
+  // the game's private folder, made at every launch from Modloader/mods
+  // (lateModFiles) and Modloader/early_mods (modFiles) on the SD card, so it
+  // is the SD card's file that has to change: replacing the copy that is
+  // running is undone at the next start. 0.15.12-0.15.16 asked the loader
+  // for the running copy's path, which it did not give ("the game did not
+  // say where Vivify's library is").
   std::filesystem::path source;
-  for (char const* list : {"lateModFiles", "modFiles"}) {
+  std::filesystem::path target;
+  for (auto const& [list, folder] : {std::pair{"lateModFiles", "mods"}, std::pair{"modFiles", "early_mods"}}) {
     if (!mod.HasMember(list) || !mod[list].IsArray()) continue;
     for (auto const& file : mod[list].GetArray()) {
-      if (file.IsString() && std::filesystem::exists(staging / file.GetString(), ec)) {
-        source = staging / file.GetString();
-        break;
-      }
+      if (!file.IsString() || !std::filesystem::exists(staging / file.GetString(), ec)) continue;
+      source = staging / file.GetString();
+      target = std::filesystem::path(kModloaderDir) / folder / std::filesystem::path(file.GetString()).filename();
+      break;
     }
     if (!source.empty()) break;
   }
@@ -266,15 +269,30 @@ bool InstallQmod(std::vector<uint8_t> const& qmod, std::string& version, std::st
     error = "the QMOD holds no library";
     return false;
   }
+  if (!std::filesystem::is_directory(target.parent_path(), ec)) {
+    error = "the mod folder " + target.parent_path().filename().string() + " was not found on the headset";
+    return false;
+  }
+  // The running copy's name, for the log: a build that renamed its library
+  // would otherwise leave the old one behind to load as well.
+  Dl_info info{};
+  if (dladdr(reinterpret_cast<void*>(&InstallQmod), &info) != 0 && info.dli_fname != nullptr &&
+      std::filesystem::path(info.dli_fname).filename() != target.filename()) {
+    PaperLogger.warn("Vivify updater: the running library is {}, the new one is {}", info.dli_fname,
+                     target.filename().string());
+  }
+  PaperLogger.info("Vivify updater: replacing {}", target.string());
   std::filesystem::path const temporary = target.string() + ".new";
   std::filesystem::copy_file(source, temporary, std::filesystem::copy_options::overwrite_existing, ec);
   if (ec) {
-    error = "could not write " + temporary.string() + ": " + ec.message();
+    PaperLogger.warn("Vivify updater: could not write {}: {}", temporary.string(), ec.message());
+    error = "could not write the new library beside the old one (" + ec.message() + ")";
     return false;
   }
   if (std::rename(temporary.c_str(), target.c_str()) != 0) {
     std::filesystem::remove(temporary, ec);
-    error = "could not replace " + target.string();
+    PaperLogger.warn("Vivify updater: could not rename over {}", target.string());
+    error = "could not put the new library in place of the old one";
     return false;
   }
   std::filesystem::remove_all(staging, ec);

@@ -1807,7 +1807,7 @@ void Runtime::RestoreFieldOfView() {
 }
 
 void Runtime::RestoreFarCulling(UnityEngine::Camera* mainCam) {
-  if (_appliedFarCulling > 0 && IsAlive(mainCam) && _mainCamOriginalCullDistances.has_value()) {
+  if (_appliedFarCulling != 0 && IsAlive(mainCam) && _mainCamOriginalCullDistances.has_value()) {
     auto const& original = _mainCamOriginalCullDistances.value();
     auto distances = ArrayW<float>(static_cast<il2cpp_array_size_t>(original.size()));
     for (size_t i = 0; i < original.size(); i++) distances[i] = original[i];
@@ -1822,8 +1822,19 @@ void Runtime::RestoreFarCulling(UnityEngine::Camera* mainCam) {
 // distance, on every layer (a layer the game already culls nearer keeps its
 // own distance). Measured as a sphere around the camera, so turning the head
 // does not pop things in and out.
+//
+// With Far Culling off (0), a Vivify map runs without the game's own per-layer
+// cull distances (0.15.17). The game sets some, measured along the view
+// direction rather than as a sphere: an object off to one side counts as near
+// while the player looks ahead and goes out of range when they turn to it, so
+// things vanished as the player looked at them -- 743 Aether's when looking
+// right. Only the far clip plane culls then; the game's values come back when
+// the level ends.
 void Runtime::ApplyFarCulling(UnityEngine::Camera* mainCam) {
-  int const wanted = (_currentBeatmapData != nullptr && !_isResetting) ? GetFarCullingDistance() : 0;
+  bool const inMap = _currentBeatmapData != nullptr && !_isResetting;
+  int const setting = inMap ? GetFarCullingDistance() : 0;
+  // -1: the game's layer distances cleared for the map.
+  int const wanted = !inMap ? 0 : (setting > 0 ? setting : -1);
   if (wanted == _appliedFarCulling || !IsAlive(mainCam)) return;
   if (wanted == 0) {
     RestoreFarCulling(mainCam);
@@ -1837,8 +1848,23 @@ void Runtime::ApplyFarCulling(UnityEngine::Camera* mainCam) {
     }
     _mainCamOriginalCullDistances = original;
     _mainCamOriginalCullSpherical = mainCam->get_layerCullSpherical();
+    std::string layers;
+    for (int i = 0; i < 32; i++) {
+      if (original[i] > 0.0f) layers += fmt::format("{}{}={:.0f}m", layers.empty() ? "" : ", ", i, original[i]);
+    }
+    PaperLogger.info("Vivify main camera: the game's per-layer cull distances: {} ({})",
+                     layers.empty() ? std::string("none") : layers,
+                     _mainCamOriginalCullSpherical ? "spherical" : "along the view direction");
   }
   auto const& original = _mainCamOriginalCullDistances.value();
+  if (wanted < 0) {
+    auto cleared = ArrayW<float>(static_cast<il2cpp_array_size_t>(32));
+    for (int i = 0; i < 32; i++) cleared[i] = 0.0f;
+    mainCam->set_layerCullDistances(cleared);
+    _appliedFarCulling = wanted;
+    PaperLogger.info("Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)");
+    return;
+  }
   auto distances = ArrayW<float>(static_cast<il2cpp_array_size_t>(32));
   for (int i = 0; i < 32; i++) {
     float const own = original[i];

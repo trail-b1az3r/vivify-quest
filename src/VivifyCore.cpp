@@ -319,18 +319,20 @@ void Runtime::UpdatePrefabAnimationSpeed() {
     return;
   }
 
+  // The song clock's own rate while it runs, 0 while paused or stopped
+  // (0.15.17). This was the song time gained over the frame time, frame by
+  // frame. The song clock follows the audio, not the frame clock, so that
+  // ratio jitters from frame to frame (0 on a frame where the song time has
+  // not moved), and every animator and particle system in a map's prefabs
+  // sped up and slowed down with it: a likely cause of the flickering stars
+  // on 743 Aether's sabers.
   float speed = 0.0f;
   if (!_pauseMenuActive && IsManagedAlive(_audioTimeSyncController)) {
     float const songTime = _audioTimeSyncController->get_songTime();
-    float const deltaTime = UnityEngine::Time::get_deltaTime();
-    float const deltaSong = songTime - _lastSyncSongTime;
-    if (_lastSyncSongTime < 0.0f) {
-      speed = 1.0f;
-    } else if (deltaTime > 1e-5f && deltaSong > 0.0f) {
-      speed = deltaSong / deltaTime;
-    } else {
-      speed = 0.0f;
-    }
+    float const now = UnityEngine::Time::get_unscaledTime();
+    if (_lastSyncSongTime < 0.0f || songTime > _lastSyncSongTime) _lastSongAdvanceAt = now;
+    bool const running = _lastSongAdvanceAt >= 0.0f && now - _lastSongAdvanceAt < 0.25f;
+    speed = running ? SongSpeed() : 0.0f;
     _lastSyncSongTime = songTime;
   }
 
@@ -558,6 +560,7 @@ void Runtime::ResetRuntime(std::string_view reason) {
   EndSingleViewCamera();
   _singleViewSwaps.clear();
   _mapHeadsetLayers = 0;
+  _hudObjects.clear();
   SetRecoveryModeActive(false);
   step(reason.empty() ? "resetting" : std::string(reason).c_str());
   SetSongPlaying(false);
@@ -686,6 +689,7 @@ void Runtime::ResetRuntime(std::string_view reason) {
   _audioTimeSyncController = nullptr;
   _lastSongTime = -1.0f;
   _lastSyncSongTime = -1.0f;
+  _lastSongAdvanceAt = -1.0f;
   _songTimeCacheFrame = -1;
   _songTimeCache = 0.0f;
   _pauseMenuActive = false;
