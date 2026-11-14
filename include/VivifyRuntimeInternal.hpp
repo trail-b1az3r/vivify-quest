@@ -456,6 +456,11 @@ private:
   bool _eyeTrackedBefore = false;
   int _foveationBefore = 0;
   std::vector<UnityEngine::Light*> _disabledSaberLights;
+  // The game's mirrors switched off for a map with Game Mirrors off (0.15.18).
+  std::vector<UnityEngine::Renderer*> _hiddenMirrorRenderers;
+  float _lastMirrorSweep = -1.0f;
+  void HideGameMirrors();
+  void RestoreGameMirrors();
   float _lastSaberLightSweep = 0.0f;
   void NoteReflectionProbes(UnityEngine::GameObject* root);
   void RefreshSlowProbes();

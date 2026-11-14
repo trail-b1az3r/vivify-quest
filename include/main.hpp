@@ -54,6 +54,11 @@ bool GetAudioLinkEnabled();
 // Whether SetRenderingSettings may turn on realtime shadows (off: the
 // shadow* quality settings in it are ignored).
 bool GetMapRealtimeShadows();
+// The game's own mirrors during a Vivify map; a per-map setting (0.15.18).
+bool GetGameMirrors();
+// Per-map settings (0.15.18): the settings above read the selected map's
+// own value first. Called when a map is selected.
+void SelectSettingsMap(std::string const& levelPath);
 bool GetMapReflectionProbes();
 bool GetFullReflectionProbes();
 bool GetSingleViewMapCameras();
