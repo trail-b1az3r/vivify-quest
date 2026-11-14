@@ -16,10 +16,10 @@
 // given more memory than the system allows it, so this is how a map gets more
 // room to run.
 //
-// The same goes for a map's own saber trail (0.15.15): Fall Away, WHY'S THIS
-// DEALER and 42-flux went down within a frame of theirs being created. A map
-// whose last run ended that way plays without its trail next time (the
-// player's own trail stays). Unlike the rest of recovery mode, that applies
+// The same goes for a map's own saber trail created after the song started
+// (0.15.15; only after the start since 0.15.17). A map whose last run ended
+// within seconds of that plays without its trail next time (the player's own
+// trail stays). Unlike the rest of recovery mode, that applies
 // with Crash Recovery Mode off as well, since otherwise the map cannot be
 // played at all.
 //
@@ -51,7 +51,12 @@ void LevelEnded(bool finished, float songTime, int64_t now);
 
 // What an entry's skippedBlit holds when the map's saber trail was to blame
 // rather than an effect. Asset names never start with '<'.
-inline constexpr char const* kMapTrailsEntry = "<map saber trails>";
+// 0.15.15 and 0.15.16 also blamed a trail created at the very start, where
+// everything else is created in the same moment, and a map then lost its
+// trail for nothing (743 Aether). Their entries used another name and are
+// ignored.
+inline constexpr char const* kMapTrailsEntry = "<map saber trail after start>";
+inline constexpr char const* kOldMapTrailsEntry = "<map saber trails>";
 
 struct Entry {
   std::string levelPath;

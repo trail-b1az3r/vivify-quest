@@ -11,6 +11,51 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.17] - 2026-11-14
+
+From logs_6 (0.15.16) and the Quest build of 743 Aether. Not tried on a
+headset.
+
+### Fixed
+- **743 Aether: objects culled when you look right.** No setting of Vivify's
+  was culling there: the Quest Aether has no extra cameras and Field Of View
+  was at 100%. The game gives its camera cull distances per layer, measured
+  along the view direction rather than as a sphere. So an object off to one
+  side counts as near while you look ahead, and goes out of range when you
+  turn to face it. During a Vivify map with Far Culling at 0, those per-layer
+  distances are now off, so only the far clip plane culls. They come back
+  when the level ends. The game's values are logged once, so the next log
+  shows whether this was it.
+- **743 Aether: map saber trail missing.** That was 0.15.15's crash guard.
+  Aether went down at 0 s in an earlier session, just after its trail was
+  created at the start of the song, and the guard took the trail away for
+  the next play. A trail created at the very start says nothing, since the
+  whole map is set up in that same moment. In this log Fall Away and Dealer
+  made their trails and played on, and no crash report was written for the
+  Aether crash. That suggests the system ended the game (for example for
+  memory) rather than a crash in Vivify's code. Only a trail created after
+  the song has started is blamed now, and the entries 0.15.15/0.15.16 wrote
+  are ignored, so Aether has its trail back.
+- **Update Vivify: "the game did not say where Vivify's library is".** The
+  mod loader does not give that path. It also runs a copy of each mod, made
+  at every launch from `Modloader/mods` on the SD card, so the file to
+  replace is that SD card one: replacing the running copy would have been
+  undone at the next start. The updater now replaces
+  `Modloader/mods/libVivify.so` directly.
+- **743 Aether: the stars on the sabers flicker.** Animators and particle
+  systems in a map's prefabs were run at the song time gained divided by
+  the frame time, recomputed every frame. The song clock follows the audio,
+  so that ratio jitters, and every animated object in a map sped up and
+  slowed down with it. They now run at the song's steady rate, or 0 while
+  paused or stopped. This may also be the flickering rocks later in the PC
+  Aether. Neither is confirmed.
+
+### Changed
+- **Fall Away's HUD is drawn nearer.** Just before the camera draws, the
+  map's head-following text on layer 17 is pulled to 70% of its distance and
+  scaled by the same 70%. It looks the same size and sits nearer, in front of
+  the notes.
+
 ## [0.15.16] - 2026-11-13
 
 Not tried on a headset.

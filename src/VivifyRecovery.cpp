@@ -155,7 +155,10 @@ std::string ProcessPreviousRun(int64_t now) {
   if (!hasEnded) {
     int64_t const lastSign = std::max(previous.heartbeat, previous.started);
     bool const blitRecent = hasBlit && previous.lastBlitAt + kBlitToDeathSeconds >= lastSign;
-    bool const trailRecent = hasTrail && previous.mapTrailAt + kBlitToDeathSeconds >= lastSign;
+    // Not a trail made at the very start: the whole map is set up in that
+    // same moment, so it says nothing about the trail (0.15.17).
+    bool const trailRecent = hasTrail && previous.mapTrailSongTime >= 1.0f &&
+                             previous.mapTrailAt + kBlitToDeathSeconds >= lastSign;
     // When both were recent, the later of the two is blamed: a crash that
     // comes back puts the other on the list as well.
     bool const trailLater = !blitRecent || previous.mapTrailAt > previous.lastBlitAt ||
@@ -265,7 +268,8 @@ bool InRecovery(std::string const& levelPath) {
 std::vector<std::string> SkippedBlits(std::string const& levelPath) {
   std::vector<std::string> blits;
   for (auto const& entry : Entries()) {
-    if (entry.levelPath == levelPath && !entry.skippedBlit.empty() && entry.skippedBlit != kMapTrailsEntry) {
+    if (entry.levelPath == levelPath && !entry.skippedBlit.empty() && entry.skippedBlit != kMapTrailsEntry &&
+        entry.skippedBlit != kOldMapTrailsEntry) {
       blits.push_back(entry.skippedBlit);
     }
   }

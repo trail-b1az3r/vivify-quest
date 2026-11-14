@@ -472,6 +472,18 @@ private:
   bool EnsureMapSaberVisible(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
                              VisualReplacement& replacement);
   void NoteHeadsetLayers(UnityEngine::GameObject* root, std::string const& asset);
+  // Fall Away's head-following HUD (layer 17), drawn nearer the eyes
+  // (0.15.17): see PullHeadsetHud.
+  struct HudObject {
+    UnityEngine::Transform* transform = nullptr;
+    UnityEngine::Vector3 setPosition{};
+    UnityEngine::Vector3 originalPosition{};
+    UnityEngine::Vector3 setScale{};
+    UnityEngine::Vector3 originalScale{};
+    bool applied = false;
+  };
+  std::vector<HudObject> _hudObjects;
+  void PullHeadsetHud(UnityEngine::Camera* camera);
   // Headset-only layers this level's prefabs use, and those added to the main
   // camera's culling mask for it.
   uint32_t _mapHeadsetLayers = 0;
@@ -626,6 +638,7 @@ private:
   bool _skipMapTrailsLogged = false;
   std::chrono::steady_clock::time_point _lastRecoveryHeartbeat{};
   float _lastSyncSongTime = -1.0f;
+  float _lastSongAdvanceAt = -1.0f;  // unscaled time the song clock last moved (0.15.17)
   int _songTimeCacheFrame = -1;
   int _lastUpdateErrorFrame = -1000;
   int _lastSyncHeartbeatFrame = -1000;

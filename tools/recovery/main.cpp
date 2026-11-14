@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <string>
 
 namespace R = Vivify::Recovery;
@@ -81,9 +82,19 @@ int main() {
   R::LevelStarted("/maps/fallaway", 8000);
   R::MapTrailStarted(0.0f, 8000);
   std::string const trailCrash = R::ProcessPreviousRun(8100);
-  check("a crash right after the map trail blames the trail",
-        R::SkipsMapTrails("/maps/fallaway") && trailCrash.find("saber trail") != std::string::npos);
+  check("a trail made at the very start is not blamed (0.15.17)",
+        !R::SkipsMapTrails("/maps/fallaway") && trailCrash.find("saber trail") == std::string::npos);
   check("and skips no effect", R::SkippedBlits("/maps/fallaway").empty());
+
+  // An entry 0.15.16 wrote for a start-of-song trail is ignored.
+  {
+    std::ofstream list(dir / "RecoveryMaps.txt", std::ios::app);
+    list << "/maps/aether\t1794614018\t<map saber trails>\n";
+  }
+  check("an old trail entry gives the trail back", !R::SkipsMapTrails("/maps/aether"));
+  check("and is not taken for an effect", R::SkippedBlits("/maps/aether").empty() ||
+                                              R::SkippedBlits("/maps/aether") ==
+                                                  std::vector<std::string>{"assets/aether/materials/intro/introbokeh.mat"});
 
   // An effect, then the trail half a second later in the same second, then the crash (WHY'S THIS DEALER).
   R::LevelStarted("/maps/dealer2", 9000);

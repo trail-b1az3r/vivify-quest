@@ -1377,6 +1377,7 @@ void Runtime::RefreshSlowProbes() {
 // Called for every camera Unity renders, the hidden ones a reflection probe
 // uses included: those draw with the map's single-view shaders.
 void Runtime::OnAnyCameraPreCull(UnityEngine::Camera* camera) {
+  PullHeadsetHud(camera);
   if (_currentBeatmapData == nullptr || !GetSingleViewMapCameras()) return;
   if (!IsAlive(camera) || camera->get_cameraType().value__ != 16) return;  // CameraType.Reflection
   // Hidden probe cameras have no SingleViewCameraShaders component. Use the
@@ -1419,10 +1420,71 @@ void Runtime::InstallCameraCallbacks() {
   UnityEngine::Camera::setStaticF_onPostRender(reinterpret_cast<UnityEngine::Camera_CameraCallback*>(
       System::Delegate::Combine(reinterpret_cast<System::Delegate*>(UnityEngine::Camera::getStaticF_onPostRender()),
                                 reinterpret_cast<System::Delegate*>(post))));
-  PaperLogger.info("Vivify: watching reflection probe cameras, to draw them with single-view shaders");
+  PaperLogger.info("Vivify: watching cameras (reflection probes, the map's HUD)");
+}
+
+// Fall Away's HUD text, on layer 17, follows the head at the distance the map
+// gives it, which in the headset put it behind the notes coming at the player
+// (only their arrows showed through) and farther than is comfortable to read.
+// Just before the main camera draws, each such object is pulled toward the
+// camera to kHudDistance of its distance and scaled by the same amount: it
+// looks the same size, only nearer (0.15.17). A map that sets the position
+// every frame keeps doing so; one that leaves it alone is not pulled again
+// on top of the last pull.
+constexpr float kHudDistance = 0.7f;
+constexpr int kHudLayer = 17;
+
+namespace {
+bool SameVector(UnityEngine::Vector3 const& a, UnityEngine::Vector3 const& b) {
+  return std::abs(a.x - b.x) < 1e-5f && std::abs(a.y - b.y) < 1e-5f && std::abs(a.z - b.z) < 1e-5f;
+}
+}  // namespace
+
+void Runtime::PullHeadsetHud(UnityEngine::Camera* camera) {
+  if (_hudObjects.empty() || _currentBeatmapData == nullptr || _isResetting || !IsAlive(camera)) return;
+  auto main = UnityEngine::Camera::get_main();
+  if (camera != main.unsafePtr()) return;
+  auto const eye = camera->get_transform()->get_position();
+  for (auto& hud : _hudObjects) {
+    if (!IsAlive(hud.transform)) continue;
+    auto const position = hud.transform->get_position();
+    auto const scale = hud.transform->get_localScale();
+    // Moved or rescaled by the map since the last pull: that is the new original.
+    if (!hud.applied || !SameVector(position, hud.setPosition)) hud.originalPosition = position;
+    if (!hud.applied || !SameVector(scale, hud.setScale)) hud.originalScale = scale;
+    auto const& o = hud.originalPosition;
+    hud.setPosition = UnityEngine::Vector3(eye.x + (o.x - eye.x) * kHudDistance, eye.y + (o.y - eye.y) * kHudDistance,
+                                           eye.z + (o.z - eye.z) * kHudDistance);
+    hud.setScale = UnityEngine::Vector3(hud.originalScale.x * kHudDistance, hud.originalScale.y * kHudDistance,
+                                        hud.originalScale.z * kHudDistance);
+    hud.transform->set_position(hud.setPosition);
+    hud.transform->set_localScale(hud.setScale);
+    hud.applied = true;
+  }
 }
 
 void Runtime::NoteHeadsetLayers(UnityEngine::GameObject* root, std::string const& asset) {
+  if (IsAlive(root)) {
+    int added = 0;
+    auto renderers = root->GetComponentsInChildren<UnityEngine::Renderer*>(true);
+    for (int i = 0; renderers && i < renderers.size(); i++) {
+      auto* renderer = renderers[i];
+      if (!IsAlive(renderer)) continue;
+      auto gameObject = renderer->get_gameObject();
+      if (!IsAlive(gameObject.unsafePtr()) || gameObject->get_layer() != kHudLayer) continue;
+      auto* transform = renderer->get_transform().unsafePtr();
+      bool const known = std::any_of(_hudObjects.begin(), _hudObjects.end(),
+                                     [transform](HudObject const& hud) { return hud.transform == transform; });
+      if (known) continue;
+      _hudObjects.push_back(HudObject{transform});
+      added++;
+    }
+    if (added > 0) {
+      InstallCameraCallbacks();
+      PaperLogger.info("Vivify HUD: {} object(s) of '{}' on layer {} drawn at {:.0f}% of their distance",
+                       added, asset, kHudLayer, kHudDistance * 100.0f);
+    }
+  }
   uint32_t const used = HeadsetLayersUsed(root);
   if ((used & ~_mapHeadsetLayers) == 0) return;
   _mapHeadsetLayers |= used;
