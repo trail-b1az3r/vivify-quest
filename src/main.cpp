@@ -522,7 +522,7 @@ std::optional<bool> GetMapSetting(std::string const& levelPath, std::string_view
   return it->second;
 }
 
-void SelectSettingsMap(std::string const& levelPath) {
+void LoadMapOverridesFor(std::string const& levelPath) {
   std::lock_guard lock(gMapOverridesMutex);
   LoadMapOverridesLocked(MapKeyOf(levelPath));
 }
@@ -1473,6 +1473,9 @@ void SetRecoveryModeActive(bool active) {
   gRecoveryModeActive.store(active);
 }
 
+void SelectSettingsMap(std::string const& levelPath) {
+  LoadMapOverridesFor(levelPath);
+}
 bool GetGameMirrors() {
   return MapBool(kGameMirrorsConfigKey, gGameMirrors);
 }
