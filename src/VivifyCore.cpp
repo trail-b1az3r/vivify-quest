@@ -183,6 +183,7 @@ void Runtime::Update() {
     UpdateSaberReplacementColors();
     RefreshSlowProbes();
     HideForeignSaberLights();
+    HideGameMirrors();
     SyncReplacementTintColors();
   } catch (std::exception const& ex) {
     LogThrottledUpdateError(ex.what());
@@ -621,6 +622,7 @@ void Runtime::ResetRuntime(std::string_view reason) {
   _blitGuardWatches.clear();
   _slowProbes.clear();
   RestoreForeignSaberLights();
+  RestoreGameMirrors();
   RestoreVivifyFoveation();
   _blitGuardKilled.clear();
   _blitGuardAllOff = false;

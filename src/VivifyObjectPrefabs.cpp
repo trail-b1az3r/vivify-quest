@@ -1,5 +1,6 @@
 #include "VivifyRuntimeInternal.hpp"
 #include "VivifyRecovery.hpp"
+#include "GlobalNamespace/Mirror.hpp"
 #include <ctime>
 #include "UnityEngine/SystemInfo.hpp"
 #include "Unity/XR/Oculus/Utils.hpp"
@@ -1596,6 +1597,46 @@ void Runtime::RestoreVivifyFoveation() {
   }
   // A later reset retries failed restoration using the original snapshot.
   if (restored && !_foveationEyeTracked) _foveationApplied = false;
+}
+
+// Game Mirrors off for this map (0.15.18). The game's mirrors -- the floor and
+// track mirrors, and map objects that use the game's mirror material, such
+// as Lifelike's waterfall -- render a reflection camera of their own, and in
+// Lifelike, luminescent and "you" that reflection turns with the head
+// (issue #81, with GraphicsTweaks' mirrors on). Their renderers are switched
+// off about once a second while such a map plays, which also stops their
+// reflection camera, and come back when the level ends. Once a second
+// catches a mirror the map turns on part way through.
+void Runtime::HideGameMirrors() {
+  if (_currentBeatmapData == nullptr || _isResetting || GetGameMirrors()) return;
+  float const now = UnityEngine::Time::get_unscaledTime();
+  if (now >= _lastMirrorSweep && now - _lastMirrorSweep < 1.0f) return;
+  _lastMirrorSweep = now;
+  auto mirrors = UnityEngine::Object::FindObjectsOfType<GlobalNamespace::Mirror*>();
+  int hidden = 0;
+  for (int i = 0; mirrors && i < mirrors.size(); i++) {
+    auto* mirror = mirrors[i];
+    if (!IsAlive(mirror)) continue;
+    auto* renderer = mirror->____renderer.unsafePtr();
+    if (!IsAlive(renderer) || !renderer->get_enabled()) continue;
+    renderer->set_enabled(false);
+    if (std::find(_hiddenMirrorRenderers.begin(), _hiddenMirrorRenderers.end(), renderer) ==
+        _hiddenMirrorRenderers.end()) {
+      _hiddenMirrorRenderers.push_back(renderer);
+      hidden++;
+    }
+  }
+  if (hidden > 0) {
+    PaperLogger.info("Vivify: {} game mirror(s) switched off for this map (Game Mirrors is off for it)", hidden);
+  }
+}
+
+void Runtime::RestoreGameMirrors() {
+  for (auto* renderer : _hiddenMirrorRenderers) {
+    if (IsAlive(renderer)) renderer->set_enabled(true);
+  }
+  _hiddenMirrorRenderers.clear();
+  _lastMirrorSweep = -1.0f;
 }
 
 void Runtime::RestoreForeignSaberLights() {

@@ -4,6 +4,9 @@
 #include "VivifyGlobalLog.hpp"
 #include "VivifyCrashReport.hpp"
 #include <sstream>
+#include <mutex>
+#include <optional>
+#include <unordered_map>
 #include <algorithm>
 #include <ctime>
 #include <cerrno>
@@ -166,6 +169,8 @@ bool gMapReflectionProbes = true;
 bool gMapSabers = true;
 bool gSaberLights = false;
 bool gFlatScreenGuard = true;
+// The game's own mirrors during a Vivify map (0.15.18); per map only.
+bool gGameMirrors = true;
 bool gFullReflectionProbes = false;
 bool gSingleViewMapCameras = true;
 bool gAutoEffectResolution = true;
@@ -465,6 +470,99 @@ std::string MapKeyOf(std::string const& levelPath) {
   return std::filesystem::path(trimmed).filename().string();
 }
 
+// Per-map settings (0.15.18). For each map (by song folder name) a few
+// settings can be set On or Off instead of following the global value:
+//   "mapSettings": { "<song folder>": { "<setting's config key>": true, ... } }
+// The value stored is the setting's own value (disableAllBlits=true means
+// effects off). Only settings read while a map plays are offered: the
+// geometry ones decide how a bundle is converted, and a conversion running
+// for another map would pick up this map's choice.
+constexpr char const* kMapSettingsConfigKey = "mapSettings";
+constexpr std::string_view kGameMirrorsConfigKey = "gameMirrors";
+
+std::mutex gMapOverridesMutex;
+std::string gMapOverridesFor;  // song folder name the cache below is for
+std::unordered_map<std::string, bool> gMapOverrides;
+
+void LoadMapOverridesLocked(std::string const& mapKey) {
+  gMapOverridesFor = mapKey;
+  gMapOverrides.clear();
+  if (mapKey.empty()) return;
+  auto const& doc = getConfig().config;
+  if (!doc.IsObject()) return;
+  auto all = doc.FindMember(kMapSettingsConfigKey);
+  if (all == doc.MemberEnd() || !all->value.IsObject()) return;
+  auto map = all->value.FindMember(mapKey.c_str());
+  if (map == all->value.MemberEnd() || !map->value.IsObject()) return;
+  for (auto const& member : map->value.GetObject()) {
+    if (member.value.IsBool()) gMapOverrides[member.name.GetString()] = member.value.GetBool();
+  }
+}
+
+// The selected map's own value for a setting, if it has one.
+std::optional<bool> MapOverride(std::string_view key) {
+  std::lock_guard lock(gMapOverridesMutex);
+  if (gMapOverrides.empty()) return std::nullopt;
+  auto it = gMapOverrides.find(std::string(key));
+  if (it == gMapOverrides.end()) return std::nullopt;
+  return it->second;
+}
+
+bool MapBool(std::string_view key, bool global) {
+  auto const value = MapOverride(key);
+  return value.has_value() ? *value : global;
+}
+
+std::optional<bool> GetMapSetting(std::string const& levelPath, std::string_view key) {
+  std::string const mapKey = MapKeyOf(levelPath);
+  std::lock_guard lock(gMapOverridesMutex);
+  if (mapKey != gMapOverridesFor) LoadMapOverridesLocked(mapKey);
+  auto it = gMapOverrides.find(std::string(key));
+  if (it == gMapOverrides.end()) return std::nullopt;
+  return it->second;
+}
+
+void SelectSettingsMap(std::string const& levelPath) {
+  std::lock_guard lock(gMapOverridesMutex);
+  LoadMapOverridesLocked(MapKeyOf(levelPath));
+}
+
+void SetMapSetting(std::string const& levelPath, std::string_view key, std::optional<bool> value) {
+  std::string const mapKey = MapKeyOf(levelPath);
+  if (mapKey.empty()) return;
+  auto& config = getConfig();
+  auto& doc = config.config;
+  if (!doc.IsObject()) doc.SetObject();
+  auto& allocator = doc.GetAllocator();
+  auto all = doc.FindMember(kMapSettingsConfigKey);
+  if (all == doc.MemberEnd() || !all->value.IsObject()) {
+    if (all != doc.MemberEnd()) doc.RemoveMember(all);
+    doc.AddMember(rapidjson::Value(kMapSettingsConfigKey, allocator), rapidjson::Value(rapidjson::kObjectType),
+                  allocator);
+    all = doc.FindMember(kMapSettingsConfigKey);
+  }
+  auto map = all->value.FindMember(mapKey.c_str());
+  if (map == all->value.MemberEnd() || !map->value.IsObject()) {
+    if (map != all->value.MemberEnd()) all->value.RemoveMember(map);
+    all->value.AddMember(rapidjson::Value(mapKey.c_str(), allocator), rapidjson::Value(rapidjson::kObjectType),
+                         allocator);
+    map = all->value.FindMember(mapKey.c_str());
+  }
+  std::string const name(key);
+  map->value.RemoveMember(name.c_str());
+  if (value.has_value()) {
+    map->value.AddMember(rapidjson::Value(name.c_str(), allocator), rapidjson::Value(*value), allocator);
+  }
+  if (map->value.ObjectEmpty()) all->value.RemoveMember(mapKey.c_str());
+  config.Write();
+  {
+    std::lock_guard lock(gMapOverridesMutex);
+    LoadMapOverridesLocked(mapKey);
+  }
+  PaperLogger.info("Vivify settings: '{}' for map '{}' is now {}", name, mapKey,
+                   value.has_value() ? (*value ? "true" : "false") : "the global setting");
+}
+
 void SetIntConfigValue(std::string_view key, int newValue, int& value) {
   if (gSettingsMenuBuilding) {
     PaperLogger.info("Vivify settings: ignoring a '{}' change to {} that arrived while the menu was "
@@ -709,6 +807,60 @@ SafePtrUnity<UnityEngine::UI::Button> gAdvancedButton;
 SafePtrUnity<HMUI::CurvedTextMeshPro> gThisMapText;
 SafePtrUnity<UnityEngine::UI::Button> gThisMapButton;
 
+// The per-map settings offered under This Map (0.15.18). `inverted` when the
+// setting is stored as "disable ..." but shown as the thing being on.
+struct MapSettingRow {
+  char const* label;
+  std::string_view key;
+  bool inverted;
+  bool (*global)();
+};
+bool GlobalDisableAllBlits() { return gDisableAllBlits; }
+bool GlobalFlatScreenGuard() { return gFlatScreenGuard; }
+bool GlobalMapSabers() { return gMapSabers; }
+bool GlobalDisableCustomNoteVisuals() { return gDisableCustomNoteVisuals; }
+bool GlobalMapReflectionProbes() { return gMapReflectionProbes; }
+bool GlobalMapRealtimeShadows() { return gMapRealtimeShadows; }
+bool GlobalSceneDepth() { return gSceneDepth; }
+bool GlobalAudioLink() { return gAudioLink; }
+bool GlobalGameMirrors() { return gGameMirrors; }
+MapSettingRow const kMapSettingRows[] = {
+    {"Screen Effects", kDisableAllBlitsConfigKey, true, GlobalDisableAllBlits},
+    {"Flat-Screen Effect Guard", kFlatScreenGuardConfigKey, false, GlobalFlatScreenGuard},
+    {"Map Sabers", kMapSabersConfigKey, false, GlobalMapSabers},
+    {"Custom Note Visuals", kDisableCustomNoteVisualsConfigKey, true, GlobalDisableCustomNoteVisuals},
+    {"Game Mirrors", kGameMirrorsConfigKey, false, GlobalGameMirrors},
+    {"Reflection Probes", kMapReflectionProbesConfigKey, false, GlobalMapReflectionProbes},
+    {"Realtime Shadows", kMapRealtimeShadowsConfigKey, false, GlobalMapRealtimeShadows},
+    {"Scene Depth", kSceneDepthConfigKey, false, GlobalSceneDepth},
+    {"AudioLink", kAudioLinkConfigKey, false, GlobalAudioLink},
+};
+std::vector<SafePtrUnity<UnityEngine::UI::Button>> gMapSettingButtons;
+
+std::string MapSettingButtonText(MapSettingRow const& row, std::string const& path) {
+  if (path.empty()) return std::string(row.label) + ": -";
+  auto const stored = GetMapSetting(path, row.key);
+  auto shown = [&row](bool value) { return row.inverted ? !value : value; };
+  if (!stored.has_value()) {
+    return std::string(row.label) + ": default (" + (shown(row.global()) ? "on" : "off") + ")";
+  }
+  return std::string(row.label) + ": <color=#5fd35f>" + (shown(*stored) ? "ON" : "OFF") + "</color> for this map";
+}
+
+// default -> on -> off -> default
+void CycleMapSetting(size_t index) {
+  std::string const path = Vivify::SelectedVivifyMapPath();
+  if (path.empty() || index >= std::size(kMapSettingRows)) return;
+  auto const& row = kMapSettingRows[index];
+  auto const stored = GetMapSetting(path, row.key);
+  auto store = [&row](bool shownValue) { return row.inverted ? !shownValue : shownValue; };
+  std::optional<bool> next;
+  if (!stored.has_value()) next = store(true);
+  else if ((row.inverted ? !*stored : *stored)) next = store(false);
+  else next = std::nullopt;
+  SetMapSetting(path, row.key, next);
+}
+
 void RefreshThisMapRow() {
   std::string const path = Vivify::SelectedVivifyMapPath();
   std::string name = path;
@@ -727,6 +879,11 @@ void RefreshThisMapRow() {
              "</size>";
     }
     gThisMapText->set_text(StringW(line));
+  }
+  for (size_t i = 0; i < gMapSettingButtons.size() && i < std::size(kMapSettingRows); i++) {
+    if (gMapSettingButtons[i]) {
+      BSML::Lite::SetButtonText(gMapSettingButtons[i].ptr(), StringW(MapSettingButtonText(kMapSettingRows[i], path)));
+    }
   }
   if (gThisMapButton) {
     BSML::Lite::SetButtonText(gThisMapButton.ptr(), StringW(path.empty() ? std::string("Use Windows Bundle: -")
@@ -848,6 +1005,24 @@ void RegisterModSettings() {
             RefreshThisMapRow();
           });
           hinted(gThisMapButton.ptr(), u"Use Windows Bundle");
+          // Per-map settings (0.15.18): each press goes default, on, off.
+          gMapSettingButtons.clear();
+          for (size_t i = 0; i < std::size(kMapSettingRows); i++) {
+            auto* created = BSML::Lite::CreateUIButton(parent, StringW(std::string(kMapSettingRows[i].label)), [i]() {
+              CycleMapSetting(i);
+              RefreshThisMapRow();
+            });
+            if (auto gameObject = created ? created->get_gameObject() : nullptr) {
+              BSML::Lite::AddHoverHint(gameObject.unsafePtr(),
+                                       StringW(std::string("This map only: default follows the setting below, then "
+                                                           "on, then off. ") +
+                                               (kMapSettingRows[i].key == kGameMirrorsConfigKey
+                                                    ? "Off hides the game's mirrors (and water using them) in this "
+                                                      "map."
+                                                    : "")));
+            }
+            gMapSettingButtons.emplace_back(created);
+          }
           RefreshThisMapRow();
         }
 
@@ -1211,7 +1386,7 @@ bool GetDisableBeat0FilmgrainBlit() {
 }
 
 bool GetDisableAllBlits() {
-  return gDisableAllBlits;
+  return MapBool(kDisableAllBlitsConfigKey, gDisableAllBlits);
 }
 
 bool GetDisableCreateCameraDepth() {
@@ -1219,7 +1394,7 @@ bool GetDisableCreateCameraDepth() {
 }
 
 bool GetFlatScreenGuard() {
-  return gFlatScreenGuard;
+  return MapBool(kFlatScreenGuardConfigKey, gFlatScreenGuard);
 }
 
 bool GetSaberLightsOnMapObjects() {
@@ -1235,11 +1410,11 @@ bool GetGeometryRightEyeCopy() {
 }
 
 bool GetMapSabers() {
-  return gMapSabers;
+  return MapBool(kMapSabersConfigKey, gMapSabers);
 }
 
 bool GetDisableCustomNoteVisuals() {
-  return gDisableCustomNoteVisuals;
+  return MapBool(kDisableCustomNoteVisualsConfigKey, gDisableCustomNoteVisuals);
 }
 
 bool GetDisableVisualsInMultiplayer() {
@@ -1259,7 +1434,7 @@ bool GetStandInShading() {
 }
 
 bool GetSceneDepthTexture() {
-  return gSceneDepth;
+  return MapBool(kSceneDepthConfigKey, gSceneDepth);
 }
 
 bool GetSubmitScoresOnVivifyMaps() {
@@ -1271,11 +1446,11 @@ bool GetTranslateShadersOnConversion() {
 }
 
 bool GetAudioLinkEnabled() {
-  return gAudioLink;
+  return MapBool(kAudioLinkConfigKey, gAudioLink);
 }
 
 bool GetMapReflectionProbes() {
-  return gMapReflectionProbes;
+  return MapBool(kMapReflectionProbesConfigKey, gMapReflectionProbes);
 }
 
 bool GetFullReflectionProbes() {
@@ -1298,8 +1473,11 @@ void SetRecoveryModeActive(bool active) {
   gRecoveryModeActive.store(active);
 }
 
+bool GetGameMirrors() {
+  return MapBool(kGameMirrorsConfigKey, gGameMirrors);
+}
 bool GetMapRealtimeShadows() {
-  return gMapRealtimeShadows;
+  return MapBool(kMapRealtimeShadowsConfigKey, gMapRealtimeShadows);
 }
 
 namespace {

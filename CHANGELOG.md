@@ -11,6 +11,57 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.18] - 2026-11-14
+
+From logs_7 (0.15.17). Not tried on a headset.
+
+### Added
+- **Per-map settings**, under **This Map** in the settings, for the selected
+  map. Each press goes **default** (follows the global setting, shown in
+  brackets), then **ON**, then **OFF**, for this map only. The settings are:
+  - Screen Effects
+  - Flat-Screen Effect Guard
+  - Map Sabers
+  - Custom Note Visuals
+  - Game Mirrors
+  - Reflection Probes
+  - Realtime Shadows
+  - Scene Depth
+  - AudioLink
+
+  The geometry settings are left out, because they decide how a PC bundle
+  is converted, and a conversion running for another map would pick up this
+  map's choice. The per-level settings line in the log shows the values in
+  effect, per-map ones included.
+- **Game Mirrors** (per map): Off switches off the game's own mirrors while
+  the map plays, which also stops their reflection cameras. That covers the
+  floor and track mirrors, and map objects that use the game's mirror
+  material, such as Lifelike's waterfall. The renderers come back when the
+  level ends.
+
+### Found in the logs, not changed
+- **Mirrors and reflections that turn with the head** in Lifelike,
+  luminescent and "you" ([#81](https://github.com/trail-b1az3r/vivify-quest/issues/81)).
+  These are the game's own mirrors, which render on Quest only when
+  GraphicsTweaks turns mirrors on, and Vivify does not change how they are
+  drawn. **Game Mirrors: OFF** for those maps removes them until the cause
+  is found.
+- **Sweet Memories' TV.** Its material `broidk` points at a shader that is in
+  neither the map's Quest bundle nor its PC bundle, so on the headset it is
+  Unity's error shader. Vivify draws a plain grey stand-in. The glitch screen
+  effects are ordinary effects (Screen Effects can be turned off for this map
+  alone). The wireframe objects use a geometry shader.
+- **743 Aether culled when looking right**: 0.15.17's guess was wrong. The
+  log shows the game sets **no** per-layer cull distances
+  (`per-layer cull distances: none`), so that change does nothing. The cause
+  is still open.
+- **Crash reports** (the 0.15.15 recorder worked): none of the three crashes
+  was in Vivify's code.
+  - At startup, inside the unicode mod's `late_load`.
+  - In BSML's list view (`CustomListTableData::CellForIdx`) in the menu.
+  - On one of Unity's worker threads, just after a map with Mochie water
+    loaded, with nothing but Unity in the stack.
+
 ## [0.15.17] - 2026-11-14
 
 From logs_6 (0.15.16) and the Quest build of 743 Aether. Not tried on a

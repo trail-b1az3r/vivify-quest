@@ -1048,6 +1048,8 @@ void Runtime::HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEv
   // and a crash on the way back to the menu should show how far that got.
   PaperLogger.info("Vivify level selected: path='{}' isCustom={} hasDetails={}", _selectedLevelPath,
                    BoolText(event.isCustom), BoolText(event.customLevelDetails.has_value()));
+  // This map's own settings, if it has any, now stand in for the global ones (0.15.18).
+  SelectSettingsMap(_selectedLevelPath);
   FlushVivifyLogs();
   if (event.customLevelDetails) {
     auto const& requirements = event.customLevelDetails->difficultyDetails.requirements;
@@ -1086,7 +1088,7 @@ void Runtime::SelectBundleForLevel() {
                    "disableCustomNoteVisuals={} disableAllBlits={} multipassRendering={} effectResolution={}% "
                    "sceneDepth={} prepareShaders={} geometryEffects={} offscreenCulling={} farCulling={}m crashGuard={} "
                    "pcBundleForMissingShaders={} replayRenderMode={} windowsBundleForThisMap={} mapRealtimeShadows={} "
-                   "mapReflectionProbes={} crashRecovery={}",
+                   "mapReflectionProbes={} crashRecovery={} gameMirrors={} mapSabers={}",
                    BoolText(GetStandInShading()), BoolText(GetConvertPcBundlesOnDevice()),
                    BoolText(GetDisableCustomNoteVisuals()), BoolText(GetDisableAllBlits()),
                    BoolText(GetMultipassRenderingEnabled()), GetEffectResolutionPercent(),
@@ -1096,7 +1098,7 @@ void Runtime::SelectBundleForLevel() {
                    BoolText(GetReplayRenderMode()), BoolText(GetWindowsBundleForMap(_selectedLevelPath)),
                    BoolText(GetMapRealtimeShadows()),
                    GetMapReflectionProbes() ? (GetFullReflectionProbes() ? "full" : "reduced") : "off",
-                   BoolText(GetCrashRecovery()));
+                   BoolText(GetCrashRecovery()), BoolText(GetGameMirrors()), BoolText(GetMapSabers()));
 
   std::string const androidBundlePath = JoinPath(_selectedLevelPath, std::string(kBundleFile));
   bool const androidExists = std::filesystem::exists(androidBundlePath);
