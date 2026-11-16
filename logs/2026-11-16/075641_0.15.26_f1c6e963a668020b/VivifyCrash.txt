@@ -1,0 +1,20 @@
+=== Vivify 0.15.26 native crash at 1794815790 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x74ecd0f508
+thread 7161 'UnityMain'
+pc 0x75845036e4  lr 0x729b7490ec  sp 0x740244fa10  fp 0x740244fdd0
+backtrace:
+  #00 pc 0x75845036e4  libc.so +0xc76e4
+  #01 lr 0x729b7490ec  libMultiplayerCore.so +0x41d0ec
+  #02 fp 0x729b653f54  libMultiplayerCore.so +0x327f54
+  #03 fp 0x729b7485f4  libMultiplayerCore.so +0x41c5f4 (late_load +0xce8)
+  #04 fp 0x7469981b9c  libsl2.so +0x543b9c
+  #05 fp 0x7402f08fb4  libunity.so +0xab1fb4
+  #06 fp 0x757308a6c3
+last Vivify log lines (oldest first):
+  Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global-p5.txt
+  Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+  Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
