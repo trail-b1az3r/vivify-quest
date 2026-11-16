@@ -1,0 +1,52 @@
+=== Vivify 0.15.26 native crash at 1794817374 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x1d0
+thread 30289 'Thread-3'
+pc 0x7b47a63740  lr 0x7b47a636f8  sp 0x7a5797d480  fp 0x7a5797d7b0
+backtrace:
+  #00 pc 0x7b47a63740  libunity.so +0x13ee740
+  #01 lr 0x7b47a636f8  libunity.so +0x13ee6f8
+  #02 fp 0x7b47c499f4  libunity.so +0x15d49f4
+  #03 fp 0x7cccd32334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle already preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b15c (Passing Memories - MadChase, Cush)/bundleAndroid2021.vivify'
+  Vivify: the Replay mod's button is clickable again now that the map is ready
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify saber chain modelNode(smc): BasicSaberModel(Clone)[w=(0.21,0.23,0.06) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.21,0.23,0.06) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0
+  Vivify saber chain saberNode: RightSaber[w=(0.21,0.23,0.06) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Lo
+  Vivify saber chain initParent: RightSaber[w=(0.21,0.23,0.06) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- L
+  Vivify saber chain modelNode(smc): BasicSaberModel(Clone)[w=(-0.20,0.23,0.06) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.20,0.23,0.06) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l
+  Vivify saber chain saberNode: LeftSaber[w=(-0.20,0.23,0.06) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+  Vivify saber chain initParent: LeftSaber[w=(-0.20,0.23,0.06) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <-
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(0.18,1.62,0.06) fwd=(-0.03,-0.70,0.72)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify PrepareBeatmap: v2=false customEvents=2 triggerTime=0 beatmapAD=true
+  Vivify graphics: api=OpenGLES3 (11) shaderLevel=50 (SM5.0) geometryShaderStagePossible=true gpu='Adreno (TM) 740'
+  Vivify platform: os='Android OS 14 / API-34 (UP1A.231005.007.A1/4069240023000610)' device='Oculus Quest 3S' gpu='Adreno (TM) 740' vendor='Qualcomm' api=11 stereoMode=3 xrOcclusionMesh=true supportsInstancing=true supportsR8=true supportsDe
+  Vivify bundle preloaded, rebuilding asset caches: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b15c (Passing Memories - MadChase, Cush)/bundleAndroid2021.vivify'
+  Vivify Projector interface: managedType=false nativeGetMaterial=true nativeSetMaterial=true
+  Vivify texture decode: scanned 53 material(s), replaced 0 unsupported texture reference(s) in 1ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify material 'New Material': '_BlendNoiseSource' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'New Material': '_FlowMapUV' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'New Material': '_InvertNormals' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'New Material': '_TexCoordSpace' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'New Material': '_TexCoordSpaceSwizzle' is an int in shader 'Mochie/Water'; set as integer 1
+  Vivify material 'New Material': '_VisualizeFlowmap' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'New Material - Copy': '_BlendNoiseSource' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'New Material - Copy': '_FlowMapUV' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'New Material - Copy': '_InvertNormals' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'New Material - Copy': '_TexCoordSpace' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'New Material - Copy': '_TexCoordSpaceSwizzle' is an int in shader 'Mochie/Water'; set as integer 1
+  Vivify material 'New Material - Copy': '_VisualizeFlowmap' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify: maps may turn realtime reflection probes on (full quality)
+  Vivify: 'Map Realtime Shadows' is on; the game's shadow quality is left as it is
+  Vivify preload prefab: asset='assets/genshin/up/mon.prefab' id='env' instance=true
+  Vivify PreloadInstantiatePrefabs: 1 prefab event(s) preloaded
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/genshin/up/mon.prefab' id='env' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='env' asset='assets/genshin/up/mon.prefab' tracks=0 animators=2 offscreenCulled=0
+  Vivify catch-up: replayed 1 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=1 livePrefabs=1 preloadedPrefabs=1
+=== end ===
+
