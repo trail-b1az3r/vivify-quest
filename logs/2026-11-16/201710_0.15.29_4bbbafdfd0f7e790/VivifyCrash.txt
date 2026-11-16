@@ -1,0 +1,57 @@
+=== Vivify 0.15.29 native crash at 1794860221 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x7400000001
+thread 17559 'UnityMain'
+pc 0x7bb172691c  lr 0x7bb1726964  sp 0x7c1ca76d20  fp 0x7c1ca76df0
+backtrace:
+  #00 pc 0x7bb172691c  libunity.so +0x6d691c
+  #01 lr 0x7bb1726964  libunity.so +0x6d6964
+  #02 fp 0x7b9cb6378c  libil2cpp.so +0x21ba78c
+  #03 fp 0x79fc2253a8  libVivify.so +0x3983a8
+  #04 fp 0x79fc221980  libVivify.so +0x394980
+  #05 fp 0x79fc172d08  libVivify.so +0x2e5d08 (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+  #06 fp 0x79fc080290  libVivify.so +0x1f3290
+  #07 fp 0x7b9cb63840  libil2cpp.so +0x21ba840
+  #08 fp 0x7b9cb6378c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify InstantiatePrefab spawned: id='clockscene' asset='assets/abstract/clockscene.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify catch-up: replayed 3 event(s) up to time=-0.26666668
+  Vivify PrepareBeatmap done: assets=71 livePrefabs=1 preloadedPrefabs=21
+  Vivify custom event: type='AssignObjectPrefab' time=0 songTime=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/sabers/saber.prefab' tracks=0 additive=false saberType=0
+  Vivify AssignObjectPrefab(trail): asset='assets/sabers/sabertrail.mat' saberType=0 additive=false
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/sabers/saber.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/sabers/sabertrail.mat' saberType=1 additive=false
+  Vivify sync: registered 'saber(Clone)' with 0 video / 2 animator / 3 particle component(s), startTime=0
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=7 hiddenOriginals=6
+  Vivify sync: registered 'saber(Clone)' with 0 video / 2 animator / 3 particle component(s), startTime=0
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber replaced (type 0): models=1 trails=1 spawned=2 renderers=7 hiddenOriginals=6
+  Vivify custom event: type='CreateScreenTexture' time=0 songTime=0
+  Vivify custom event: type='Blit' time=0 songTime=0
+  Vivify Blit skipped at time 0: 'assets/shaders/filmgrain.mat' was starting when this map last went down (crash recovery; 'Forget Crash Recovery' in the advanced settings brings it back)
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify visual check at 5s: 2 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: a live note has 4 renderer(s):
+  Vivify visual check:   'NoteCube' enabled=true active=true layer=8 material='NoteHD' shader='Custom/NoteHD' supported=true queue=2004 block: _Cutout=0.43 _Color=(0.40,0.40,0.40,1.00)
+  Vivify visual check:   'NoteArrow' enabled=true active=true layer=8 material='NoteArrowHD' shader='Custom/GlowingInstancedHD' supported=true queue=2002 block: _Cutout=0.43 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'NoteArrowGlow' enabled=true active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.40,0.40,0.40,0.58)
+  Vivify visual check:   'NoteCircleGlow' enabled=true active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.40,0.40,0.40,0.58)
+  Vivify visual check: 4 light(s) on, 0 with shadows: 'LightRight' type=2 intensity=1.00 shadows=0; 'LightLeft' type=2 intensity=1.00 shadows=0; 'LightFront' type=2 intensity=2.00 shadows=0; 'LightBottom' type=2 intensity=8.00 shadows=0; amb
+  Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout
+  Vivify visual check: cameras that may render the mirror: 'MainCamera' stereo=true eye=3 target=screen mask=0x3d3bfd37
+  Vivify visual check at 5s: 87 active renderer(s), 2 with no runnable shader; most drawn: Custom/CustomParticles x21, BeatSaber/Unlit Glow x16, Abstract/Debris2 x16, Saber/SaberReflective x6, Custom/NoteHD x3, Custom/SimpleLit x2, Custom/Gl
+  Vivify grab texture '_Base' at 5s: nothing bound
+  Vivify grab texture '_BlackHoleGrabTex' at 5s: nothing bound
+  Vivify grab texture '_EclipseGrabTex' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+  Vivify visual check: main camera cullingMask=0x3d3bfd37 depthTextureMode=1 clearFlags=2
+  Vivify custom event: type='Blit' time=11.2 songTime=11.203063
+  Vivify material: context=Blit asset=assets/shaders/blackout.mat material='BlackOut' shader='PostProcessing/BlackOut' supported=true internalError=false
+  Vivify Blit event: time=11.2 asset='assets/shaders/blackout.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=6
+  Vivify CreateScreenTexture: id='_ScreenTex' size=840x880 layers=2 dimension=5 graphicsFormat=4 filter=-1
+=== end ===
+
