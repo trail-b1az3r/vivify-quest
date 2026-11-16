@@ -1,0 +1,229 @@
+=== Vivify 0.15.26 native crash at 1794834313 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x28a300002916
+thread 10569 'UnityMain'
+pc 0x7cd91559d8  lr 0x7cd91559a8  sp 0x7b4d74f710  fp 0x7b4d74f7b0
+backtrace:
+  #00 pc 0x7cd91559d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7cd91559a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7b4e0e9c64  libmetacore.so +0xcdc64
+  #03 fp 0x7bba79f55c  libsl2.so +0x4fb55c
+  #04 fp 0x7bba79ee74  libsl2.so +0x4fae74
+  #05 fp 0x7bba79ed48  libsl2.so +0x4fad48
+  #06 fp 0x7bba79ece8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x79c7d56fd4  libBetterHaptics.so +0x10afd4
+  #08 fp 0x7b37b82ee0  libil2cpp.so +0x4aeeee0
+  #09 fp 0x7b3524e78c  libil2cpp.so +0x21ba78c
+  #10 fp 0x7cd1c1c6c3
+  #11 fp 0x7b4d751f80
+last Vivify log lines (oldest first):
+  Vivify catch-up event: type='AssignObjectPrefab' time=257.7931
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/terrain note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/aether/prefabs/custom objects/terrain note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/terrain note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up: replayed 1445 event(s) up to time=269.40265
+  Vivify PrepareBeatmap done: assets=298 livePrefabs=1 preloadedPrefabs=6
+  Vivify frame took 451.1ms, over the 50ms budget
+  Vivify visual check at 271s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+  Vivify visual check at 271s: 31 active renderer(s), 0 with no runnable shader; most drawn: Swifter/Gemstone x8, Custom/CustomParticles x7, Swifter/SimpleColor x4, Custom/NoteHD x3, Swifter/VFX/StarFlare x3, Swifter/SaberTrail x2, Custom/Bl
+  Vivify visual check: main camera cullingMask=0x7f7bfff7 depthTextureMode=1 clearFlags=2
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify visual check at 271s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check at 271s: 44 active renderer(s), 0 with no runnable shader; most drawn: Swifter/SimpleColor x8, Swifter/Gemstone x8, Custom/CustomParticles x7, Custom/NoteHD x3, Swifter/VFX/StarFlare x3, Swifter/VFX/Strand x2, Swifter/V
+  Vivify multiplayer check: inMultiplayerGameplay=false multiplayerModLoaded=true
+  Vivify scene route: native multiview; no separate-eye scene renders needed for this frame
+  Vivify visual check at 271s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify custom event: type='DestroyObject' time=271.86206 songTime=271.89575
+  Vivify DestroyObject: destroying live prefab id='prefab_outro_1'
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.53,0.34) fwd=(-0.25,-0.32,0.91)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=6 synced=0 secondaryCameras=0 declaredTextures=0 assets=298
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify Send Logs: queued behind the current upload
+  Vivify Send Logs: uploaded 3 file part(s), 2137 KB (logs/2026-11-16/052620_0.15.26_f2a6b85d27a5cbd3 760842a
+  )
+  Vivify Send Logs: uploaded 2 file part(s), 2643 KB (logs/2026-11-16/052624_0.15.26_e0ddd57d51787d99 54589a4
+  )
+=== end ===
+
+=== Vivify 0.15.26 native crash at 1794852208 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0xa38289e6666848
+thread 25702 'UnityMain'
+pc 0x7b285c3538  lr 0x7b25ee9840  sp 0x7c26c193b0  fp 0x7c26c19410
+backtrace:
+  #00 pc 0x7b285c3538  libil2cpp.so +0x4894538
+  #01 lr 0x7b25ee9840  libil2cpp.so +0x21ba840
+  #02 fp 0x7b25ee978c  libil2cpp.so +0x21ba78c
+  #03 fp 0x796bf9b444  libVivify.so +0x390444
+  #04 fp 0x796bf97a1c  libVivify.so +0x38ca1c
+  #05 fp 0x796beeb1b8  libVivify.so +0x2e01b8 (_ZN6Vivify13CameraApplier13RenderEffectsEPN11UnityEngine13RenderTextureES3_ +0x2e0)
+  #06 fp 0x796beea8ac  libVivify.so +0x2df8ac (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+  #07 fp 0x796bdfbde0  libVivify.so +0x1f0de0
+  #08 fp 0x7b25ee9840  libil2cpp.so +0x21ba840
+  #09 fp 0x7b25ee978c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/gemstone note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/gemstone note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/gemstone note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/gemstone note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/gemstone note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/black outline note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/aether/prefabs/custom objects/black outline note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/black outline note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/black outline note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/aether/prefabs/custom objects/black outline note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/black outline note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/white outline note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/aether/prefabs/custom objects/white outline note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/white outline note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 182 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=37 livePrefabs=1 preloadedPrefabs=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify: Reduce Debris player option = false (custom debris enabled)
+  Vivify custom event: type='SetMaterialProperty' time=2.0689654 songTime=2.0706172
+  Vivify custom event: type='SetMaterialProperty' time=2.0689654 songTime=2.0706172
+  Vivify custom event: type='SetMaterialProperty' time=2.0689654 songTime=2.0706172
+  Vivify custom event: type='Blit' time=2.0689654 songTime=2.0706172
+  Vivify material: context=Blit asset=assets/aether/materials/intro/introbokeh.mat material='IntroBokeh' shader='Swifter/Blit/Bokeh' supported=true internalError=false
+  Vivify Blit event: time=2.0689654 asset='assets/aether/materials/intro/introbokeh.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=10
+=== end ===
+
+=== Vivify 0.15.29 native crash at 1794852228 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7c3d9354dc
+thread 22989 'UnityMain'
+pc 0x7cd914e6fc  lr 0x795d47cff4  sp 0x7c245f8a00  fp 0x7c245f8dc0
+backtrace:
+  #00 pc 0x7cd914e6fc  libc.so +0xc76fc
+  #01 lr 0x795d47cff4  libmpex.so +0x23dff4
+  #02 fp 0x795d3d4b90  libmpex.so +0x195b90
+  #03 fp 0x795d47bf74  libmpex.so +0x23cf74 (late_load +0xd70)
+  #04 fp 0x7bc1c05b9c  libsl2.so +0x543b9c
+  #05 fp 0x7b406f5fb4  libunity.so +0xab1fb4
+  #06 fp 0x7cd1c3c6c3
+  #07 fp 0x7c245f9f40
+last Vivify log lines (oldest first):
+  Installing hook: SaberModelController_Init to offset: 0x7b3ca5d928
+  Installing hook: GameNoteController_Init to offset: 0x7b3c95b1d0
+  Installing hook: BombNoteController_Init to offset: 0x7b3c9582d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x7b3c959668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7b3c9fbbb8
+  Installing hook: NoteDebris_Init to offset: 0x7b3c95e2e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7b3cef2968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x7b3c850018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7b3cef5e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7b3cef59f0
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7b3cef6f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7b3cef67f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x7b3c9a537c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x7b3c9a558c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7b3c9a5658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7b3c9a5560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7b3c9a53e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7b3c9a54a4
+  Installing hook: PauseController_Pause to offset: 0x7b3ca177ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7b3ca21c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7b3ca22734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7b3ca22094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7b3ca21d88
+  Installing hook: GamePause_Resume to offset: 0x7b3ca1d178
+  Installing hook: Recorder_InstallBindings to offset: 0x7b3ca66294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x7b3ca5a8b8
+  Installing hook: Recorder_SpawnNote to offset: 0x7b3c951928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x7b3c950dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x7b3c952de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7b3ca6044c
+  Installing hook: Recorder_ScoreStart to offset: 0x7b3ca60038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7b3b523db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7b3b524690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7b3c953ae0
+  Installing hook: Recorder_ShowPause to offset: 0x7b3ca21c54
+  Installing hook: Recorder_Resume to offset: 0x7b3ca2276c
+  Installing hook: Recorder_Finish to offset: 0x7b3c9b11dc
+  Vivify: loaded mods (86): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMapLoader.so 0.0.0, BSML 0.4.55, CongXinJian 0.1.0, DlcSorter 0.1.13, EasyOffsetQuest 0.1.7, FakeId 0.1.9, FasterScroll 1.17.0, anytext 1.0.1, bsdc 0.6.4, bstheater 0.1
+  coreVisualizer 3.0.1, sq 1.0.3, MappingExtensions 0.25.4, morebuttons 1.0.4, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistDownloader 0.3.1, Playlist
+=== end ===
+
+=== Vivify 0.15.29 native crash at 1794852241 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7c2baa6784
+thread 23531 'UnityMain'
+pc 0x7cd914e6fc  lr 0x79dd0ff0ec  sp 0x7b46416a10  fp 0x7b46416dd0
+backtrace:
+  #00 pc 0x7cd914e6fc  libc.so +0xc76fc
+  #01 lr 0x79dd0ff0ec  libMultiplayerCore.so +0x41d0ec
+  #02 fp 0x79dcfd83b8  libMultiplayerCore.so +0x2f63b8
+  #03 fp 0x79dd0fe5f4  libMultiplayerCore.so +0x41c5f4 (late_load +0xce8)
+  #04 fp 0x7bbfdf3b9c  libsl2.so +0x543b9c
+  #05 fp 0x7b46ecffb4  libunity.so +0xab1fb4
+  #06 fp 0x7cd1c1c6c3
+last Vivify log lines (oldest first):
+  Vivify crash report:   Installing hook: BombNoteController_Init to offset: 0x7b3c9582d4
+  Vivify crash report:   Installing hook: BurstSliderGameNoteController_Init to offset: 0x7b3c959668
+  Vivify crash report:   Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7b3c9fbbb8
+  Vivify crash report:   Installing hook: NoteDebris_Init to offset: 0x7b3c95e2e8
+  Vivify crash report:   Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7b3cef2968
+  Vivify crash report:   Installing hook: ImageEffectController_OnRenderImage to offset: 0x7b3c850018
+  Vivify crash report:   Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7b3cef5e78
+  Vivify crash report:   Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7b3cef59f0
+  Vivify crash report:   Installing hook: MirrorRendererSO_OnDisable to offset: 0x7b3cef6f2c
+  Vivify crash report:   Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7b3cef67f4
+  Vivify crash report:   Installing hook: VRCenterAdjust_Start to offset: 0x7b3c9a537c
+  Vivify crash report:   Installing hook: VRCenterAdjust_OnEnable to offset: 0x7b3c9a558c
+  Vivify crash report:   Installing hook: VRCenterAdjust_OnDisable to offset: 0x7b3c9a5658
+  Vivify crash report:   Installing hook: VRCenterAdjust_Update to offset: 0x7b3c9a5560
+  Vivify crash report:   Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7b3c9a53e0
+  Vivify crash report:   Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7b3c9a54a4
+  Vivify crash report:   Installing hook: PauseController_Pause to offset: 0x7b3ca177ec
+  Vivify crash report:   Installing hook: PauseMenuManager_ShowMenu to offset: 0x7b3ca21c54
+  Vivify crash report:   Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7b3ca22734
+  Vivify crash report:   Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7b3ca22094
+  Vivify crash report:   Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7b3ca21d88
+  Vivify crash report:   Installing hook: GamePause_Resume to offset: 0x7b3ca1d178
+  Vivify crash report:   Installing hook: Recorder_InstallBindings to offset: 0x7b3ca66294
+  Vivify crash report:   Installing hook: Recorder_HeightLateUpdate to offset: 0x7b3ca5a8b8
+  Vivify crash report:   Installing hook: Recorder_SpawnNote to offset: 0x7b3c951928
+  Vivify crash report:   Installing hook: Recorder_SpawnObstacle to offset: 0x7b3c950dec
+  Vivify crash report:   Installing hook: Recorder_NoteWasCut to offset: 0x7b3c952de4
+  Vivify crash report:   Installing hook: Recorder_ScoreLateUpdate to offset: 0x7b3ca6044c
+  Vivify crash report:   Installing hook: Recorder_ScoreStart to offset: 0x7b3ca60038
+  Vivify crash report:   Installing hook: Recorder_ComputeSwingRating to offset: 0x7b3b523db4
+  Vivify crash report:   Installing hook: Recorder_ProcessSwing to offset: 0x7b3b524690
+  Vivify crash report:   Installing hook: Recorder_SpawnControllerStart to offset: 0x7b3c953ae0
+  Vivify crash report:   Installing hook: Recorder_ShowPause to offset: 0x7b3ca21c54
+  Vivify crash report:   Installing hook: Recorder_Resume to offset: 0x7b3ca2276c
+  Vivify crash report:   Installing hook: Recorder_Finish to offset: 0x7b3c9b11dc
+  Vivify crash report:   Vivify: loaded mods (86): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/li
+  Vivify crash report:   2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMapLoader.so 0.0.0, BSML 0.4.55, CongXinJian 0.1.0, DlcSorter 0.1.13, EasyOffsetQuest 0.1.7, FakeId 0.1.9, FasterScroll 1.17.0, anytext 1.0.1, bs
+  Vivify crash report:   coreVisualizer 3.0.1, sq 1.0.3, MappingExtensions 0.25.4, morebuttons 1.0.4, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistDow
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
