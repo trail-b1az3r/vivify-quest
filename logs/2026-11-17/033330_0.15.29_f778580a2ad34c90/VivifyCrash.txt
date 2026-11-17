@@ -1,0 +1,112 @@
+=== Vivify 0.15.29 native crash at 1794886394 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x7c3cf710b4
+thread 15143 'UnityMain'
+pc 0x7cccd296fc  lr 0x79942b6d6c  sp 0x7b609f8a40  fp 0x7b609f8e00
+backtrace:
+  #00 pc 0x7cccd296fc  libc.so +0xc76fc
+  #01 lr 0x79942b6d6c  libbl.so +0x891d6c
+  #02 fp 0x79941c8200  libbl.so +0x7a3200
+  #03 fp 0x79942a0820  libbl.so +0x87b820 (late_load +0x1a8)
+  #04 fp 0x7bcd404b9c  libsl2.so +0x543b9c
+  #05 fp 0x7b54eddfb4  libunity.so +0xab1fb4
+  #06 fp 0x7cd4b8e6c3
+  #07 fp 0x7b609f9f40
+last Vivify log lines (oldest first):
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Installing hook: SaberModelController_Init to offset: 0x7b3d004928
+  Installing hook: GameNoteController_Init to offset: 0x7b3cf021d0
+  Installing hook: BombNoteController_Init to offset: 0x7b3ceff2d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x7b3cf00668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7b3cfa2bb8
+  Installing hook: NoteDebris_Init to offset: 0x7b3cf052e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7b3d499968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x7b3cdf7018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7b3d49ce78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7b3d49c9f0
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7b3d49df2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7b3d49d7f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x7b3cf4c37c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x7b3cf4c58c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7b3cf4c658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7b3cf4c560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7b3cf4c3e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7b3cf4c4a4
+  Installing hook: PauseController_Pause to offset: 0x7b3cfbe7ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7b3cfc8c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7b3cfc9734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7b3cfc9094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7b3cfc8d88
+  Installing hook: GamePause_Resume to offset: 0x7b3cfc4178
+  Installing hook: Recorder_InstallBindings to offset: 0x7b3d00d294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x7b3d0018b8
+  Installing hook: Recorder_SpawnNote to offset: 0x7b3cef8928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x7b3cef7dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x7b3cef9de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7b3d00744c
+  Installing hook: Recorder_ScoreStart to offset: 0x7b3d007038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7b3bacadb4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7b3bacb690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7b3cefaae0
+  Installing hook: Recorder_ShowPause to offset: 0x7b3cfc8c54
+  Installing hook: Recorder_Resume to offset: 0x7b3cfc976c
+  Installing hook: Recorder_Finish to offset: 0x7b3cf581dc
+  Vivify: loaded mods (58): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, BSML 0.4.55, BetterHaptics 0.1.1, EasyOffsetQuest 0.1.7, FakeId 0.1.9, FasterScroll 1.17.0, NoPromo 0.1.13, bsdc 0.6.4, bstheater 0.1.0, CrashReporter 0.1.20, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1
+=== end ===
+
+=== Vivify 0.15.29 native crash at 1794886405 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7c3d16b7f0
+thread 15465 'UnityMain'
+pc 0x7cccd296fc  lr 0x7985f29a4c  sp 0x7bc0a84a90  fp 0x7bc0a84e50
+backtrace:
+  #00 pc 0x7cccd296fc  libc.so +0xc76fc
+  #01 lr 0x7985f29a4c  libdiscordrichpresence.so +0x1f5a4c
+  #02 fp 0x7985f29e40  libdiscordrichpresence.so +0x1f5e40
+  #03 fp 0x7985ec7228  libdiscordrichpresence.so +0x193228 (late_load +0x22c)
+  #04 fp 0x7bcc217b9c  libsl2.so +0x543b9c
+  #05 fp 0x7b51cdafb4  libunity.so +0xab1fb4
+  #06 fp 0x7cd4b8e6c3
+  #07 fp 0x7bc0a85f40
+last Vivify log lines (oldest first):
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Installing hook: SaberModelController_Init to offset: 0x7b3d326928
+  Installing hook: GameNoteController_Init to offset: 0x7b3d2241d0
+  Installing hook: BombNoteController_Init to offset: 0x7b3d2212d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x7b3d222668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7b3d2c4bb8
+  Installing hook: NoteDebris_Init to offset: 0x7b3d2272e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7b3d7bb968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x7b3d119018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7b3d7bee78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7b3d7be9f0
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7b3d7bff2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7b3d7bf7f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x7b3d26e37c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x7b3d26e58c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7b3d26e658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7b3d26e560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7b3d26e3e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7b3d26e4a4
+  Installing hook: PauseController_Pause to offset: 0x7b3d2e07ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7b3d2eac54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7b3d2eb734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7b3d2eb094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7b3d2ead88
+  Installing hook: GamePause_Resume to offset: 0x7b3d2e6178
+  Installing hook: Recorder_InstallBindings to offset: 0x7b3d32f294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x7b3d3238b8
+  Installing hook: Recorder_SpawnNote to offset: 0x7b3d21a928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x7b3d219dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x7b3d21bde4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7b3d32944c
+  Installing hook: Recorder_ScoreStart to offset: 0x7b3d329038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7b3bdecdb4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7b3bded690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7b3d21cae0
+  Installing hook: Recorder_ShowPause to offset: 0x7b3d2eac54
+  Installing hook: Recorder_Resume to offset: 0x7b3d2eb76c
+  Installing hook: Recorder_Finish to offset: 0x7b3d27a1dc
+  Vivify: loaded mods (58): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, BSML 0.4.55, BetterHaptics 0.1.1, EasyOffsetQuest 0.1.7, FakeId 0.1.9, FasterScroll 1.17.0, NoPromo 0.1.13, bsdc 0.6.4, bstheater 0.1.0, CrashReporter 0.1.20, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1
+=== end ===
+
