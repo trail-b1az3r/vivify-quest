@@ -1,0 +1,57 @@
+=== Vivify 0.15.29 native crash at 1794887103 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x0
+thread 21924 'UnityMain'
+pc 0x0  lr 0x7b3e506928  sp 0x7bc0c18410  fp 0x7bc0c184e0
+backtrace:
+  #00 pc 0x0
+  #01 lr 0x7b3e506928  libunity.so +0x6d6928
+  #02 fp 0x7b388aa78c  libil2cpp.so +0x21ba78c
+  #03 fp 0x7980e0c3a8  libVivify.so +0x3983a8
+  #04 fp 0x7980e08980  libVivify.so +0x394980
+  #05 fp 0x7980d59d08  libVivify.so +0x2e5d08 (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+  #06 fp 0x7980c67290  libVivify.so +0x1f3290
+  #07 fp 0x7b388aa840  libil2cpp.so +0x21ba840
+  #08 fp 0x7b388aa78c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify custom event: type='Blit' time=20.434784 songTime=20.43982
+  Vivify material: context=Blit asset=assets/materials/spacescene/static.mat material='Static' shader='Custom/StaticMine' supported=true internalError=false
+  Vivify Blit event: time=20.434784 asset='assets/materials/spacescene/static.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=2
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+=== end ===
+
