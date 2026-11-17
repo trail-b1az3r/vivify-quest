@@ -1,0 +1,58 @@
+name: Feature Request
+description: Suggest a new feature or improvement for Vivify Quest.
+title: "[FEATURE] "
+labels:
+  - feature-request
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Feature request
+
+        Suggest a specific feature or improvement. Please explain the problem it solves and how you expect it to work.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Explain the limitation, pain point, or use case behind the request.
+      placeholder: I would like this because...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Describe the feature
+      description: Explain what you want added and how it should behave.
+      placeholder: Describe the feature in detail.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Have you tried any existing workaround or alternative?
+      placeholder: Optional.
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Add mockups, screenshots, examples, or related links.
+      placeholder: Optional.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have searched existing issues and could not find the same feature request.
+          required: true
+        - label: This request is related to Vivify Quest.
+          required: true

@@ -1,6 +1,8 @@
 #pragma once
 #include "VivifyRuntime.hpp"
 #include "main.hpp"
+#include "VivifyMaterialSpecialization.hpp"
+#include "VivifyRenderTexturePolicy.hpp"
 #include <algorithm>
 #include <array>
 #include <limits>
@@ -194,6 +196,7 @@ struct LivePrefab {
   std::vector<TrackW> tracks;
   std::vector<UnityEngine::Animator*> animators;
   std::vector<UnityEngine::ParticleSystem*> particleSystems;
+  std::vector<UnityEngine::Video::VideoPlayer*> videoPlayers;
 };
 
 struct SyncedObject {
@@ -262,6 +265,7 @@ struct DeclaredTextureData {
   std::optional<UnityEngine::RenderTextureFormat> format;
   std::optional<UnityEngine::FilterMode> filterMode;
   UnityEngine::RenderTexture* texture = nullptr;
+  std::optional<RenderTexturePolicy::Descriptor> allocation;
 };
 
 struct CullingMaskData {
@@ -350,6 +354,8 @@ struct VisualReplacement {
 
   std::string appliedFingerprint;
   bool hideOriginal = false;
+  // The map replaces the saber trail: other trails are kept hidden.
+  bool hideTrails = false;
   // True when a replacement wears a stand-in shader and so gets its colour
   // mirrored under _BaseColor/_TintColor/_MainColor as well as _Color.
   bool tintAliases = false;
@@ -634,7 +640,7 @@ inline std::string BoolText(bool value) {
 }
 inline std::string ShaderNameForLog(UnityEngine::Shader* shader) {
   if (!IsManagedAlive(shader)) return "<null>";
-  return ToStdString(shader->get_name());
+  return MaterialSpecialization::Canonical(ToStdString(shader->get_name()));
 }
 inline bool IsInternalErrorShaderName(std::string_view shaderName) {
   return shaderName.find("Hidden/InternalErrorShader") != std::string_view::npos;

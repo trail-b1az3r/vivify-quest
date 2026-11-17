@@ -1,10 +1,30 @@
+#include "VivifyUpdater.hpp"
 #include "main.hpp"
+#include "VivifySeparateEye.hpp"
+#include "VivifyGlobalLog.hpp"
+#include "VivifyCrashReport.hpp"
+#include "VivifyLogUpload.hpp"
+#include "VivifyReplayRecorder.hpp"
+#include "bsml/shared/BSML.hpp"
+#include "bsml/shared/BSML/Components/ModalView.hpp"
+#include "bsml/shared/BSML/Components/Settings/ToggleSetting.hpp"
+#include <sstream>
+#include <mutex>
+#include <optional>
+#include <unordered_map>
+#include <algorithm>
+#include <ctime>
+#include <cerrno>
+#include <cstring>
+#include <cstdlib>
 #include "VivifyRuntime.hpp"
 #include "VivifyReport.hpp"
+#include "VivifyRecovery.hpp"
 #include <string>
 #include <string_view>
 #include <fstream>
 #include <chrono>
+#include <atomic>
 #include <mutex>
 #include <filesystem>
 #include "HMUI/ViewController.hpp"
@@ -12,15 +32,30 @@
 #include "UnityEngine/Transform.hpp"
 #include "bsml/shared/BSML-Lite/Creation/Buttons.hpp"
 #include "bsml/shared/BSML-Lite/Creation/Layout.hpp"
+#include "bsml/shared/BSML-Lite/Creation/Misc.hpp"
 #include "bsml/shared/BSML-Lite/Creation/Settings.hpp"
+#include "bsml/shared/BSML/Components/Settings/DropdownListSetting.hpp"
 #include "bsml/shared/BSML-Lite/Creation/Text.hpp"
 #include "beatsaber-hook/shared/utils/typedefs-wrappers.hpp"
 #include "HMUI/CurvedTextMeshPro.hpp"
+#include "TMPro/TextMeshProUGUI.hpp"
+#include "TMPro/TextOverflowModes.hpp"
+#include "UnityEngine/RectTransform.hpp"
+#include "UnityEngine/UI/LayoutElement.hpp"
+#include "UnityEngine/RectOffset.hpp"
+#include "UnityEngine/UI/VerticalLayoutGroup.hpp"
 #include "bsml/shared/BSML/Settings/BSMLSettings.hpp"
 #include "custom-types/shared/register.hpp"
 #include "scotland2/shared/modloader.h"
+#include <dlfcn.h>
+#include <vector>
 
 static modloader::ModInfo modInfo{MOD_ID, VERSION, 0};
+// A rebuild of the same version, shown beside it in the menu and the logs.
+constexpr char const* kBuildLabel = "";
+
+// Defined below, outside this namespace; the settings reset button re-applies it.
+void EnsureConfigDefaults();
 
 namespace {
 constexpr std::string_view kMultipassRenderingConfigKey = "multipassRendering";
@@ -39,10 +74,84 @@ constexpr std::string_view kSubmitScoresConfigKey = "submitScoresOnVivifyMaps";
 constexpr std::string_view kTranslateShadersConfigKey = "translateShadersOnConversion";
 constexpr std::string_view kAudioLinkConfigKey = "audioLink";
 constexpr std::string_view kMapRealtimeShadowsConfigKey = "mapRealtimeShadows";
+// On by default again since 0.15.3, reduced (see VivifyObjectPrefabs.cpp's
+// ReduceReflectionProbes) unless "Full Reflection Probes" is on. A new key, so
+// the saved "off" of 0.15.1-0.15.2 does not stick: Get Your Wish's water
+// reflects the map through its probe, and with probes off it reflected only
+// the notes (#102).
+constexpr std::string_view kMapReflectionProbesConfigKey = "mapReflectionProbesV2";
+constexpr std::string_view kFullReflectionProbesConfigKey = "fullReflectionProbes";
+constexpr std::string_view kSingleViewMapCamerasConfigKey = "singleViewMapCameras";
+constexpr std::string_view kAutoEffectResolutionConfigKey = "autoEffectResolution";
+constexpr std::string_view kCrashRecoveryConfigKey = "crashRecovery";
+// On by default from 0.15.19 (new key): it acts only while Replay renders.
+constexpr std::string_view kReplayRenderModeConfigKey = "replayRenderModeV2";
+constexpr std::string_view kBlitFixConfigKey = "blitScreenTextureFix";
+// Map sabers (AssignObjectPrefab saber) replace the player's own, custom saber
+// mods included. Off keeps the player's sabers on every map (0.15.4).
+constexpr std::string_view kMapSabersConfigKey = "mapSabers";
+// Field Of View % during Vivify maps: 100 is the headset's own (0.15.12).
+constexpr std::string_view kFieldOfViewConfigKey = "fieldOfViewPercent";
+// The headset's fixed foveated rendering level during Vivify maps: 0 leaves
+// the game's own setting alone, 1-4 are the system's low to high-top (0.15.10).
+constexpr std::string_view kFoveationConfigKey = "vivifyFoveationLevel";
+// Lets lights another mod puts on the sabers light a Vivify map's objects.
+// Off by default: they are switched off while a Vivify map plays (0.15.9).
+constexpr std::string_view kSaberLightsConfigKey = "saberLightsOnMapObjects";
+// Switches off a screen effect that turns a normal picture into one flat
+// colour for three seconds, and logs what went in and out (0.15.7).
+constexpr std::string_view kFlatScreenGuardConfigKey = "flatScreenGuard";
+// Renamed in 0.14.18 so every install starts with it off: 0.14.15 saved it
+// as on, and it may be what froze converted maps in the menu.
+constexpr std::string_view kPrepareShadersConfigKey = "prepareShadersInMenu";
+constexpr std::string_view kGeometryEffectsConfigKey = "drawGeometryShaderEffects";
+// Geometry-shader effects drawn without their geometry stage, so they show in
+// both eyes (flat) and not in the left eye only (0.15.9).
+// Renamed in 0.15.11 so it starts off for everyone: with the stage dropped,
+// effects whose shapes the geometry stage makes (grass blades from points)
+// drew nothing. Geometry stages now route their eyes themselves.
+constexpr std::string_view kGeometryBothEyesConfigKey = "geometryEffectsFlatV2";
+// Geometry-shader effects drawn a second time for the right eye (0.15.12).
+constexpr std::string_view kGeometryEyeCopyConfigKey = "geometryRightEyeCopy";
 constexpr std::string_view kPcShadersForEmptyConfigKey = "pcShadersForEmptyQuestShaders";
 constexpr std::string_view kStandInShaderNameConfigKey = "standInShaderName";
+// Send Logs (0.15.20), and the address of the log relay that commits them to
+// the LOGS branch. The address comes from the build (repository variable
+// VIVIFY_LOG_RELAY_URL) unless the config sets one.
+constexpr std::string_view kSendLogsConfigKey = "sendLogs";
+constexpr std::string_view kLogRelayUrlConfigKey = "logRelayUrl";
+#ifndef VIVIFY_LOG_RELAY_URL
+#define VIVIFY_LOG_RELAY_URL ""
+#endif
+constexpr std::string_view kEffectResolutionConfigKey = "effectResolutionPercent";
+// Offscreen Culling is off by default since 0.15.3, under a new key so that
+// everyone's saved "on" from earlier builds is reset once: an animator frozen
+// while its objects are out of view never brings into view an object it
+// animates from scale 0 or from a disabled renderer. Get Your Wish's lyrics
+// and other elements only appeared with culling off (#102).
+constexpr std::string_view kOffscreenCullingConfigKey = "offscreenCullingV2";
+constexpr std::string_view kCrashGuardConfigKey = "crashGuard";
+constexpr std::string_view kPcBundleForMissingShadersConfigKey = "pcBundleForMissingShaders";
+constexpr std::string_view kFarCullingConfigKey = "farCullingDistance";
 bool gMultipassRenderingEnabled = true;
+bool gExperimentalSeparateEye = false;
+constexpr std::string_view kExperimentalSeparateEyeKey = "experimentalSeparateEyeRenderer";
+bool gUniformTriangleTessellation = false;
+constexpr std::string_view kUniformTriangleTessellationKey = "uniformTriangleTessellation";
 bool gVivifyDebugLogging = false;
+bool gSendLogs = true;
+// Set when the in-game updater installed a dev (latest main) or nightly
+// build, cleared when it installs a release (0.15.21). "Update Vivify" then
+// asks for a second press, since it would go back to an older stable build.
+bool gInstalledPrereleaseBuild = false;
+// Replay recorder (0.15.22): on by default; with BeatLeader installed it
+// records its own, so Vivify does not unless asked.
+bool gRecordReplays = true;
+constexpr std::string_view kRecordReplaysConfigKey = "recordReplays";
+bool gRecordReplaysWithBeatLeader = false;
+constexpr std::string_view kRecordReplaysWithBeatLeaderConfigKey = "recordReplaysWithBeatLeader";
+constexpr std::string_view kInstalledPrereleaseConfigKey = "installedPrereleaseBuild";
+std::string gLogRelayUrl;
 bool gDisableBeat0FilmgrainBlit = false;
 bool gDisableAllBlits = false;
 bool gDisableCreateCameraDepth = false;
@@ -65,6 +174,10 @@ bool gConvertPcBundlesOnDevice = true;
 // white. Turning this off leaves such meshes undrawn instead, which also means
 // notes and sabers keep the game's own visuals rather than a white stand-in.
 bool gStandInShading = true;
+// Estimated Look (0.15.27): stand-ins chosen to draw the way each material
+// was meant to (alpha-cut, alpha-blended, additive) rather than one opaque one.
+bool gEstimatedLook = true;
+constexpr std::string_view kEstimatedLookConfigKey = "estimatedLook";
 bool gSceneDepth = true;
 // Vivify does not change note timing, scoring, or anything else a leaderboard
 // cares about -- it changes how a map looks. Submission was nevertheless being
@@ -83,6 +196,39 @@ bool gSubmitScores = true;
 bool gTranslateShaders = true;
 bool gAudioLink = true;
 bool gMapRealtimeShadows = false;
+bool gMapReflectionProbes = true;
+bool gMapSabers = true;
+bool gSaberLights = false;
+bool gFlatScreenGuard = true;
+// The game's own mirrors during a Vivify map (0.15.18); per map only.
+bool gGameMirrors = true;
+bool gFullReflectionProbes = false;
+bool gSingleViewMapCameras = true;
+bool gAutoEffectResolution = true;
+
+// Auto Effect Resolution (0.15.3). Final Slaughter (#100) runs a three-pass
+// full-screen effect at full resolution on top of a depth pass for most of
+// the song; the Quest falls behind, its frame synthesis fills in, and notes
+// look like they stop and slide back and forth. When frames stay slow against
+// the best this level has managed, map effects step down 10% at a time (to
+// 40% at least) and back up once there is room again. Frame times are only
+// compared with each other, so 72, 90 and 120 Hz all work.
+std::atomic<int> gAutoEffectPercent{100};
+struct AutoEffectState {
+  double average = 0.0;      // exponential moving average of frame time, s
+  double best = 0.0;         // fastest average this level
+  double slowFor = 0.0;      // how long the average has been well above best
+  double fastFor = 0.0;      // how long it has been close to best
+  double elapsed = 0.0;
+} gAutoEffect;
+bool gCrashRecovery = true;
+std::atomic<bool> gRecoveryModeActive{false};
+bool gReplayRenderMode = true;
+bool gBlitFix = false;
+bool gPrepareShaders = true;
+bool gGeometryEffects = false;
+bool gGeometryBothEyes = false;
+bool gGeometryEyeCopy = true;
 bool gPcShadersForEmpty = true;
 // Which shader to use as the stand-in, by name, overriding the automatic pick.
 //
@@ -93,6 +239,21 @@ bool gPcShadersForEmpty = true;
 // runnable shader name, so a name from that list can be dropped in here and
 // tried immediately rather than waiting for another build.
 std::string gStandInShaderName;
+// Percent of the eye resolution map post-process effects render at.
+int gEffectResolution = 100;
+// Animators in a map's prefabs skip updating while none of their renderers is
+// on screen (0.14.23).
+bool gOffscreenCulling = false;
+// Two loads of a converted bundle that never finish put it into the
+// untranslated (grey) fallback; off, that never happens (0.14.24).
+bool gCrashGuard = true;
+// A Quest bundle missing shaders its PC build has is played from the converted
+// PC build instead of being patched (0.14.24).
+bool gPcBundleForMissingShaders = false;
+// Metres beyond which the main camera draws nothing; 0 is off (0.14.23).
+int gFarCullingDistance = 0;
+int gFoveationLevel = 0;
+int gFieldOfView = 100;
 
 // Both diagnostic files live beside the mod's own data, and both are .txt.
 //
@@ -106,13 +267,27 @@ constexpr std::string_view kVivifyLogPath =
 
 // A session log must not fill a headset, and it is truncated at launch anyway,
 // so this only has to bound one play session.
-constexpr std::streamoff kVivifyLogMaxBytes = 8 * 1024 * 1024;
+constexpr std::streamoff kVivifyLogMaxBytes = 13 * 1024 * 1024;
 
 std::ofstream gVivifyLogFile;
 std::mutex gVivifyLogMutex;
+// vivify_global.txt: every session appended, never truncated; 9 MB parts
+// (vivify_global-p2.txt, ...), the older half deleted past 1 GB in total.
+Vivify::GlobalLog gVivifyGlobalLog(std::string(kVivifyLogDir), "vivify_global", 9ull * 1024 * 1024,
+                                   1024ull * 1024 * 1024);
+
+std::string WallClockText() {
+  std::time_t const now = std::time(nullptr);
+  std::tm local{};
+  localtime_r(&now, &local);
+  char buffer[32];
+  std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &local);
+  return buffer;
+}
 bool gVivifyLogSinkInstalled = false;
 bool gVivifyLogCapped = false;
 std::chrono::steady_clock::time_point gVivifyLogLastFlush{};
+std::atomic<int64_t> gVivifyFlushEveryLineUntil{0};  // steady_clock ticks
 
 void InstallVivifyFileLogSink() {
   if (gVivifyLogSinkInstalled) return;
@@ -120,18 +295,35 @@ void InstallVivifyFileLogSink() {
   std::error_code ec;
   std::filesystem::create_directories(std::string(kVivifyLogDir), ec);
 
+  // Each of the three files is opened on its own: one that cannot be opened
+  // used to return from here before the others were even tried.
+  errno = 0;
   gVivifyLogFile.open(std::string(kVivifyLogPath), std::ios::out | std::ios::trunc);
-  if (!gVivifyLogFile.is_open()) {
-    PaperLogger.warn("Vivify: could not open log file at {} (logging to logcat only)", kVivifyLogPath);
-    return;
+  int const sessionOpenErrno = errno;
+  if (gVivifyLogFile.is_open()) {
+    gVivifyLogFile << "=== Vivify " << VERSION << kBuildLabel << (kLiteBuild ? " (lite)" : "") << " session log, started "
+                   << WallClockText() << " ===\n";
+    gVivifyLogFile.flush();
   }
-  gVivifyLogFile << "=== Vivify " << VERSION << " session log ===\n";
-  gVivifyLogFile.flush();
   gVivifyLogLastFlush = std::chrono::steady_clock::now();
+  try {
+    gVivifyGlobalLog.Open("=== Vivify " + std::string(VERSION) + kBuildLabel + (kLiteBuild ? " (lite)" : "") + " session started " +
+                          WallClockText() + " ===");
+  } catch (...) {
+  }
 
   Paper::Logger::AddLogSink([](Paper::LogData const& data) {
     if (!data.tag.has_value() || *data.tag != std::string_view(MOD_ID)) return;
     std::lock_guard<std::mutex> lock(gVivifyLogMutex);
+    bool const important = data.level >= Paper::LogLevel::WRN;
+    auto const now = std::chrono::steady_clock::now();
+    bool const everyLine = now.time_since_epoch().count() < gVivifyFlushEveryLineUntil.load();
+    Vivify::CrashReport::NoteLine(data.message);
+    if (gVivifyGlobalLog.IsOpen()) {
+      gVivifyGlobalLog.Write(WallClockText() + " [" + std::string(Paper::format_as(data.level)) + "] " +
+                             std::string(data.message));
+      if (important || everyLine) gVivifyGlobalLog.Flush();
+    }
     if (!gVivifyLogFile.is_open() || gVivifyLogCapped) return;
 
     gVivifyLogFile << '[' << Paper::format_as(data.level) << "] " << data.message << '\n';
@@ -149,15 +341,55 @@ void InstallVivifyFileLogSink() {
     // be noisy. Warnings and errors still flush immediately, because those are
     // the lines that matter if the game stops before the buffer is written;
     // ordinary lines are flushed at most a few times a second.
-    auto const now = std::chrono::steady_clock::now();
-    bool const important = data.level >= Paper::LogLevel::WRN;
-    if (important || now - gVivifyLogLastFlush > std::chrono::milliseconds(250)) {
+    if (important || everyLine || now - gVivifyLogLastFlush > std::chrono::milliseconds(250)) {
       gVivifyLogFile.flush();
+      gVivifyGlobalLog.Flush();
       gVivifyLogLastFlush = now;
     }
   });
+
+  // Where each file went, or exactly why it did not, as the first lines every
+  // file that did open will carry. A report of "the global log is never
+  // created" can then be answered from the session log alone.
+  if (gVivifyLogFile.is_open()) {
+    PaperLogger.info("Vivify log files: session -> {}", kVivifyLogPath);
+  } else {
+    PaperLogger.warn("Vivify log files: session log could not be opened at {}: {}", kVivifyLogPath,
+                     sessionOpenErrno != 0 ? std::strerror(sessionOpenErrno) : "unknown error");
+  }
+  if (gVivifyGlobalLog.IsOpen()) {
+    PaperLogger.info("Vivify log files: global -> {}", gVivifyGlobalLog.CurrentPath().string());
+  } else {
+    PaperLogger.warn("Vivify log files: global log could not be opened: {}",
+                     gVivifyGlobalLog.LastError().empty() ? "unknown reason" : gVivifyGlobalLog.LastError());
+  }
+  if (Vivify::Report::Append("SESSION STARTED", "Vivify " + std::string(VERSION) + (kLiteBuild ? " (lite)" : "") +
+                                                    "; one block per level follows.\n")) {
+    PaperLogger.info("Vivify log files: report -> {}", Vivify::Report::FilePath());
+  } else {
+    PaperLogger.warn("Vivify log files: report could not be written at {}: {}", Vivify::Report::FilePath(),
+                     Vivify::Report::LastError());
+  }
 }
 
+}  // namespace
+
+// Writes everything logged so far to the session and global logs now. For the
+// steps around a level's end (0.15.0): a native crash there loses whatever is
+// still buffered, and the last step that reached the file is the clue.
+void FlushVivifyLogsEveryLineFor(int seconds) {
+  auto const until = std::chrono::steady_clock::now() + std::chrono::seconds(seconds);
+  gVivifyFlushEveryLineUntil.store(until.time_since_epoch().count());
+  FlushVivifyLogs();
+}
+
+void FlushVivifyLogs() {
+  std::lock_guard<std::mutex> lock(gVivifyLogMutex);
+  if (gVivifyLogFile.is_open()) gVivifyLogFile.flush();
+  gVivifyGlobalLog.Flush();
+}
+
+namespace {
 void EnsureConfigObject() {
   auto& doc = getConfig().config;
   if (!doc.IsObject()) {
@@ -184,6 +416,27 @@ bool EnsureStringConfigValue(std::string_view key, std::string const& defaultVal
     doc.AddMember(rapidjson::Value(key.data(), allocator), stored, allocator);
   } else {
     it->value = stored;
+  }
+  return true;
+}
+
+// The integer equivalent of EnsureBoolConfigValue; a stored value outside
+// [minValue, maxValue] is replaced by the default.
+bool EnsureIntConfigValue(std::string_view key, int defaultValue, int minValue, int maxValue, int& value) {
+  auto& doc = getConfig().config;
+  auto it = doc.FindMember(key.data());
+  if (it != doc.MemberEnd() && it->value.IsInt() && it->value.GetInt() >= minValue &&
+      it->value.GetInt() <= maxValue) {
+    value = it->value.GetInt();
+    return false;
+  }
+
+  auto& allocator = doc.GetAllocator();
+  value = defaultValue;
+  if (it == doc.MemberEnd()) {
+    doc.AddMember(rapidjson::Value(key.data(), allocator), rapidjson::Value(defaultValue), allocator);
+  } else {
+    it->value.SetInt(defaultValue);
   }
   return true;
 }
@@ -238,6 +491,130 @@ void SetBoolConfigValue(std::string_view key, bool enabled, bool& value) {
   config.Write();
 }
 
+// "Use Windows Bundle For This Map" (0.14.29): song folder names whose PC
+// bundle is converted and played even though they ship a Quest bundle.
+constexpr char const* kWindowsBundleMapsConfigKey = "windowsBundleMaps";
+
+std::string MapKeyOf(std::string const& levelPath) {
+  std::string trimmed = levelPath;
+  while (!trimmed.empty() && (trimmed.back() == '/' || trimmed.back() == '\\')) trimmed.pop_back();
+  return std::filesystem::path(trimmed).filename().string();
+}
+
+// Per-map settings (0.15.18). For each map (by song folder name) a few
+// settings can be set On or Off instead of following the global value:
+//   "mapSettings": { "<song folder>": { "<setting's config key>": true, ... } }
+// The value stored is the setting's own value (disableAllBlits=true means
+// effects off). Only settings read while a map plays are offered: the
+// geometry ones decide how a bundle is converted, and a conversion running
+// for another map would pick up this map's choice.
+constexpr char const* kMapSettingsConfigKey = "mapSettings";
+constexpr std::string_view kGameMirrorsConfigKey = "gameMirrors";
+
+std::mutex gMapOverridesMutex;
+std::string gMapOverridesFor;  // song folder name the cache below is for
+std::unordered_map<std::string, bool> gMapOverrides;
+
+void LoadMapOverridesLocked(std::string const& mapKey) {
+  gMapOverridesFor = mapKey;
+  gMapOverrides.clear();
+  if (mapKey.empty()) return;
+  auto const& doc = getConfig().config;
+  if (!doc.IsObject()) return;
+  auto all = doc.FindMember(kMapSettingsConfigKey);
+  if (all == doc.MemberEnd() || !all->value.IsObject()) return;
+  auto map = all->value.FindMember(mapKey.c_str());
+  if (map == all->value.MemberEnd() || !map->value.IsObject()) return;
+  for (auto const& member : map->value.GetObject()) {
+    if (member.value.IsBool()) gMapOverrides[member.name.GetString()] = member.value.GetBool();
+  }
+}
+
+// The selected map's own value for a setting, if it has one.
+std::optional<bool> MapOverride(std::string_view key) {
+  std::lock_guard lock(gMapOverridesMutex);
+  if (gMapOverrides.empty()) return std::nullopt;
+  auto it = gMapOverrides.find(std::string(key));
+  if (it == gMapOverrides.end()) return std::nullopt;
+  return it->second;
+}
+
+bool MapBool(std::string_view key, bool global) {
+  auto const value = MapOverride(key);
+  return value.has_value() ? *value : global;
+}
+
+std::optional<bool> GetMapSetting(std::string const& levelPath, std::string_view key) {
+  std::string const mapKey = MapKeyOf(levelPath);
+  std::lock_guard lock(gMapOverridesMutex);
+  if (mapKey != gMapOverridesFor) LoadMapOverridesLocked(mapKey);
+  auto it = gMapOverrides.find(std::string(key));
+  if (it == gMapOverrides.end()) return std::nullopt;
+  return it->second;
+}
+
+void LoadMapOverridesFor(std::string const& levelPath) {
+  std::lock_guard lock(gMapOverridesMutex);
+  LoadMapOverridesLocked(MapKeyOf(levelPath));
+}
+
+void SetMapSetting(std::string const& levelPath, std::string_view key, std::optional<bool> value) {
+  std::string const mapKey = MapKeyOf(levelPath);
+  if (mapKey.empty()) return;
+  auto& config = getConfig();
+  auto& doc = config.config;
+  if (!doc.IsObject()) doc.SetObject();
+  auto& allocator = doc.GetAllocator();
+  auto all = doc.FindMember(kMapSettingsConfigKey);
+  if (all == doc.MemberEnd() || !all->value.IsObject()) {
+    if (all != doc.MemberEnd()) doc.RemoveMember(all);
+    doc.AddMember(rapidjson::Value(kMapSettingsConfigKey, allocator), rapidjson::Value(rapidjson::kObjectType),
+                  allocator);
+    all = doc.FindMember(kMapSettingsConfigKey);
+  }
+  auto map = all->value.FindMember(mapKey.c_str());
+  if (map == all->value.MemberEnd() || !map->value.IsObject()) {
+    if (map != all->value.MemberEnd()) all->value.RemoveMember(map);
+    all->value.AddMember(rapidjson::Value(mapKey.c_str(), allocator), rapidjson::Value(rapidjson::kObjectType),
+                         allocator);
+    map = all->value.FindMember(mapKey.c_str());
+  }
+  std::string const name(key);
+  map->value.RemoveMember(name.c_str());
+  if (value.has_value()) {
+    map->value.AddMember(rapidjson::Value(name.c_str(), allocator), rapidjson::Value(*value), allocator);
+  }
+  if (map->value.ObjectEmpty()) all->value.RemoveMember(mapKey.c_str());
+  config.Write();
+  {
+    std::lock_guard lock(gMapOverridesMutex);
+    LoadMapOverridesLocked(mapKey);
+  }
+  PaperLogger.info("Vivify settings: '{}' for map '{}' is now {}", name, mapKey,
+                   value.has_value() ? (*value ? "true" : "false") : "the global setting");
+}
+
+void SetIntConfigValue(std::string_view key, int newValue, int& value) {
+  if (gSettingsMenuBuilding) {
+    PaperLogger.info("Vivify settings: ignoring a '{}' change to {} that arrived while the menu was "
+                     "still being built",
+                     key, newValue);
+    return;
+  }
+  auto& config = getConfig();
+  auto& doc = config.config;
+  EnsureConfigObject();
+  auto& allocator = doc.GetAllocator();
+  auto it = doc.FindMember(key.data());
+  if (it == doc.MemberEnd()) {
+    doc.AddMember(rapidjson::Value(key.data(), allocator), rapidjson::Value(newValue), allocator);
+  } else {
+    it->value.SetInt(newValue);
+  }
+  value = newValue;
+  config.Write();
+}
+
 // Label under the bulk-convert button. The settings view controller is
 // destroyed and rebuilt as the player navigates and conversion progress
 // arrives asynchronously, so SafePtrUnity is used for its destroyed-object
@@ -245,15 +622,371 @@ void SetBoolConfigValue(std::string_view key, bool enabled, bool& value) {
 // types.
 SafePtrUnity<HMUI::CurvedTextMeshPro> gConvertStatusText;
 
+// Settings layout (0.15.1, corrected in 0.15.3 build 2). Two things overlapped
+// in the Vivify tab:
+//  - a setting's label is laid out from the left edge with no width limit,
+//    so a long one ran under its toggle or increment buttons. Each label now
+//    shrinks to fit the room it has (TMP auto-size, down to 60%);
+//  - a text whose content changes after the menu is built (conversion
+//    status, the This Map row) kept the height of its first content, and a
+//    longer message then drew over the widgets below it.
+//
+// BSML's settings list does not control its children's heights
+// (childControlHeight is off), so a LayoutElement height is ignored there and
+// a BSML text keeps the 0 x 0 rect it is created with. 0.15.1 gave those texts
+// word wrap and an ellipsis on top of that zero-height rect, and TMP then cut
+// every line away: the conversion progress, the This Map hint and the logs
+// line showed nothing at all. The rect itself now gets the height, and text
+// that still does not fit is drawn rather than hidden.
+// One or two sentences per setting, shown when the pointer rests on it
+// (0.15.4). Keyed by the control's label; nullptr when there is none.
+char const* SettingHint(std::u16string_view label) {
+  static std::pair<std::u16string_view, char const*> const kHints[] = {
+      {u"Separate-Eye Renderer (prototype)",
+       "Experimental: renders depth and screen effects per eye, with separate shaders for map texture cameras. "
+       "Off by default; visual and performance validation required. Reuses native multiview when compatible, otherwise uses two replacement views. Effects stay at 100%."},
+      {u"Record Replays",
+       "Records every single-player level to Mods/bl/replays, where the Replay mod (needed) finds it to watch "
+       "or render. Nothing is uploaded and BeatLeader is not needed. Keeps the last 10 tries per map."},
+      {u"Record With BeatLeader",
+       "Also record when BeatLeader is installed. Off by default, since BeatLeader saves its own replays and "
+       "the Replay mod would list both."},
+      {u"Estimated Look",
+       "For a material whose shader cannot run here (or that a map shipped empty), uses a stand-in that draws "
+       "the way it was meant to -- see-through, cut-out or glowing -- judged from what the material still "
+       "carries. Off: one plain opaque stand-in for all of them."},
+      {u"Use Windows Bundle",
+       "For the selected map only: use its PC (Windows) bundle, converted on the headset, instead of its Quest "
+       "bundle. Try it when a map's Quest version looks wrong or is missing things."},
+      {u"Effect Resolution %",
+       "Draws full-screen map effects at this share of the eye resolution, then scales them up. Lower is "
+       "faster and blurrier; 50% is a quarter of the work. The separate-eye prototype uses 100%."},
+      {u"Auto Effect Resolution",
+       "Lowers the effect resolution by itself while a map runs slowly, and raises it again when there is "
+       "room. The separate-eye prototype keeps effects at 100% and ignores automatic scaling."},
+      {u"Offscreen Culling (can hide objects)",
+       "Stops animating map objects you are not looking at, to save time. Can leave some objects hidden, so "
+       "turn it off if things go missing."},
+      {u"Far Culling (m, 0 = off)",
+       "Does not draw anything farther away than this many metres. 0 draws everything."},
+      {u"Field Of View %",
+       "During Vivify maps, shows more of the scene at once (smaller), so effects at the edge of the view come "
+       "into it. Above 100 the world no longer moves exactly with your head, which can feel uncomfortable."},
+      {u"Foveated Rendering (0 = game's)",
+       "During Vivify maps, renders the edges of your view at lower detail to save performance, using the "
+       "headset's own foveation: 1 is mild, 4 is strongest. Uses eye tracking where the headset has it. 0 leaves "
+       "the game's setting alone."},
+      {u"Disable All Blits",
+       "Turns off every full-screen effect a map adds (colour grading, distortion, flashes). Use it when an "
+       "effect covers the screen or makes a map lag."},
+      {u"Flat-Screen Effect Guard",
+       "Every 2 seconds while a map's screen effect is on, checks 16 spots of the view. If they are all one or two "
+       "colours (and the scene itself is not), turns every screen effect off for the rest of the level. "
+       "Inactive with the Separate-Eye Renderer."},
+      {u"Submit Scores On Vivify Maps",
+       "Lets scores from Vivify maps go to leaderboards, and lets replays be recorded. Off stops both."},
+      {u"Disable Custom Note Visuals",
+       "Keeps the game's normal notes, bombs and debris instead of the ones a map brings."},
+      {u"Use Map Sabers",
+       "On: sabers a map brings replace yours, including custom sabers from another mod; they stay attached "
+       "to the saber, so trick mods still move them. Off: you always keep your own sabers."},
+      {u"Saber Lights On Map Objects",
+       "Some saber mods put a light on each saber. Off (default): those lights are switched off during Vivify "
+       "maps, where they light the map's objects, flicker, and cost a lot of performance. On keeps them."},
+      {u"No Vivify Visuals In Multiplayer",
+       "In multiplayer, plays Vivify maps without their custom notes and sabers."},
+      {u"AudioLink",
+       "Feeds the song's sound to map shaders that react to music. Off saves a little time; those effects "
+       "then stay still."},
+      {u"Convert All PC Bundles",
+       "Converts every installed PC-only Vivify map now, so they are ready to play. Progress shows above."},
+      {u"Send Logs",
+       "With Debug Logging also on: when the game starts, what Vivify logged since the last time is sent to the "
+       "public LOGS branch of the Vivify Quest repository, for the developers. Map names, your mods and headset "
+       "model are in it. Off sends nothing."},
+      {u"Debug Logging",
+       "Writes much more detail to the Vivify log files. Turn it on before reproducing a problem you want to "
+       "report; it costs some performance."},
+      {u"Convert PC Bundles On Device",
+       "Lets the mod convert maps made only for PC so they can load on the headset. Off: only maps with a "
+       "Quest bundle work."},
+      {u"Translate Shaders",
+       "Converts a PC map's shaders so its materials look as intended. Off: converted maps use plain stand-in "
+       "shading instead."},
+      {u"Stand-In Shading",
+       "Draws objects whose shader could not be used with a simple substitute, so they are at least visible. "
+       "Off hides them."},
+      {u"Scene Depth For Map Shaders",
+       "Gives map shaders the scene's depth, which fog, soft edges and some screen effects need. Costs an "
+       "extra render of the scene on maps that use it."},
+      {u"Map Realtime Shadows", "Allows shadows from a map's own lights. They are expensive on a Quest."},
+      {u"Map Reflection Probes",
+       "Allows a map's live reflections, at reduced quality. Off removes them and saves time and memory."},
+      {u"Full Reflection Probes",
+       "Runs a map's live reflections at the quality the map asked for, not reduced. Heavy; can crash on "
+       "big maps."},
+      {u"Single-View Map Cameras",
+       "Fixes a map's in-world screens, portals and mirrors (its own cameras drawing into textures) on "
+       "converted maps."},
+      {u"Crash Recovery Mode",
+       "After a map crashes or freezes, plays it next time with less memory use and without the effect that "
+       "was starting when it went down."},
+      {u"Forget Crash Recovery", "Clears the list of maps that crashed, so they play normally again."},
+      {u"Geometry Effects In Right Eye",
+       "Grass, sparkles and wireframes of PC maps are drawn by a shader stage the Quest only runs for the left "
+       "eye. On: each is drawn again for the right eye. Turn off if those effects look doubled. Changing it "
+       "reconverts the map."},
+      {u"Flat Geometry Effects",
+       "Draws grass, fur and wireframe effects of PC maps without their geometry shader: plain meshes, and "
+       "some effects then draw nothing. Only for a map where those effects still go wrong. Changing it "
+       "reconverts the map."},
+      {u"Triangle Tessellation (heavy, exp.)",
+       "Turns the Separate-Eye Renderer on too: it only works inside it. "
+       "Optional dense geometry for supported uniform triangle patterns, using the Separate-Eye Renderer. "
+       "Very heavy: it can sharply reduce frame rate. Unsupported maps keep the usual renderer. "
+       "Only the main view is covered; effects on map screens and reflections may still be missing. "
+       "Changing this reselects the song."},
+      {u"Geometry-Shader Effects (exp.)",
+       "Experimental. Draws effects that need a geometry shader (wireframes, exploding triangles) as plain "
+       "meshes when they cannot be converted. Changing it reconverts affected maps."},
+      {u"PC Bundle For Missing Shaders",
+       "When a map's Quest bundle is missing shaders, uses the converted PC bundle instead."},
+      {u"Prepare Shaders Before Playing",
+       "Compiles a map's shaders when you select it rather than during play. Fewer hitches in the song, "
+       "but a longer wait in the menu; has frozen the menu on some maps."},
+      {u"Blit Fix For Screen Textures (exp.)",
+       "Experimental. Converts a second, one-eye version of a map's full-screen effects, for effects that "
+       "come out black or doubled."},
+      {u"Crash Guard",
+       "If a converted map fails to load twice, converts it again without shader translation so it at least "
+       "loads, with plain shading."},
+      {u"Skip Beat-0 Film Grain Blit",
+       "Skips a full-screen effect that starts at the very beginning of a map, usually film grain or a "
+       "vignette."},
+      {u"No Depth On Map Cameras",
+       "Stops cameras a map creates from rendering depth. Saves time; effects that need depth can look wrong."},
+      {u"Ignore VR Center Adjust",
+       "Ignores your room offset and rotation setting during Vivify maps, for maps that look misplaced with "
+       "it."},
+      {u"Replay Render Mode",
+       "Prepares a version of each map that the Replay mod can render to video. Only matters while rendering "
+       "a replay."},
+      {u"Update Vivify",
+       "Downloads the newest release of Vivify from GitHub and installs it for the next time you start the game."},
+      {u"Install Nightly",
+       "Installs the latest nightly build: the newest changes, untested. Takes effect after restarting the game."},
+      {u"Install Dev Build",
+       "Installs the most recent build of the development branch, newer than the nightly and less tested."},
+      {u"Converter Version",
+       "Picks a Vivify release, 0.13.5 or later, with the converter it shipped with. The converter is part of the "
+       "mod, so this installs that whole version."},
+      {u"Install Chosen Version", "Installs the version picked above. Takes effect after restarting the game."},
+      {u"Force Reconvert All",
+       "Throws away every converted map and converts them all again. Use after a mod update if maps still "
+       "look wrong."},
+      {u"Reset Vivify (clean slate)",
+       "Deletes converted maps and downloaded PC bundles and resets these settings. Your maps stay. Press "
+       "twice to confirm."},
+      {u"Redownload All Vivify Maps",
+       "Replaces every Vivify map with a fresh download from BeatSaver. Press twice to confirm."},
+  };
+  for (auto const& [name, hint] : kHints) {
+    if (name == label) return hint;
+  }
+  return nullptr;
+}
+
+void FitSettingLabels(UnityEngine::Component* widget) {
+  if (widget == nullptr) return;
+  auto gameObject = widget->get_gameObject();
+  if (!gameObject) return;
+  auto texts = gameObject->GetComponentsInChildren<TMPro::TextMeshProUGUI*>(true);
+  for (auto* text : texts) {
+    if (text == nullptr) continue;
+    float const size = text->get_fontSize();
+    text->set_enableWordWrapping(false);
+    text->set_fontSizeMax(size);
+    text->set_fontSizeMin(size * 0.6f);
+    text->set_enableAutoSizing(true);
+  }
+}
+
+void FixTextHeight(HMUI::CurvedTextMeshPro* text, int lines, float lineHeight = 4.5f) {
+  if (text == nullptr) return;
+  float const height = static_cast<float>(lines) * lineHeight;
+  text->set_enableWordWrapping(true);
+  text->set_overflowMode(TMPro::TextOverflowModes::Overflow);
+  auto* rect = reinterpret_cast<UnityEngine::RectTransform*>(text->get_transform().unsafePtr());
+  auto size = rect->get_sizeDelta();
+  size.y = height;
+  rect->set_sizeDelta(size);
+  auto* layout = text->get_gameObject()->GetComponent<UnityEngine::UI::LayoutElement*>();
+  if (layout == nullptr) layout = text->get_gameObject()->AddComponent<UnityEngine::UI::LayoutElement*>();
+  layout->set_minHeight(height);
+  layout->set_preferredHeight(height);
+}
+
+// The latest conversion status, kept so the label shows it again whenever the
+// menu is opened, not only while it was open when the progress arrived.
+std::string gConvertStatus = "Idle";
+
 void SetConvertStatusText(std::string const& text) {
+  gConvertStatus = text;
   if (!gConvertStatusText) return;
   gConvertStatusText->set_text(StringW(text));
+}
+
+// Updater status for the label; once an install finishes, remembers whether
+// the build now installed is a pre-release (dev or nightly) or a release.
+std::function<void(std::string const&)> UpdaterStatus(bool prerelease) {
+  return [prerelease](std::string const& text) {
+    SetConvertStatusText(text);
+    if (text.rfind("Installed Vivify", 0) == 0)
+      SetBoolConfigValue(kInstalledPrereleaseConfigKey, prerelease, gInstalledPrereleaseBuild);
+  };
+}
+
+// A bar of 30 ticks, filled to done/total, in plain ASCII so the menu font has it.
+std::string ProgressBarText(int done, int total) {
+  constexpr int kTicks = 30;
+  int filled = total > 0 ? std::clamp(done * kTicks / total, 0, kTicks) : 0;
+  int const percent = total > 0 ? std::clamp(done * 100 / total, 0, 100) : 0;
+  return "<color=#5fd35f>" + std::string(static_cast<size_t>(filled), '|') + "</color><color=#555555>" +
+         std::string(static_cast<size_t>(kTicks - filled), '|') + "</color> " + std::to_string(percent) + "%";
+}
+
+// Settings menu state (0.14.29): the advanced widgets the "Show Advanced
+// Settings" button hides and shows, and the This Map row.
+// Each advanced widget belongs to a category (0.15.19): once "Show Advanced
+// Settings" is pressed, every category is a closed button of its own, and its
+// widgets show only while it is open. category -1: a category's own button.
+struct AdvancedEntry {
+  SafePtrUnity<UnityEngine::GameObject> object;
+  int category = -1;
+};
+std::vector<AdvancedEntry> gAdvancedWidgets;
+std::vector<bool> gAdvancedCategoryOpen;
+std::vector<std::pair<SafePtrUnity<UnityEngine::UI::Button>, std::string>> gAdvancedCategoryButtons;
+int gCurrentAdvancedCategory = -1;
+bool gShowAdvanced = false;
+
+void ApplyAdvancedVisibility() {
+  for (auto& entry : gAdvancedWidgets) {
+    if (!entry.object) continue;
+    bool const open = entry.category < 0 ||
+                      (entry.category < static_cast<int>(gAdvancedCategoryOpen.size()) &&
+                       gAdvancedCategoryOpen[entry.category]);
+    entry.object->SetActive(gShowAdvanced && open);
+  }
+  for (size_t i = 0; i < gAdvancedCategoryButtons.size(); i++) {
+    auto& [button, name] = gAdvancedCategoryButtons[i];
+    if (!button) continue;
+    bool const open = i < gAdvancedCategoryOpen.size() && gAdvancedCategoryOpen[i];
+    BSML::Lite::SetButtonText(button.ptr(), StringW(std::string(open ? "[-] " : "[+] ") + name));
+  }
+}
+SafePtrUnity<UnityEngine::UI::Button> gAdvancedButton;
+SafePtrUnity<HMUI::CurvedTextMeshPro> gThisMapText;
+SafePtrUnity<UnityEngine::UI::Button> gThisMapButton;
+
+// The per-map settings offered under This Map (0.15.18). `inverted` when the
+// setting is stored as "disable ..." but shown as the thing being on.
+struct MapSettingRow {
+  char const* label;
+  std::string_view key;
+  bool inverted;
+  bool (*global)();
+};
+bool GlobalDisableAllBlits() { return gDisableAllBlits; }
+bool GlobalFlatScreenGuard() { return gFlatScreenGuard; }
+bool GlobalMapSabers() { return gMapSabers; }
+bool GlobalTriangleTessellation() { return !kLiteBuild && gUniformTriangleTessellation; }
+bool GlobalDisableCustomNoteVisuals() { return gDisableCustomNoteVisuals; }
+bool GlobalMapReflectionProbes() { return gMapReflectionProbes; }
+bool GlobalMapRealtimeShadows() { return gMapRealtimeShadows; }
+bool GlobalSceneDepth() { return gSceneDepth; }
+bool GlobalAudioLink() { return gAudioLink; }
+bool GlobalGameMirrors() { return gGameMirrors; }
+MapSettingRow const kMapSettingRows[] = {
+    {"Screen Effects", kDisableAllBlitsConfigKey, true, GlobalDisableAllBlits},
+    {"Flat-Screen Effect Guard", kFlatScreenGuardConfigKey, false, GlobalFlatScreenGuard},
+    {"Map Sabers", kMapSabersConfigKey, false, GlobalMapSabers},
+    {"Custom Note Visuals", kDisableCustomNoteVisualsConfigKey, true, GlobalDisableCustomNoteVisuals},
+    {"Game Mirrors", kGameMirrorsConfigKey, false, GlobalGameMirrors},
+    {"Reflection Probes", kMapReflectionProbesConfigKey, false, GlobalMapReflectionProbes},
+    {"Realtime Shadows", kMapRealtimeShadowsConfigKey, false, GlobalMapRealtimeShadows},
+    {"Scene Depth", kSceneDepthConfigKey, false, GlobalSceneDepth},
+    {"AudioLink", kAudioLinkConfigKey, false, GlobalAudioLink},
+    {"Triangle Tessellation", kUniformTriangleTessellationKey, false, GlobalTriangleTessellation},
+};
+std::vector<SafePtrUnity<UnityEngine::UI::Button>> gMapSettingButtons;
+
+std::string MapSettingButtonText(MapSettingRow const& row, std::string const& path) {
+  if (path.empty()) return std::string(row.label) + ": -";
+  auto const stored = GetMapSetting(path, row.key);
+  auto shown = [&row](bool value) { return row.inverted ? !value : value; };
+  if (!stored.has_value()) {
+    return std::string(row.label) + ": default (" + (shown(row.global()) ? "on" : "off") + ")";
+  }
+  return std::string(row.label) + ": <color=#5fd35f>" + (shown(*stored) ? "ON" : "OFF") + "</color> for this map";
+}
+
+// default -> on -> off -> default
+void CycleMapSetting(size_t index) {
+  std::string const path = Vivify::SelectedVivifyMapPath();
+  if (path.empty() || index >= std::size(kMapSettingRows)) return;
+  auto const& row = kMapSettingRows[index];
+  auto const stored = GetMapSetting(path, row.key);
+  auto store = [&row](bool shownValue) { return row.inverted ? !shownValue : shownValue; };
+  std::optional<bool> next;
+  if (!stored.has_value()) next = store(true);
+  else if ((row.inverted ? !*stored : *stored)) next = store(false);
+  else next = std::nullopt;
+  SetMapSetting(path, row.key, next);
+}
+
+void RefreshThisMapRow() {
+  std::string const path = Vivify::SelectedVivifyMapPath();
+  std::string name = path;
+  while (!name.empty() && (name.back() == '/' || name.back() == '\\')) name.pop_back();
+  name = std::filesystem::path(name).filename().string();
+  bool const enabled = !path.empty() && GetWindowsBundleForMap(path);
+  if (gThisMapText) {
+    std::string line;
+    if (path.empty()) {
+      line = "<size=80%><color=#ffcc66>No Vivify map selected: pick one in the song list (and a difficulty "
+             "that needs Vivify), then come back here</color></size>";
+    } else {
+      line = "<size=80%>" + name + "\n" +
+             (enabled ? "<color=#5fd35f>Using its Windows (PC) bundle, converted on the headset</color>"
+                      : "Using its Quest bundle when it has one") +
+             "</size>";
+    }
+    gThisMapText->set_text(StringW(line));
+  }
+  for (size_t i = 0; i < gMapSettingButtons.size() && i < std::size(kMapSettingRows); i++) {
+    if (gMapSettingButtons[i]) {
+      BSML::Lite::SetButtonText(gMapSettingButtons[i].ptr(), StringW(MapSettingButtonText(kMapSettingRows[i], path)));
+    }
+  }
+  if (gThisMapButton) {
+    BSML::Lite::SetButtonText(gThisMapButton.ptr(), StringW(path.empty() ? std::string("Use Windows Bundle: -")
+                                                                         : std::string("Use Windows Bundle: ") +
+                                                                               (enabled ? "on" : "off")));
+  }
 }
 
 void RegisterModSettings() {
   BSML::BSMLSettings::get_instance()->TryAddSettingsMenu(
       [](HMUI::ViewController* viewController, bool firstActivation, bool, bool) {
-        if (!firstActivation || viewController == nullptr) return;
+        if (viewController == nullptr) return;
+        // The selected map can change between visits, so its row is refreshed
+        // on every activation, not only when the menu is built.
+        if (!firstActivation) {
+          RefreshThisMapRow();
+          SetConvertStatusText(gConvertStatus);
+          return;
+        }
         gSettingsMenuBuilding = true;
         // Cleared however this scope is left, including through the catch below.
         struct BuildGuard {
@@ -273,6 +1006,17 @@ void RegisterModSettings() {
         try {
         auto* container = BSML::Lite::CreateScrollableSettingsContainer(viewController->get_transform());
         if (container == nullptr) return;
+        UnityEngine::Transform* parent = container->get_transform().unsafePtr();
+        gAdvancedWidgets.clear();
+        gAdvancedCategoryOpen.clear();
+        gAdvancedCategoryButtons.clear();
+        gCurrentAdvancedCategory = -1;
+        // The list sat off the left edge of the panel and ran its full width:
+        // room on both sides makes it narrower and keeps it inside (0.15.10).
+        // Moved a further tab's width to the right (0.15.16).
+        if (auto* layout = container->GetComponent<UnityEngine::UI::VerticalLayoutGroup*>(); layout != nullptr) {
+          layout->set_padding(UnityEngine::RectOffset::New_ctor(15, 3, 0, 0));
+        }
 
         // Which build is actually running, in the headset, without a file.
         // "the new features do not work" and "the new build did not install"
@@ -282,79 +1026,211 @@ void RegisterModSettings() {
         // Built as a StringW from a std::string, the way every other text in
         // this menu is: the std::u16string this used to assemble by hand is
         // what took the menu down.
-        BSML::Lite::CreateText(container->get_transform(),
-                               StringW(std::string("Vivify ") + VERSION));
+        FixTextHeight(
+            BSML::Lite::CreateText(parent, StringW(std::string("Vivify ") + VERSION + kBuildLabel + (kLiteBuild ? " (lite)" : ""))),
+            1);
 
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Debug logging", GetVivifyDebugLogging(),
-            [](bool value) { SetBoolConfigValue(kVivifyDebugLoggingConfigKey, value, gVivifyDebugLogging); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Disable Beat 0 Filmgrain Blit", GetDisableBeat0FilmgrainBlit(),
-            [](bool value) { SetBoolConfigValue(kDisableBeat0FilmgrainBlitConfigKey, value, gDisableBeat0FilmgrainBlit); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Disable All Blits", GetDisableAllBlits(),
-            [](bool value) { SetBoolConfigValue(kDisableAllBlitsConfigKey, value, gDisableAllBlits); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Disable CreateCamera Depth", GetDisableCreateCameraDepth(),
-            [](bool value) { SetBoolConfigValue(kDisableCreateCameraDepthConfigKey, value, gDisableCreateCameraDepth); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Disable Custom Note Visuals", GetDisableCustomNoteVisuals(),
-            [](bool value) { SetBoolConfigValue(kDisableCustomNoteVisualsConfigKey, value, gDisableCustomNoteVisuals); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Disable Vivify Visuals In Multiplayer", GetDisableVisualsInMultiplayer(),
-            [](bool value) { SetBoolConfigValue(kDisableVisualsInMultiplayerConfigKey, value, gDisableVisualsInMultiplayer); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Disable VR Center Adjust Handling", GetDisableVRCenterAdjust(),
-            [](bool value) { SetBoolConfigValue(kDisableVRCenterAdjustConfigKey, value, gDisableVRCenterAdjust); });
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Convert PC Bundles On Device",
-            GetConvertPcBundlesOnDevice(),
-            [](bool value) {
-              SetBoolConfigValue(kConvertPcBundlesOnDeviceConfigKey, value, gConvertPcBundlesOnDevice);
+        // Conversion progress and updater messages, at the top (0.15.21) so
+        // they are in view whichever button started them.
+        gConvertStatusText = BSML::Lite::CreateText(parent, u"Idle");
+        FixTextHeight(gConvertStatusText.ptr(), 3);
+        // Never wider than the list (0.15.16): a long word with nowhere to
+        // break -- a URL in an updater message -- otherwise widened the whole
+        // list and pushed the settings off to the right.
+        if (auto* layout = gConvertStatusText->get_gameObject()->GetComponent<UnityEngine::UI::LayoutElement*>()) {
+          layout->set_preferredWidth(1.0f);
+          layout->set_flexibleWidth(1.0f);
+        }
+        SetConvertStatusText(Vivify::IsBulkPcBundleConversionRunning() && gConvertStatus == "Idle" ? "Converting..."
+                                                                                                    : gConvertStatus);
+
+        // 0.14.29: the everyday settings come first and everything else sits
+        // behind "Show Advanced Settings", which hides or shows those widgets
+        // in place (an inactive child drops out of the list's layout). Labels
+        // are short enough to fit beside their control. Controls that exist
+        // only in the full build are skipped in lite, not shown disabled.
+        auto header = [&](std::string const& title) {
+          auto* text = BSML::Lite::CreateText(parent, StringW("<size=110%><b>" + title + "</b></size>"));
+          FixTextHeight(text, 1, 6.0f);
+          return text;
+        };
+        // Registers a widget as advanced: hidden until the button below shows it.
+        auto advanced = [](auto* widget) {
+          if (widget == nullptr) return;
+          auto gameObject = widget->get_gameObject();
+          if (!gameObject) return;
+          gAdvancedWidgets.push_back(AdvancedEntry{gameObject.unsafePtr(), gCurrentAdvancedCategory});
+          gameObject->SetActive(false);
+        };
+        // A collapsible advanced category: a button that opens or closes the
+        // widgets registered after it, until the next category.
+        auto advancedCategory = [&](std::string const& name) {
+          int const index = static_cast<int>(gAdvancedCategoryOpen.size());
+          gAdvancedCategoryOpen.push_back(false);
+          auto* created = BSML::Lite::CreateUIButton(parent, StringW("[+] " + name), [index]() {
+            if (index < static_cast<int>(gAdvancedCategoryOpen.size())) {
+              gAdvancedCategoryOpen[index] = !gAdvancedCategoryOpen[index];
+            }
+            ApplyAdvancedVisibility();
+          });
+          gAdvancedCategoryButtons.emplace_back(created, name);
+          if (created) {
+            auto gameObject = created->get_gameObject();
+            gAdvancedWidgets.push_back(AdvancedEntry{gameObject.unsafePtr(), -1});
+            gameObject->SetActive(false);
+          }
+          gCurrentAdvancedCategory = index;
+        };
+        // Hover hints (0.15.4): point at a setting or button and a line or
+        // two says what it does. The text is looked up by the control's label
+        // (SettingHint), so a control without an entry simply has no hint.
+        auto hinted = [](auto* widget, std::u16string_view label) {
+          if (widget == nullptr) return widget;
+          char const* hint = SettingHint(label);
+          if (hint == nullptr) return widget;
+          auto gameObject = widget->get_gameObject();
+          if (gameObject) BSML::Lite::AddHoverHint(gameObject.unsafePtr(), StringW(std::string(hint)));
+          return widget;
+        };
+        auto toggle = [&](std::u16string_view label, bool value, std::function<void(bool)> onChange) {
+          auto* created = BSML::Lite::CreateToggle(parent, StringW(label), value, std::move(onChange));
+          FitSettingLabels(reinterpret_cast<UnityEngine::Component*>(created));
+          return hinted(created, label);
+        };
+        auto increment = [&](std::u16string_view label, float step, float value, float min, float max,
+                             std::function<void(float)> onChange) {
+          auto* created = BSML::Lite::CreateIncrementSetting(parent, StringW(label), 0, step, value, true, true, min,
+                                                             max, std::move(onChange));
+          FitSettingLabels(reinterpret_cast<UnityEngine::Component*>(created));
+          return hinted(created, label);
+        };
+        auto button = [&](std::u16string_view label, std::function<void()> onClick) {
+          return hinted(BSML::Lite::CreateUIButton(parent, StringW(label), std::move(onClick)), label);
+        };
+
+        if constexpr (!kLiteBuild) {
+          header("This Map");
+          gThisMapText = BSML::Lite::CreateText(parent, u"");
+          FixTextHeight(gThisMapText.ptr(), 2);
+          gThisMapButton = BSML::Lite::CreateUIButton(parent, u"Use Windows Bundle: -", []() {
+            std::string const path = Vivify::SelectedVivifyMapPath();
+            if (path.empty()) {
+              RefreshThisMapRow();
+              return;
+            }
+            bool const enabled = !GetWindowsBundleForMap(path);
+            SetWindowsBundleForMap(path, enabled);
+            PaperLogger.info("Vivify settings: Windows bundle for '{}' turned {}", path, enabled ? "on" : "off");
+            Vivify::ReselectSelectedMap();
+            RefreshThisMapRow();
+          });
+          hinted(gThisMapButton.ptr(), u"Use Windows Bundle");
+          // Per-map settings (0.15.18), in a window of their own (0.15.19):
+          // each press goes default, on, off.
+          gMapSettingButtons.clear();
+          auto* mapModal = BSML::Lite::CreateModal(viewController->get_transform(), UnityEngine::Vector2(85.0f, 75.0f),
+                                                   nullptr, true);
+          SafePtrUnity<BSML::ModalView> mapModalPtr(mapModal);
+          auto* mapModalList = mapModal ? BSML::Lite::CreateScrollableModalContainer(mapModal) : nullptr;
+          UnityEngine::Transform* mapParent = mapModalList ? mapModalList->get_transform().unsafePtr() : parent;
+          if (mapModalList) {
+            FixTextHeight(BSML::Lite::CreateText(mapParent, u"<b>Settings for this map</b>"), 1, 6.0f);
+            FixTextHeight(BSML::Lite::CreateText(mapParent, u"<size=75%>Each press: default, ON, OFF. Default "
+                                                            u"follows the main setting.</size>"),
+                          1, 4.0f);
+          }
+          auto* openMapSettings = BSML::Lite::CreateUIButton(parent, u"Map Settings...", [mapModalPtr]() {
+            RefreshThisMapRow();
+            if (mapModalPtr) mapModalPtr->Show();
+          });
+          if (openMapSettings) {
+            BSML::Lite::AddHoverHint(openMapSettings->get_gameObject().unsafePtr(),
+                                     StringW("Opens this map's own settings in a window"));
+          }
+          for (size_t i = 0; i < std::size(kMapSettingRows); i++) {
+            auto* created = BSML::Lite::CreateUIButton(mapParent, StringW(std::string(kMapSettingRows[i].label)), [i]() {
+              CycleMapSetting(i);
+              RefreshThisMapRow();
             });
+            if (auto gameObject = created ? created->get_gameObject() : nullptr) {
+              BSML::Lite::AddHoverHint(gameObject.unsafePtr(),
+                                       StringW(std::string("This map only: default follows the setting below, then "
+                                                           "on, then off. ") +
+                                               (kMapSettingRows[i].key == kGameMirrorsConfigKey
+                                                    ? "Off draws the game's mirrors (the runway, mirror water) "
+                                                      "without their reflection in this map."
+                                                    : "")));
+            }
+            gMapSettingButtons.emplace_back(created);
+          }
+          if (mapModalList) {
+            BSML::Lite::CreateUIButton(mapParent, u"Close", [mapModalPtr]() {
+              if (mapModalPtr) mapModalPtr->Hide();
+            });
+          }
+          RefreshThisMapRow();
+        }
 
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Stand-In Shading For Unsupported Shaders",
-            GetStandInShading(),
-            [](bool value) { SetBoolConfigValue(kStandInShadingConfigKey, value, gStandInShading); });
+        header("Performance");
+        if constexpr (!kLiteBuild) {
+          // Renders map post-process effects below eye resolution and scales
+          // them up. Full-screen raymarchers cost per pixel: 50% is a quarter of
+          // the work. Steps of 5% (0.14.26).
+          increment(u"Effect Resolution %", 5.0f, static_cast<float>(gEffectResolution), 25.0f, 100.0f,
+              [](float value) {
+                int const percent = std::clamp(static_cast<int>(value + 0.5f), 25, 100);
+                SetIntConfigValue(kEffectResolutionConfigKey, percent, gEffectResolution);
+              });
+          // Steps map effects down while a map runs slow, back up when there
+          // is room (0.15.3).
+          toggle(u"Auto Effect Resolution", gAutoEffectResolution, [](bool value) {
+            SetBoolConfigValue(kAutoEffectResolutionConfigKey, value, gAutoEffectResolution);
+          });
+          toggle(u"Offscreen Culling (can hide objects)", gOffscreenCulling,
+                 [](bool value) { SetBoolConfigValue(kOffscreenCullingConfigKey, value, gOffscreenCulling); });
+          // Draws nothing farther than this from the player; 0 is off. Steps of
+          // 10 m (0.14.26).
+          increment(u"Far Culling (m, 0 = off)", 10.0f, static_cast<float>(gFarCullingDistance), 0.0f, 1000.0f,
+              [](float value) {
+                int const metres = std::clamp(static_cast<int>(value + 0.5f), 0, 1000);
+                SetIntConfigValue(kFarCullingConfigKey, metres, gFarCullingDistance);
+              });
+        }
+        increment(u"Field Of View %", 5.0f, static_cast<float>(gFieldOfView), 100.0f, 150.0f, [](float value) {
+          int const percent = std::clamp(static_cast<int>(value + 0.5f), 100, 150);
+          SetIntConfigValue(kFieldOfViewConfigKey, percent, gFieldOfView);
+        });
+        increment(u"Foveated Rendering (0 = game's)", 1.0f, static_cast<float>(gFoveationLevel), 0.0f, 4.0f,
+                  [](float value) {
+                    int const level = std::clamp(static_cast<int>(value + 0.5f), 0, 4);
+                    SetIntConfigValue(kFoveationConfigKey, level, gFoveationLevel);
+                  });
+        toggle(u"Disable All Blits", GetDisableAllBlits(),
+               [](bool value) { SetBoolConfigValue(kDisableAllBlitsConfigKey, value, gDisableAllBlits); });
 
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Scene Depth For Map Shaders",
-            GetSceneDepthTexture(),
-            [](bool value) { SetBoolConfigValue(kSceneDepthConfigKey, value, gSceneDepth); });
+        toggle(u"Flat-Screen Effect Guard", gFlatScreenGuard,
+               [](bool value) { SetBoolConfigValue(kFlatScreenGuardConfigKey, value, gFlatScreenGuard); });
 
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Translate Shaders On Conversion",
-            GetTranslateShadersOnConversion(),
-            [](bool value) { SetBoolConfigValue(kTranslateShadersConfigKey, value, gTranslateShaders); });
+        header("Gameplay");
+        toggle(u"Submit Scores On Vivify Maps", GetSubmitScoresOnVivifyMaps(),
+               [](bool value) { SetBoolConfigValue(kSubmitScoresConfigKey, value, gSubmitScores); });
+        toggle(u"Disable Custom Note Visuals", GetDisableCustomNoteVisuals(), [](bool value) {
+          SetBoolConfigValue(kDisableCustomNoteVisualsConfigKey, value, gDisableCustomNoteVisuals);
+        });
+        toggle(u"Use Map Sabers", gMapSabers,
+               [](bool value) { SetBoolConfigValue(kMapSabersConfigKey, value, gMapSabers); });
+        toggle(u"Saber Lights On Map Objects", gSaberLights,
+               [](bool value) { SetBoolConfigValue(kSaberLightsConfigKey, value, gSaberLights); });
+        toggle(u"No Vivify Visuals In Multiplayer", GetDisableVisualsInMultiplayer(), [](bool value) {
+          SetBoolConfigValue(kDisableVisualsInMultiplayerConfigKey, value, gDisableVisualsInMultiplayer);
+        });
+        toggle(u"AudioLink", GetAudioLinkEnabled(),
+               [](bool value) { SetBoolConfigValue(kAudioLinkConfigKey, value, gAudioLink); });
 
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"PC Shaders For Broken Quest Shaders",
-            GetUsePcShadersForEmptyShaders(),
-            [](bool value) { SetBoolConfigValue(kPcShadersForEmptyConfigKey, value, gPcShadersForEmpty); });
-
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Map Realtime Shadows",
-            GetMapRealtimeShadows(),
-            [](bool value) { SetBoolConfigValue(kMapRealtimeShadowsConfigKey, value, gMapRealtimeShadows); });
-
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"AudioLink",
-            GetAudioLinkEnabled(),
-            [](bool value) { SetBoolConfigValue(kAudioLinkConfigKey, value, gAudioLink); });
-
-        BSML::Lite::CreateToggle(
-            container->get_transform(), u"Submit Scores On Vivify Maps",
-            GetSubmitScoresOnVivifyMaps(),
-            [](bool value) { SetBoolConfigValue(kSubmitScoresConfigKey, value, gSubmitScores); });
-
+        header("PC Maps");
         // A map whose only asset bundle is a PC build has its play button
-        // disabled, so it can never be selected into -- which also means the
-        // per-level conversion that runs on level select can never fire for it.
-        // This button converts every installed map in one pass instead, so
-        // those levels become playable without having to be playable first.
-        gConvertStatusText = BSML::Lite::CreateText(container->get_transform(), u"Idle");
-        if (Vivify::IsBulkPcBundleConversionRunning()) SetConvertStatusText("Converting...");
+        // disabled, so it can never be selected into. These convert every
+        // installed map in one pass instead.
         // One progress callback for both buttons; they differ only in whether an
         // already-cached conversion is reused or thrown away first.
         static auto const startConversion = [](bool force) {
@@ -366,34 +1242,263 @@ void RegisterModSettings() {
                   SetConvertStatusText(progress.status);
                   return;
                 }
-                SetConvertStatusText(std::to_string(progress.levelsScanned) + "/" +
-                                     std::to_string(progress.levelsTotal) + "  " + progress.status);
+                SetConvertStatusText(ProgressBarText(progress.levelsScanned, progress.levelsTotal) + "\n" +
+                                     std::to_string(progress.levelsScanned) + "/" +
+                                     std::to_string(progress.levelsTotal) + "  <size=80%>" + progress.status +
+                                     "</size>");
               },
               force);
         };
+        button(u"Convert All PC Bundles", []() { startConversion(false); });
 
-        BSML::Lite::CreateUIButton(
-            container->get_transform(), u"Convert All PC Bundles Now",
-            []() { startConversion(false); });
+        header("Updates");
+        // Installs the newest numbered release in place of this build, for the
+        // next start of the game (0.15.12, VivifyUpdater.cpp).
+        button(u"Update Vivify", []() {
+          // After a dev or nightly build was installed in game, the newest
+          // release can be older than what runs now: ask for a second press.
+          static std::chrono::steady_clock::time_point armedUntil{};
+          auto const now = std::chrono::steady_clock::now();
+          if (gInstalledPrereleaseBuild && now > armedUntil) {
+            armedUntil = now + std::chrono::seconds(5);
+            SetConvertStatusText("A dev or nightly build was installed in game. Press Update Vivify again "
+                                 "within 5 s to install the stable release instead");
+            return;
+          }
+          armedUntil = {};
+          SetConvertStatusText("Checking for an update...");
+          Vivify::Updater::Install(Vivify::Updater::Channel::Stable, "", UpdaterStatus(false));
+        });
 
-        // A cached conversion is keyed on the source bundle, so it is reused
-        // even after the converter itself has been fixed. This is the way to
-        // pick those fixes up without deleting the cache directory by hand.
-        BSML::Lite::CreateUIButton(
-            container->get_transform(), u"Force Reconvert All (ignore cache)",
-            []() { startConversion(true); });
-
+        header("Diagnostics");
+        toggle(u"Debug Logging", GetVivifyDebugLogging(),
+               [](bool value) { SetBoolConfigValue(kVivifyDebugLoggingConfigKey, value, gVivifyDebugLogging); });
+        toggle(u"Send Logs", gSendLogs,
+               [](bool value) { SetBoolConfigValue(kSendLogsConfigKey, value, gSendLogs); });
         // paperlog output is not reachable without adb, so Vivify writes its own
-        // plain-text report next to its data. Showing the path here means the
-        // file can be found without being told where to look.
-        BSML::Lite::CreateText(container->get_transform(),
-                               u"Diagnostics (both plain .txt, same folder):");
-        BSML::Lite::CreateText(
-            container->get_transform(),
-            StringW("<size=70%>" + Vivify::Report::FilePath() + "</size>"));
-        BSML::Lite::CreateText(
-            container->get_transform(),
-            StringW("<size=70%>" + std::string(kVivifyLogPath) + "</size>"));
+        // plain-text files next to its data, all in this one folder.
+        FixTextHeight(BSML::Lite::CreateText(parent, StringW("<size=70%>Logs in " + std::string(kVivifyLogDir) +
+                                                             ":\nVivifySession.txt, VivifyReport.txt" +
+                                                             (kLiteBuild ? "" : ", vivify_global.txt") + "</size>")),
+                      2, 3.5f);
+
+        gAdvancedButton = BSML::Lite::CreateUIButton(parent, u"Show Advanced Settings", []() {
+          gShowAdvanced = !gShowAdvanced;
+          ApplyAdvancedVisibility();
+          if (gAdvancedButton) {
+            BSML::Lite::SetButtonText(gAdvancedButton.ptr(),
+                                      gShowAdvanced ? u"Hide Advanced Settings" : u"Show Advanced Settings");
+          }
+        });
+
+        advancedCategory("Shaders");
+        if constexpr (!kLiteBuild) {
+          auto* separateEyeToggle =
+              toggle(u"Separate-Eye Renderer (prototype)", gExperimentalSeparateEye, [](bool value) {
+                SetBoolConfigValue(kExperimentalSeparateEyeKey, value, gExperimentalSeparateEye);
+                Vivify::SeparateEye::Reset(true);
+                Vivify::ReselectSelectedMap();
+              });
+          advanced(separateEyeToggle);
+          // Triangle Tessellation runs only inside the Separate-Eye Renderer,
+          // so on its own it did nothing: Lifelike's grass stayed missing with
+          // it on (0.15.19). Turning it on turns the renderer on as well.
+          SafePtrUnity<BSML::ToggleSetting> separateEyePtr(separateEyeToggle);
+          advanced(toggle(u"Triangle Tessellation (heavy, exp.)", gUniformTriangleTessellation, [separateEyePtr](bool value) {
+            SetBoolConfigValue(kUniformTriangleTessellationKey, value, gUniformTriangleTessellation);
+            if (value && !gExperimentalSeparateEye) {
+              SetBoolConfigValue(kExperimentalSeparateEyeKey, true, gExperimentalSeparateEye);
+              if (separateEyePtr) separateEyePtr->set_Value(true);
+              PaperLogger.info("Vivify settings: Triangle Tessellation needs the Separate-Eye Renderer; turned it on");
+            }
+            Vivify::SeparateEye::Reset(true);
+            Vivify::ReselectSelectedMap();
+          }));
+        }
+        advanced(toggle(u"Convert PC Bundles On Device", GetConvertPcBundlesOnDevice(), [](bool value) {
+          SetBoolConfigValue(kConvertPcBundlesOnDeviceConfigKey, value, gConvertPcBundlesOnDevice);
+        }));
+        advanced(toggle(u"Translate Shaders", GetTranslateShadersOnConversion(),
+                        [](bool value) { SetBoolConfigValue(kTranslateShadersConfigKey, value, gTranslateShaders); }));
+        advanced(toggle(u"Stand-In Shading", GetStandInShading(),
+                        [](bool value) { SetBoolConfigValue(kStandInShadingConfigKey, value, gStandInShading); }));
+        advanced(toggle(u"Estimated Look", GetEstimatedLook(),
+                        [](bool value) { SetBoolConfigValue(kEstimatedLookConfigKey, value, gEstimatedLook); }));
+        advanced(toggle(u"Scene Depth For Map Shaders", GetSceneDepthTexture(),
+                        [](bool value) { SetBoolConfigValue(kSceneDepthConfigKey, value, gSceneDepth); }));
+        advanced(toggle(u"Map Realtime Shadows", GetMapRealtimeShadows(), [](bool value) {
+          SetBoolConfigValue(kMapRealtimeShadowsConfigKey, value, gMapRealtimeShadows);
+        }));
+        // Realtime probes re-render the scene into a cubemap; on by default
+        // in a reduced form (128 px, one face a frame, no HDR), full quality
+        // only on request. A map that went down plays without them.
+        advanced(toggle(u"Map Reflection Probes", GetMapReflectionProbes(), [](bool value) {
+          SetBoolConfigValue(kMapReflectionProbesConfigKey, value, gMapReflectionProbes);
+        }));
+        advanced(toggle(u"Full Reflection Probes", GetFullReflectionProbes(), [](bool value) {
+          SetBoolConfigValue(kFullReflectionProbesConfigKey, value, gFullReflectionProbes);
+        }));
+        if constexpr (!kLiteBuild) {
+          // A map's own cameras that render into textures (TV screens,
+          // portals, light meshes) draw with single-view shaders (0.15.3).
+          advanced(toggle(u"Single-View Map Cameras", gSingleViewMapCameras, [](bool value) {
+            SetBoolConfigValue(kSingleViewMapCamerasConfigKey, value, gSingleViewMapCameras);
+          }));
+        }
+        if constexpr (!kLiteBuild) {
+          // A map that crashed or froze last time plays in recovery mode
+          // next time: less memory, and without the effect that was
+          // starting when it went down (0.15.2).
+          advanced(toggle(u"Crash Recovery Mode", gCrashRecovery, [](bool value) {
+            SetBoolConfigValue(kCrashRecoveryConfigKey, value, gCrashRecovery);
+          }));
+          advanced(button(u"Forget Crash Recovery", []() {
+            size_t const count = Vivify::Recovery::Entries().size();
+            Vivify::Recovery::ForgetAll();
+            PaperLogger.info("Vivify settings: crash recovery list cleared ({} entr{})", count,
+                             count == 1 ? "y" : "ies");
+            SetConvertStatusText("Crash recovery cleared (" + std::to_string(count) + " entr" +
+                                 (count == 1 ? "y" : "ies") + ")");
+          }));
+        }
+        // Experimental: geometry-stage effects are drawn without that stage
+        // instead of as grey stand-ins. Changing it reconverts affected maps.
+        advanced(toggle(u"Geometry Effects In Right Eye", gGeometryEyeCopy, [](bool value) {
+          SetBoolConfigValue(kGeometryEyeCopyConfigKey, value, gGeometryEyeCopy);
+        }));
+        advanced(toggle(u"Flat Geometry Effects", gGeometryBothEyes, [](bool value) {
+          SetBoolConfigValue(kGeometryBothEyesConfigKey, value, gGeometryBothEyes);
+        }));
+        advanced(toggle(u"Geometry-Shader Effects (exp.)", GetDrawGeometryShaderEffects(),
+                        [](bool value) { SetBoolConfigValue(kGeometryEffectsConfigKey, value, gGeometryEffects); }));
+        if constexpr (!kLiteBuild) {
+          advanced(toggle(u"PC Bundle For Missing Shaders", gPcBundleForMissingShaders, [](bool value) {
+            SetBoolConfigValue(kPcBundleForMissingShadersConfigKey, value, gPcBundleForMissingShaders);
+          }));
+          advanced(toggle(u"Prepare Shaders Before Playing", GetPrepareShadersBeforePlaying(),
+                          [](bool value) { SetBoolConfigValue(kPrepareShadersConfigKey, value, gPrepareShaders); }));
+          advanced(toggle(u"Blit Fix For Screen Textures (exp.)", GetBlitScreenTextureFix(),
+                          [](bool value) { SetBoolConfigValue(kBlitFixConfigKey, value, gBlitFix); }));
+          // After two loads of a converted map that never finish, it is
+          // reconverted without shader translation (grey stand-ins).
+          advanced(toggle(u"Crash Guard", gCrashGuard,
+                          [](bool value) { SetBoolConfigValue(kCrashGuardConfigKey, value, gCrashGuard); }));
+        }
+
+        advancedCategory("Effects");
+        advanced(toggle(u"Skip Beat-0 Film Grain Blit", GetDisableBeat0FilmgrainBlit(), [](bool value) {
+          SetBoolConfigValue(kDisableBeat0FilmgrainBlitConfigKey, value, gDisableBeat0FilmgrainBlit);
+        }));
+        advanced(toggle(u"No Depth On Map Cameras", GetDisableCreateCameraDepth(), [](bool value) {
+          SetBoolConfigValue(kDisableCreateCameraDepthConfigKey, value, gDisableCreateCameraDepth);
+        }));
+        advanced(toggle(u"Ignore VR Center Adjust", GetDisableVRCenterAdjust(), [](bool value) {
+          SetBoolConfigValue(kDisableVRCenterAdjustConfigKey, value, gDisableVRCenterAdjust);
+        }));
+
+        if constexpr (!kLiteBuild) {
+          advancedCategory("Replays");
+          // Only applies while the Replay mod renders; with it on, maps get a
+          // single-view build prepared at selection for that (0.14.29).
+          advanced(toggle(u"Replay Render Mode", gReplayRenderMode, [](bool value) {
+            SetBoolConfigValue(kReplayRenderModeConfigKey, value, gReplayRenderMode);
+          }));
+          // Vivify's own recorder (0.15.22): BSOR files in Mods/bl/replays/,
+          // which the Replay mod watches and renders without BeatLeader.
+          advanced(toggle(u"Record Replays", gRecordReplays, [](bool value) {
+            SetBoolConfigValue(kRecordReplaysConfigKey, value, gRecordReplays);
+          }));
+          advanced(toggle(u"Record With BeatLeader", gRecordReplaysWithBeatLeader, [](bool value) {
+            SetBoolConfigValue(kRecordReplaysWithBeatLeaderConfigKey, value, gRecordReplaysWithBeatLeader);
+          }));
+        }
+
+        advancedCategory("Maintenance");
+        // A cached conversion is keyed on the source bundle, so it is reused even
+        // after the converter itself has been fixed. This picks fixes up.
+        advanced(button(u"Force Reconvert All", []() { startConversion(true); }));
+        advanced(button(u"Install Nightly", []() {
+          SetConvertStatusText("Checking the nightly build...");
+          Vivify::Updater::Install(Vivify::Updater::Channel::Nightly, "", UpdaterStatus(true));
+        }));
+        advanced(button(u"Install Dev Build", []() {
+          SetConvertStatusText("Checking the latest build of main...");
+          Vivify::Updater::Install(Vivify::Updater::Channel::Dev, "", UpdaterStatus(true));
+        }));
+        // The converter is part of the mod, so an older converter means an older
+        // build of Vivify: this lists the releases from 0.13.5 on, filled in
+        // once GitHub answers.
+        {
+          static std::string chosenVersion = "Latest";
+          std::vector<std::string_view> initial = {"Latest"};
+          auto* versions = BSML::Lite::CreateDropdown(parent, u"Converter Version", StringW("Latest"),
+                                                      std::span<std::string_view>(initial),
+                                                      [](StringW value) { chosenVersion = std::string(value); });
+          hinted(versions, u"Converter Version");
+          advanced(versions);
+          SafePtrUnity<BSML::DropdownListSetting> versionsPtr(versions);
+          Vivify::Updater::ListVersions([versionsPtr](std::vector<std::string> const& tags, std::string const& error) {
+            if (!versionsPtr) return;
+            if (!error.empty()) PaperLogger.warn("Vivify updater: release list: {}", error);
+            auto list = versionsPtr->values;
+            if (!list) return;
+            list->Clear();
+            list->Add(reinterpret_cast<System::Object*>(static_cast<Il2CppString*>(StringW("Latest"))));
+            for (auto const& tag : tags) list->Add(reinterpret_cast<System::Object*>(static_cast<Il2CppString*>(StringW(tag))));
+            versionsPtr->UpdateChoices();
+          });
+          advanced(button(u"Install Chosen Version", []() {
+            bool const latest = chosenVersion == "Latest";
+            SetConvertStatusText("Installing " + chosenVersion + "...");
+            Vivify::Updater::Install(latest ? Vivify::Updater::Channel::Stable : Vivify::Updater::Channel::Version,
+                                     latest ? std::string() : chosenVersion, UpdaterStatus(false));
+          }));
+        }
+        if constexpr (!kLiteBuild) {
+          // Puts Vivify back to a fresh install's state, without touching the
+          // maps. Two presses within five seconds, since it cannot be undone.
+          advanced(button(u"Reset Vivify (clean slate)", []() {
+            static std::chrono::steady_clock::time_point armedUntil{};
+            auto const now = std::chrono::steady_clock::now();
+            if (now > armedUntil) {
+              armedUntil = now + std::chrono::seconds(5);
+              SetConvertStatusText("Press Reset again within 5 s: deletes converted maps and downloaded PC "
+                                   "bundles, resets settings");
+              return;
+            }
+            armedUntil = {};
+            if (Vivify::IsBulkPcBundleConversionRunning()) {
+              SetConvertStatusText("A conversion pass is running; reset after it finishes");
+              return;
+            }
+            EnsureConfigObject();
+            getConfig().config.RemoveAllMembers();
+            EnsureConfigDefaults();
+            SetConvertStatusText("Resetting...");
+            Vivify::ResetToCleanSlate([](std::string const& summary) {
+              SetConvertStatusText(summary + ". Reopen this menu to see the settings.");
+            });
+          }));
+          // Lists every Vivify map in VivifyMaps.txt, then replaces each with a
+          // fresh BeatSaver download. Two presses within five seconds.
+          advanced(button(u"Redownload All Vivify Maps", []() {
+            static std::chrono::steady_clock::time_point armedUntil{};
+            auto const now = std::chrono::steady_clock::now();
+            if (now > armedUntil) {
+              armedUntil = now + std::chrono::seconds(5);
+              SetConvertStatusText("Press Redownload again within 5 s: lists Vivify maps in VivifyMaps.txt, "
+                                   "then replaces each with a fresh BeatSaver download");
+              return;
+            }
+            armedUntil = {};
+            SetConvertStatusText("Finding Vivify maps...");
+            Vivify::RedownloadVivifyMaps([](std::string const& text) { SetConvertStatusText(text); });
+          }));
+        }
+        // Spacers, so the last line of the menu is not clipped by the scroll view.
+        // The scroll view clips its last rows, which cut off the bottom of the
+        // menu (#81); three empty lines keep the real rows clear of that.
+        FixTextHeight(BSML::Lite::CreateText(parent, u" "), 3);
         } catch (std::exception const& e) {
           PaperLogger.error("Vivify settings menu: construction threw ({}); the controls after the "
                             "failure are missing", e.what());
@@ -431,6 +1536,16 @@ bool GetMultipassRenderingEnabled() {
   return false;
 }
 
+bool GetExperimentalSeparateEye() { return !kLiteBuild && gExperimentalSeparateEye; }
+// Per map too (0.15.24): it swapped Yoi Okashi's grass shader for its
+// tessellated build when turned on for Lifelike's grass.
+bool GetUniformTriangleTessellation() {
+  return !kLiteBuild && MapBool(kUniformTriangleTessellationKey, gUniformTriangleTessellation);
+}
+
+bool GetSendLogs() {
+  return gSendLogs;
+}
 bool GetVivifyDebugLogging() {
   return gVivifyDebugLogging;
 }
@@ -440,15 +1555,35 @@ bool GetDisableBeat0FilmgrainBlit() {
 }
 
 bool GetDisableAllBlits() {
-  return gDisableAllBlits;
+  return MapBool(kDisableAllBlitsConfigKey, gDisableAllBlits);
 }
 
 bool GetDisableCreateCameraDepth() {
   return gDisableCreateCameraDepth;
 }
 
+bool GetFlatScreenGuard() {
+  return MapBool(kFlatScreenGuardConfigKey, gFlatScreenGuard);
+}
+
+bool GetSaberLightsOnMapObjects() {
+  return gSaberLights;
+}
+
+bool GetGeometryEffectsBothEyes() {
+  return gGeometryBothEyes;
+}
+
+bool GetGeometryRightEyeCopy() {
+  return gGeometryEyeCopy;
+}
+
+bool GetMapSabers() {
+  return MapBool(kMapSabersConfigKey, gMapSabers);
+}
+
 bool GetDisableCustomNoteVisuals() {
-  return gDisableCustomNoteVisuals;
+  return MapBool(kDisableCustomNoteVisualsConfigKey, gDisableCustomNoteVisuals);
 }
 
 bool GetDisableVisualsInMultiplayer() {
@@ -466,9 +1601,10 @@ bool GetConvertPcBundlesOnDevice() {
 bool GetStandInShading() {
   return gStandInShading;
 }
+bool GetEstimatedLook() { return gEstimatedLook; }
 
 bool GetSceneDepthTexture() {
-  return gSceneDepth;
+  return MapBool(kSceneDepthConfigKey, gSceneDepth);
 }
 
 bool GetSubmitScoresOnVivifyMaps() {
@@ -480,15 +1616,291 @@ bool GetTranslateShadersOnConversion() {
 }
 
 bool GetAudioLinkEnabled() {
-  return gAudioLink;
+  return MapBool(kAudioLinkConfigKey, gAudioLink);
 }
 
+bool GetMapReflectionProbes() {
+  return MapBool(kMapReflectionProbesConfigKey, gMapReflectionProbes);
+}
+
+bool GetFullReflectionProbes() {
+  return gFullReflectionProbes;
+}
+
+bool GetSingleViewMapCameras() {
+  return !kLiteBuild && gSingleViewMapCameras;
+}
+
+bool GetCrashRecovery() {
+  return !kLiteBuild && gCrashRecovery;
+}
+
+bool GetRecoveryModeActive() {
+  return gRecoveryModeActive.load();
+}
+
+void SetRecoveryModeActive(bool active) {
+  gRecoveryModeActive.store(active);
+}
+
+void SelectSettingsMap(std::string const& levelPath) {
+  LoadMapOverridesFor(levelPath);
+}
+bool GetGameMirrors() {
+  return MapBool(kGameMirrorsConfigKey, gGameMirrors);
+}
 bool GetMapRealtimeShadows() {
-  return gMapRealtimeShadows;
+  return MapBool(kMapRealtimeShadowsConfigKey, gMapRealtimeShadows);
+}
+
+// A loaded mod's handle by id, ignoring case (0.15.24): the Replay mod
+// registers as "Replay" while every lookup asked for "replay", so Vivify's
+// Replay support and its replay recorder never found it.
+void* LoadedModHandle(std::string_view id) {
+  CModResults results = modloader_get_loaded();
+  void* handle = nullptr;
+  for (size_t i = 0; i < results.size && handle == nullptr; i++) {
+    char const* loadedId = results.array[i].info.id;
+    if (loadedId == nullptr) continue;
+    std::string_view const loaded(loadedId);
+    if (loaded.size() == id.size() &&
+        std::equal(loaded.begin(), loaded.end(), id.begin(), [](char a, char b) {
+          return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b));
+        }))
+      handle = results.array[i].handle;
+  }
+  modloader_free_results(&results);
+  return handle;
+}
+
+namespace {
+// What conditional-dependencies' EXPOSE_API returns, laid out as in its
+// utils.hpp (0.3.0). Its headers are not used: they include the old
+// QuestLoader modloader header, which this scotland2 build does not have.
+struct ExposedTypeInfo {
+  std::string name;
+  size_t size;
+};
+struct ExposedApi {
+  ExposedTypeInfo ret;
+  std::vector<ExposedTypeInfo> params;
+  void* func;
+};
+
+using IsInRenderFunction = bool (*)();
+
+// Replay's IsInRender, found through the loader rather than by file path, and
+// type checked the way conditional-dependencies does before using it.
+IsInRenderFunction FindReplayIsInRender() {
+  void* handle = LoadedModHandle("replay");
+  if (handle == nullptr) return nullptr;
+  auto* exported = reinterpret_cast<ExposedApi (*)()>(dlsym(handle, "__IsInRender"));
+  if (exported == nullptr) return nullptr;
+  ExposedApi const api = exported();
+  if (api.ret.name != "bool" || api.ret.size != sizeof(bool) || !api.params.empty()) return nullptr;
+  return reinterpret_cast<IsInRenderFunction>(api.func);
+}
+
+// Replay's IsInReplay: a replay is being watched or rendered (0.15.19).
+IsInRenderFunction FindReplayIsInReplay() {
+  void* handle = LoadedModHandle("replay");
+  if (handle == nullptr) return nullptr;
+  auto* exported = reinterpret_cast<ExposedApi (*)()>(dlsym(handle, "__IsInReplay"));
+  if (exported == nullptr) return nullptr;
+  ExposedApi const api = exported();
+  if (api.ret.name != "bool" || api.ret.size != sizeof(bool) || !api.params.empty()) return nullptr;
+  return reinterpret_cast<IsInRenderFunction>(api.func);
+}
+
+bool ReplayModIsReplaying() {
+  static std::atomic<IsInRenderFunction> isInReplay{nullptr};
+  auto function = isInReplay.load();
+  if (function == nullptr) {
+    function = FindReplayIsInReplay();
+    if (function == nullptr) return false;
+    isInReplay.store(function);
+  }
+  return function();
+}
+
+bool ReplayModInstalled() {
+  return LoadedModHandle("replay") != nullptr;
+}
+
+// Whether the Replay mod is rendering a replay right now. The lookup is
+// retried until it succeeds, since one made before Replay has loaded would
+// otherwise stay empty for the session.
+bool ReplayModIsRendering() {
+  static std::atomic<IsInRenderFunction> isInRender{nullptr};
+  auto function = isInRender.load();
+  if (function == nullptr) {
+    function = FindReplayIsInRender();
+    if (function == nullptr) return false;
+    isInRender.store(function);
+  }
+  return function();
+}
+}
+
+// Single-view programs are what replay renderers draw, but the headset draws
+// none of them: a player who left this on got black maps (#92, #93). So it
+// only applies while the Replay mod is actually rendering (0.14.28).
+bool GetReplayPlaying() {
+  return ReplayModIsReplaying();
+}
+bool GetReplayRendering() {
+  return ReplayModIsRendering();
+}
+bool GetRecordReplays() { return !kLiteBuild && gRecordReplays; }
+bool GetRecordReplaysWithBeatLeader() { return gRecordReplaysWithBeatLeader; }
+
+bool GetReplayRenderMode() {
+  return !kLiteBuild && gReplayRenderMode && ReplayModIsRendering();
+}
+
+// The setting itself, rendering or not: while it is on and Replay is
+// installed, maps get their single-view conversion prepared ahead of a render.
+bool GetWindowsBundleForMap(std::string const& levelPath) {
+  if (kLiteBuild || levelPath.empty()) return false;
+  auto const& doc = getConfig().config;
+  if (!doc.IsObject()) return false;
+  auto it = doc.FindMember(kWindowsBundleMapsConfigKey);
+  if (it == doc.MemberEnd() || !it->value.IsArray()) return false;
+  std::string const key = MapKeyOf(levelPath);
+  for (auto const& entry : it->value.GetArray()) {
+    if (entry.IsString() && key == entry.GetString()) return true;
+  }
+  return false;
+}
+
+void SetWindowsBundleForMap(std::string const& levelPath, bool enabled) {
+  if (kLiteBuild || levelPath.empty()) return;
+  auto& config = getConfig();
+  auto& doc = config.config;
+  EnsureConfigObject();
+  auto& allocator = doc.GetAllocator();
+  auto it = doc.FindMember(kWindowsBundleMapsConfigKey);
+  if (it == doc.MemberEnd() || !it->value.IsArray()) {
+    if (it != doc.MemberEnd()) doc.RemoveMember(it);
+    doc.AddMember(rapidjson::Value(kWindowsBundleMapsConfigKey, allocator), rapidjson::Value(rapidjson::kArrayType),
+                  allocator);
+    it = doc.FindMember(kWindowsBundleMapsConfigKey);
+  }
+  auto& list = it->value;
+  std::string const key = MapKeyOf(levelPath);
+  for (auto entry = list.Begin(); entry != list.End();) {
+    entry = entry->IsString() && key == entry->GetString() ? list.Erase(entry) : entry + 1;
+  }
+  if (enabled) list.PushBack(rapidjson::Value(key.c_str(), allocator), allocator);
+  config.Write();
+}
+
+bool GetReplayRenderModeSetting() {
+  return !kLiteBuild && gReplayRenderMode;
+}
+
+bool GetReplayModInstalled() {
+  return ReplayModInstalled();
+}
+
+bool GetBlitScreenTextureFix() {
+  return !kLiteBuild && gBlitFix;
+}
+
+bool GetPrepareShadersBeforePlaying() {
+  return !kLiteBuild && gPrepareShaders;
+}
+
+bool GetDrawGeometryShaderEffects() {
+  return gGeometryEffects;
 }
 
 bool GetUsePcShadersForEmptyShaders() {
   return gPcShadersForEmpty;
+}
+
+bool GetCrashGuard() {
+  return gCrashGuard;
+}
+
+bool GetUsePcBundleForMissingShaders() {
+  return !kLiteBuild && gPcBundleForMissingShaders;
+}
+
+// Behind each post-0.14.7 getter below, the lite build answers with 0.14.7's
+// behaviour whatever the saved value says, so a lite install never reads a
+// setting it does not show.
+bool GetOffscreenCulling() {
+  // Off while the field of view is widened: it would freeze what the wider
+  // view now shows (0.15.12).
+  return !kLiteBuild && gOffscreenCulling && gFieldOfView <= 100;
+}
+
+int GetVivifyFoveationLevel() {
+  return gFoveationLevel;
+}
+
+int GetFieldOfViewPercent() {
+  return gFieldOfView;
+}
+
+int GetFarCullingDistance() {
+  return kLiteBuild ? 0 : std::clamp(gFarCullingDistance, 0, 1000);
+}
+
+void ResetAutoEffectResolution() {
+  gAutoEffect = AutoEffectState{};
+  gAutoEffectPercent.store(100);
+}
+
+void ReportGameplayFrame(float seconds) {
+  if (kLiteBuild || !gAutoEffectResolution || GetExperimentalSeparateEye()) return;
+  if (!(seconds > 0.0f) || seconds > 0.5f) return;  // a pause or a stall, not pacing
+  auto& s = gAutoEffect;
+  s.elapsed += seconds;
+  s.average = s.average == 0.0 ? seconds : s.average * 0.95 + seconds * 0.05;
+  if (s.elapsed < 2.0) return;  // let the average settle after the level starts
+  if (s.best == 0.0 || s.average < s.best) s.best = s.average;
+  int percent = gAutoEffectPercent.load();
+  if (s.average > s.best * 1.35) {
+    s.slowFor += seconds;
+    s.fastFor = 0.0;
+    if (s.slowFor >= 1.5 && percent > 40) {
+      percent = std::max(40, percent - 10);
+      gAutoEffectPercent.store(percent);
+      s.slowFor = 0.0;
+      PaperLogger.info("Vivify Auto Effect Resolution: frames at {:.1f} ms against a best of {:.1f} ms; map "
+                       "effects down to {}%", s.average * 1000.0, s.best * 1000.0, percent);
+    }
+  } else if (s.average < s.best * 1.15) {
+    s.fastFor += seconds;
+    s.slowFor = 0.0;
+    if (s.fastFor >= 6.0 && percent < 100) {
+      percent = std::min(100, percent + 10);
+      gAutoEffectPercent.store(percent);
+      s.fastFor = 0.0;
+      PaperLogger.info("Vivify Auto Effect Resolution: frames back to {:.1f} ms; map effects up to {}%",
+                       s.average * 1000.0, percent);
+    }
+  } else {
+    s.slowFor = 0.0;
+    s.fastFor = 0.0;
+  }
+}
+
+int GetEffectResolutionPercent() {
+  if (kLiteBuild) return 100;
+  // This experiment targets original effects, including their full resolution.
+  // Keep the saved user controls intact for the ordinary renderer/recovery.
+  if (GetExperimentalSeparateEye() && !GetRecoveryModeActive()) return 100;
+  int percent = std::clamp(gEffectResolution, 25, 100);
+  if (gAutoEffectResolution) percent = std::min(percent, gAutoEffectPercent.load());
+  // Crash recovery mode: half resolution or less (0.15.2).
+  return GetRecoveryModeActive() ? std::min(percent, 50) : percent;
+}
+
+float GetEffectResolutionScale() {
+  return static_cast<float>(GetEffectResolutionPercent()) / 100.0f;
 }
 
 std::string GetStandInShaderName() {
@@ -502,8 +1914,16 @@ void EnsureConfigDefaults() {
   bool needsWrite = false;
 
   needsWrite |= EnsureBoolConfigValue(kMultipassRenderingConfigKey, false, gMultipassRenderingEnabled);
+  needsWrite |= EnsureBoolConfigValue(kExperimentalSeparateEyeKey, false, gExperimentalSeparateEye);
+  needsWrite |= EnsureBoolConfigValue(kUniformTriangleTessellationKey, false, gUniformTriangleTessellation);
 
   needsWrite |= EnsureBoolConfigValue(kVivifyDebugLoggingConfigKey, false, gVivifyDebugLogging);
+  needsWrite |= EnsureBoolConfigValue(kSendLogsConfigKey, true, gSendLogs);
+  needsWrite |= EnsureBoolConfigValue(kEstimatedLookConfigKey, true, gEstimatedLook);
+  needsWrite |= EnsureBoolConfigValue(kInstalledPrereleaseConfigKey, false, gInstalledPrereleaseBuild);
+  needsWrite |= EnsureBoolConfigValue(kRecordReplaysConfigKey, true, gRecordReplays);
+  needsWrite |= EnsureBoolConfigValue(kRecordReplaysWithBeatLeaderConfigKey, false, gRecordReplaysWithBeatLeader);
+  needsWrite |= EnsureStringConfigValue(kLogRelayUrlConfigKey, std::string(), gLogRelayUrl);
   needsWrite |= EnsureBoolConfigValue(kDisableBeat0FilmgrainBlitConfigKey, false, gDisableBeat0FilmgrainBlit);
   needsWrite |= EnsureBoolConfigValue(kDisableAllBlitsConfigKey, false, gDisableAllBlits);
   needsWrite |= EnsureBoolConfigValue(kDisableCreateCameraDepthConfigKey, false, gDisableCreateCameraDepth);
@@ -517,9 +1937,30 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kTranslateShadersConfigKey, true, gTranslateShaders);
   needsWrite |= EnsureBoolConfigValue(kAudioLinkConfigKey, true, gAudioLink);
   needsWrite |= EnsureBoolConfigValue(kMapRealtimeShadowsConfigKey, false, gMapRealtimeShadows);
+  needsWrite |= EnsureBoolConfigValue(kMapReflectionProbesConfigKey, true, gMapReflectionProbes);
+  needsWrite |= EnsureBoolConfigValue(kMapSabersConfigKey, true, gMapSabers);
+  needsWrite |= EnsureBoolConfigValue(kSaberLightsConfigKey, false, gSaberLights);
+  needsWrite |= EnsureBoolConfigValue(kFlatScreenGuardConfigKey, true, gFlatScreenGuard);
+  needsWrite |= EnsureBoolConfigValue(kFullReflectionProbesConfigKey, false, gFullReflectionProbes);
+  needsWrite |= EnsureBoolConfigValue(kSingleViewMapCamerasConfigKey, true, gSingleViewMapCameras);
+  needsWrite |= EnsureBoolConfigValue(kAutoEffectResolutionConfigKey, true, gAutoEffectResolution);
+  needsWrite |= EnsureBoolConfigValue(kCrashRecoveryConfigKey, true, gCrashRecovery);
+  needsWrite |= EnsureBoolConfigValue(kReplayRenderModeConfigKey, true, gReplayRenderMode);
+  needsWrite |= EnsureBoolConfigValue(kBlitFixConfigKey, false, gBlitFix);
+  needsWrite |= EnsureBoolConfigValue(kPrepareShadersConfigKey, false, gPrepareShaders);
+  needsWrite |= EnsureBoolConfigValue(kGeometryEffectsConfigKey, false, gGeometryEffects);
+  needsWrite |= EnsureBoolConfigValue(kGeometryBothEyesConfigKey, false, gGeometryBothEyes);
+  needsWrite |= EnsureBoolConfigValue(kGeometryEyeCopyConfigKey, true, gGeometryEyeCopy);
   needsWrite |= EnsureBoolConfigValue(kPcShadersForEmptyConfigKey, true, gPcShadersForEmpty);
   needsWrite |= EnsureStringConfigValue(kStandInShaderNameConfigKey, std::string(),
                                         gStandInShaderName);
+  needsWrite |= EnsureIntConfigValue(kEffectResolutionConfigKey, 100, 25, 100, gEffectResolution);
+  needsWrite |= EnsureBoolConfigValue(kOffscreenCullingConfigKey, false, gOffscreenCulling);
+  needsWrite |= EnsureBoolConfigValue(kCrashGuardConfigKey, true, gCrashGuard);
+  needsWrite |= EnsureBoolConfigValue(kPcBundleForMissingShadersConfigKey, false, gPcBundleForMissingShaders);
+  needsWrite |= EnsureIntConfigValue(kFarCullingConfigKey, 0, 0, 1000, gFarCullingDistance);
+  needsWrite |= EnsureIntConfigValue(kFoveationConfigKey, 0, 0, 4, gFoveationLevel);
+  needsWrite |= EnsureIntConfigValue(kFieldOfViewConfigKey, 100, 100, 150, gFieldOfView);
   if (needsWrite) {
     config.Write();
   }
@@ -527,18 +1968,116 @@ void EnsureConfigDefaults() {
 
 MOD_EXTERN_FUNC void setup(CModInfo *info) noexcept {
   *info = modInfo.to_c();
-  InstallVivifyFileLogSink();
-  getConfig().Load();
-  EnsureConfigDefaults();
+#ifndef VIVIFY_GAME_1_45_3
+  // The 1.40.8 custom-types debug liveness hook reads filterClass at +0x10
+  // (Unity 2019 layout); this game's matching native traversal uses +0x8.
+  // Its supported process-only bypass skips those debug checks and calls
+  // original Unity traversal. Registration and garbage collection stay active.
+  // Set before late_load/AutoRegister; never alter another mod or device file.
+  bool const livenessBypass = ::setenv("CT_DISABLE_LIVENESS_CHECKS", "1", 0) == 0;
+#endif
+  try {
+    InstallVivifyFileLogSink();
+#ifndef VIVIFY_GAME_1_45_3
+    if (livenessBypass)
+      PaperLogger.info("Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active");
+    else
+      PaperLogger.warn("Vivify startup compatibility: could not set the process-only liveness debug bypass");
+#endif
+  } catch (...) {
+  }
+  // What the previous run left behind: a Vivify map that crashed, or froze and
+  // was backed out of, goes on the crash recovery list (0.15.2).
+  try {
+    Vivify::Recovery::SetDirectory(std::string(kVivifyLogDir));
+    std::string const recovery = Vivify::Recovery::ProcessPreviousRun(static_cast<int64_t>(std::time(nullptr)));
+    if (!recovery.empty()) PaperLogger.warn("{}", recovery);
+  } catch (...) {
+  }
+  // A native crash in the previous run (0.15.15): its report goes into this
+  // run's log, and the recorder is set up for this one.
+  try {
+    Vivify::CrashReport::Install(std::string(kVivifyLogDir), std::string(VERSION));
+    std::string const crash = Vivify::CrashReport::TakePendingReport();
+    if (!crash.empty()) {
+      PaperLogger.warn("Vivify: the game crashed last time; the report (also in VivifyCrash.txt) follows");
+      std::istringstream lines(crash);
+      std::string line;
+      while (std::getline(lines, line)) PaperLogger.warn("Vivify crash report: {}", line);
+    }
+  } catch (...) {
+  }
+  // A config file another tool or a crash left unreadable must not take the
+  // game down at launch (setup is noexcept): Vivify starts from its defaults.
+  try {
+    getConfig().Load();
+  } catch (std::exception const& ex) {
+    PaperLogger.warn("Vivify: config could not be read ({}); using defaults", ex.what());
+    getConfig().config.SetObject();
+  } catch (...) {
+    getConfig().config.SetObject();
+  }
+  try {
+    EnsureConfigDefaults();
+  } catch (std::exception const& ex) {
+    PaperLogger.warn("Vivify: config defaults could not be written ({})", ex.what());
+  } catch (...) {
+  }
   // Note: gMultipassRenderingEnabled / gVivifyDebugLogging are intentionally NOT
   // reset here. EnsureConfigDefaults() above already loaded the saved values (or
   // wrote the defaults on first run); hardcoding them back to a fixed value here
   // would silently discard the player's saved settings-menu choice on every launch.
   PaperLogger.info("Vivify file logging active -> {}", kVivifyLogPath);
 }
+namespace {
+// Every other mod the loader started, in one line of the session log: the
+// first thing to know when Vivify misbehaves alongside something else (a
+// freeze in 0.14.22 turned out to be Adaptive Audio Latency and Custom
+// Models, found by turning mods off one at a time).
+void LogLoadedMods() {
+  CModResults results = modloader_get_loaded();
+  std::string list;
+  for (size_t i = 0; i < results.size; i++) {
+    auto const& info = results.array[i].info;
+    if (info.id == nullptr) continue;
+    if (!list.empty()) list += ", ";
+    list += info.id;
+    if (info.version != nullptr) list += std::string(" ") + info.version;
+  }
+  PaperLogger.info("Vivify: loaded mods ({}): {}", results.size, list.empty() ? "none reported" : list);
+  modloader_free_results(&results);
+}
+}
+
 MOD_EXTERN_FUNC void late_load() noexcept {
-  il2cpp_functions::Init();
-  custom_types::Register::AutoRegister();
-  RegisterModSettings();
-  Vivify::LateLoad();
+  // noexcept: anything escaping from here terminates the game at launch. A
+  // failure in Vivify's own start-up costs Vivify, not the game and every
+  // other mod with it.
+  try {
+    il2cpp_functions::Init();
+    custom_types::Register::AutoRegister();
+    RegisterModSettings();
+    Vivify::LateLoad();
+    // Full build only; whether a level is recorded is decided at its start.
+    if constexpr (!kLiteBuild) Vivify::ReplayRecorder::InstallHooks();
+  } catch (std::exception const& ex) {
+    PaperLogger.error("Vivify late_load failed ({}); Vivify is not active this session", ex.what());
+  } catch (...) {
+    PaperLogger.error("Vivify late_load failed with a non-std exception; Vivify is not active this session");
+  }
+  try {
+    LogLoadedMods();
+  } catch (...) {
+  }
+  // Send Logs (0.15.20): with Debug Logging on too, what was logged since the
+  // last upload goes to the log relay, in the background.
+  try {
+    std::string const relay = gLogRelayUrl.empty() ? std::string(VIVIFY_LOG_RELAY_URL) : gLogRelayUrl;
+    Vivify::LogUpload::StartIfEnabled(std::string(kVivifyLogDir), relay, std::string(VERSION), kLiteBuild);
+    // BSML places this alongside other mod actions on the main menu's left rail,
+    // not inside Mod Settings.
+    BSML::Register::RegisterMenuButton("Send Logs", "Manually upload Vivify logs (up to 8 MB)",
+                                       [] { Vivify::LogUpload::UploadManual(); });
+  } catch (...) {
+  }
 }

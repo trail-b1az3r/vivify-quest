@@ -1,10 +1,186 @@
 #include "VivifyRuntimeInternal.hpp"
+#include "VivifyRecovery.hpp"
+#include "GlobalNamespace/Mirror.hpp"
+#include <ctime>
+#include "UnityEngine/SystemInfo.hpp"
+#include "Unity/XR/Oculus/Utils.hpp"
+#include "custom-types/shared/delegate.hpp"
+#include "System/Delegate.hpp"
+#include "UnityEngine/CameraType.hpp"
+#include "UnityEngine/Rendering/ReflectionProbeRefreshMode.hpp"
+#include "UnityEngine/ParticleSystemRenderer.hpp"
 #include "UnityEngine/SkinnedMeshRenderer.hpp"
 #include "VivifyComponents.hpp"
 #include "GlobalNamespace/ColorNoteVisuals.hpp"
 #include "UnityEngine/AudioSource.hpp"
 #include "UnityEngine/Canvas.hpp"
 #include <exception>
+#include "UnityEngine/AnimatorCullingMode.hpp"
+#include "VivifySeparateEye.hpp"
+#include "UnityEngine/Camera.hpp"
+#include "UnityEngine/RenderTexture.hpp"
+#include "UnityEngine/StereoTargetEyeMask.hpp"
+#include "UnityEngine/ReflectionProbe.hpp"
+#include "UnityEngine/Rendering/ReflectionProbeMode.hpp"
+#include "UnityEngine/Rendering/ReflectionProbeTimeSlicingMode.hpp"
+
+namespace Vivify {
+namespace {
+// Offscreen Culling (0.14.23): an animator whose hierarchy draws something
+// stops writing transforms while none of those renderers is visible, and picks
+// up at the right time once one is (its speed and time are still driven by
+// the song). An animator with no renderer under it -- one moving a light or a
+// camera -- keeps animating, since nothing would ever make it visible again.
+int CullOffscreenAnimators(UnityEngine::GameObject* root) {
+  if (!GetOffscreenCulling() || !IsManagedAlive(root)) return 0;
+  int culled = 0;
+  auto animators = root->GetComponentsInChildren<UnityEngine::Animator*>(true);
+  for (int i = 0; i < animators.size(); i++) {
+    auto* animator = animators[i];
+    if (!IsManagedAlive(animator)) continue;
+    if (animator->get_cullingMode() != UnityEngine::AnimatorCullingMode::AlwaysAnimate) continue;
+    auto renderers = animator->GetComponentsInChildren<UnityEngine::Renderer*>(true);
+    if (renderers.size() == 0) continue;
+    animator->set_cullingMode(UnityEngine::AnimatorCullingMode::CullUpdateTransforms);
+    culled++;
+  }
+  return culled;
+}
+
+// Cameras a map's prefab brings to render into a texture (0.15.1): Through
+// The Screen's in-world screens, mirrors, shadow and light-mesh cameras. In
+// the editor and on PC they are set to "Both" eyes, and there a camera with a
+// target texture renders that texture. On the Quest's XR rendering a camera
+// with a stereo target eye is an eye camera: it drew into the headset view
+// instead, at its texture's size, and the map became "a tiny square" in the
+// corner while its screens stayed empty. Such a camera now targets no eye, so
+// it renders into its texture once per frame, as it does on PC.
+int MakeTextureCamerasSingleView(UnityEngine::GameObject* root) {
+  if (!IsManagedAlive(root)) return 0;
+  Vivify::SeparateEye::RememberRenderers(root);
+  int changed = 0;
+  auto cameras = root->GetComponentsInChildren<UnityEngine::Camera*>(true);
+  for (int i = 0; i < cameras.size(); i++) {
+    auto* camera = cameras[i];
+    if (!IsManagedAlive(camera)) continue;
+    auto* target = camera->get_targetTexture().unsafePtr();
+    if (!IsManagedAlive(target)) continue;
+    // Single-view twins of the map's shaders while it renders (0.15.3).
+    auto cameraGameObject = camera->get_gameObject();
+    if (IsManagedAlive(cameraGameObject.unsafePtr()) &&
+        cameraGameObject->GetComponent<Vivify::SingleViewCameraShaders*>() == nullptr) {
+      cameraGameObject->AddComponent<Vivify::SingleViewCameraShaders*>();
+    }
+    changed++;
+    if (camera->get_stereoTargetEye() == UnityEngine::StereoTargetEyeMask::None) continue;
+    camera->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
+    auto cameraObject = camera->get_gameObject();
+    PaperLogger.info("Vivify prefab camera '{}' renders into texture '{}' ({}x{}): set to no eye, so it draws "
+                     "there instead of into the headset view",
+                     IsManagedAlive(cameraObject.unsafePtr()) ? ToStdString(cameraObject->get_name()) : "?",
+                     ToStdString(target->get_name()), target->get_width(), target->get_height());
+  }
+  return changed;
+}
+
+// Particle systems of a converted map draw without GPU instancing (0.15.8).
+// A mesh particle system with "Enable GPU Instancing" on is drawn through the
+// shader's PROCEDURAL_INSTANCING_ON variants, which read each particle from a
+// buffer. The converter leaves those variants out (they are never selected
+// for anything else on a Quest), so Unity fell back to a variant with no
+// particle data in it while still drawing the system instanced: 743 Aether's
+// clouds and ground fog, 230 systems, came out wrong and in one eye. With the
+// option off Unity builds the particles' mesh itself and the plain variant
+// draws it, as it draws billboards.
+int DisableParticleInstancing(UnityEngine::GameObject* root) {
+  if (!IsManagedAlive(root)) return 0;
+  int changed = 0;
+  auto renderers = root->GetComponentsInChildren<UnityEngine::ParticleSystemRenderer*>(true);
+  for (int i = 0; renderers && i < renderers.size(); i++) {
+    auto* renderer = renderers[i];
+    if (!IsManagedAlive(renderer) || !renderer->get_enableGPUInstancing()) continue;
+    renderer->set_enableGPUInstancing(false);
+    changed++;
+  }
+  return changed;
+}
+
+// Layers the PC headset camera draws and the Quest's does not (0.15.5). The
+// Quest game camera's culling mask (0x3819fd37 in play) leaves out layer 17
+// and the layers PC mods use for headset-only objects (CameraUtils' HmdOnly 7,
+// AlwaysVisible 21, HmdOnlyAndReflected 24, AlwaysVisibleAndReflected 26).
+// Maps put their headset HUD there: Fall Away's text follows the head on
+// layer 17 while a far-off copy is filmed for the desktop overlay, whose
+// stereo variant passes the screen through untouched, on PC as well. On the
+// Quest that HUD was never drawn. The layers a map's prefab actually uses are
+// added to the main camera for the level (RefreshCameraComponents).
+// 0.15.8: layer 17 is no longer among them. Fall Away's text there is filmed
+// by the map's own camera for a screen overlay and is not meant to be seen
+// directly: shown directly it sat in the wrong place and hid the bodies of
+// notes behind it. The overlay itself is now drawn in the headset instead
+// (NeedsPerEyeBlit).
+// 0.15.11: layer 17 is back, as asked: the HUD text is shown directly again,
+// as 0.15.5 did, besides the filmed overlay.
+constexpr uint32_t kPcHeadsetLayers = (1u << 7) | (1u << 17) | (1u << 21) | (1u << 24) | (1u << 26);
+
+uint32_t HeadsetLayersUsed(UnityEngine::GameObject* root) {
+  if (!IsManagedAlive(root)) return 0;
+  uint32_t used = 0;
+  auto renderers = root->GetComponentsInChildren<UnityEngine::Renderer*>(true);
+  for (int i = 0; renderers && i < renderers.size(); i++) {
+    auto* renderer = renderers[i];
+    if (!IsManagedAlive(renderer)) continue;
+    auto gameObject = renderer->get_gameObject();
+    if (!IsManagedAlive(gameObject.unsafePtr())) continue;
+    int const layer = gameObject->get_layer();
+    if (layer >= 0 && layer < 32) used |= 1u << layer;
+  }
+  return used & kPcHeadsetLayers;
+}
+
+// Realtime reflection probes in a map's prefab, reduced unless "Full
+// Reflection Probes" is on (0.15.3): at most 128 px, no HDR, and one cube face
+// a frame instead of all six. Get Your Wish's water probe is 512 px HDR and
+// re-renders every frame; reduced, it costs about a seventieth as much.
+bool HasRealtimeReflectionProbe(UnityEngine::GameObject* root) {
+  if (!IsManagedAlive(root)) return false;
+  auto probes = root->GetComponentsInChildren<UnityEngine::ReflectionProbe*>(true);
+  for (int i = 0; i < probes.size(); i++) {
+    if (IsManagedAlive(probes[i]) && probes[i]->get_mode().value__ == 1) return true;  // Realtime
+  }
+  return false;
+}
+
+int ReduceReflectionProbes(UnityEngine::GameObject* root) {
+  if (GetFullReflectionProbes() || !IsManagedAlive(root)) return 0;
+  int changed = 0;
+  auto probes = root->GetComponentsInChildren<UnityEngine::ReflectionProbe*>(true);
+  for (int i = 0; i < probes.size(); i++) {
+    auto* probe = probes[i];
+    if (!IsManagedAlive(probe)) continue;
+    // By value: the enum's static constants are not exported for linking.
+    constexpr int32_t kRealtime = 1;         // ReflectionProbeMode.Realtime
+    constexpr int32_t kIndividualFaces = 1;  // ReflectionProbeTimeSlicingMode.IndividualFaces
+    if (probe->get_mode().value__ != kRealtime) continue;
+    int const before = probe->get_resolution();
+    if (before > 128) probe->set_resolution(128);
+    probe->set_hdr(false);
+    probe->set_timeSlicingMode(UnityEngine::Rendering::ReflectionProbeTimeSlicingMode(kIndividualFaces));
+    // Refreshed by the mod about once a second (Runtime::RefreshSlowProbes)
+    // rather than continuously: one face a frame was still an extra pass
+    // over the scene every frame for each probe (0.15.8).
+    constexpr int32_t kViaScripting = 2;  // ReflectionProbeRefreshMode.ViaScripting
+    probe->set_refreshMode(UnityEngine::Rendering::ReflectionProbeRefreshMode(kViaScripting));
+    changed++;
+    auto probeObject = probe->get_gameObject();
+    PaperLogger.info("Vivify reflection probe '{}' reduced: {} px -> {} px, no HDR, refreshed once a second",
+                     IsManagedAlive(probeObject.unsafePtr()) ? ToStdString(probeObject->get_name()) : "?", before,
+                     std::min(before, 128));
+  }
+  return changed;
+}
+}
+}
 
 namespace Vivify {
 
@@ -666,13 +842,45 @@ void Runtime::InstantiatePrefab(CustomJSONData::CustomEventData* customEventData
     }
   }
 
-  VIVIFY_DEBUG("Vivify InstantiatePrefab spawned: id='{}' asset='{}' tracks={} animators={}",
-               storageId, data.asset, data.tracks.size(), animators.size());
+  auto videoArray = instance->GetComponentsInChildren<UnityEngine::Video::VideoPlayer*>(true);
+  std::vector<UnityEngine::Video::VideoPlayer*> videoPlayers;
+  for (auto videoPlayer : videoArray) {
+    if (videoPlayer != nullptr) videoPlayers.emplace_back(videoPlayer);
+  }
+
+  NoteTextureCameras(MakeTextureCamerasSingleView(instance));
+  RegisterSingleViewMaterials(instance);
+  ReduceReflectionProbes(instance);
+  NoteReflectionProbes(instance);
+  // Recorded for crash recovery (0.15.28): a crash with nothing else to
+  // blame then turns realtime probes off for this map next time.
+  if (GetMapReflectionProbes() && !_recoveryMode && !_skipReflectionProbes && HasRealtimeReflectionProbe(instance))
+    Recovery::ReflectionProbesStarted(
+        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+  NoteHeadsetLayers(instance, data.asset);
+  // No physics for a map's scenery (0.15.10). Prefabs carry the colliders
+  // Unity puts on every primitive (743 Aether has 43 mesh colliders), nothing
+  // in a map uses them, and animated ones are moved through the physics scene
+  // every frame. They are also the likeliest source of the controllers
+  // buzzing at random in Vivify maps: the sabers' own physics checks run
+  // against whatever colliders are in reach.
+  CleanCustomObject(instance);
+  if (LoadedBundleIsConverted()) {
+    int const particles = DisableParticleInstancing(instance);
+    if (particles > 0) {
+      VIVIFY_DEBUG("Vivify InstantiatePrefab: GPU instancing off on {} particle system(s) of '{}'", particles,
+                   data.asset);
+    }
+  }
+  int const culledAnimators = CullOffscreenAnimators(instance);
+  VIVIFY_DEBUG("Vivify InstantiatePrefab spawned: id='{}' asset='{}' tracks={} animators={} offscreenCulled={}",
+               storageId, data.asset, data.tracks.size(), animators.size(), culledAnimators);
   _livePrefabs[storageId] = LivePrefab{
       .gameObject = instance,
       .tracks = data.tracks,
       .animators = std::move(animators),
       .particleSystems = std::move(particleSystems),
+      .videoPlayers = std::move(videoPlayers),
   };
 }
 
@@ -847,6 +1055,7 @@ void Runtime::RestoreReplacementData(VisualReplacement& replacement) {
   replacement.hasLastSaberColor = false;
   replacement.appliedFingerprint.clear();
   replacement.hideOriginal = false;
+  replacement.hideTrails = false;
 }
 
 void Runtime::CacheReplacementRenderers(UnityEngine::GameObject* spawned, VisualReplacement& replacement) {
@@ -908,6 +1117,12 @@ void Runtime::InstantiateReplacementPrefab(AssignedPrefabInfo const& info,
     animator->Update(0.01f);
   }
 
+  NoteTextureCameras(MakeTextureCamerasSingleView(spawned));
+  RegisterSingleViewMaterials(spawned);
+  if (LoadedBundleIsConverted()) DisableParticleInstancing(spawned);
+  ReduceReflectionProbes(spawned);
+  NoteReflectionProbes(spawned);
+  CullOffscreenAnimators(spawned);
   RegisterSyncedObject(spawned, CurrentSongTime());
   replacement.spawnedObjects.emplace_back(spawned);
   CacheReplacementRenderers(spawned, replacement);
@@ -984,11 +1199,510 @@ void Runtime::ApplySaberReplacementColor(GlobalNamespace::SaberModelController* 
 void Runtime::UpdateSaberReplacementColors() {
   if (_saberReplacements.empty() || _currentBeatmapData == nullptr || _isResetting) return;
   PurgeInvalidActiveSabers();
+  // Twice a second: a saber mod can build or re-enable its model after the
+  // map's saber went on, and it would then draw through the map's (0.15.4).
+  float const now = UnityEngine::Time::get_unscaledTime();
+  bool const sweep = now < _lastSaberHideSweep || now - _lastSaberHideSweep >= 0.5f;
+  if (sweep) _lastSaberHideSweep = now;
   for (auto const& target : _activeSabers) {
     auto it = _saberReplacements.find(target.controller);
     if (it != _saberReplacements.end()) {
       ApplySaberReplacementColor(target.controller, target.saber, it->second);
+      // What is already known to be hidden stays hidden every frame (0.15.16).
+      // A saber mod or the game's trail switches its renderer back on, and
+      // until the next sweep below both sabers drew in the same place:
+      // Aether's sabers flickered. The sweep still finds new renderers.
+      if (it->second.hideOriginal || it->second.hideTrails) {
+        for (auto* renderer : it->second.disabledRenderers) {
+          if (IsAlive(renderer) && renderer->get_enabled()) renderer->set_enabled(false);
+        }
+      }
+      if (sweep && it->second.hideTrails) HideOtherSaberTrails(target.controller, target.saber, it->second);
+      if (sweep && it->second.hideOriginal) {
+        // Only while the map's own model can be seen: with nothing of it on
+        // screen, hiding everything else left no saber at all (0.15.5).
+        if (EnsureMapSaberVisible(target.controller, target.saber, it->second)) {
+          HideOtherSaberRenderers(target.controller, target.saber, it->second);
+        }
+      }
     }
+  }
+}
+
+// Makes sure the map's saber model is actually on screen, and says whether it
+// is (0.15.6). 0.15.4 hid every other renderer under the saber whenever a map
+// saber was applied; with a custom saber mod the map's model was not being
+// drawn, so nothing was left: invisible sabers. Three things a saber mod does
+// to the game's model object, which the map's model hangs under, undo it:
+//  - it switches that object off or scales it to nothing: the map's model
+//    moves up to the saber itself, which the mod leaves alone;
+//  - it disables every renderer under it once its own saber has loaded, the
+//    map's included: those are switched back on;
+// If the model still cannot be seen, everything hidden for it comes back and
+// hiding stops for this saber, so there is always a saber in the hand.
+bool Runtime::EnsureMapSaberVisible(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
+                                    VisualReplacement& replacement) {
+  auto visible = [this, &replacement]() {
+    for (auto* renderer : replacement.replacementRenderers) {
+      if (!IsAlive(renderer) || !renderer->get_enabled()) continue;
+      auto gameObject = renderer->get_gameObject();
+      if (!IsAlive(gameObject.unsafePtr()) || !gameObject->get_activeInHierarchy()) continue;
+      auto const scale = renderer->get_transform()->get_lossyScale();
+      if (std::abs(scale.x) < 1e-5f && std::abs(scale.y) < 1e-5f && std::abs(scale.z) < 1e-5f) continue;
+      return true;
+    }
+    return false;
+  };
+  if (replacement.replacementRenderers.empty()) return false;  // trail only: nothing to stand in
+  // A saber the game itself has switched off -- the pause menu does -- shows
+  // nothing whatever is under it, and says nothing about the map's model.
+  // 0.15.6 took that for "cannot be shown" on every pause and gave the
+  // player's own saber back (0.15.9).
+  if (IsAlive(saber)) {
+    auto saberObject = saber->get_gameObject();
+    if (IsAlive(saberObject.unsafePtr()) && !saberObject->get_activeInHierarchy()) return true;
+  }
+  if (visible()) return true;
+
+  // Renderers a saber mod switched off along with the game's model.
+  int reenabled = 0;
+  for (auto* renderer : replacement.replacementRenderers) {
+    if (IsAlive(renderer) && !renderer->get_enabled()) {
+      renderer->set_enabled(true);
+      reenabled++;
+    }
+  }
+  // A model object that is off or scaled away: hang the map's model on the
+  // saber instead.
+  int moved = 0;
+  auto* saberTransform = IsAlive(saber) ? saber->get_transform().unsafePtr() : nullptr;
+  auto* modelTransform = IsAlive(smc) ? smc->get_transform().unsafePtr() : nullptr;
+  if (!visible() && IsAlive(saberTransform) && saberTransform != modelTransform) {
+    for (auto* spawned : replacement.spawnedObjects) {
+      if (!IsAlive(spawned)) continue;
+      auto transform = spawned->get_transform();
+      if (transform->get_parent().unsafePtr() != modelTransform) continue;
+      transform->SetParent(saberTransform, false);
+      moved++;
+    }
+  }
+  bool const nowVisible = visible();
+  if (reenabled > 0 || moved > 0 || !nowVisible) {
+    PaperLogger.info("Vivify saber: the map's model was not being drawn (another saber mod hid or switched off "
+                     "the game's model); re-enabled {} renderer(s), moved {} object(s) onto the saber, visible "
+                     "now: {}", reenabled, moved, BoolText(nowVisible));
+  }
+  if (nowVisible) return true;
+  // Give the player's saber back rather than leave nothing.
+  for (auto* renderer : replacement.disabledRenderers) {
+    if (IsAlive(renderer)) renderer->set_enabled(true);
+  }
+  replacement.disabledRenderers.clear();
+  replacement.hideOriginal = false;
+  PaperLogger.warn("Vivify saber: the map's saber model cannot be shown here; keeping your own saber visible");
+  return false;
+}
+
+// Hides every renderer under the saber that is not the map's own: the game's
+// model, and whatever a custom saber mod put there, beside the game's model or
+// in place of it. The map's model stays a child of the saber, so anything that
+// moves the saber itself -- a trick mod throwing or spinning it -- carries the
+// map's model along. Hidden renderers come back with RestoreReplacementData.
+void Runtime::HideOtherSaberRenderers(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
+                                      VisualReplacement& replacement) {
+  auto hideUnder = [this, &replacement](UnityEngine::GameObject* root) {
+    if (!IsAlive(root)) return;
+    auto renderers = root->GetComponentsInChildren<UnityEngine::Renderer*>(true);
+    for (int i = 0; renderers && i < renderers.size(); i++) {
+      auto* renderer = renderers[i];
+      if (!IsAlive(renderer) || !renderer->get_enabled()) continue;
+      auto* transform = renderer->get_transform().unsafePtr();
+      bool ours = false;
+      for (auto* spawned : replacement.spawnedObjects) {
+        if (IsAlive(spawned) && transform->IsChildOf(spawned->get_transform())) {
+          ours = true;
+          break;
+        }
+      }
+      // The map trail's own renderer is a separate object, which a saber mod
+      // can have parented under the saber: never one of "the others".
+      for (auto* trail : replacement.followedTrails) {
+        auto* trailRenderer = IsAlive(trail) ? trail->____trailRenderer.unsafePtr() : nullptr;
+        if (IsAlive(trailRenderer) && trailRenderer->____meshRenderer &&
+            static_cast<UnityEngine::Renderer*>(trailRenderer->____meshRenderer.unsafePtr()) == renderer) {
+          ours = true;
+        }
+      }
+      if (ours) continue;
+      renderer->set_enabled(false);
+      if (std::find(replacement.disabledRenderers.begin(), replacement.disabledRenderers.end(), renderer) ==
+          replacement.disabledRenderers.end()) {
+        replacement.disabledRenderers.emplace_back(renderer);
+      }
+    }
+  };
+  if (IsAlive(smc)) hideUnder(smc->get_gameObject().unsafePtr());
+  if (IsAlive(saber)) hideUnder(saber->get_gameObject().unsafePtr());
+}
+
+// A prefab's realtime reflection probes (0.15.8). Those the mod refreshes are
+// remembered, and a converted map with any is marked like one with texture
+// cameras: a probe draws into a cubemap, one view at a time, where the
+// converted two-eye programs draw nothing -- Get Your Wish's water reflected
+// the notes and none of the map. With the marker the map's single-view
+// shaders are prepared at selection and swapped in while a probe renders
+// (OnAnyCameraPreCull), before culling and depth generation.
+void Runtime::NoteReflectionProbes(UnityEngine::GameObject* root) {
+  if (!IsAlive(root)) return;
+  int realtime = 0;
+  auto probes = root->GetComponentsInChildren<UnityEngine::ReflectionProbe*>(true);
+  for (int i = 0; probes && i < probes.size(); i++) {
+    auto* probe = probes[i];
+    if (!IsAlive(probe) || probe->get_mode().value__ != 1) continue;  // ReflectionProbeMode.Realtime
+    realtime++;
+    if (probe->get_refreshMode().value__ == 2 &&
+        std::find(_slowProbes.begin(), _slowProbes.end(), probe) == _slowProbes.end()) {
+      _slowProbes.push_back(probe);
+    }
+  }
+  if (realtime > 0) {
+    InstallCameraCallbacks();
+    NoteTextureCameras(realtime);
+  }
+}
+
+// Starts a refresh of each probe the mod drives, about once a second. A
+// refresh spreads over several frames (one face a frame), so this is roughly
+// an eighth of the work of refreshing continuously.
+void Runtime::RefreshSlowProbes() {
+  if (_slowProbes.empty() || _currentBeatmapData == nullptr || _isResetting) return;
+  float const now = UnityEngine::Time::get_unscaledTime();
+  if (now >= _lastSlowProbeRefresh && now - _lastSlowProbeRefresh < 1.0f) return;
+  _lastSlowProbeRefresh = now;
+  _slowProbes.erase(std::remove_if(_slowProbes.begin(), _slowProbes.end(),
+                                   [this](UnityEngine::ReflectionProbe* probe) { return !IsAlive(probe); }),
+                    _slowProbes.end());
+  for (auto* probe : _slowProbes) {
+    auto gameObject = probe->get_gameObject();
+    if (!probe->get_enabled() || !IsAlive(gameObject.unsafePtr()) || !gameObject->get_activeInHierarchy()) continue;
+    probe->RenderProbe();
+  }
+}
+
+// Called for every camera Unity renders, the hidden ones a reflection probe
+// uses included: those draw with the map's single-view shaders.
+void Runtime::OnAnyCameraPreCull(UnityEngine::Camera* camera) {
+  PullHeadsetHud(camera);
+  if (_currentBeatmapData == nullptr || !GetSingleViewMapCameras()) return;
+  if (!IsAlive(camera) || camera->get_cameraType().value__ != 16) return;  // CameraType.Reflection
+  // Hidden probe cameras have no SingleViewCameraShaders component. Use the
+  // same scoped, full-geometry mono donors as authored texture cameras.
+  if (SeparateEye::BeginTextureCamera(camera, camera)) return;
+  if (_singleViewSwaps.empty()) return;
+  _probeCameraRendering = true;
+  BeginSingleViewCamera();
+}
+
+void Runtime::OnAnyCameraPostRender(UnityEngine::Camera* camera) {
+  if (!IsAlive(camera) || camera->get_cameraType().value__ != 16) return;
+  SeparateEye::EndTextureCamera(camera);
+  if (!_probeCameraRendering) return;
+  _probeCameraRendering = false;
+  EndSingleViewCamera();
+}
+
+void Runtime::InstallCameraCallbacks() {
+  static bool installed = false;
+  if (installed) return;
+  installed = true;
+  auto pre = custom_types::MakeDelegate<UnityEngine::Camera_CameraCallback*>(
+      std::function<void(UnityEngine::Camera*)>([](UnityEngine::Camera* camera) {
+        try {
+          Runtime::Instance().OnAnyCameraPreCull(camera);
+        } catch (...) {
+        }
+      }));
+  auto post = custom_types::MakeDelegate<UnityEngine::Camera_CameraCallback*>(
+      std::function<void(UnityEngine::Camera*)>([](UnityEngine::Camera* camera) {
+        try {
+          Runtime::Instance().OnAnyCameraPostRender(camera);
+        } catch (...) {
+        }
+      }));
+  UnityEngine::Camera::setStaticF_onPreCull(reinterpret_cast<UnityEngine::Camera_CameraCallback*>(
+      System::Delegate::Combine(reinterpret_cast<System::Delegate*>(UnityEngine::Camera::getStaticF_onPreCull()),
+                                reinterpret_cast<System::Delegate*>(pre))));
+  UnityEngine::Camera::setStaticF_onPostRender(reinterpret_cast<UnityEngine::Camera_CameraCallback*>(
+      System::Delegate::Combine(reinterpret_cast<System::Delegate*>(UnityEngine::Camera::getStaticF_onPostRender()),
+                                reinterpret_cast<System::Delegate*>(post))));
+  PaperLogger.info("Vivify: watching cameras (reflection probes, the map's HUD)");
+}
+
+// Fall Away's HUD text, on layer 17, follows the head at the distance the map
+// gives it, which in the headset put it behind the notes coming at the player
+// (only their arrows showed through) and farther than is comfortable to read.
+// Just before the main camera draws, each such object is pulled toward the
+// camera to kHudDistance of its distance and scaled by the same amount: it
+// looks the same size, only nearer (0.15.17). A map that sets the position
+// every frame keeps doing so; one that leaves it alone is not pulled again
+// on top of the last pull.
+constexpr float kHudDistance = 0.7f;
+constexpr int kHudLayer = 17;
+
+namespace {
+bool SameVector(UnityEngine::Vector3 const& a, UnityEngine::Vector3 const& b) {
+  return std::abs(a.x - b.x) < 1e-5f && std::abs(a.y - b.y) < 1e-5f && std::abs(a.z - b.z) < 1e-5f;
+}
+}  // namespace
+
+void Runtime::PullHeadsetHud(UnityEngine::Camera* camera) {
+  if (_hudObjects.empty() || _currentBeatmapData == nullptr || _isResetting || !IsAlive(camera)) return;
+  UnityW<UnityEngine::Camera> main(VivifyMainCamera());
+  if (camera != main.unsafePtr()) return;
+  auto const eye = camera->get_transform()->get_position();
+  for (auto& hud : _hudObjects) {
+    if (!IsAlive(hud.transform)) continue;
+    auto const position = hud.transform->get_position();
+    auto const scale = hud.transform->get_localScale();
+    // Moved or rescaled by the map since the last pull: that is the new original.
+    if (!hud.applied || !SameVector(position, hud.setPosition)) hud.originalPosition = position;
+    if (!hud.applied || !SameVector(scale, hud.setScale)) hud.originalScale = scale;
+    auto const& o = hud.originalPosition;
+    hud.setPosition = UnityEngine::Vector3(eye.x + (o.x - eye.x) * kHudDistance, eye.y + (o.y - eye.y) * kHudDistance,
+                                           eye.z + (o.z - eye.z) * kHudDistance);
+    hud.setScale = UnityEngine::Vector3(hud.originalScale.x * kHudDistance, hud.originalScale.y * kHudDistance,
+                                        hud.originalScale.z * kHudDistance);
+    hud.transform->set_position(hud.setPosition);
+    hud.transform->set_localScale(hud.setScale);
+    hud.applied = true;
+  }
+}
+
+void Runtime::NoteHeadsetLayers(UnityEngine::GameObject* root, std::string const& asset) {
+  if (IsAlive(root)) {
+    int added = 0;
+    auto renderers = root->GetComponentsInChildren<UnityEngine::Renderer*>(true);
+    for (int i = 0; renderers && i < renderers.size(); i++) {
+      auto* renderer = renderers[i];
+      if (!IsAlive(renderer)) continue;
+      auto gameObject = renderer->get_gameObject();
+      if (!IsAlive(gameObject.unsafePtr()) || gameObject->get_layer() != kHudLayer) continue;
+      auto* transform = renderer->get_transform().unsafePtr();
+      bool const known = std::any_of(_hudObjects.begin(), _hudObjects.end(),
+                                     [transform](HudObject const& hud) { return hud.transform == transform; });
+      if (known) continue;
+      _hudObjects.push_back(HudObject{transform});
+      added++;
+    }
+    if (added > 0) {
+      InstallCameraCallbacks();
+      PaperLogger.info("Vivify HUD: {} object(s) of '{}' on layer {} drawn at {:.0f}% of their distance",
+                       added, asset, kHudLayer, kHudDistance * 100.0f);
+    }
+  }
+  uint32_t const used = HeadsetLayersUsed(root);
+  if ((used & ~_mapHeadsetLayers) == 0) return;
+  _mapHeadsetLayers |= used;
+  PaperLogger.info("Vivify prefab '{}' has objects on headset-only layer(s) 0x{:08x}; the main camera will draw "
+                   "them, as the PC headset camera does", asset, used);
+}
+
+// Lights another mod hangs on the sabers (0.15.9). The logs show two point
+// lights named "Light", intensity 1000, soft shadows, in every level: one per
+// saber, from a saber mod. The game's own shaders ignore Unity lights, so they
+// normally do nothing; a converted PC map's shaders are lit by them. Its
+// objects light up around the sabers, the lights' shadows flicker on every
+// surface (the "z-fighting"), and each shadowed point light costs six extra
+// passes over the scene every frame. On PC there are no such lights. While a
+// Vivify map plays they are switched off, unless "Saber Lights On Map
+// Objects" is on, and come back when the level ends.
+void Runtime::HideForeignSaberLights() {
+  if (_currentBeatmapData != nullptr && !_isResetting) ApplyVivifyFoveation();
+  if (_currentBeatmapData == nullptr || _isResetting || GetSaberLightsOnMapObjects()) return;
+  float const now = UnityEngine::Time::get_unscaledTime();
+  if (now >= _lastSaberLightSweep && now - _lastSaberLightSweep < 1.0f) return;
+  _lastSaberLightSweep = now;
+  PurgeInvalidActiveSabers();
+  if (_activeSabers.empty()) return;
+  auto lights = UnityEngine::Object::FindObjectsOfType<UnityEngine::Light*>();
+  for (int i = 0; lights && i < lights.size(); i++) {
+    auto* light = lights[i];
+    if (!IsAlive(light) || !light->get_enabled()) continue;
+    auto* transform = light->get_transform().unsafePtr();
+    if (!IsAlive(transform)) continue;
+    bool onSaber = false;
+    for (auto const& target : _activeSabers) {
+      auto* saberTransform = target.saber->get_transform().unsafePtr();
+      auto* hand = IsAlive(saberTransform) ? saberTransform->get_parent().unsafePtr() : nullptr;
+      if ((IsAlive(hand) && transform->IsChildOf(hand)) || (IsAlive(saberTransform) && transform->IsChildOf(saberTransform))) {
+        onSaber = true;
+        break;
+      }
+    }
+    if (!onSaber) continue;
+    // A light the map's own saber prefab brings stays.
+    bool mapsOwn = false;
+    for (auto const& [controller, replacement] : _saberReplacements) {
+      for (auto* spawned : replacement.spawnedObjects) {
+        if (IsAlive(spawned) && transform->IsChildOf(spawned->get_transform())) mapsOwn = true;
+      }
+    }
+    if (mapsOwn) continue;
+    light->set_enabled(false);
+    _disabledSaberLights.push_back(light);
+    auto lightObject = light->get_gameObject();
+    PaperLogger.info("Vivify: switched off a saber light from another mod for this level ('{}', intensity {:.0f}, "
+                     "shadows {}); 'Saber Lights On Map Objects' in settings keeps them",
+                     IsAlive(lightObject.unsafePtr()) ? ToStdString(lightObject->get_name()) : "?",
+                     light->get_intensity(), light->get_shadows().value__ != 0 ? "on" : "off");
+  }
+}
+
+// The headset's own foveated rendering for the length of a Vivify map
+// (0.15.10): the edges of each eye's picture are shaded at lower detail by the
+// system, which knows the lens layout of whichever Quest this is. Where the
+// headset tracks the eyes (Quest Pro) the sharp area follows them. What the
+// game had set comes back when the level ends. Screen effects are worked out
+// in the mod's own textures and are not foveated by this.
+void Runtime::ApplyVivifyFoveation() {
+  int const wanted = GetVivifyFoveationLevel();
+  if (wanted <= 0 || _foveationApplied) return;
+  try {
+    _foveationBefore = Unity::XR::Oculus::Utils::GetFoveationLevel();
+    bool const eyeTracked = Unity::XR::Oculus::Utils::get_eyeTrackedFoveatedRenderingSupported();
+    _eyeTrackedBefore = eyeTracked && Unity::XR::Oculus::Utils::get_eyeTrackedFoveatedRenderingEnabled();
+    // Capture everything before the first mutation. Keep restoration pending
+    // even if a native setter changes state and then throws.
+    _foveationEyeTracked = eyeTracked && !_eyeTrackedBefore;
+    _foveationApplied = true;
+    if (_foveationEyeTracked) Unity::XR::Oculus::Utils::set_eyeTrackedFoveatedRenderingEnabled(true);
+    bool const ok = Unity::XR::Oculus::Utils::SetFoveationLevel(wanted);
+    if (!ok) {
+      RestoreVivifyFoveation();
+      PaperLogger.warn("Vivify foveated rendering: the requested level was not accepted; restoring the game's settings");
+      return;
+    }
+    PaperLogger.info("Vivify foveated rendering: level {} for this map (was {}), eye-tracked {}, accepted {}; "
+                     "device '{}'", wanted, _foveationBefore, BoolText(eyeTracked), BoolText(ok),
+                     ToStdString(UnityEngine::SystemInfo::get_deviceModel()));
+  } catch (...) {
+    RestoreVivifyFoveation();
+    PaperLogger.warn("Vivify foveated rendering: the headset's foveation could not be set");
+  }
+}
+
+void Runtime::RestoreVivifyFoveation() {
+  if (!_foveationApplied) return;
+  bool restored = false;
+  try {
+    restored = Unity::XR::Oculus::Utils::SetFoveationLevel(_foveationBefore);
+  } catch (...) {
+  }
+  // Restore each setting independently: a failed level restore must not
+  // prevent eye tracking rollback. Only write it if our setter changed it.
+  if (_foveationEyeTracked) {
+    try {
+      if (Unity::XR::Oculus::Utils::get_eyeTrackedFoveatedRenderingEnabled() != _eyeTrackedBefore)
+        Unity::XR::Oculus::Utils::set_eyeTrackedFoveatedRenderingEnabled(_eyeTrackedBefore);
+      _foveationEyeTracked = false;
+    } catch (...) {
+      restored = false;
+    }
+  }
+  // A later reset retries failed restoration using the original snapshot.
+  if (restored && !_foveationEyeTracked) _foveationApplied = false;
+}
+
+// Game Mirrors off for this map (0.15.18). The game's mirrors render a
+// reflection camera of their own, and in Lifelike, luminescent and "you" that
+// reflection turns with the head (issue #81, with GraphicsTweaks' mirrors on).
+// 0.15.18 switched their renderers off, which also took away the surfaces
+// themselves: Lifelike's runway is the game's track mirror and went missing.
+// Now each mirror draws with the plain material the game itself uses when
+// mirrors are off in its graphics settings (_noMirrorMaterial), and its
+// reflection component is stopped: the surface stays, without a reflection.
+// Only a mirror with no such material is hidden. Swept about once a second,
+// which catches a mirror the map turns on part way through; everything comes
+// back when the level ends.
+void Runtime::HideGameMirrors() {
+  if (_currentBeatmapData == nullptr || _isResetting || GetGameMirrors()) return;
+  float const now = UnityEngine::Time::get_unscaledTime();
+  if (now >= _lastMirrorSweep && now - _lastMirrorSweep < 1.0f) return;
+  _lastMirrorSweep = now;
+  auto mirrors = UnityEngine::Object::FindObjectsOfType<GlobalNamespace::Mirror*>();
+  int changed = 0;
+  for (int i = 0; mirrors && i < mirrors.size(); i++) {
+    auto* mirror = mirrors[i];
+    if (!IsAlive(mirror)) continue;
+    auto* renderer = mirror->____renderer.unsafePtr();
+    if (!IsAlive(renderer)) continue;
+    auto* plain = mirror->____noMirrorMaterial.unsafePtr();
+    bool const known = std::any_of(_plainMirrors.begin(), _plainMirrors.end(),
+                                   [mirror](PlainMirror const& entry) { return entry.mirror == mirror; });
+    if (known) {
+      // The game can put the mirror material back; keep it plain.
+      if (IsAlive(plain) && renderer->get_sharedMaterial().unsafePtr() != plain) renderer->set_sharedMaterial(plain);
+      continue;
+    }
+    if (!mirror->get_enabled() && !renderer->get_enabled()) continue;
+    PlainMirror entry{mirror, renderer, renderer->get_sharedMaterial().unsafePtr(), false};
+    mirror->set_enabled(false);
+    if (IsAlive(plain)) {
+      renderer->set_sharedMaterial(plain);
+    } else if (renderer->get_enabled()) {
+      renderer->set_enabled(false);
+      entry.rendererWasHidden = true;
+    }
+    _plainMirrors.push_back(entry);
+    changed++;
+  }
+  if (changed > 0) {
+    PaperLogger.info("Vivify: {} game mirror(s) drawn without their reflection for this map (Game Mirrors is off "
+                     "for it)", changed);
+  }
+}
+
+void Runtime::RestoreGameMirrors() {
+  for (auto const& entry : _plainMirrors) {
+    if (IsAlive(entry.renderer)) {
+      if (IsAlive(entry.material)) entry.renderer->set_sharedMaterial(entry.material);
+      if (entry.rendererWasHidden) entry.renderer->set_enabled(true);
+    }
+    if (IsAlive(entry.mirror)) entry.mirror->set_enabled(true);
+  }
+  _plainMirrors.clear();
+  _lastMirrorSweep = -1.0f;
+}
+
+void Runtime::RestoreForeignSaberLights() {
+  for (auto* light : _disabledSaberLights) {
+    if (IsAlive(light)) light->set_enabled(true);
+  }
+  _disabledSaberLights.clear();
+}
+
+// Sabers whose model controller never went through the game's Init, which is
+// where Vivify learns of a saber: a saber mod that builds its own controller
+// can skip it, and the map's sabers were then ignored outright. Looked for
+// when a map assigns a saber and fewer than two are known (0.15.4).
+void Runtime::DiscoverSabers() {
+  if (!_selectedMapHasVivifyRequirement || _currentBeatmapData == nullptr || _isResetting) return;
+  PurgeInvalidActiveSabers();
+  if (_activeSabers.size() >= 2) return;
+  auto sabers = UnityEngine::Object::FindObjectsOfType<GlobalNamespace::Saber*>();
+  for (int i = 0; sabers && i < sabers.size(); i++) {
+    auto* saber = sabers[i];
+    if (!IsAlive(saber)) continue;
+    bool const known = std::any_of(_activeSabers.begin(), _activeSabers.end(),
+                                   [saber](ActiveSaberVisual const& target) { return target.saber == saber; });
+    if (known) continue;
+    auto* smc = saber->GetComponentInChildren<GlobalNamespace::SaberModelController*>(true);
+    if (!IsAlive(smc)) continue;
+    auto* parent = smc->get_transform().unsafePtr();
+    if (!IsAlive(parent)) continue;
+    PaperLogger.info("Vivify saber: found a saber (type {}) the game's setup did not announce; another saber mod "
+                     "built it", (int)saber->get_saberType());
+    _activeSabers.push_back(ActiveSaberVisual{.controller = smc, .saber = saber, .parent = parent});
   }
 }
 
@@ -1095,6 +1809,7 @@ void Runtime::TrackSaberModel(GlobalNamespace::SaberModelController* smc, Global
 }
 
 void Runtime::ApplySaberVisualsToActive() {
+  if (GetMapSabers()) DiscoverSabers();
   PurgeInvalidActiveSabers();
   for (auto const& target : _activeSabers) {
     ApplySaberVisuals(target.controller, target.saber, target.parent);
@@ -1108,6 +1823,11 @@ void Runtime::ApplySaberVisuals(GlobalNamespace::SaberModelController* smc, Glob
     return;
   }
   if (ShouldDisableVisualsForMultiplayer()) return;
+  // "Use Map Sabers" off: the player's own sabers stay, model and trail.
+  if (!GetMapSabers()) {
+    RestoreSaberVisuals(smc);
+    return;
+  }
   int type = (int)saber->get_saberType();
   auto modelInfos = FindAssignedSaberPrefabs(type);
   auto trailInfos = FindAssignedSaberTrailPrefabs(type);
@@ -1139,12 +1859,17 @@ void Runtime::ApplySaberVisuals(GlobalNamespace::SaberModelController* smc, Glob
   if (ShouldHideOriginal(validModelInfos)) {
     if (ReplacementCanRender(replacement)) {
       DisableOriginalRenderers(originalRenderers, replacement);
+      // Also what sits under the saber outside the game's model: a custom
+      // saber mod's own model. Kept hidden by the sweep in
+      // UpdateSaberReplacementColors.
+      replacement.hideOriginal = true;
+      if (EnsureMapSaberVisible(smc, saber, replacement)) HideOtherSaberRenderers(smc, saber, replacement);
     } else {
       PaperLogger.warn("Vivify saber replace (type {}): no spawned renderer has a usable shader, keeping the "
                        "default saber visible", type);
     }
   }
-  ApplySaberTrailVisuals(smc, validTrailInfos, replacement);
+  ApplySaberTrailVisuals(smc, saber, validTrailInfos, replacement);
   ApplySaberReplacementColor(smc, saber, replacement, true);
   VIVIFY_DEBUG("Vivify saber replaced (type {}): models={} trails={} spawned={} renderers={} hiddenOriginals={}",
                type, validModelInfos.size(), validTrailInfos.size(), replacement.spawnedObjects.size(),
@@ -1155,12 +1880,63 @@ void Runtime::ApplySaberVisuals(GlobalNamespace::SaberModelController* smc, Glob
   }
 }
 
-void Runtime::ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc,
+// The game's trail renderer prefab, for a saber whose controller has no trail
+// of its own (Custom Models' controller skips the game's Init through Lapiz, so
+// its _saberTrail is never set). Any SaberTrail the game set up carries the
+// prefab -- the default saber model asset does, and Custom Models keeps a
+// disabled default saber under its model when no custom one is picked. Failing
+// that, any loaded SaberTrailRenderer will do, as Instantiate copies what it is
+// handed. Searched each time rather than cached: the asset can be unloaded with
+// its scene.
+GlobalNamespace::SaberTrailRenderer* Runtime::FindSaberTrailRendererPrefab(GlobalNamespace::SaberModelController* smc) {
+  auto prefabOf = [this](ArrayW<GlobalNamespace::SaberTrail*> trails) -> GlobalNamespace::SaberTrailRenderer* {
+    if (!trails) return nullptr;
+    for (int i = 0; i < trails.size(); i++) {
+      auto* trail = trails[i];
+      if (!IsAlive(trail) || il2cpp_utils::try_cast<FollowedSaberTrail>(trail).has_value()) continue;
+      auto* prefab = trail->____trailRendererPrefab.unsafePtr();
+      if (IsAlive(prefab)) return prefab;
+    }
+    return nullptr;
+  };
+  if (IsAlive(smc)) {
+    if (auto* prefab = prefabOf(smc->GetComponentsInChildren<GlobalNamespace::SaberTrail*>(true))) return prefab;
+  }
+  if (auto* prefab = prefabOf(UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::SaberTrail*>())) {
+    return prefab;
+  }
+  auto renderers = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::SaberTrailRenderer*>();
+  for (int i = 0; renderers && i < renderers.size(); i++) {
+    auto* renderer = renderers[i];
+    if (IsAlive(renderer) && IsAlive(renderer->____meshRenderer.unsafePtr())) return renderer;
+  }
+  return nullptr;
+}
+
+void Runtime::ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
                                      std::vector<AssignedPrefabInfo*> const& infos,
                                      VisualReplacement& replacement) {
   if (infos.empty() || !IsAlive(smc)) return;
+  if (_skipMapTrails) {
+    if (!_skipMapTrailsLogged) {
+      PaperLogger.info("Vivify saber trail: skipped for this map (crash recovery); your own trail stays");
+      _skipMapTrailsLogged = true;
+    }
+    return;
+  }
   auto* sourceTrail = smc->____saberTrail.unsafePtr();
-  if (!IsAlive(sourceTrail) || !sourceTrail->____trailRendererPrefab) return;
+  bool const hasOwnTrail = IsAlive(sourceTrail) && IsAlive(sourceTrail->____trailRendererPrefab.unsafePtr()) &&
+                           IsAlive(sourceTrail->____trailRenderer.unsafePtr());
+  GlobalNamespace::SaberTrailRenderer* fallbackPrefab = nullptr;
+  if (!hasOwnTrail) {
+    fallbackPrefab = IsAlive(saber) ? FindSaberTrailRendererPrefab(smc) : nullptr;
+    if (!IsAlive(fallbackPrefab)) {
+      PaperLogger.warn("Vivify saber trail: the saber has no game trail to follow and no trail renderer was found; "
+                       "the map's trail is skipped");
+      return;
+    }
+    VIVIFY_DEBUG("Vivify saber trail: controller has no game trail (another saber mod); following the saber");
+  }
   UnityEngine::Transform* parent = nullptr;
   auto existing = std::find_if(_activeSabers.begin(), _activeSabers.end(), [smc](ActiveSaberVisual const& target) {
     return target.controller == smc;
@@ -1197,7 +1973,14 @@ void Runtime::ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc,
       UnityEngine::Object::Destroy(trailObject);
       continue;
     }
-    followedTrail->InitFollowed(sourceTrail, parent, material, top, bottom, duration, samplingFrequency, granularity);
+    if (hasOwnTrail) {
+      followedTrail->InitFollowed(sourceTrail, parent, material, top, bottom, duration, samplingFrequency,
+                                  granularity);
+      followedTrail->SetColorSource(saber, smc);
+    } else {
+      followedTrail->InitFromSaber(saber, smc, fallbackPrefab, parent, material, GetSaberColor(smc, saber), top,
+                                   bottom, duration, samplingFrequency, granularity);
+    }
     if (!IsAlive(followedTrail->____trailRenderer.unsafePtr())) {
       UnityEngine::Object::Destroy(trailObject);
       continue;
@@ -1207,11 +1990,50 @@ void Runtime::ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc,
   }
 
   if (!replacement.followedTrails.empty() && ShouldHideOriginal(infos)) {
-    auto* sourceRenderer = sourceTrail->____trailRenderer.unsafePtr();
-    if (IsAlive(sourceRenderer) && sourceRenderer->____meshRenderer && sourceRenderer->____meshRenderer->get_enabled()) {
-      sourceRenderer->____meshRenderer->set_enabled(false);
-      replacement.disabledRenderers.emplace_back(sourceRenderer->____meshRenderer);
+    replacement.hideTrails = true;
+    HideOtherSaberTrails(smc, saber, replacement);
+  }
+  if (!replacement.followedTrails.empty()) {
+    // Fall Away, WHY'S THIS DEALER and 42-flux went down within a frame of
+    // this in 0.15.9-0.15.14 (0.15.15): noted for crash recovery, and every
+    // log line of the next seconds written to disk as it comes.
+    Recovery::MapTrailStarted(CurrentSongTime(), static_cast<int64_t>(std::time(nullptr)));
+    FlushVivifyLogsEveryLineFor(10);
+    PaperLogger.info("Vivify saber trail: {} map trail(s) created ({})", replacement.followedTrails.size(),
+                     hasOwnTrail ? "following the game's trail" : "following the saber");
+  }
+}
+
+// Hides every saber trail that is not the map's, when the map replaces the
+// trail. The game's own trail hangs off the model controller. Custom Models
+// builds its trails (CustomSaberTrail, a SaberTrail) under its own saber
+// model, which it parents to the saber rather than to the game's model, so
+// looking only under the model controller missed them (0.15.8). A trail also
+// switches its renderer back on a few frames after it starts, and whenever it
+// is re-enabled, so this is repeated by the sweep in
+// UpdateSaberReplacementColors: the player's trail no longer comes back over
+// the map's.
+void Runtime::HideOtherSaberTrails(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
+                                   VisualReplacement& replacement) {
+  auto hide = [this, &replacement](GlobalNamespace::SaberTrail* trail) {
+    if (!IsAlive(trail) || il2cpp_utils::try_cast<FollowedSaberTrail>(trail).has_value()) return;
+    auto* renderer = trail->____trailRenderer.unsafePtr();
+    if (!IsAlive(renderer) || !renderer->____meshRenderer || !renderer->____meshRenderer->get_enabled()) return;
+    auto* meshRenderer = static_cast<UnityEngine::Renderer*>(renderer->____meshRenderer.unsafePtr());
+    meshRenderer->set_enabled(false);
+    if (std::find(replacement.disabledRenderers.begin(), replacement.disabledRenderers.end(), meshRenderer) ==
+        replacement.disabledRenderers.end()) {
+      replacement.disabledRenderers.emplace_back(meshRenderer);
     }
+  };
+  if (IsAlive(smc)) {
+    hide(smc->____saberTrail.unsafePtr());
+    auto trails = smc->GetComponentsInChildren<GlobalNamespace::SaberTrail*>(true);
+    for (int i = 0; trails && i < trails.size(); i++) hide(trails[i]);
+  }
+  if (IsAlive(saber)) {
+    auto trails = saber->GetComponentsInChildren<GlobalNamespace::SaberTrail*>(true);
+    for (int i = 0; trails && i < trails.size(); i++) hide(trails[i]);
   }
 }
 

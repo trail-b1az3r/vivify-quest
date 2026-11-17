@@ -18,6 +18,10 @@ on:
         type: boolean
         required: false
         default: false
+      release_name:
+        description: 'Title for the release (optional, defaults to "Vivify <version>"), e.g. "Vivify 0.15.8 - full"'
+        required: false
+        default: ''
       dependency_source:
         description: 'Where to resolve dependencies from'
         type: choice
@@ -34,6 +38,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Send Logs (0.15.20): the log relay's address (tools/log-relay), set as a
+    # repository variable. Unset: the built mod sends no logs.
+    env:
+      VIVIFY_LOG_RELAY_URL: ${{ vars.VIVIFY_LOG_RELAY_URL }}
 
     steps:
     - name: Checkout
@@ -108,13 +116,15 @@ jobs:
       if: steps.deps.outputs.source == 'auto'
       run: python3 scripts/restore-deps.py
 
-    - name: Build
+    # Two QMODs from one checkout, both published on a release:
+    #   Vivify-v<version>.qmod       the full build, every feature
+    #   Vivify-Lite-v<version>.qmod  the feature set of 0.14.7 (VIVIFY_LITE=1,
+    #                                see include/main.hpp)
+    # Both keep mod id "vivify", so they share one settings file; install one.
+    - name: Build the full mod
       run: qpm s build
 
-    # A DT_NEEDED entry the device cannot satisfy makes dlopen fail outright, and
-    # the mod reports only "libVivify.so failed" with no indication which library
-    # was missing. Catch it here instead of on someone's headset.
-    - name: Check the built library's dependencies can be satisfied on device
+    - name: Check the full library's dependencies can be satisfied on device
       run: |
         so=$(find build -name 'libVivify.so' -print -quit)
         if [ -z "$so" ]; then
@@ -123,7 +133,7 @@ jobs:
         fi
         python3 scripts/check-so-dependencies.py "$so"
 
-    - name: Create QMOD
+    - name: Create the full QMOD
       run: qpm s qmod
 
     - name: Read mod version
@@ -136,7 +146,7 @@ jobs:
         fi
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-    - name: Rename QMOD artifact
+    - name: Name the full QMOD
       run: |
         shopt -s nullglob
         built=(./*.qmod)
@@ -146,11 +156,81 @@ jobs:
         fi
         mv "${built[0]}" "./Vivify-v${{ steps.mod_version.outputs.version }}.qmod"
 
+    # A fresh build directory: CMake caches VIVIFY_LITE from the first build.
+    - name: Clear the build directory for the lite build
+      run: rm -rf build
+
+    - name: Build the lite mod
+      env:
+        VIVIFY_LITE: '1'
+      run: qpm s build
+
+    - name: Check the lite library's dependencies can be satisfied on device
+      run: |
+        so=$(find build -name 'libVivify.so' -print -quit)
+        if [ -z "$so" ]; then
+          echo "::error::no libVivify.so was produced"
+          exit 1
+        fi
+        python3 scripts/check-so-dependencies.py "$so"
+
+    # The lite QMOD takes its name from mod.json, so the two can be told apart
+    # in a mod manager. mod.json is restored straight after.
+    # `qpm s qmod` builds again before it packs. VIVIFY_LITE is cached in the
+    # build directory, and set here too, so that build stays lite; until
+    # 0.15.1 it reconfigured as the full build and the lite QMOD was the full
+    # library under another name.
+    - name: Create the lite QMOD
+      env:
+        VIVIFY_LITE: '1'
+      run: |
+        python3 - <<'PY'
+        import json
+        m = json.load(open('mod.json'))
+        m['name'] = 'Vivify Lite'
+        json.dump(m, open('mod.json', 'w'), indent=2)
+        PY
+        qpm s qmod
+        git checkout -- mod.json
+
+    # The lite library is the only one holding the " (lite)" version suffix
+    # (include/main.hpp folds it away in the full build).
+    - name: Check the lite QMOD holds the lite library
+      run: |
+        so=$(find build -name 'libVivify.so' -print -quit)
+        if ! grep -aq ' (lite)' "$so"; then
+          echo "::error::the lite build produced the full library (no ' (lite)' marker in $so)"
+          exit 1
+        fi
+        full_so=$(mktemp -d)
+        unzip -q -o "./Vivify-v${{ steps.mod_version.outputs.version }}.qmod" -d "$full_so"
+        if grep -aq ' (lite)' "$(find "$full_so" -name 'libVivify.so' -print -quit)"; then
+          echo "::warning::the full QMOD's library carries the ' (lite)' marker; check it is the full build"
+        fi
+
+    # The full QMOD, already named, sits beside the new one; every other
+    # .qmod here is the lite build.
+    - name: Name the lite QMOD
+      run: |
+        shopt -s nullglob
+        full="./Vivify-v${{ steps.mod_version.outputs.version }}.qmod"
+        built=()
+        for file in ./*.qmod; do
+          [ "$file" != "$full" ] && built+=("$file")
+        done
+        if [ ${#built[@]} -ne 1 ]; then
+          echo "::error::expected one lite .qmod besides $full, found ${#built[@]}"
+          exit 1
+        fi
+        mv "${built[0]}" "./Vivify-Lite-v${{ steps.mod_version.outputs.version }}.qmod"
+
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Vivify-v${{ steps.mod_version.outputs.version }}
-        path: ./*.qmod
+        path: |
+          ./Vivify-v${{ steps.mod_version.outputs.version }}.qmod
+          ./Vivify-Lite-v${{ steps.mod_version.outputs.version }}.qmod
         if-no-files-found: error
 
     # Fires on a v* tag push, and on a manual run with `release` ticked.
@@ -165,13 +245,20 @@ jobs:
         # A tag push releases under the tag that was pushed; a manual run tags
         # from the version, creating the tag if it does not exist yet.
         tag_name: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) && github.ref_name || format('v{0}', steps.mod_version.outputs.version) }}
-        name: Vivify ${{ steps.mod_version.outputs.version }}
+        name: ${{ github.event.inputs.release_name != '' && github.event.inputs.release_name || format('Vivify {0}', steps.mod_version.outputs.version) }}
         generate_release_notes: true
         body: |
           Personal Quest build of Vivify (merge of axo-lotl/Vivifhy-Quest,
           rbatteries1-design/Vivify-Quest-Port, and Lars27110/Vivify-Quest —
           see README for what was merged from each).
 
+          Two downloads:
+          - **Vivify-v${{ steps.mod_version.outputs.version }}.qmod**: full build, every feature.
+          - **Vivify-Lite-v${{ steps.mod_version.outputs.version }}.qmod**: the feature set of 0.14.7
+            (plus the geometry-shader setting). Install one or the other, not both.
+
           Built from `${{ github.ref_name }}` (dependency source:
           ${{ steps.deps.outputs.source }}).
-        files: ./Vivify-v${{ steps.mod_version.outputs.version }}.qmod
+        files: |
+          ./Vivify-v${{ steps.mod_version.outputs.version }}.qmod
+          ./Vivify-Lite-v${{ steps.mod_version.outputs.version }}.qmod

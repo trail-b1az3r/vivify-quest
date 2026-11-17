@@ -7,6 +7,13 @@ void LateLoad();
 void RefreshMultipassRendering();
 void RefreshIsolationSettings();
 
+// The selected Vivify map's song folder path, empty when the selected level is
+// not a Vivify map.
+std::string SelectedVivifyMapPath();
+// Chooses the selected map's bundle again, after its Windows-bundle choice
+// changed. Does nothing during a level.
+void ReselectSelectedMap();
+
 // Progress of a bulk PC->Android bundle conversion pass.
 struct BulkConversionProgress {
   int levelsScanned = 0;
@@ -40,4 +47,30 @@ void StartBulkPcBundleConversion(std::function<void(BulkConversionProgress const
 
 // True while a bulk pass started by StartBulkPcBundleConversion is running.
 bool IsBulkPcBundleConversionRunning();
+
+// Tells the bulk pass whether a song is playing; it pauses between bundles
+// while one is.
+void SetSongPlaying(bool playing);
+
+// "Reset Vivify (clean slate)": deletes every converted bundle and crash-guard
+// note (the whole ConvertedBundles folder), and the PC bundles Vivify
+// downloaded into Quest maps' song folders (it downloads them again when
+// needed), after unloading whatever is loaded. Runs off the main thread;
+// onDone gets a one-line summary on the main thread. Refused while a bulk
+// conversion is running.
+void ResetToCleanSlate(std::function<void(std::string const&)> onDone);
+
+// "Redownload All Vivify Maps": writes the installed Vivify maps (BeatSaver
+// key, song hash, folder, song name) to VivifyMaps.txt, deletes the converted
+// bundle cache, then downloads each map from BeatSaver again and puts it in
+// place of its folder, so every Vivify map is back to exactly what its mapper
+// uploaded. A map's old folder is deleted only once its fresh copy has
+// downloaded and extracted, so a failed download never loses a map; the list
+// file records the outcome of each. Runs off the main thread; onStatus gets
+// progress and a final summary on the main thread. Refused while a bulk
+// conversion or reset is running.
+void RedownloadVivifyMaps(std::function<void(std::string const&)> onStatus);
+
+// The list RedownloadVivifyMaps writes.
+std::string VivifyMapsListPath();
 }

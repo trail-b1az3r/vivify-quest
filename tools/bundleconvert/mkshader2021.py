@@ -220,7 +220,7 @@ def player_sub_program(blob, gpu_type, keywords=()):
             "m_GpuProgramType": gpu_type}
 
 
-def shader_body(name, platforms, store, passes, keyword_names=(), pass_names=None, dependencies=()):
+def shader_body(name, platforms, store, passes, keyword_names=(), pass_names=None, dependencies=(), grab_texture="", properties=()):
     """One 2021.3.16 Shader body.
 
     store: (offsets, compressed_lengths, decompressed_lengths, blob) as
@@ -231,6 +231,12 @@ def shader_body(name, platforms, store, passes, keyword_names=(), pass_names=Non
     value = default(ROOT)
     parsed = value["m_ParsedForm"]
     parsed["m_Name"] = name
+    property_node = ROOT.child("m_ParsedForm").child("m_PropInfo").child("m_Props").children[0].child("data")
+    parsed["m_PropInfo"]["m_Props"] = []
+    for property_name, property_type in properties:
+        prop = default(property_node)
+        prop["m_Name"], prop["m_Type"] = property_name, property_type
+        parsed["m_PropInfo"]["m_Props"].append(prop)
     parsed["m_KeywordNames"] = list(keyword_names)
     parsed["m_KeywordFlags"] = [0] * len(keyword_names)
     pass_node = ROOT.child("m_ParsedForm").child("m_SubShaders").children[0].child("data") \
@@ -241,6 +247,7 @@ def shader_body(name, platforms, store, passes, keyword_names=(), pass_names=Non
         for stage, programs in spec.items():
             entry[stage]["m_PlayerSubPrograms"] = programs.get("player", [])
             entry[stage]["m_ParameterBlobIndices"] = programs.get("params", [])
+        entry["m_TextureName"] = grab_texture
         entry["m_ProgramMask"] = 0
         if pass_names:
             entry["m_NameIndices"] = [{"first": k, "second": v} for k, v in pass_names.items()]

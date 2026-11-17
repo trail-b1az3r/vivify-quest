@@ -1,0 +1,152 @@
+name: Nightly Release
+
+# Builds the default branch once a day and publishes it as a single rolling
+# pre-release tagged `nightly`, replacing the previous one. Skips the build when
+# nothing has been committed since the last nightly. Run it by hand from the
+# Actions tab to publish one now (tick `force` to rebuild an unchanged commit).
+
+on:
+  schedule:
+    - cron: '17 4 * * *'   # 04:17 UTC daily, off the top of the hour
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Publish even if nothing changed since the last nightly'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.repository.default_branch }}
+        submodules: true
+        fetch-depth: 0
+
+    - name: Anything new since the last nightly?
+      id: check
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        head=$(git rev-parse HEAD)
+        last=$(git rev-list -n 1 nightly 2>/dev/null || true)
+        echo "head=$head" >> "$GITHUB_OUTPUT"
+        echo "short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+        if [ "$head" = "$last" ] && [ "${{ github.event.inputs.force }}" != "true" ]; then
+          echo "build=false" >> "$GITHUB_OUTPUT"
+          echo "No commits since the last nightly ($last); nothing to publish." >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo "build=true" >> "$GITHUB_OUTPUT"
+          echo "last=${last:-none}" >> "$GITHUB_OUTPUT"
+        fi
+
+    # The same dependency and NDK setup as build.yml (see the comments there).
+    - name: Check the dependency manifest
+      if: steps.check.outputs.build == 'true'
+      run: python3 scripts/restore-deps.py --check
+
+    - name: Create the QPM cache directory qpm-action saves
+      if: steps.check.outputs.build == 'true'
+      run: |
+        mkdir -p "$HOME/.local/share/QPM-RS/cache"
+        touch "$HOME/.local/share/QPM-RS/cache/.keep"
+
+    - name: QPM Action
+      if: steps.check.outputs.build == 'true'
+      uses: Fernthedev/qpm-action@v1
+      with:
+        workflow_token: ${{ secrets.GITHUB_TOKEN }}
+        restore: false
+        cache: true
+        resolve_ndk: true
+
+    - name: Restore dependencies
+      if: steps.check.outputs.build == 'true'
+      run: python3 scripts/restore-deps.py
+
+    - name: Build
+      if: steps.check.outputs.build == 'true'
+      run: qpm s build
+
+    - name: Check the built library's dependencies can be satisfied on device
+      if: steps.check.outputs.build == 'true'
+      run: |
+        so=$(find build -name 'libVivify.so' -print -quit)
+        if [ -z "$so" ]; then
+          echo "::error::no libVivify.so was produced"
+          exit 1
+        fi
+        python3 scripts/check-so-dependencies.py "$so"
+
+    - name: Create QMOD
+      if: steps.check.outputs.build == 'true'
+      run: qpm s qmod
+
+    - name: Name the nightly
+      if: steps.check.outputs.build == 'true'
+      id: name
+      run: |
+        version=$(python3 -c "import json; print(json.load(open('mod.json'))['version'])")
+        date=$(date -u +%Y%m%d)
+        file="Vivify-v${version}-nightly.${date}.${{ steps.check.outputs.short }}.qmod"
+        shopt -s nullglob
+        built=(./*.qmod)
+        if [ ${#built[@]} -eq 0 ]; then
+          echo "::error::qpm s qmod produced no .qmod file"
+          exit 1
+        fi
+        mv "${built[0]}" "./$file"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+        echo "date=$date" >> "$GITHUB_OUTPUT"
+        echo "file=$file" >> "$GITHUB_OUTPUT"
+
+    - name: Upload Artifact
+      if: steps.check.outputs.build == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.name.outputs.file }}
+        path: ./${{ steps.name.outputs.file }}
+        if-no-files-found: error
+
+    # One rolling release: the old one and its tag go, and the new one is
+    # created at this commit, so the `nightly` tag always marks what was built.
+    - name: Publish the nightly release
+      if: steps.check.outputs.build == 'true'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        last="${{ steps.check.outputs.last }}"
+        if [ "$last" != "none" ]; then
+          changes=$(git log --no-merges --format='- %s (%h)' "$last..HEAD" | head -50)
+        else
+          changes=$(git log --no-merges --format='- %s (%h)' -20)
+        fi
+        cat > notes.md <<NOTES
+        Automatic nightly build of \`${{ github.event.repository.default_branch }}\` at ${{ steps.check.outputs.short }}
+        (Vivify ${{ steps.name.outputs.version }}, ${{ steps.name.outputs.date }}).
+
+        Untested pre-release. For a stable build, use the latest numbered release.
+        What changed in each version is in [CHANGELOG.md](../../blob/${{ steps.check.outputs.head }}/CHANGELOG.md).
+
+        ### Commits since the previous nightly
+        ${changes:-- (none)}
+        NOTES
+        gh release delete nightly --yes --cleanup-tag || true
+        gh release create nightly "./${{ steps.name.outputs.file }}" \
+          --target "${{ steps.check.outputs.head }}" \
+          --title "Vivify nightly ${{ steps.name.outputs.date }} (${{ steps.check.outputs.short }})" \
+          --notes-file notes.md \
+          --prerelease
+        echo "Published **${{ steps.name.outputs.file }}** as the \`nightly\` pre-release." >> "$GITHUB_STEP_SUMMARY"

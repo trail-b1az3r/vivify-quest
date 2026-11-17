@@ -1,0 +1,77 @@
+name: GitHub Issues to Discord Forum
+
+on:
+  workflow_dispatch:
+  issues:
+    types:
+      - opened
+      - edited
+      - deleted
+      - transferred
+      - pinned
+      - unpinned
+      - closed
+      - reopened
+      - assigned
+      - unassigned
+      - labeled
+      - unlabeled
+      - milestoned
+      - demilestoned
+      - locked
+      - unlocked
+  issue_comment:
+    types:
+      - created
+      - edited
+      - deleted
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  # Serialize manual syncs with issue/comment events so two runs cannot both create a post before the mapping comment exists.
+  group: discord-issues-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Sync open issues with Discord forums (manual run)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_FORUM_CHANNEL_ID: ${{ secrets.DISCORD_FORUM_CHANNEL_ID }}
+          DISCORD_FEATURE_REQUESTS_CHANNEL_ID: ${{ secrets.DISCORD_FEATURE_REQUESTS_CHANNEL_ID }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/$GITHUB_REPOSITORY/issues?state=open&per_page=100" \
+            | jq -s 'add | .[] | select(has("pull_request") | not)' -c \
+            | while IFS= read -r issue; do
+                number=$(printf '%s' "$issue" | jq -r '.number')
+                printf 'Syncing open issue #%s\\n' "$number"
+                event_file=$(mktemp)
+                printf '%s' "$issue" | jq -c '{action:"sync", issue:.}' > "$event_file"
+                GITHUB_EVENT_PATH="$event_file" GITHUB_EVENT_NAME=issues node .github/scripts/discord-issues.mjs
+                rm -f "$event_file"
+              done
+
+      - name: Sync issue and comment events with Discord forums
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_FORUM_CHANNEL_ID: ${{ secrets.DISCORD_FORUM_CHANNEL_ID }}
+          DISCORD_FEATURE_REQUESTS_CHANNEL_ID: ${{ secrets.DISCORD_FEATURE_REQUESTS_CHANNEL_ID }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: node .github/scripts/discord-issues.mjs

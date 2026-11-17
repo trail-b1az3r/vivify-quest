@@ -293,6 +293,11 @@ struct GlslResult {
   // SV_RenderTargetArrayIndex to pick the eye. With `multiview` set its eye
   // selection is remapped onto gl_ViewID_OVR.
   bool stereoInstanced = false;
+  // Geometry programs only (0.14.27): varyings the geometry stage both reads
+  // and writes under one name. Its output is renamed (from -> to, both as
+  // written in this source); the fragment stage it links to reads the renamed
+  // name, which LinkStages rewrites to match.
+  std::vector<std::pair<std::string, std::string>> renamedVaryings;
 };
 
 // Reflection supplied from outside the bytecode.
@@ -339,6 +344,32 @@ struct GlslOptions {
   // stage rather than written as gl_Layer, which GLSL ES has no vertex-stage
   // form of.
   bool multiview = false;
+  // Experimental separate-eye backend. -1 preserves the existing renderer;
+  // 0/1 bake the logical eye into a shader drawn to a NON-LAYERED target.
+  // This does not change Unity's XR mode. The caller must render each eye
+  // separately and supply its camera/matrix uniforms before compositing.
+  // Mutually exclusive with multiview. Geometry layer writes are discarded:
+  // the render target, rather than gl_Layer, selects the destination eye.
+  int singleViewStereoEye = -1;
+  // Render-texture globals used by a non-layered camera. Only these array
+  // resources lose their layer coordinate; authored texture arrays stay arrays.
+  std::vector<std::string> singleViewTextures;
+  // The program is the STEREO_INSTANCING_ON (single-pass instanced) variant,
+  // or a plain variant given that variant's code. Its vertex stage takes the
+  // eye from SV_InstanceID even when it does not write
+  // SV_RenderTargetArrayIndex itself: with a geometry stage (grass, fur,
+  // extruded lines) the eye goes to the geometry shader through an ordinary
+  // varying and the geometry shader writes the layer. Without this the
+  // instance ID was gl_InstanceID, so every view took eye 0, and the geometry
+  // stage's gl_Layer = 0 sent the draw to the left eye only (0.15.1).
+  bool stereoInstancedProgram = false;
+  // A geometry stage under multiview also draws each primitive for the right
+  // eye (0.15.12). The Quest's driver runs a geometry stage once, with the
+  // left eye's view, and sends what it emits to the left eye only. The stage
+  // now runs twice (geometry instancing); the second run moves each vertex
+  // from the left eye's clip space into the right eye's and emits it into
+  // layer 1.
+  bool geometryRightEyeCopy = false;
   // Used only when the program has no RDEF of its own.
   ExternalReflection const* reflection = nullptr;
 };

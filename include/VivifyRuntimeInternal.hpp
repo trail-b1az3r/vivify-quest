@@ -7,9 +7,55 @@
 #include <unordered_set>
 #include <variant>
 #include <optional>
+#include <mutex>
 #include "VivifyTypes.hpp"
+#include "UnityEngine/Matrix4x4.hpp"
+#include "GlobalNamespace/Mirror.hpp"
+#include <algorithm>
+#include "UnityEngine/ReflectionProbe.hpp"
 #include "UnityEngine/Rendering/CommandBuffer.hpp"
+#include "UnityEngine/AssetBundleCreateRequest.hpp"
+#include "UnityEngine/AssetBundleRequest.hpp"
+#include "System/Collections/Generic/List_1.hpp"
 #include "beatsaber-hook/shared/utils/typedefs-wrappers.hpp"
+
+namespace Vivify {
+// The camera Vivify treats as the player's view (0.15.19): Camera.main, or,
+// while the Replay mod renders a replay to video, the copy of it that Replay
+// renders with (Camera.main then draws only the UI). Map effects, depth,
+// culling and the HUD go to whichever this returns.
+UnityEngine::Camera* VivifyMainCamera();
+}  // namespace Vivify
+
+namespace Vivify {
+// One frustum holding both eyes' views: the widest left and right, up and
+// down tangents of the two projections, around the head (0.15.16). 0.15.13
+// used the left eye's projection widened a fixed quarter, which is skewed to
+// the left and could cut off the right edge of the right eye.
+inline UnityEngine::Matrix4x4 BothEyesCulling(UnityEngine::Matrix4x4 const& left, UnityEngine::Matrix4x4 const& right) {
+  auto tangents = [](UnityEngine::Matrix4x4 const& m, float& l, float& r, float& b, float& t) {
+    l = (m.m02 - 1.0f) / m.m00;
+    r = (m.m02 + 1.0f) / m.m00;
+    b = (m.m12 - 1.0f) / m.m11;
+    t = (m.m12 + 1.0f) / m.m11;
+  };
+  float l0, r0, b0, t0, l1, r1, b1, t1;
+  tangents(left, l0, r0, b0, t0);
+  tangents(right, l1, r1, b1, t1);
+  // A little extra for the eyes sitting either side of the head's centre.
+  float const margin = 0.05f;
+  float const l = std::min(l0, l1) - margin, r = std::max(r0, r1) + margin;
+  float const b = std::min(b0, b1) - margin, t = std::max(t0, t1) + margin;
+  UnityEngine::Matrix4x4 m = left;
+  m.m00 = 2.0f / (r - l);
+  m.m01 = 0.0f;
+  m.m02 = (r + l) / (r - l);
+  m.m10 = 0.0f;
+  m.m11 = 2.0f / (t - b);
+  m.m12 = (t + b) / (t - b);
+  return m;
+}
+}  // namespace Vivify
 
 namespace Vivify {
 struct FollowedSaberTrail;
@@ -20,12 +66,29 @@ struct CameraApplier;
 
 class Runtime {
 public:
+  // Runs bundle selection again for the selected map (its Windows-bundle
+  // choice changed in the menu). Not during a level.
+  void ReselectCurrentLevel();
+  std::string const& SelectedLevelPath() const { return _selectedLevelPath; }
+  bool SelectedMapHasVivify() const { return _selectedMapHasVivifyRequirement; }
   static Runtime& Instance();
 
   CustomJSONData::CustomBeatmapData* GetCurrentBeatmapData() const { return _currentBeatmapData; }
   bool IsResetting() const { return _isResetting; }
+  bool IsPauseMenuActive() const { return _pauseMenuActive; }
+  void ValidateFixedMaterialFeatures();
+  bool HasSecondaryCameras() const { return !_secondaryCameras.empty(); }
+  bool IsMultiplayerGameplayForEyeRenderer() { return IsInMultiplayerGameplay(); }
   bool GetPreEffectsEmpty() const { return _preEffects.empty(); }
   bool GetPostEffectsEmpty() const { return _postEffects.empty(); }
+  // Replaying effects twice must not advance shared render-texture state twice.
+  bool HasSharedEyeEffectTargets() const {
+    for (auto const* effects : {&_preEffects, &_postEffects}) for (auto const& effect : *effects) {
+      if (effect.data.source != kMainCameraId) return true;
+      for (auto const& target : effect.data.targets) if (target != kMainCameraId) return true;
+    }
+    return false;
+  }
 
   void AddMidRenderCommandBuffers(UnityEngine::Camera* camera);
   void RemoveMidRenderCommandBuffers();
@@ -40,6 +103,31 @@ public:
   void LateLoad();
   void Update();
   void OnBehaviourDestroyed(RuntimeBehaviour* behaviour);
+  // Advances an in-flight blit companion load; once a frame, menu included.
+  void PollBlitCompanion();
+  void PollBlitCompanionPrefabs();
+  void FinishBlitCompanion(bool current);
+  // Advances "Prepare Shaders Before Playing" (0.14.15): compiles a converted
+  // bundle's shaders in the menu, a few materials a frame. Once a frame.
+  void PollShaderWarmup();
+  // A command buffer for immediate execution (Graphics::ExecuteCommandBuffer),
+  // cleared and handed out again on every call. One shared buffer instead of a
+  // new one per blit per frame: every allocation was managed garbage, and the
+  // collections that follow are frame hitches (0.14.25). Fill it, execute it,
+  // and do not keep it.
+  UnityEngine::Rendering::CommandBuffer* ImmediateCommandBuffer();
+  // Starts a background scan of a bundle for shaders that read the scene
+  // depth texture, unless one ran for this version of the file.
+  void ScanBundleForSceneDepth(std::string const& bundlePath);
+  // Whether the loaded map's shaders read the scene depth texture: empty
+  // until every bundle they come from has been scanned.
+  std::optional<bool> MapShadersNeedSceneDepth();
+  void ApplyFarCulling(UnityEngine::Camera* mainCam);
+  void RestoreFarCulling(UnityEngine::Camera* mainCam);
+  // Unloads the loaded bundle and forgets every per-level bundle choice, so
+  // "Reset Vivify (clean slate)" can delete the files and the next level
+  // selection starts from nothing.
+  void ReleaseBundlesForReset();
   void SetPauseMenuActive(bool active);
   void RefreshMultipassRendering();
   void RefreshIsolationSettings();
@@ -70,17 +158,24 @@ public:
                          UnityEngine::Transform* parent);
   void ReplaceDebrisVisuals(GlobalNamespace::NoteDebris* debris);
 
+  // phase: -1 passthrough, 0 all, 1 pre-main-effect, 2 post-main-effect.
   void ApplyBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest,
                   std::string const& cameraName = "_Main", int phase = 0);
 
   bool ShouldBypassImageEffect(GlobalNamespace::ImageEffectController* controller);
+  bool CanUseNativeStereoEffects() const;
 
-  void ApplySecondaryCameraMainEffects(GlobalNamespace::MainEffectController* mainEffectController);
+  bool RenderSecondaryCameraMainEffect(UnityEngine::Camera* camera, UnityEngine::RenderTexture* src,
+                                       UnityEngine::RenderTexture* dest);
+  void CaptureSecondaryDepth(UnityEngine::RenderTexture* destination);
+  void ConfigureMirrorCamera(UnityEngine::Camera* camera);
 
   void BindSecondaryCameraTextures();
   void RestoreSecondaryCullingLayers();
 
 private:
+  friend struct MenuDiagnostics;
+  friend struct PlaybackDiagnostics;
   Runtime() = default;
 
   static void OnCustomEventStatic(GlobalNamespace::BeatmapCallbacksController* callbackController,
@@ -99,9 +194,19 @@ private:
   void UpdateSyncedObjects();
 
   void UpdatePrefabAnimationSpeed();
+  float SongSpeed();
   void LogThrottledUpdateError(std::string_view what);
 
   void HandleLevelSelected(SongCore::API::LevelSelect::LevelWasSelectedEventArgs const& event);
+  void SelectBundleForLevel();
+  void RunScheduledVisualChecks();
+  void DisableRealtimeShadowsForLevel();
+  void DisableRealtimeReflectionProbesForLevel();
+  // Crash recovery (0.15.2), see VivifyRecovery.hpp.
+  void EnterRecoveryModeIfNeeded();
+  bool IsRecoverySkippedBlit(std::string const& normalizedAsset) const;
+  void RunVisualCheck(std::string_view when);
+  void NoteVisualProblem(std::string problem);
   void DownloadBundle(uint32_t checksum, std::string const& levelPath, std::function<void(bool)> callback);
   // The same, saving to destPath instead of the level's Android bundle path.
   void DownloadBundleTo(uint32_t checksum, std::string const& destPath, std::function<void(bool)> callback);
@@ -117,6 +222,16 @@ private:
                         std::vector<std::string> const& names);
   void ConvertPcForGraft(std::string const& levelPath, std::string const& androidBundlePath,
                          std::string const& pcBundlePath, std::vector<std::string> const& names);
+  // Blit companion (0.14.10): the single-view build of a converted map's
+  // shaders, for blits into single-screen textures, which the multiview
+  // programs of the main conversion cannot draw into.
+  void PrepareBlitCompanion(std::string const& levelPath, std::string const& pcBundlePath);
+  void LoadBlitCompanion(std::string const& levelPath, std::string const& companionPath, bool wantsPrefabs,
+                         uint64_t generation);
+  void ClearBlitCompanion(bool resetSeparateEye = true);
+  // The material a blit into `destination` should draw with: `material`, or
+  // for a single-screen destination a copy of it on the single-view shader.
+  UnityEngine::Material* BlitMaterialFor(UnityEngine::Material* material, UnityEngine::RenderTexture* destination);
   // Kicks off an off-thread PC->Android bundle conversion for the currently
   // selected level and re-enables the play button when it lands.
   void ConvertPcBundleAsync(std::string const& levelPath, std::string const& sourceBundlePath);
@@ -144,10 +259,12 @@ private:
   void LogBundleShaderAudit(int seen, int runnable, int noProgram, int deviceRejected,
                             std::vector<std::string> const& deviceRejectedNames);
   UnityEngine::Object* GetAssetObject(std::string_view assetName) const;
+  void RetainBundleAsset(UnityEngine::Object* asset);
+  void ReleaseRetainedBundleAssets();
   template <typename T>
   T* GetAssetAs(std::string_view assetName) const {
     auto* asset = GetAssetObject(assetName);
-    if (asset == nullptr) {
+    if (!IsManagedAlive(asset)) {
       return nullptr;
     }
     return il2cpp_utils::try_cast<T>(asset).value_or(nullptr);
@@ -236,6 +353,9 @@ private:
   void HandleBlit(CustomJSONData::CustomEventData* customEventData, rapidjson::Value const& json);
   void UpdateBlitEffects();
   void HandleCreateScreenTexture(rapidjson::Value const& json);
+  void PrepareDeclaredTextures();
+  bool TryApplyStereoBlits(UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest,
+                           std::string const& cameraName, int phase);
   void HandleCreateCamera(rapidjson::Value const& json);
   std::optional<UnityEngine::DepthTextureMode> ParseDepthTextureModeName(std::string_view s);
   std::optional<UnityEngine::DepthTextureMode> ParseDepthTextureModeValue(rapidjson::Value const& value);
@@ -244,11 +364,20 @@ private:
   void ApplyCameraGameObjectProperties(UnityEngine::Camera* camera, CameraPropertyData const& props);
   void HandleSetCameraProperty(rapidjson::Value const& json);
   void CaptureMainCameraOriginals(UnityEngine::Camera* mainCam, UnityEngine::GameObject* mainCamGO);
-  void RestoreMainCameraOriginals();
-  UnityEngine::Rendering::CommandBuffer* BuildMidRenderCommandBuffer(std::vector<ActiveBlitEffect> const& effects);
+  void RestoreMainCameraOriginals(bool restoreAuxiliary = true);
+  struct CameraDefaults {
+    SafePtr<UnityEngine::Camera> camera;
+    int instanceId = 0, depthMode = 0;
+    UnityEngine::CameraClearFlags clearFlags;
+    UnityEngine::Color backgroundColor;
+  };
+  std::unordered_map<UnityEngine::Camera*, CameraDefaults> _cameraDefaults;
+  UnityEngine::Rendering::CommandBuffer* BuildMidRenderCommandBuffer(std::vector<ActiveBlitEffect> const& effects,
+                                                                     int bucket);
   bool EnsureMidRenderTextures();
   void ReleaseMidRenderTextures();
   UnityEngine::RenderTexture* EnsureCachedBlitTexture(UnityEngine::RenderTexture*& texture,
+                                                      std::optional<RenderTexturePolicy::Descriptor>& allocation,
                                                       UnityEngine::RenderTexture* src);
   void ReleaseRenderTexture(UnityEngine::RenderTexture*& texture);
   void ReleaseCachedBlitTextures();
@@ -315,7 +444,74 @@ private:
   void ApplySaberReplacementColor(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
                                   VisualReplacement& replacement, bool force = false);
   void UpdateSaberReplacementColors();
-  void ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc,
+  void HideOtherSaberRenderers(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
+                               VisualReplacement& replacement);
+  void DiscoverSabers();
+  void HideForeignSaberLights();
+  void RestoreForeignSaberLights();
+  void ApplyFieldOfView(UnityEngine::Camera* mainCam);
+  void RestoreFieldOfView();
+  UnityEngine::Camera* _fovCamera = nullptr;
+  int _fovAppliedPercent = 0;
+  UnityEngine::Matrix4x4 _fovLeftProjection{};
+  // What was set last frame, to tell whether the headset kept it (0.15.16).
+  float _fovSetM00[2] = {0.0f, 0.0f};
+  int _fovFramesChecked = 0;
+  bool _fovReported = false;
+  void ApplyVivifyFoveation();
+  void RestoreVivifyFoveation();
+  bool _foveationApplied = false;
+  bool _foveationEyeTracked = false;
+  bool _eyeTrackedBefore = false;
+  int _foveationBefore = 0;
+  std::vector<UnityEngine::Light*> _disabledSaberLights;
+  // The game's mirrors turned plain for a map with Game Mirrors off (0.15.18;
+  // the surface stays, without the reflection, since 0.15.19).
+  struct PlainMirror {
+    GlobalNamespace::Mirror* mirror = nullptr;
+    UnityEngine::Renderer* renderer = nullptr;
+    UnityEngine::Material* material = nullptr;  // what it drew with before
+    bool rendererWasHidden = false;
+  };
+  std::vector<PlainMirror> _plainMirrors;
+  float _lastMirrorSweep = -1.0f;
+  void HideGameMirrors();
+  void RestoreGameMirrors();
+  float _lastSaberLightSweep = 0.0f;
+  void NoteReflectionProbes(UnityEngine::GameObject* root);
+  void RefreshSlowProbes();
+  void OnAnyCameraPreCull(UnityEngine::Camera* camera);
+  void OnAnyCameraPostRender(UnityEngine::Camera* camera);
+  void InstallCameraCallbacks();
+  std::vector<UnityEngine::ReflectionProbe*> _slowProbes;
+  float _lastSlowProbeRefresh = 0.0f;
+  bool _probeCameraRendering = false;
+  void HideOtherSaberTrails(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
+                            VisualReplacement& replacement);
+  // Whether the loaded bundle is a PC bundle converted on the headset.
+  bool LoadedBundleIsConverted() const;
+  bool EnsureMapSaberVisible(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
+                             VisualReplacement& replacement);
+  void NoteHeadsetLayers(UnityEngine::GameObject* root, std::string const& asset);
+  // Fall Away's head-following HUD (layer 17), drawn nearer the eyes
+  // (0.15.17): see PullHeadsetHud.
+  struct HudObject {
+    UnityEngine::Transform* transform = nullptr;
+    UnityEngine::Vector3 setPosition{};
+    UnityEngine::Vector3 originalPosition{};
+    UnityEngine::Vector3 setScale{};
+    UnityEngine::Vector3 originalScale{};
+    bool applied = false;
+  };
+  std::vector<HudObject> _hudObjects;
+  void PullHeadsetHud(UnityEngine::Camera* camera);
+  // Headset-only layers this level's prefabs use, and those added to the main
+  // camera's culling mask for it.
+  uint32_t _mapHeadsetLayers = 0;
+  uint32_t _addedMainCamLayers = 0;
+  float _lastSaberHideSweep = 0.0f;
+  GlobalNamespace::SaberTrailRenderer* FindSaberTrailRendererPrefab(GlobalNamespace::SaberModelController* smc);
+  void ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber,
                               std::vector<AssignedPrefabInfo*> const& infos, VisualReplacement& replacement);
   void ApplyReplacementRenderersToMaterialBlock(GlobalNamespace::MaterialPropertyBlockController* mpb,
                                                 VisualReplacement& replacement, bool hideOriginal,
@@ -343,6 +539,14 @@ private:
   bool _selectedMapHasVivifyRequirement = false;
   std::unordered_map<std::string, UnityEngine::Object*> _assets;
   std::unordered_map<std::string, UnityEngine::Object*> _assetsByName;
+  struct RetainedBundleAsset {
+    SafePtr<UnityEngine::Object> object;
+    int originalHideFlags;
+  };
+  // Native caches are invisible to Unity's unused-resource scan. Keep assets
+  // needed by later events alive until this selection is released, including
+  // materials that no currently instantiated prefab references.
+  std::unordered_map<UnityEngine::Object*, RetainedBundleAsset> _retainedBundleAssets;
   std::unordered_map<std::string, UnityEngine::Shader*> _supportedShadersByName;
   // Every runnable shader in the process, by name. Rebuilt per level, because
   // the objects behind it are Unity's to destroy.
@@ -376,15 +580,19 @@ private:
   std::array<std::vector<ActiveBlitEffect>, kMidRenderOrderCount> _midEffects;
 
   std::vector<std::pair<int, SafePtr<UnityEngine::Rendering::CommandBuffer>>> _activeMidCommandBuffers;
+  // Reused buffers (see ImmediateCommandBuffer): one for immediate blits, one
+  // per mid-render bucket, which is attached to the camera for a frame at most.
+  SafePtr<UnityEngine::Rendering::CommandBuffer> _immediateCommandBuffer;
+  std::array<SafePtr<UnityEngine::Rendering::CommandBuffer>, kMidRenderOrderCount> _midCommandBufferPool;
   UnityEngine::Camera* _midCommandBufferCamera = nullptr;
 
   UnityEngine::RenderTextureDescriptor _cachedMainDescriptor{};
 
-  int _cachedMainVrUsage = -1;
   bool _hasMainDescriptor = false;
 
   UnityEngine::RenderTexture* _midMainRT = nullptr;
   UnityEngine::RenderTexture* _midScratchRT = nullptr;
+  std::optional<RenderTexturePolicy::Descriptor> _midAllocation;
 
   std::vector<UnityEngine::RenderTexture*> _midSelfBlitTemps;
   std::vector<ActiveRenderSettingAnimation> _renderSettingAnimations;
@@ -406,16 +614,59 @@ private:
   std::optional<int> _mainCamOriginalDepthMode;
   std::optional<int> _mainCamOriginalClearFlags;
   std::optional<UnityEngine::Color> _mainCamOriginalBackgroundColor;
+  // Far Culling Distance (0.14.23): the camera's own per-layer distances, kept
+  // to put back, and the distance applied over them (0: none applied).
+  std::optional<std::vector<float>> _mainCamOriginalCullDistances;
+  bool _mainCamOriginalCullSpherical = false;
+  int _appliedFarCulling = 0;
   UnityEngine::RenderTexture* _mainBlitTexture = nullptr;
   UnityEngine::RenderTexture* _scratchBlitTexture = nullptr;
-  int _cachedBlitWidth = 0;
-  int _cachedBlitHeight = 0;
-  int _cachedBlitFormat = 0;
-  mutable std::unordered_map<UnityEngine::Material*, bool> _blitMaterialValidCache;
+  // Flat-screen guard: 16x16 samples of the picture before and after a
+  // call's effects, and per-effect bookkeeping.
+  struct BlitGuardWatch {
+    float start = 0.0f;
+    int lastFrame = -10;
+    int samples = 0;
+    int flat = 0;
+  };
+  UnityEngine::RenderTexture* _blitGuardIn = nullptr;
+  UnityEngine::RenderTexture* _blitGuardOut = nullptr;
+  UnityEngine::Texture2D* _blitGuardReader = nullptr;
+  std::unordered_map<UnityEngine::Material*, BlitGuardWatch> _blitGuardWatches;
+  std::set<UnityEngine::Material*> _blitGuardKilled;
+  bool _blitGuardAllOff = false;
+  bool _blitGuardLogged = false;
+  float _blitGuardLastSample = 0.0f;
+  UnityEngine::Vector4 _blitGuardScreenParams = UnityEngine::Vector4(0.0f, 0.0f, 0.0f, 0.0f);
+  bool EnsureBlitGuardTextures();
+  bool BlitGuardDue(std::vector<UnityEngine::Material*> const& materials);
+  void BlitGuardEvaluate(std::vector<UnityEngine::Material*> const& materials, UnityEngine::RenderTexture* src);
+  std::optional<RenderTexturePolicy::Descriptor> _mainBlitAllocation, _scratchBlitAllocation;
+  struct BlitMaterialValidity {
+    SafePtr<UnityEngine::Material> material;
+    SafePtr<UnityEngine::Shader> shader;
+    bool supported = false, fallback = false, valid = false;
+  };
+  mutable std::unordered_map<UnityEngine::Material*, BlitMaterialValidity> _blitMaterialValidCache;
   std::unordered_set<CustomJSONData::CustomEventData*> _catchUpAppliedCustomEvents;
   float _lastSongTime = -1.0f;
   float _lastKnownSongLength = -1.0f;
+  bool _recoveryMode = false;
+  std::vector<std::string> _recoverySkippedBlits;
+  // This map went down right after its own saber trail was created last time
+  // (0.15.15); it plays without it. Independent of Crash Recovery Mode.
+  bool _skipMapTrails = false;
+  // Realtime reflection probes blamed for this map's last crash (0.15.28).
+  bool _skipReflectionProbes = false;
+  // Asset names already reported missing this level (GetAssetObject is const).
+  mutable std::unordered_set<std::string> _loggedAssetMisses;
+  // GrabPass texture names seen in loaded bundles (under _depthScanMutex),
+  // reported by the visual check (0.15.29).
+  std::set<std::string> _grabTextureNames;
+  bool _skipMapTrailsLogged = false;
+  std::chrono::steady_clock::time_point _lastRecoveryHeartbeat{};
   float _lastSyncSongTime = -1.0f;
+  float _lastSongAdvanceAt = -1.0f;  // frame the song clock last moved (0.15.17; a frame count since 0.15.19)
   int _songTimeCacheFrame = -1;
   int _lastUpdateErrorFrame = -1000;
   int _lastSyncHeartbeatFrame = -1000;
@@ -449,6 +700,10 @@ private:
   int _auditShadersRunnable = 0;
   int _auditShadersNoProgram = 0;
   int _auditShadersDeviceRejected = 0;
+  // Live visual checks (VivifyVisualCheck.cpp, 0.14.29): what looked wrong
+  // this level, for the top of its report block.
+  std::vector<std::string> _visualProblems;
+  int _visualChecksRun = 0;
   std::vector<std::string> _auditRejectedNames;
   int _texturesDecoded = 0;
   int _texturesSkipped = 0;
@@ -458,6 +713,10 @@ private:
   bool _levelReportOpen = false;
   bool _fallbackShaderSearchFailed = false;
   int _slowFrameStreak = 0;
+  // Wall-clock gap between gameplay frames, for stalls outside Vivify's own
+  // work (the GPU driver compiling a map's shaders on first draw).
+  std::chrono::steady_clock::time_point _lastGameplayFrame{};
+  int _stallsLogged = 0;
   double _worstFrameMs = 0.0;
 
   bool _reduceDebris = false;
@@ -477,6 +736,90 @@ private:
   // empty, by shader name, for _graftLevelPath. Kept alive with
   // DontUnloadUnusedAsset; replaced when another level needs them.
   std::unordered_map<std::string, UnityEngine::Shader*> _graftedShaders;
+  // The converted PC bundle _graftedShaders came from.
+  std::string _graftDonorPath;
+  // Whether a bundle's shaders read the scene depth texture, by
+  // DepthScanKey(path); filled in by a worker thread (0.14.21).
+  std::mutex _depthScanMutex;
+  std::unordered_map<std::string, bool> _depthScanResults;
+  std::unordered_set<std::string> _depthScansRunning;
+  bool _sceneDepthSkipLogged = false;
+  // MapShadersNeedSceneDepth runs every frame: the bundles it last looked at,
+  // their scan keys (computed once, as they stat the file) and, once known,
+  // its answer.
+  std::string _depthSourcesFor;
+  std::vector<std::string> _depthSourceKeys;
+  std::optional<bool> _depthDecision;
+  // Blit companion shaders by name, for _blitCompanionLevel, and the material
+  // copies made on them (original -> copy).
+  std::unordered_map<std::string, UnityEngine::Shader*> _singleViewShaders;
+  std::unordered_map<UnityEngine::Material*, UnityEngine::Material*> _singleViewBlitMaterials;
+  // Shaders in the selected map's Quest bundle whose programs are all
+  // single-view, by name; a blit with one runs once per eye.
+  std::set<std::string> _singleViewOnlyNativeShaders;
+  std::set<std::string> _stereoDropsTextureShaders;
+  std::map<std::string, std::set<std::string>> _intUniformsByShader;
+  std::set<UnityEngine::Material*> _intFixedMaterials;
+  std::set<std::string> _perEyeBlitLogged;
+  bool NeedsPerEyeBlit(UnityEngine::Material* material, UnityEngine::RenderTexture* destination);
+  std::string _blitCompanionLevel;
+  struct FixedFeatureMaterial { SafePtr<UnityEngine::Material> material; SafePtr<UnityEngine::Shader> shader; };
+  std::unordered_map<UnityEngine::Material*, FixedFeatureMaterial> _fixedFeatureMaterials;
+  std::unordered_map<UnityEngine::Renderer*, SafePtr<UnityEngine::Renderer>> _fixedFeatureRenderers;
+  using FixedFeatureMaterialList = System::Collections::Generic::List_1<UnityW<UnityEngine::Material>>;
+  SafePtr<FixedFeatureMaterialList> _fixedFeatureMaterialList;
+  std::unordered_set<UnityEngine::Material*> _fixedFeatureChecked;
+  bool _fixedFeatureViolation = false;
+  std::optional<bool> _fixedFeatureChartProof;
+  bool RememberFixedMaterialFeatures(UnityEngine::Material* material);
+  static bool FixedMaterialFeaturesMatch(UnityEngine::Material* material);
+  void RegisterFixedFeatureRenderers(UnityEngine::GameObject* root);
+  void RejectFixedMaterialFeatures(UnityEngine::Material* material);
+  // Shader preparation queue for the selected converted bundle.
+  std::vector<UnityEngine::Material*> _warmupQueue;
+  size_t _warmupIndex = 0;
+  int _warmupPassAttempts = 0, _warmupPassFailures = 0;
+  struct WarmupUnboundPass { std::string shader; int pass, passCount; };
+  std::vector<WarmupUnboundPass> _warmupUnboundPasses;
+  std::string _warmupLevel;
+  std::string _warmupBundle;
+  float _warmupStarted = 0.0f;
+  void StartShaderWarmup(std::string const& bundlePath);
+  // An in-flight companion load (0.14.11: asynchronous, never on the main
+  // thread in one go -- the synchronous load froze converted maps).
+  SafePtr<UnityEngine::AssetBundleCreateRequest> _blitCompanionCreate;
+  SafePtr<UnityEngine::AssetBundleRequest> _blitCompanionAssets;
+  UnityEngine::AssetBundle* _blitCompanionBundle = nullptr;
+  std::string _blitCompanionLoadingLevel;
+  std::string _blitCompanionLoadingPath;
+  uint64_t _blitCompanionGeneration = 0;
+  uint64_t _blitCompanionLoadingGeneration = 0;
+  struct PendingBlitCompanion {
+    std::string level, path;
+    bool wantsPrefabs;
+    uint64_t generation;
+  };
+  std::optional<PendingBlitCompanion> _pendingBlitCompanion;
+  // Single-view shaders for a map's own texture cameras (0.15.3): the
+  // companion's prefabs are loaded too when the map is known to have such
+  // cameras, so every shader its prefabs use has a single-view twin.
+  bool _blitCompanionWantsPrefabs = false;
+  bool _blitCompanionLoadingWantsPrefabs = false;
+  SafePtr<UnityEngine::AssetBundleRequest> _blitCompanionPrefabs;
+  std::string _companionPcBundlePath;
+  // Materials of spawned map objects whose shader has a single-view twin,
+  // swapped while a texture camera renders (SingleViewCameraShaders).
+  std::unordered_map<UnityEngine::Material*, std::pair<UnityEngine::Shader*, UnityEngine::Shader*>> _singleViewSwaps;
+  bool _singleViewSwapped = false;
+
+public:
+  void NoteTextureCameras(int count);
+  void RegisterSingleViewMaterials(UnityEngine::GameObject* root);
+  void RegisterLiveSingleViewMaterials();
+  void BeginSingleViewCamera();
+  void EndSingleViewCamera();
+
+private:
   std::string _graftLevelPath;
   int _graftGeneration = 0;
   int _graftApplied = 0;
@@ -504,6 +847,9 @@ private:
   // them into "could not be repaired" hid a rule that was deleting scenery.
   int _screenEffectsDeclined = 0;
   int _standInsDimmedFromWhite = 0;
+  // Estimated looks given this level (0.15.27): opaque, alpha-cut,
+  // alpha-blended, additive -- see VivifyLookEstimate.hpp.
+  std::array<int, 4> _estimatedLooks{};
   int _instancingDisabledMaterials = 0;  // converted-bundle materials with GPU instancing turned off
   // Materials already visited by the texture pass. One material is normally
   // shared by many renderers across a prefab, and the decode budget is spent in

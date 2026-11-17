@@ -29,6 +29,8 @@ public:
   DECLARE_DEFAULT_CTOR();
   DECLARE_SIMPLE_DTOR();
   DECLARE_INSTANCE_METHOD(void, Awake);
+  DECLARE_INSTANCE_METHOD(void, SetColorSource, GlobalNamespace::Saber* saber,
+                          GlobalNamespace::SaberModelController* controller);
   DECLARE_INSTANCE_METHOD(void, InitFollowed, GlobalNamespace::SaberTrail* followed, UnityEngine::Transform* parent,
                           UnityEngine::Material* material, UnityEngine::Vector3 topPos,
                           UnityEngine::Vector3 bottomPos, float_t duration, int32_t samplingFrequency,
@@ -37,8 +39,27 @@ public:
   DECLARE_INSTANCE_METHOD(void, LateUpdate);
   DECLARE_INSTANCE_METHOD(void, Cleanup);
 
+public:
+  // Follows the saber's own movement instead of another trail: for a saber
+  // whose model controller never ran the game's Init (Custom Models, through
+  // Lapiz), so there is no trail on it to copy (0.14.27).
+  void InitFromSaber(GlobalNamespace::Saber* saber, GlobalNamespace::SaberModelController* controller,
+                     GlobalNamespace::SaberTrailRenderer* rendererPrefab, UnityEngine::Transform* parent,
+                     UnityEngine::Material* material, UnityEngine::Color color, UnityEngine::Vector3 topPos,
+                     UnityEngine::Vector3 bottomPos, float_t duration, int32_t samplingFrequency,
+                     int32_t granularity);
+
 private:
+  void Setup(GlobalNamespace::IBladeMovementData* movementData, GlobalNamespace::SaberTrailRenderer* rendererPrefab,
+             UnityEngine::Transform* rendererParent, UnityEngine::Transform* parent, UnityEngine::Material* material,
+             UnityEngine::Vector3 topPos, UnityEngine::Vector3 bottomPos, float_t duration,
+             int32_t samplingFrequency, int32_t granularity, float_t whiteSectionMaxDuration, UnityEngine::Color color);
+  bool SourceAlive() const;
+  UnityEngine::Color SourceColor();
+
   GlobalNamespace::SaberTrail* _followed = nullptr;
+  GlobalNamespace::Saber* _saber = nullptr;
+  GlobalNamespace::SaberModelController* _controller = nullptr;
   Vivify::OffsetBladeMovementData* _offsetMovementData = nullptr;
   UnityEngine::Color _lastAppliedColor;
   bool _hasLastAppliedColor = false;
@@ -113,6 +134,7 @@ public:
 
 public:
   UnityEngine::Camera* GetCamera();
+  void ReleaseGlobalBindings();
 
   std::unordered_map<int, UnityEngine::RenderTexture*> colorTextures;
   std::optional<int> colorKey;
@@ -124,10 +146,31 @@ public:
   std::optional<int> depthKey;
 
 private:
+  std::unordered_map<int, RenderTexturePolicy::Descriptor> _colorAllocations, _depthAllocations;
   UnityEngine::RenderTexture* EnsureEyeTexture(std::unordered_map<int, UnityEngine::RenderTexture*>& textures,
                                                int eye, UnityEngine::RenderTexture* src, bool depth);
 
   UnityEngine::Camera* _camera = nullptr;
+};
+
+// On a map prefab's camera that renders into a texture (0.15.3): its render
+// uses the single-view twins of the map's converted shaders.
+DECLARE_CLASS_CODEGEN(Vivify, SingleViewCameraShaders, UnityEngine::MonoBehaviour) {
+  DECLARE_DEFAULT_CTOR();
+  DECLARE_SIMPLE_DTOR();
+  DECLARE_INSTANCE_METHOD(void, OnPreCull);
+  DECLARE_INSTANCE_METHOD(void, OnPreRender);
+  DECLARE_INSTANCE_METHOD(void, OnPostRender);
+  DECLARE_INSTANCE_METHOD(void, OnDisable);
+private:
+  bool _separateEyeScope = false;
+  bool _legacyScope = false;
+};
+
+DECLARE_CLASS_CODEGEN(Vivify, SeparateEyeCapture, UnityEngine::MonoBehaviour) {
+  DECLARE_DEFAULT_CTOR();
+  DECLARE_SIMPLE_DTOR();
+  DECLARE_INSTANCE_METHOD(void, OnRenderImage, UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest);
 };
 
 DECLARE_CLASS_CODEGEN(Vivify, CameraApplier, UnityEngine::MonoBehaviour) {
@@ -136,14 +179,20 @@ DECLARE_CLASS_CODEGEN(Vivify, CameraApplier, UnityEngine::MonoBehaviour) {
   DECLARE_INSTANCE_METHOD(void, OnPreCull);
   DECLARE_INSTANCE_METHOD(void, OnPreRender);
   DECLARE_INSTANCE_METHOD(void, OnPostRender);
+  DECLARE_INSTANCE_METHOD(void, OnDisable);
   DECLARE_INSTANCE_METHOD(void, OnRenderImage, UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest);
 public:
+  void RenderEffects(UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest);
   std::string cameraName = "_Main";
   bool hasMainEffect = false;
   GlobalNamespace::MainEffectController* mainEffectController = nullptr;
 };
 
 namespace Vivify {
+
+GlobalNamespace::BloomPrePass* SyncCameraBloom(UnityEngine::Camera* source, UnityEngine::Camera* target,
+                                             GlobalNamespace::BloomPrePass* previous = nullptr,
+                                             bool inheritEnabled = true);
 
 void SetMultipassShaderState(bool enabled,
                              UnityEngine::XR::XRSettings_StereoRenderingMode stereoMode =

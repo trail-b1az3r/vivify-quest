@@ -233,7 +233,7 @@ check("vertex version line", source.startswith("#version 300 es\n"), source[:40]
 check("attribute naming", "in vec4 in_POSITION0;" in source, source)
 check("varying naming", "out vec4 vs_TEXCOORD0;" in source, source)
 check("matrix uniform naming", "uniform vec4 hlslcc_mtx4x4unity_MatrixVP[4];" in source, source)
-check("clip position", "gl_Position.xyzw = (r0.xyzw + hlslcc_mtx4x4unity_MatrixVP[3].xyzw);" in source,
+check("clip position", "gl_Position.xyzw = (intBitsToFloat(r0.xyzw) + hlslcc_mtx4x4unity_MatrixVP[3].xyzw);" in source,
       source)
 check("swizzle collapse", "_MainTex_ST.xy + _MainTex_ST.zw" in source, source)
 check("temp declared", "vec4 r0;" in source, source)
@@ -252,9 +252,24 @@ proc, fields, lists, source = run("glsl", pixel_shader(body))
 check("texture translates", fields.get("ok") == "1", fields.get("error", ""))
 check("sampler declared", "uniform highp sampler2D _MainTex;" in source, source)
 check("texture call", "texture(_MainTex, vs_TEXCOORD0.xy).xyzw" in source, source)
-check("saturate wraps", "clamp((r0.xyzw * _Color.xyzw), 0.0, 1.0)" in source, source)
+check("saturate wraps", "clamp((intBitsToFloat(r0.xyzw) * _Color.xyzw), 0.0, 1.0)" in source, source)
 check("fragment output", "layout(location = 0) out vec4 SV_Target0;" in source, source)
 check("samplers listed", lists.get("sampler") == ["_MainTex"], str(lists.get("sampler")))
+
+# A depth-only pixel program (Through The Screen's AreaLit/LightMeshClear):
+# SV_Depth's signature entry has no register (0xFFFFFFFF) and, in that
+# bundle, no system-value type either. It was declared as a colour output at
+# layout(location = 4294967295), which no GLSL ES compiler accepts, so every
+# variant of the shader stayed undrawable.
+OPERAND_OUTPUT_DEPTH = 12
+body = m.insn(MOV, m.dest(OPERAND_OUTPUT_DEPTH, None, 0x1), m.imm_float(1.0))
+depth_only = pixel_shader(body, temps=0, outputs=[
+    {"name": "SV_Depth", "index": 0, "register": 0xFFFFFFFF, "sv": 0, "mask": 0x1, "rw_mask": 0xE},
+])
+proc, fields, _, source = run("glsl", depth_only)
+check("depth-only pixel program translates", fields.get("ok") == "1", fields.get("error", "") + source)
+check("depth is written through gl_FragDepth", "gl_FragDepth" in source, source)
+check("depth is not declared as a colour output", "SV_Depth0" not in source and "4294967295" not in source, source)
 
 # A masked write must only evaluate the components it writes.
 body = m.insn(MUL, m.dest(OUTPUT, 0, 0x6), m.src(INPUT, 0, (Y, Z, W, X)), m.src_cb(0, 0))
@@ -265,35 +280,35 @@ check("masked write", "SV_Target0.yz = (vs_TEXCOORD0.zw * _Color.yz);" in source
 body = m.insn(LT, m.dest(TEMP, 0, 0x3), m.src(INPUT, 0), m.src_cb(0, 0))
 body += m.insn(MOV, m.dest(OUTPUT, 0), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("vector compare", "intBitsToFloat(-ivec2(lessThan(vs_TEXCOORD0.xy, _Color.xy)))" in source,
+check("vector compare", "r0.xy = -ivec2(lessThan(vs_TEXCOORD0.xy, _Color.xy));" in source,
       source)
 
 body = m.insn(GE, m.dest(TEMP, 0, 0x1), m.src(INPUT, 0), m.src_cb(0, 0))
 body += m.insn(MOV, m.dest(OUTPUT, 0), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("scalar compare", "intBitsToFloat((vs_TEXCOORD0.x >= _Color.x) ? -1 : 0)" in source, source)
+check("scalar compare", "r0.x = (vs_TEXCOORD0.x >= _Color.x) ? -1 : 0;" in source, source)
 
 # movc selects per component off an integer-typed condition.
 body = m.insn(MOVC, m.dest(OUTPUT, 0, 0x3), m.src(TEMP, 0), m.src_cb(0, 0), m.src(INPUT, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
 check("vector movc",
-      "mix(vs_TEXCOORD0.xy, _Color.xy, notEqual(floatBitsToInt(r0.xy), ivec2(0)))" in source, source)
+      "mix(vs_TEXCOORD0.xy, _Color.xy, notEqual(r0.xy, ivec2(0)))" in source, source)
 body = m.insn(MOVC, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0), m.src_cb(0, 0), m.src(INPUT, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("scalar movc", "((floatBitsToInt(r0.x) != 0) ? _Color.x : vs_TEXCOORD0.x)" in source, source)
+check("scalar movc", "((r0.x != 0) ? _Color.x : vs_TEXCOORD0.x)" in source, source)
 
 # Integer maths round-trips through the bit-cast form.
 body = m.insn(IADD, m.dest(TEMP, 0, 0x1), m.src(TEMP, 0), m.imm_int(3) if False else m.imm_int(3))
 body += m.insn(ITOF, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("integer add", "intBitsToFloat(floatBitsToInt(r0.x) + 3)" in source, source)
-check("int to float", "SV_Target0.x = float(floatBitsToInt(r0.x));" in source, source)
+check("integer add", "r0.x = r0.x + 3;" in source, source)
+check("int to float", "SV_Target0.x = float(r0.x);" in source, source)
 
 # Source modifiers.
 body = m.insn(ADD, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0, modifier=m.MOD_NEG),
               m.src_cb(0, 0, modifier=m.MOD_ABS))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("negate modifier", "(-r0.x)" in source, source)
+check("negate modifier", "(-intBitsToFloat(r0.x))" in source, source)
 check("absolute modifier", "abs(_Color.x)" in source, source)
 
 # Control flow.
@@ -303,9 +318,49 @@ body += m.insn(ELSE)
 body += m.insn(DISCARD, m.src(TEMP, 0), controls=(1 << 7))
 body += m.insn(ENDIF)
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("if emitted", "if (floatBitsToInt(r0.x) != 0) {" in source, source)
+check("if emitted", "if (r0.x != 0) {" in source, source)
 check("else emitted", "} else {" in source, source)
-check("discard emitted", "if (floatBitsToInt(r0.x) != 0) discard;" in source, source)
+check("discard emitted", "if (r0.x != 0) discard;" in source, source)
+
+# Integers never pass through a float variable (0.14.22). GLSL ES lets a GPU
+# flush denormals to zero and Adreno does; as float bits the integers 1, 2, 3
+# are denormals, so 743 Aether's voronoi loop counter (for i = -1..1) never got
+# past zero, and the first frame to draw it hung the GPU. And -1, DXBC's
+# "true", is a NaN as a float literal: it used to be written 0.0.
+BREAKC, ILT = 3, 34
+body = m.insn(MOV, m.dest(TEMP, 0, 0x1), m.imm_int(-1))
+body += m.insn(LOOP)
+body += m.insn(ILT, m.dest(TEMP, 0, 0x2), m.imm_int(1), m.src(TEMP, 0, (X, X, X, X)))
+body += m.insn(BREAKC, m.src(TEMP, 0, (Y, Y, Y, Y)), controls=(1 << 7))
+body += m.insn(IADD, m.dest(TEMP, 0, 0x1), m.src(TEMP, 0, (X, X, X, X)), m.imm_int(1))
+body += m.insn(ENDLOOP)
+body += m.insn(ITOF, m.dest(OUTPUT, 0), m.src(TEMP, 0))
+proc, fields, _, source = run("glsl", pixel_shader(body))
+check("integer loop translates", fields.get("ok") == "1", fields.get("error", ""))
+check("temps are integer bit registers", "ivec4 r0;" in source and "vec4 r0;" not in source.replace("ivec4 r0;", ""),
+      source)
+check("a -1 literal is copied as the integer -1", "r0.x = -1;" in source, source)
+check("the loop counter increments as an integer", "r0.x = r0.x + 1;" in source, source)
+check("the loop exit compares integers", "r0.y = (1 < r0.x) ? -1 : 0;" in source and
+      "if (r0.y != 0) break;" in source, source)
+check("no integer round-trips through a float", "intBitsToFloat(floatBitsToInt(" not in source and
+      "floatBitsToInt(intBitsToFloat(" not in source, source)
+
+body = m.insn(MOV, m.dest(TEMP, 0, 0x3), m.imm_int(1, -1))
+body += m.insn(MOV, m.dest(OUTPUT, 0, 0x1), m.imm_int(-1))
+body += m.insn(MOV, m.dest(OUTPUT, 0, 0x2), m.imm_float(0.5))
+proc, fields, _, source = run("glsl", pixel_shader(body))
+check("integer literals copy exactly into temps", "r0.xy = ivec2(1, -1);" in source, source)
+check("a -1 literal written to a float output keeps its bits", "SV_Target0.x = intBitsToFloat(-1);" in source,
+      source)
+check("a float literal into an output stays a float", "SV_Target0.y = intBitsToFloat(1056964608);" in source or
+      "SV_Target0.y = 0.5;" in source, source)
+
+body = m.insn(MOVC, m.dest(TEMP, 0, 0x3), m.src(TEMP, 0, (Z, W, Z, W)), m.imm_int(1, 2), m.src(TEMP, 0, (X, Y, X, Y)))
+body += m.insn(MOV, m.dest(OUTPUT, 0), m.src(TEMP, 0))
+proc, fields, _, source = run("glsl", pixel_shader(body))
+check("a vector movc into a temp selects bits", "ivec2 sel_movc" in source and
+      "(sel_movc" in source and "mix(" not in source, source)
 
 body = m.insn(LOOP)
 body += m.insn(ADD, m.dest(TEMP, 0), m.src(TEMP, 0), m.imm_float(1.0))
@@ -340,7 +395,7 @@ variables = (variable("_Mode", 0, 4, SCALAR_INT),)
 body = m.insn(ITOF, m.dest(OUTPUT, 0, 0x1), m.src_cb(0, 0, (X, X, X, X)))
 proc, fields, _, source = run("glsl", pixel_shader(body, variables=variables, size=16, temps=0))
 check("int uniform declared", "uniform int _Mode;" in source, source)
-check("int uniform read as bits", "float(floatBitsToInt(intBitsToFloat(_Mode)))" in source, source)
+check("int uniform read as bits", "float(_Mode)" in source, source)
 
 # Array variables and dynamic indexing.
 variables = (variable("_Points", 0, 128, VECTOR4, elements=8),)
@@ -352,7 +407,7 @@ dynamic = [token, 0, 2] + m.src(TEMP, 0, (X, X, X, X))
 body = m.insn(MOV, m.dest(OUTPUT, 0), dynamic)
 proc, fields, _, source = run("glsl", pixel_shader(body, variables=variables, size=128))
 check("array uniform", "uniform vec4 _Points[8];" in source, source)
-check("dynamic index", "_Points[floatBitsToInt(r0.x) + 2].xyzw" in source, source)
+check("dynamic index", "_Points[r0.x + 2].xyzw" in source, source)
 
 # The same dynamic index against a non-array variable has no named form.
 variables = (variable("_Color", 0, 16, VECTOR4), variable("_Tint", 16, 16, VECTOR4),
@@ -465,6 +520,39 @@ proc, fields, _, source = run("glsl", pixel_shader(body, temps=0))
 check("sample offset survives", "textureOffset(_MainTex, vs_TEXCOORD0.xy, ivec2(1, -2))" in source,
       source + fields.get("error", ""))
 
+# Offset overloads do not all use the same argument order. Bias follows the
+# offset, while explicit LOD precedes it. Shadow gathers put refZ before it.
+def texture_offset_instruction(opcode, *operands):
+    instruction = m.insn(opcode, *operands)
+    instruction = [instruction[0] | 0x80000000, offset_token] + instruction[1:]
+    instruction[0] = (instruction[0] & ~(0x7F << 24)) | (len(instruction) << 24)
+    return instruction
+
+
+for dimension, coordinates, offset in ((4, "xy", "ivec2(1, -2)"),
+                                       (5, "xyz", "ivec2(1, -2)"),
+                                       (8, "xyz", "ivec3(1, -2, 0)")):
+    for opcode, function, tail in ((74, "textureOffset", offset + ", 2.0"),
+                                    (SAMPLE_L, "textureLodOffset", "2.0, " + offset)):
+        body = texture_offset_instruction(opcode, m.dest(OUTPUT, 0), m.src(INPUT, 0),
+            m.src(RESOURCE, 0), m.src(SAMPLER_T, 0), m.imm_float(2.0))
+        proc, fields, _, source = run("glsl", pixel_shader(body, textures=(("_MainTex", dimension),), temps=0))
+        expected = f"{function}(_MainTex, vs_TEXCOORD0.{coordinates}, {tail})"
+        check(f"offset argument order opcode {opcode} shape {dimension}", fields.get("ok") == "1" and expected in source,
+              source + fields.get("error", ""))
+
+for dimension, coordinates in ((4, "xy"), (5, "xyz")):
+    for comparison in (False, True):
+        operands = [m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0), m.src(SAMPLER_T, 0)]
+        if comparison:
+            operands.append(m.imm_float(0.5))
+        body = texture_offset_instruction(126 if comparison else GATHER4, *operands)
+        proc, fields, _, source = run("glsl", pixel_shader(body, textures=(("_Tex", dimension),), temps=0))
+        tail = "0.5, ivec2(1, -2)" if comparison else "ivec2(1, -2), 0"
+        expected = f"textureGatherOffset(_Tex, vs_TEXCOORD0.{coordinates}, {tail})"
+        check(f"gather offset argument order comparison {comparison} shape {dimension}",
+              fields.get("ok") == "1" and expected in source, source + fields.get("error", ""))
+
 # nointerpolation on an input is not cosmetic: an integer varying interpolated
 # linearly arrives as garbage, which is why D3D marks those constant.
 body = m.insn(MOV, m.dest(OUTPUT, 0), m.src(INPUT, 0))
@@ -500,7 +588,66 @@ proc, fields, _, source = run("glsl", pixel_shader(body, textures=(("_ShadowMap"
 check("shadow sampler declared", "uniform highp sampler2DShadow _ShadowMap;" in source,
       source + fields.get("error", ""))
 check("comparison folds into the coordinate",
-      "texture(_ShadowMap, vec3(vs_TEXCOORD0.xy, _Color.x))" in source, source)
+      "textureLod(_ShadowMap, vec3(vs_TEXCOORD0.xy, _Color.x), 0.0)" in source, source)
+
+# A level-zero comparison cannot become an implicit derivative-based sample.
+# Validate both the 2D explicit-LOD and array/cube zero-gradient core overloads.
+for dimension, coordinates, tail in ((4, "xy", "0.0"),
+                                      (5, "xyz", "vec2(0.0), vec2(0.0)"),
+                                      (9, "xyz", "vec3(0.0), vec3(0.0)")):
+    for offset in (False, True):
+        if dimension == 9 and offset:
+            continue  # Cube offsets have no core overload.
+        for implicit in (False, True):
+            opcode = SAMPLE_C if implicit else SAMPLE_C_LZ
+            operands = (m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0),
+                        m.src(SAMPLER_T, 0), m.imm_float(0.5))
+            body = texture_offset_instruction(opcode, *operands) if offset else m.insn(opcode, *operands)
+            proc, fields, _, source = run("glsl", pixel_shader(body, textures=(("_Shadow", dimension),), temps=0))
+            function = "texture" if implicit else ("textureLod" if dimension == 4 else "textureGrad")
+            implicit_array_offset = implicit and dimension == 5 and offset
+            if implicit_array_offset: function = "textureGrad"
+            if offset: function += "Offset"
+            vector = "vec3" if dimension == 4 else "vec4"
+            expected = f"{function}(_Shadow, {vector}(vs_TEXCOORD0.{coordinates}, 0.5)"
+            if not implicit: expected += ", " + tail
+            elif implicit_array_offset: expected += ", dFdx(vs_TEXCOORD0.xy), dFdy(vs_TEXCOORD0.xy)"
+            if offset: expected += ", ivec2(1, -2)"
+            expected += ")"
+            check(f"shadow sample keeps LOD mode shape {dimension} offset {offset} implicit {implicit}",
+                  fields.get("ok") == "1" and expected in source, source + fields.get("error", ""))
+
+
+def comparison_vertex(body, dimension):
+    isgn = m.signature_chunk([{"name": "TEXCOORD", "index": 0, "register": 0}], b"ISGN")
+    osgn = m.signature_chunk([{"name": "SV_POSITION", "index": 0, "register": 0, "sv": 1}], b"OSGN")
+    rdef = rdef_with_texture([], 16, [("_Shadow", dimension)])
+    code = m.insn(DCL_GLOBAL_FLAGS, controls=1)
+    code += m.insn(DCL_INPUT, m.dest(INPUT, 0))
+    code += m.insn(DCL_OUTPUT_SIV, m.dest(OUTPUT, 0), extra=[1])
+    code += m.insn(DCL_RESOURCE, m.dest(RESOURCE, 0), extra=[0x5555])
+    code += m.insn(DCL_SAMPLER, m.dest(SAMPLER_T, 0))
+    return m.container([rdef, isgn, osgn, m.shex_chunk([code + body + m.insn(RET)], stage=1)])
+
+
+for dimension, offset, implicit in ((4, False, False), (4, True, False),
+                                     (5, False, False), (5, True, False),
+                                     (9, False, False), (5, True, True)):
+    opcode = SAMPLE_C if implicit else SAMPLE_C_LZ
+    operands = (m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0), m.src(SAMPLER_T, 0), m.imm_float(0.5))
+    body = texture_offset_instruction(opcode, *operands) if offset else m.insn(opcode, *operands)
+    proc, fields, _, source = run("glsl", comparison_vertex(body, dimension))
+    expected = "textureLod" if dimension == 4 else "textureGrad"
+    if offset: expected += "Offset"
+    check(f"nonfragment shadow base sampling shape {dimension} offset {offset} implicit {implicit}",
+          fields.get("ok") == "1" and expected + "(_Shadow" in source and "dFdx(" not in source and "dFdy(" not in source,
+          source + fields.get("error", ""))
+
+# Keep malformed comparisons out of GLSL rather than using the sampler as refZ.
+for opcode in (SAMPLE_C, SAMPLE_C_LZ, 126):
+    body = m.insn(opcode, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0), m.src(SAMPLER_T, 0))
+    proc, fields, _, source = run("glsl", pixel_shader(body, textures=(("_Shadow", 4),), temps=0))
+    check(f"comparison opcode {opcode} requires refZ", fields.get("ok") == "0", source)
 
 # gather4 is GLSL ES 3.10, so the version escalates on its own.
 body = m.insn(GATHER4, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0, (Y, Y, Y, Y)),
@@ -513,12 +660,12 @@ check("gather4 picks its channel", "textureGather(_MainTex, vs_TEXCOORD0.xy, 1)"
 # Bit manipulation.
 body = m.insn(COUNTBITS, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("countbits", "uintBitsToFloat(uint(bitCount(floatBitsToUint(r0.x))))" in source,
+check("countbits", "uintBitsToFloat(uint(bitCount(uint(r0.x))))" in source,
       source + fields.get("error", ""))
 
 body = m.insn(BFREV, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("bfrev", "bitfieldReverse(floatBitsToUint(r0.x))" in source, source)
+check("bfrev", "bitfieldReverse(uint(r0.x))" in source, source)
 
 body = m.insn(FIRSTBIT_HI, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
@@ -531,7 +678,7 @@ check("firstbit_lo is findLSB", "findLSB(" in source, source)
 body = m.insn(UBFE, m.dest(OUTPUT, 0, 0x1), m.imm_int(8), m.imm_int(4), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
 check("ubfe masks its width and offset to five bits",
-      "bitfieldExtract(floatBitsToUint(r0.x), (4) & 31, (8) & 31)" in source,
+      "bitfieldExtract(uint(r0.x), (4) & 31, (8) & 31)" in source,
       source + fields.get("error", ""))
 
 body = m.insn(BFI, m.dest(OUTPUT, 0, 0x1), m.imm_int(8), m.imm_int(4), m.src(TEMP, 0),
@@ -541,12 +688,12 @@ check("bfi", "bitfieldInsert(" in source, source + fields.get("error", ""))
 
 body = m.insn(F32TOF16, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("f32tof16 keeps only the low half", "packHalf2x16(vec2(r0.x, 0.0)) & 0xffffu" in source,
+check("f32tof16 keeps only the low half", "packHalf2x16(vec2(intBitsToFloat(r0.x), 0.0)) & 0xffffu" in source,
       source + fields.get("error", ""))
 
 body = m.insn(F16TOF32, m.dest(OUTPUT, 0, 0x1), m.src(TEMP, 0))
 proc, fields, _, source = run("glsl", pixel_shader(body))
-check("f16tof32", "unpackHalf2x16(floatBitsToUint(r0.x) & 0xffffu).x" in source, source)
+check("f16tof32", "unpackHalf2x16(uint(r0.x) & 0xffffu).x" in source, source)
 
 body = m.insn(UADDC, m.dest(TEMP, 0, 0x1), m.dest(TEMP, 0, 0x2), m.src(TEMP, 0), m.src(TEMP, 0))
 body += m.insn(MOV, m.dest(OUTPUT, 0), m.src(TEMP, 0))
@@ -612,7 +759,7 @@ check("work group size declared", "layout(local_size_x = 64, local_size_y = 1, "
       "local_size_z = 1) in;" in source, source)
 check("storage buffer declared", "buffer _Result_block { uint _Result[]; };" in source, source)
 check("thread id aliased once",
-      "vec4 vThreadID = uintBitsToFloat(uvec4(gl_GlobalInvocationID, 0u));" in source, source)
+      "ivec4 vThreadID = ivec4(uvec4(gl_GlobalInvocationID, 0u));" in source, source)
 check("compute escalates the version", source.startswith("#version 310 es"), source[:20])
 
 body = m.insn(SYNC, controls=(1 << 4))
@@ -672,10 +819,89 @@ def geometry_passthrough():
 
 
 proc, fields, _, source = run("glsl", geometry_passthrough())
-check("a pass-through geometry varying is refused, not redeclared",
-      fields.get("ok") == "0", source)
-check("pass-through refusal explains the name clash",
-      "both its input and its output" in fields.get("error", ""), fields.get("error", ""))
+# 0.14.27: the output is renamed instead of refused. The vertex stage's name
+# stays on the input (the array the vertex stage writes), the output takes gs_.
+check("a pass-through geometry varying translates", fields.get("ok") == "1", fields.get("error", ""))
+check("the pass-through input keeps the vertex stage's name",
+      "in vec4 vs_TEXCOORD0[];" in source, source)
+check("the pass-through output takes a distinct name", "out vec4 gs_TEXCOORD0;" in source, source)
+check("the output is written under its new name", "gs_TEXCOORD0.xyzw = vs_TEXCOORD0[1].xyzw;" in source, source)
+
+# 0.15.1: single-pass instanced stereo through a geometry stage (grass, fur,
+# screen particles). The vertex stage takes the eye from SV_InstanceID but
+# hands it on as an ordinary varying, and the geometry stage writes the layer.
+def instance_id_vertex():
+    isgn = m.signature_chunk([{"name": "POSITION", "index": 0, "register": 0},
+                              {"name": "SV_InstanceID", "index": 0, "sv": 8, "register": 1,
+                               "component_type": 1, "mask": 1, "rw_mask": 1}], b"ISGN")
+    osgn = m.signature_chunk([{"name": "SV_Position", "index": 0, "sv": 1, "register": 0},
+                              {"name": "TEXCOORD", "index": 0, "register": 1}], b"OSGN")
+    code = m.insn(MOV, m.dest(m.OPERAND_OUTPUT, 0), m._operand(m.OPERAND_INPUT, [0], swizzle=(X, Y, Z, W)))
+    code += m.insn(MOV, m.dest(m.OPERAND_OUTPUT, 1, 0x1), m._operand(m.OPERAND_INPUT, [1], swizzle=(X, X, X, X)))
+    code += m.insn(RET)
+    return m.container([isgn, osgn, m.shex_chunk([code], stage=1)])
+
+
+proc, fields, _, source = run("glsl-mv-spi", instance_id_vertex())
+check("an SPI vertex stage without a layer write translates", fields.get("ok") == "1", fields.get("error", ""))
+check("its instance ID carries the view as the eye",
+      "ivec4 vInstanceID = ivec4(gl_InstanceID * 2 + int(gl_ViewID_OVR));" in source, source)
+proc, fields, _, source = run("glsl-mv", instance_id_vertex())
+check("a plain multiview vertex stage keeps gl_InstanceID",
+      "ivec4 vInstanceID = ivec4(gl_InstanceID);" in source, source)
+
+
+def geometry_layer(read_layer):
+    inputs = [{"name": "TEXCOORD", "index": 0, "register": 0}]
+    if read_layer:
+        inputs.append({"name": "SV_RenderTargetArrayIndex", "index": 0, "sv": 4, "register": 1,
+                       "component_type": 1, "mask": 1, "rw_mask": 1})
+    isgn = m.signature_chunk(inputs, b"ISGN")
+    osgn = m.signature_chunk([{"name": "COLOR", "index": 0, "register": 0},
+                              {"name": "SV_RenderTargetArrayIndex", "index": 0, "sv": 4, "register": 1,
+                               "component_type": 1, "mask": 1, "rw_mask": 0xE}], b"OSGN")
+    code = m.insn(DCL_GS_INPUT_PRIMITIVE, controls=3)
+    code += m.insn(DCL_MAXOUT, extra=[3])
+    code += m.insn(DCL_GS_OUTPUT_TOPOLOGY, controls=5)
+    code += m.insn(MOV, m.dest(m.OPERAND_OUTPUT, 0),
+                   m._operand(m.OPERAND_INPUT, [1, 0], swizzle=(X, Y, Z, W)))
+    layer_source = (m._operand(m.OPERAND_INPUT, [0, 1], swizzle=(X, X, X, X)) if read_layer
+                    else m.imm_int(0))
+    code += m.insn(MOV, m.dest(m.OPERAND_OUTPUT, 1, 0x1), layer_source)
+    code += m.insn(EMIT)
+    code += m.insn(RET)
+    return m.container([isgn, osgn, m.shex_chunk([code], stage=2)])
+
+
+proc, fields, _, source = run("glsl-mv", geometry_layer(False))
+check("a multiview geometry stage writing the layer translates", fields.get("ok") == "1", fields.get("error", ""))
+check("its layer write goes to gl_Layer, routing each primitive to its eye", "gl_Layer" in source and
+      "vivify_RTArrayIndexOut" not in source, source)
+proc, fields, _, source = run("glsl", geometry_layer(False))
+check("a single-view geometry stage still writes gl_Layer", "gl_Layer" in source, source)
+proc, fields, _, source = run("glsl-mv", geometry_layer(True))
+check("a geometry stage reading the layer translates", fields.get("ok") == "1", fields.get("error", ""))
+check("it reads the layer from the vertex stage's view index",
+      "ivec4 vRTArrayIndex = ivec4(vivify_ViewIndex[0]);" in source and
+      "flat in highp int vivify_ViewIndex[];" in source, source)
+check("and does not use gl_ViewID_OVR, which geometry stages lack", "gl_ViewID_OVR" not in source, source)
+
+
+def layer_writing_vertex():
+    isgn = m.signature_chunk([{"name": "POSITION", "index": 0, "register": 0}], b"ISGN")
+    osgn = m.signature_chunk([{"name": "SV_Position", "index": 0, "sv": 1, "register": 0},
+                              {"name": "SV_RenderTargetArrayIndex", "index": 0, "sv": 4, "register": 1,
+                               "component_type": 1, "mask": 1, "rw_mask": 0xE}], b"OSGN")
+    code = m.insn(MOV, m.dest(m.OPERAND_OUTPUT, 0), m._operand(m.OPERAND_INPUT, [0], swizzle=(X, Y, Z, W)))
+    code += m.insn(MOV, m.dest(m.OPERAND_OUTPUT, 1, 0x1), m.imm_int(1))
+    code += m.insn(RET)
+    return m.container([isgn, osgn, m.shex_chunk([code], stage=1)])
+
+
+proc, fields, _, source = run("glsl-mv", layer_writing_vertex())
+check("a layer-writing multiview vertex stage hands the view on",
+      "flat out highp int vivify_ViewIndex;" in source and
+      "vivify_ViewIndex = int(gl_ViewID_OVR);" in source, source)
 
 # ---------------------------------------------------------------------------
 # Unity's program header in front of the container
@@ -807,8 +1033,66 @@ check("pixel enables the multiview extension",
 proc, fields, _, source = run("glsl", eye_pixel)
 check("eye-index pixel translates without multiview", fields.get("ok") == "1",
       fields.get("error", ""))
-check("eye index is 0 without multiview", "vRTArrayIndex = intBitsToFloat(ivec4(0))" in source,
+check("eye index is 0 without multiview", "ivec4 vRTArrayIndex = ivec4(0)" in source,
       source)
+
+# Separate-eye geometry prototype: the right eye must not silently become
+# eye zero, and layer writes must not route into a missing array layer.
+for eye, side in enumerate(("left", "right")):
+    mode = "glsl-eye-" + side
+    for label, data in (("vertex", spi), ("geometry", geometry_layer(True)), ("fragment", eye_pixel)):
+        proc, fields, _, source = run(mode, data)
+        check(f"{side} eye {label} translates", fields.get("ok") == "1", fields.get("error", ""))
+        check(f"{side} eye {label} uses no multiview or layer routing",
+              "gl_ViewID_OVR" not in source and "num_views" not in source and "gl_Layer" not in source,
+              source)
+        if label == "vertex":
+            check(f"{side} eye SPI instance numbering", f"gl_InstanceID * 2 + {eye}" in source, source)
+        else:
+            check(f"{side} eye survives {label} input", f"ivec4 vRTArrayIndex = ivec4({eye});" in source, source)
+    proc, fields, _, source = run(mode + "-spi", instance_id_vertex())
+    check(f"{side} eye vertex feeding geometry keeps its logical eye",
+          fields.get("ok") == "1" and f"gl_InstanceID * 2 + {eye}" in source, source)
+    proc, fields, _, source = run(mode, vertex)
+    check(f"{side} eye non-SPI vertex keeps normal instancing",
+          fields.get("ok") == "1" and "gl_InstanceID * 2" not in source, source)
+    for stage in (3, 4):
+        unsupported = m.container([m.shex_chunk([m.insn(RET)], stage=stage)])
+        proc, fields, _, source = run(mode, unsupported)
+        check(f"{side} eye still refuses tessellation stage {stage}",
+              fields.get("ok") == "0" and "tessellation" in fields.get("error", ""), fields)
+    # Legacy double-wide shaders read the eye from a constant buffer rather
+    # than from InstanceID. Both forms need the selected eye, without changing
+    # globals used by the game's notes or menu shaders.
+    uniform_eye = m.container([
+        globals_cbuffer([variable("unity_StereoEyeIndex", 0, 4, SCALAR_INT)], 16),
+        m.signature_chunk([{"name": "SV_Target", "register": 0, "sv": 64}], b"OSGN"),
+        m.shex_chunk([m.insn(ITOF, m.dest(OUTPUT, 0), m.src_cb(0, 0, (X, X, X, X))) + m.insn(RET)], stage=0)])
+    proc, fields, _, source = run(mode, uniform_eye)
+    check(f"{side} eye overrides a legacy eye uniform locally",
+          fields.get("ok") == "1" and f"unity_StereoEyeIndex = int({eye});" in source and
+          "uniform int unity_StereoEyeIndex" not in source, source or fields)
+
+# Camera-owned arrays become single-layer camera textures; actual asset arrays
+# retain their dimensions. Check fetch, gather, integer load and size queries.
+for side in ("left", "right"):
+    for name in ("_CameraDepthTexture", "_CameraDepthNormalsTexture", "_CameraMotionVectorsTexture", "_CameraOpaqueTexture", "_GrabTexture", "_MainTex", "_Atlas"):
+        code = pixel_shader(m.insn(SAMPLE, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0), m.src(SAMPLER_T, 0)), textures=((name, 5),))
+        for suffix in ("", "-blit"):
+            _, f, _, source = run("glsl-eye-" + side + suffix, code)
+            lowered = name not in ("_MainTex", "_Atlas") or (name == "_MainTex" and suffix == "-blit")
+            shape, coord = ("2D", "xy") if lowered else ("2DArray", "xyz")
+            check(f"{side}{suffix} {name} has correct texture shape", f.get("ok") == "1" and
+                  f"sampler{shape} {name};" in source and f"texture({name}, vs_TEXCOORD0.{coord})" in source, source or f)
+    operations = [
+        ("lod", m.insn(SAMPLE_L, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0), m.src(SAMPLER_T, 0), m.imm_float(0)), "textureLod(_CameraDepthTexture, vs_TEXCOORD0.xy, 0.0)"),
+        ("gather", m.insn(GATHER4, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0), m.src(SAMPLER_T, 0)), "textureGather(_CameraDepthTexture, vs_TEXCOORD0.xy, 0)"),
+        ("load", m.insn(LD, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0)), "texelFetch(_CameraDepthTexture, ivec2("),
+        ("size", m.insn(RESINFO, m.dest(OUTPUT, 0), m.imm_int(0), m.src(RESOURCE, 0), controls=1), "textureSize(_CameraDepthTexture, 0).y, 1, 1"),
+    ]
+    for label, body, expected in operations:
+        _, f, _, source = run("glsl-eye-" + side, pixel_shader(body, textures=(("_CameraDepthTexture", 5),)))
+        check(f"{side} mono camera array {label} preserves addressing", f.get("ok") == "1" and expected in source, source or f)
 
 glslang_enabled = False
 truncation_failures = 0

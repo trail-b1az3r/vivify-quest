@@ -1,0 +1,170 @@
+name: Build Quest Mod (Beat Saber 1.45.3)
+
+# A second build of the same source for Beat Saber 1.45.3_30054. The main
+# workflow (build.yml) builds for 1.40.8_7379 from the vendored extern/; this
+# one points qpm.json and mod.json at 1.45.3 (scripts/use-game-target.py,
+# targets/1.45.3.json) and restores everything from qpackages.com.
+#
+# Vivify links CustomJSONData and Tracks, and as of 0.15.1 neither has a
+# release for 1.45.3 (only unreleased v1.45.3 branches of Tracks, Noodle
+# Extensions and Chroma exist). Until they do, the first step finds that,
+# says so in the run summary, and the run ends without building: not a
+# failure. Once they are released this builds, and anything in Vivify that
+# 1.45.3 changed shows up here as a compile error to port.
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Check the 1.45.3 dependencies are released
+      id: ready
+      run: |
+        set +e
+        python3 scripts/use-game-target.py 1.45.3 --check | tee check.txt
+        status=${PIPESTATUS[0]}
+        set -e
+        if [ "$status" = 3 ]; then
+          echo "ready=false" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Not built: Beat Saber 1.45.3 dependencies are not released yet"
+            echo '```'
+            grep missing check.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice::Beat Saber 1.45.3 build skipped: dependencies not released yet (see the run summary)"
+          exit 0
+        fi
+        if [ "$status" != 0 ]; then exit "$status"; fi
+        echo "ready=true" >> "$GITHUB_OUTPUT"
+
+    - name: Point qpm.json and mod.json at 1.45.3
+      if: steps.ready.outputs.ready == 'true'
+      run: |
+        python3 scripts/use-game-target.py 1.45.3
+        # The vendored extern/ is 1.40.8's; qpm restores 1.45.3's instead.
+        rm -rf extern extern.cmake qpm.shared.json
+        cp mod.json mod.target.json
+
+    - name: Create the QPM cache directory qpm-action saves
+      if: steps.ready.outputs.ready == 'true'
+      run: |
+        mkdir -p "$HOME/.local/share/QPM-RS/cache"
+        touch "$HOME/.local/share/QPM-RS/cache/.keep"
+
+    - name: QPM Action
+      if: steps.ready.outputs.ready == 'true'
+      uses: Fernthedev/qpm-action@v1
+      with:
+        workflow_token: ${{ secrets.GITHUB_TOKEN }}
+        restore: true
+        cache: true
+        resolve_ndk: true
+
+    - name: Build the full mod
+      if: steps.ready.outputs.ready == 'true'
+      env:
+        VIVIFY_GAME_TARGET: '1.45.3'
+      run: qpm s build
+
+    - name: Check the full library's dependencies can be satisfied on device
+      if: steps.ready.outputs.ready == 'true'
+      run: |
+        so=$(find build -name 'libVivify.so' -print -quit)
+        if [ -z "$so" ]; then
+          echo "::error::no libVivify.so was produced"
+          exit 1
+        fi
+        python3 scripts/check-so-dependencies.py "$so"
+
+    - name: Create the full QMOD
+      if: steps.ready.outputs.ready == 'true'
+      env:
+        VIVIFY_GAME_TARGET: '1.45.3'
+      run: qpm s qmod
+
+    - name: Read mod version
+      if: steps.ready.outputs.ready == 'true'
+      id: mod_version
+      run: echo "version=$(python3 -c "import json; print(json.load(open('mod.json'))['version'])")" >> "$GITHUB_OUTPUT"
+
+    - name: Name the full QMOD
+      if: steps.ready.outputs.ready == 'true'
+      run: |
+        shopt -s nullglob
+        built=(./*.qmod)
+        if [ ${#built[@]} -ne 1 ]; then
+          echo "::error::expected one .qmod, found ${#built[@]}"
+          exit 1
+        fi
+        mv "${built[0]}" "./Vivify-v${{ steps.mod_version.outputs.version }}-bs1.45.3.qmod"
+
+    - name: Clear the build directory for the lite build
+      if: steps.ready.outputs.ready == 'true'
+      run: rm -rf build
+
+    - name: Build the lite mod
+      if: steps.ready.outputs.ready == 'true'
+      env:
+        VIVIFY_GAME_TARGET: '1.45.3'
+        VIVIFY_LITE: '1'
+      run: qpm s build
+
+    - name: Create the lite QMOD
+      if: steps.ready.outputs.ready == 'true'
+      env:
+        VIVIFY_GAME_TARGET: '1.45.3'
+        VIVIFY_LITE: '1'
+      run: |
+        python3 - <<'PY'
+        import json
+        m = json.load(open('mod.json'))
+        m['name'] = 'Vivify Lite'
+        json.dump(m, open('mod.json', 'w'), indent=2)
+        PY
+        qpm s qmod
+        cp mod.target.json mod.json
+
+    - name: Check the lite QMOD holds the lite library
+      if: steps.ready.outputs.ready == 'true'
+      run: |
+        so=$(find build -name 'libVivify.so' -print -quit)
+        if ! grep -aq ' (lite)' "$so"; then
+          echo "::error::the lite build produced the full library (no ' (lite)' marker in $so)"
+          exit 1
+        fi
+
+    - name: Name the lite QMOD
+      if: steps.ready.outputs.ready == 'true'
+      run: |
+        shopt -s nullglob
+        full="./Vivify-v${{ steps.mod_version.outputs.version }}-bs1.45.3.qmod"
+        built=()
+        for file in ./*.qmod; do
+          [ "$file" != "$full" ] && built+=("$file")
+        done
+        if [ ${#built[@]} -ne 1 ]; then
+          echo "::error::expected one lite .qmod besides $full, found ${#built[@]}"
+          exit 1
+        fi
+        mv "${built[0]}" "./Vivify-Lite-v${{ steps.mod_version.outputs.version }}-bs1.45.3.qmod"
+
+    - name: Upload Artifact
+      if: steps.ready.outputs.ready == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: Vivify-v${{ steps.mod_version.outputs.version }}-bs1.45.3
+        path: |
+          ./Vivify-v${{ steps.mod_version.outputs.version }}-bs1.45.3.qmod
+          ./Vivify-Lite-v${{ steps.mod_version.outputs.version }}-bs1.45.3.qmod

@@ -1,0 +1,17 @@
+# Vivify Send Logs API and static dashboard. See README.md.
+name = "vivify-log-relay"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+[triggers]
+crons = ["17 * * * *"]
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+[vars]
+REPO = "trail-b1az3r/vivify-quest"
+BRANCH = "LOGS"
+# GITHUB_TOKEN is a secret: npx wrangler secret put GITHUB_TOKEN

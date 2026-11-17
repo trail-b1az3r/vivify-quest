@@ -1,0 +1,36 @@
+name: Log Relay Dashboard
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - "tools/log-relay/**"
+      - ".github/workflows/log-relay.yml"
+  pull_request:
+    paths:
+      - "tools/log-relay/**"
+      - ".github/workflows/log-relay.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/log-relay
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: Test Worker API
+        run: npm run test:worker
+      - name: Type-check and build dashboard
+        run: npm run build

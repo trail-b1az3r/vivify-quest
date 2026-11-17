@@ -1,4 +1,12 @@
 #include "VivifyRuntimeInternal.hpp"
+#include "VivifySeparateEye.hpp"
+#include "VivifyRecovery.hpp"
+#include "VivifyLogUpload.hpp"
+#include "GlobalNamespace/StandardLevelDetailView.hpp"
+#include "HMUI/HoverHint.hpp"
+#include "UnityEngine/UI/Button.hpp"
+#include "UnityEngine/Transform.hpp"
+#include <ctime>
 #include <chrono>
 #include <algorithm>
 #include "VivifyComponents.hpp"
@@ -58,6 +66,39 @@ bool Runtime::ShouldDisableVisualsForMultiplayer() {
   return GetDisableVisualsInMultiplayer() && IsInMultiplayerGameplay();
 }
 
+namespace {
+// The Replay mod's "watch replay" button (ReplayButtonCanvas, beside the level's
+// Practice button). Replay makes it clickable only if Play or Practice is,
+// and checks that a single frame after a map is selected: while Vivify was
+// still checking, converting or preparing the map's shaders, Play was off at
+// that moment, so the button stayed greyed out and a Vivify map's replays
+// could not be watched or rendered from it. The same rule is applied again
+// once nothing blocks Play. A button Replay disabled itself on purpose (with
+// its "recording" hover hint) is left alone.
+void RefreshReplayModButton() {
+  if (!GetReplayModInstalled()) return;
+  auto* levelView = UnityEngine::Object::FindObjectOfType<GlobalNamespace::StandardLevelDetailView*>(true);
+  if (!IsManagedAlive(levelView)) return;
+  auto action = levelView->get_actionButton();
+  auto practice = levelView->get_practiceButton();
+  bool const playable = (IsManagedAlive(action.unsafePtr()) && action->get_interactable()) ||
+                        (IsManagedAlive(practice.unsafePtr()) && practice->get_interactable());
+  if (!playable || !IsManagedAlive(practice.unsafePtr())) return;
+  auto parent = practice->get_transform()->get_parent();
+  if (!IsManagedAlive(parent.unsafePtr())) return;
+  auto canvas = parent->Find(StringW("ReplayButtonCanvas"));
+  if (!IsManagedAlive(canvas.unsafePtr())) return;
+  auto* button = canvas->GetComponentInChildren<UnityEngine::UI::Button*>(true);
+  if (!IsManagedAlive(button) || button->get_interactable()) return;
+  if (auto* hint = button->GetComponent<HMUI::HoverHint*>(); IsManagedAlive(hint)) {
+    auto text = hint->get_text();
+    if (text && !ToStdString(text).empty()) return;
+  }
+  button->set_interactable(true);
+  PaperLogger.info("Vivify: the Replay mod's button is clickable again now that the map is ready");
+}
+}  // namespace
+
 void Runtime::LateLoad() {
   auto cjdModInfo = CustomJSONData::modInfo.to_c();
   auto tracksModInfo = CModInfo{.id = "Tracks"};
@@ -82,6 +123,10 @@ void Runtime::LateLoad() {
       [](std::span<SongCore::API::PlayButton::PlayButtonDisablingModInfo const> disablingMods) {
         if (disablingMods.empty()) {
           PaperLogger.info("Vivify: play button is enabled (no mod is blocking it)");
+          // The Replay mod's button follows Play only once, a frame after the
+          // map is selected, when Vivify is usually still preparing it, and
+          // then stays greyed out (0.15.19). Checked again now.
+          BSML::MainThreadScheduler::ScheduleNextFrame([]() { RefreshReplayModButton(); });
           return;
         }
         std::string blockers;
@@ -138,11 +183,37 @@ void Runtime::Update() {
     }
     if (_currentBeatmapData == nullptr) {
       RefreshCameraComponents(false);
+      _lastGameplayFrame = {};
       return;
     }
+    // Only while a screen effect is on: lowering effect resolution cannot
+    // help a slow scene that has none (Heartbeat stepped down to 40% with no
+    // effect running, 0.15.9).
+    if (!_pauseMenuActive && !(_preEffects.empty() && _postEffects.empty())) {
+      ReportGameplayFrame(UnityEngine::Time::get_unscaledDeltaTime());
+    }
+    // Crash recovery's sign of life, every 5 s of play (0.15.2).
+    if (frameStart - _lastRecoveryHeartbeat > std::chrono::seconds(5)) {
+      _lastRecoveryHeartbeat = frameStart;
+      Recovery::Heartbeat(CurrentSongTime(), static_cast<int64_t>(std::time(nullptr)));
+    }
+    // A frame that took far longer than the game's own pacing is a stall
+    // somewhere outside this function -- on a converted map's first frames,
+    // the GPU driver compiling its translated shaders. Logged with where in
+    // the song it happened, since nothing else marks it in the log.
+    if (_lastGameplayFrame != std::chrono::steady_clock::time_point{} && _stallsLogged < 10) {
+      double const gap = std::chrono::duration<double>(frameStart - _lastGameplayFrame).count();
+      if (gap >= 0.5 && !_pauseMenuActive) {
+        _stallsLogged++;
+        PaperLogger.warn("Vivify frame stall: the game did not draw for {:.1f}s (songTime {:.2f}, bundle '{}')",
+                         gap, CurrentSongTime(), _preloadedBundlePath);
+      }
+    }
+    _lastGameplayFrame = frameStart;
     // Ten seconds into the song the converted bundle has loaded and drawn;
     // whatever happens after that is not what the crash guard is for.
     if (!_loadGuardPath.empty() && CurrentSongTime() > 10.0f) DisarmLoadGuard();
+    RunScheduledVisualChecks();
     UpdateMaterialAnimations();
     UpdateGlobalAnimations();
     UpdateAnimatorAnimations();
@@ -152,6 +223,9 @@ void Runtime::Update() {
     RefreshCameraComponents(true);
     DetectSongRestart();
     UpdateSaberReplacementColors();
+    RefreshSlowProbes();
+    HideForeignSaberLights();
+    HideGameMirrors();
     SyncReplacementTintColors();
   } catch (std::exception const& ex) {
     LogThrottledUpdateError(ex.what());
@@ -201,9 +275,53 @@ float Runtime::CurrentSongTime() {
   return _songTimeCache;
 }
 
+UnityEngine::Camera* VivifyMainCamera() {
+  auto main = UnityEngine::Camera::get_main();
+  auto* mainCam = main.unsafePtr();
+  if (!GetReplayRendering() || !IsManagedAlive(mainCam)) return mainCam;
+  // Replay renders through UnityEngine.Object.Instantiate(mainCamera), so its
+  // camera is named "<main>(Clone)", draws one view, and draws just before
+  // the main camera. Found by those traits rather than by Replay's types.
+  static UnityEngine::Camera* cached = nullptr;
+  if (IsManagedAlive(cached) && cached->get_enabled()) return cached;
+  cached = nullptr;
+  auto mainObject = mainCam->get_gameObject();
+  if (!IsManagedAlive(mainObject.unsafePtr())) return mainCam;
+  std::string const cloneName = ToStdString(mainObject->get_name()) + "(Clone)";
+  auto cameras = UnityEngine::Camera::get_allCameras();
+  for (int i = 0; cameras && i < cameras.size(); i++) {
+    auto* camera = cameras[i].unsafePtr();
+    if (!IsManagedAlive(camera) || camera == mainCam || !camera->get_enabled()) continue;
+    if (camera->get_stereoTargetEye().value__ != 0) continue;  // StereoTargetEyeMask.None
+    auto object = camera->get_gameObject();
+    if (!IsManagedAlive(object.unsafePtr()) || ToStdString(object->get_name()) != cloneName) continue;
+    cached = camera;
+    PaperLogger.info("Vivify replay render: using Replay's render camera '{}' for map effects", cloneName);
+    return cached;
+  }
+  return mainCam;
+}
+
 void Runtime::DetectSongRestart() {
   if (_currentBeatmapData == nullptr || _isResetting) return;
   float songTime = CurrentSongTime();
+  // Seeking in a replay (0.15.19). The Replay mod moves the song clock and
+  // sets the game's event cursor just before the new time, so the map's
+  // events in between are never sent: seeking forward skipped every prefab,
+  // effect and property the map set over that stretch, and seeking back left
+  // what came later in place. The map is set up again at the new time, with
+  // every event up to it applied in order (the same catch-up as a level that
+  // starts part way in). A render steps the clock by one video frame, far
+  // below the 1.5 s forward threshold.
+  if (_lastSongTime >= 0.0f && GetReplayPlaying() &&
+      (songTime + 0.25f < _lastSongTime || songTime > _lastSongTime + 1.5f)) {
+    PaperLogger.info("Vivify replay: the replay moved from {:.2f} s to {:.2f} s; setting the map up again there",
+                     _lastSongTime, songTime);
+    auto* beatmapData = _currentBeatmapData;
+    PrepareBeatmap(beatmapData, songTime);
+    _lastSongTime = songTime;
+    return;
+  }
   if (_lastSongTime >= 0.0f && songTime + 0.25f < _lastSongTime) {
     ResetRuntime("song restarted");
     return;
@@ -263,6 +381,24 @@ void Runtime::RegisterSyncedObject(UnityEngine::GameObject* root, float startTim
   }
 }
 
+// The rate of the song clock: Slower or Faster Song, the practice speed, or a
+// mod such as BSNightcoreQuest. 1 without a song.
+float Runtime::SongSpeed() {
+  if (!IsManagedAlive(_audioTimeSyncController)) return 1.0f;
+  float const scale = _audioTimeSyncController->_timeScale;
+  return std::isfinite(scale) && scale > 0.0f ? std::clamp(scale, 0.05f, 10.0f) : 1.0f;
+}
+
+namespace {
+// A video plays on its own clock at 1x, so at any other song speed it drifts
+// from the music; a synced one was also yanked back each time it drifted
+// 0.15 s (#91).
+void ApplyVideoSpeed(UnityEngine::Video::VideoPlayer* videoPlayer, float speed) {
+  if (!IsManagedAlive(videoPlayer) || !videoPlayer->get_canSetPlaybackSpeed()) return;
+  if (std::abs(videoPlayer->get_playbackSpeed() - speed) > 0.005f) videoPlayer->set_playbackSpeed(speed);
+}
+}
+
 void Runtime::UpdatePrefabAnimationSpeed() {
   if (_syncedObjects.empty() && _livePrefabs.empty()) {
 
@@ -270,18 +406,23 @@ void Runtime::UpdatePrefabAnimationSpeed() {
     return;
   }
 
+  // The song clock's own rate while it runs, 0 while paused or stopped
+  // (0.15.17). This was the song time gained over the frame time, frame by
+  // frame. The song clock follows the audio, not the frame clock, so that
+  // ratio jitters from frame to frame (0 on a frame where the song time has
+  // not moved), and every animator and particle system in a map's prefabs
+  // sped up and slowed down with it: a likely cause of the flickering stars
+  // on 743 Aether's sabers.
   float speed = 0.0f;
   if (!_pauseMenuActive && IsManagedAlive(_audioTimeSyncController)) {
     float const songTime = _audioTimeSyncController->get_songTime();
-    float const deltaTime = UnityEngine::Time::get_deltaTime();
-    float const deltaSong = songTime - _lastSyncSongTime;
-    if (_lastSyncSongTime < 0.0f) {
-      speed = 1.0f;
-    } else if (deltaTime > 1e-5f && deltaSong > 0.0f) {
-      speed = deltaSong / deltaTime;
-    } else {
-      speed = 0.0f;
-    }
+    // Counted in frames, not seconds (0.15.19): while the Replay mod renders,
+    // one video frame can take longer than a quarter of a second of real
+    // time, and the animations froze between frames of the render.
+    float const now = static_cast<float>(UnityEngine::Time::get_frameCount());
+    if (_lastSyncSongTime < 0.0f || songTime > _lastSyncSongTime) _lastSongAdvanceAt = now;
+    bool const running = _lastSongAdvanceAt >= 0.0f && now - _lastSongAdvanceAt < 15.0f;
+    speed = running ? SongSpeed() : 0.0f;
     _lastSyncSongTime = songTime;
   }
 
@@ -298,6 +439,14 @@ void Runtime::UpdatePrefabAnimationSpeed() {
   };
   for (auto& synced : _syncedObjects) drive(synced.animators, synced.particleSystems);
   for (auto& [id, prefab] : _livePrefabs) drive(prefab.animators, prefab.particleSystems);
+
+  float const songSpeed = SongSpeed();
+  for (auto& synced : _syncedObjects) {
+    for (auto* videoPlayer : synced.videoPlayers) ApplyVideoSpeed(videoPlayer, songSpeed);
+  }
+  for (auto& [id, prefab] : _livePrefabs) {
+    for (auto* videoPlayer : prefab.videoPlayers) ApplyVideoSpeed(videoPlayer, songSpeed);
+  }
 }
 
 void Runtime::UnregisterSyncedObject(UnityEngine::GameObject* root) {
@@ -431,7 +580,7 @@ void Runtime::SetPauseMenuActive(bool active) {
 }
 
 void Runtime::RefreshMultipassRendering() {
-  auto mainCam = UnityEngine::Camera::get_main();
+  UnityW<UnityEngine::Camera> mainCam(VivifyMainCamera());
   auto mainCamGO = IsAlive(mainCam.unsafePtr()) ? mainCam->get_gameObject().unsafePtr() : nullptr;
   RefreshMultipassRendering(mainCamGO);
   RefreshLoadedMaterialStereoKeywords();
@@ -473,6 +622,40 @@ void Runtime::RefreshIsolationSettings() {
 }
 
 void Runtime::ResetRuntime(std::string_view reason) {
+  SeparateEye::Reset();
+  // Breadcrumbs through a level's teardown, each flushed to disk (0.15.0):
+  // "the game crashes after a Vivify level" came with no log, and a native
+  // crash here loses whatever was still buffered. The last "level end:" line
+  // in vivify_global.txt names the step it died in. Only for a level that was
+  // running, since this also runs on every map selection.
+  bool const levelWasRunning = _currentBeatmapData != nullptr || _levelReportOpen;
+  auto step = [levelWasRunning](char const* what) {
+    if (!levelWasRunning) return;
+    PaperLogger.info("Vivify level end: {}", what);
+    FlushVivifyLogs();
+  };
+  // The return to the menu is the other crash window: every line for the
+  // next 20 s is flushed as written (0.15.1).
+  if (levelWasRunning) {
+    FlushVivifyLogsEveryLineFor(20);
+    // Crash recovery: a song played to its end clears the marker; anything
+    // else keeps it, so a restart straight after can be told apart.
+    bool const finished = _lastKnownSongLength > 0.0f && _lastSongTime >= _lastKnownSongLength - 2.0f;
+    Recovery::LevelEnded(finished, _lastSongTime, static_cast<int64_t>(std::time(nullptr)));
+  }
+  _recoveryMode = false;
+  _recoverySkippedBlits.clear();
+  _skipMapTrails = false;
+  _skipMapTrailsLogged = false;
+  _skipReflectionProbes = false;
+  _loggedAssetMisses.clear();
+  EndSingleViewCamera();
+  _singleViewSwaps.clear();
+  _mapHeadsetLayers = 0;
+  _hudObjects.clear();
+  SetRecoveryModeActive(false);
+  step(reason.empty() ? "resetting" : std::string(reason).c_str());
+  SetSongPlaying(false);
   // Written before anything is torn down, while the numbers are still valid.
   // The song position is included rather than a guess at "quit" vs "beaten":
   // by the time this runs the AudioTimeSyncController is usually already gone,
@@ -485,6 +668,7 @@ void Runtime::ResetRuntime(std::string_view reason) {
                                              : std::string(")");
     }
     WriteLevelEndReport(outcome);
+    step("report written");
   }
 
   VIVIFY_DEBUG("Vivify ResetRuntime: livePrefabs={} preloaded={} synced={} secondaryCameras={} declaredTextures={} assets={}",
@@ -492,10 +676,13 @@ void Runtime::ResetRuntime(std::string_view reason) {
                _secondaryCameras.size(), _declaredTextures.size(), _assets.size());
   _isResetting = true;
   DestroyCameraApplier();
+  step("camera effects removed");
   RestoreGlobalProperties();
   RestoreAllVisualReplacements();
+  step("note and saber visuals restored");
   RestoreOverlayRenderState();
   RestoreMainCameraOriginals();
+  step("camera restored");
   std::unordered_set<UnityEngine::GameObject*> destroyed;
   for (auto& [id, prefab] : _livePrefabs) {
     if (prefab.gameObject == nullptr) {
@@ -520,11 +707,20 @@ void Runtime::ResetRuntime(std::string_view reason) {
   }
   _livePrefabs.clear();
   _instantiatePrefabs.clear();
+  step("map prefabs destroyed");
   _syncedObjects.clear();
   _blitMaterialValidCache.clear();
-  _cachedBlitWidth = 0;
-  _cachedBlitHeight = 0;
-  _cachedBlitFormat = 0;
+  _blitGuardWatches.clear();
+  _slowProbes.clear();
+  RestoreForeignSaberLights();
+  RestoreGameMirrors();
+  RestoreVivifyFoveation();
+  _blitGuardKilled.clear();
+  _blitGuardAllOff = false;
+  _blitGuardLogged = false;
+  _blitGuardLastSample = 0.0f;
+  _mainBlitAllocation.reset();
+  _scratchBlitAllocation.reset();
   _materialAnimations.clear();
   _globalAnimations.clear();
   _animatorAnimations.clear();
@@ -544,6 +740,7 @@ void Runtime::ResetRuntime(std::string_view reason) {
   _slowFrameStreak = 0;
   _worstFrameMs = 0.0;
   _decodedTextures.clear();
+  ReleaseRetainedBundleAssets();
   _assets.clear();
   _assetsByName.clear();
   _supportedShadersByName.clear();
@@ -560,8 +757,13 @@ void Runtime::ResetRuntime(std::string_view reason) {
   RemoveMidRenderCommandBuffers();
   ReleaseMidRenderTextures();
   _hasMainDescriptor = false;
+  _sceneDepthSkipLogged = false;
+  _lastGameplayFrame = {};
+  _stallsLogged = 0;
   ReleaseCachedBlitTextures();
+  step("render textures released");
   RestoreRenderSettings();
+  step("render settings restored");
   _renderSettingAnimations.clear();
   _savedRenderSettings.clear();
   _currentRenderSettings.clear();
@@ -580,6 +782,7 @@ void Runtime::ResetRuntime(std::string_view reason) {
   _audioTimeSyncController = nullptr;
   _lastSongTime = -1.0f;
   _lastSyncSongTime = -1.0f;
+  _lastSongAdvanceAt = -1.0f;
   _songTimeCacheFrame = -1;
   _songTimeCache = 0.0f;
   _pauseMenuActive = false;
@@ -588,6 +791,9 @@ void Runtime::ResetRuntime(std::string_view reason) {
   _inMultiplayerGameplayCached = false;
   _inMultiplayerGameplay = false;
   _isResetting = false;
+  step("done");
+  // Upload only after the report and all teardown breadcrumbs have been flushed.
+  if (levelWasRunning) LogUpload::UploadAfterLevelEnd();
 }
 
 }

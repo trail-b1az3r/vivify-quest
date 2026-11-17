@@ -1,4 +1,7 @@
 #include "VivifyRuntimeInternal.hpp"
+#include "System/GC.hpp"
+#include "UnityEngine/Resources.hpp"
+#include "VivifyRecovery.hpp"
 #include "VivifyComponents.hpp"
 
 namespace Vivify {
@@ -310,6 +313,12 @@ void Runtime::ApplyGlobalProperty(MaterialPropertyChange const& property, float 
         enabled = std::get<PointDefinitionW>(property.value).InterpolateLinear(progress) >= 1.0f;
       } else {
         enabled = std::get<bool>(property.value);
+      }
+      // An animated keyword is applied every frame of its animation; only a
+      // change of state is worth a managed string and a keyword switch.
+      if (auto known = _currentGlobalKeywords.find(keyword);
+          known != _currentGlobalKeywords.end() && known->second == enabled) {
+        break;
       }
       if (enabled) {
         UnityEngine::Shader::EnableKeyword(StringW(keyword));
@@ -643,6 +652,8 @@ std::unordered_map<std::string_view, SettingType> const kRenderSettingTypes = {
     {"shadowDistance"sv, SettingType::Float},
     {"shadowNearPlaneOffset"sv, SettingType::Float},
     {"pixelLightCount"sv, SettingType::Int},
+    // Not one a map sets: crash recovery's half-resolution textures (0.15.2).
+    {"masterTextureLimit"sv, SettingType::Int},
     {"anisotropicFiltering"sv, SettingType::Int},
     {"maximumLODLevel"sv, SettingType::Int},
     {"particleRaycastBudget"sv, SettingType::Int},
@@ -673,6 +684,7 @@ std::unordered_map<std::string_view, std::string_view> const kIcallSettingOwners
     {"shadowDistance"sv, "UnityEngine.QualitySettings"sv},
     {"shadowNearPlaneOffset"sv, "UnityEngine.QualitySettings"sv},
     {"pixelLightCount"sv, "UnityEngine.QualitySettings"sv},
+    {"masterTextureLimit"sv, "UnityEngine.QualitySettings"sv},
     {"anisotropicFiltering"sv, "UnityEngine.QualitySettings"sv},
     {"maximumLODLevel"sv, "UnityEngine.QualitySettings"sv},
     {"particleRaycastBudget"sv, "UnityEngine.QualitySettings"sv},
@@ -744,6 +756,14 @@ void Runtime::HandleSetRenderingSettings(CustomJSONData::CustomEventData* custom
           PaperLogger.info("Vivify SetRenderingSettings: ignoring the map's realtime shadow settings ('{}' and "
                            "the rest); turn on 'Map Realtime Shadows' to let maps enable them", key);
         }
+        continue;
+      }
+      // Realtime reflection probes are opt-in too; see
+      // DisableRealtimeReflectionProbesForLevel.
+      if (categoryKey == "qualitySettings"sv && (!GetMapReflectionProbes() || _recoveryMode || _skipReflectionProbes) &&
+          key == "realtimeReflectionProbes") {
+        PaperLogger.info("Vivify SetRenderingSettings: ignoring the map's realtimeReflectionProbes; turn on "
+                         "'Map Reflection Probes' to let maps enable them");
         continue;
       }
       ParseAndApplyRenderSetting(key, *categoryVal, it->value, settings, noDuration);
@@ -1132,6 +1152,123 @@ void Runtime::UpdateRenderSettingAnimations() {
     }
   }
   _renderSettingAnimations.erase(write, _renderSettingAnimations.end());
+}
+
+// With "Map Realtime Shadows" off, realtime shadows are off for the whole
+// Vivify level (0.14.29). Ignoring the map's own shadow settings (0.14.1) was
+// not enough: RSIH's prefab brings directional lights that cast soft shadows,
+// and when the game's quality level already allows shadows those lights cast
+// them anyway -- the shadow map comes out fully shadowed under multiview and
+// the game's note bodies draw black, leaving only the arrows. Saved and put
+// back with the rest of the level's render settings.
+void Runtime::DisableRealtimeShadowsForLevel() {
+  if (!_selectedMapHasVivifyRequirement) return;
+  DisableRealtimeReflectionProbesForLevel();
+  if (GetMapRealtimeShadows()) {
+    PaperLogger.info("Vivify: 'Map Realtime Shadows' is on; the game's shadow quality is left as it is");
+    return;
+  }
+  // Only written once the old value is saved, so the level's end can put it back.
+  SaveRenderSetting("shadows", RenderSettingKind::Int);
+  for (auto const& saved : _savedRenderSettings) {
+    if (saved.name != "shadows" || !std::holds_alternative<int>(saved.saved)) continue;
+    int const before = std::get<int>(saved.saved);
+    ApplyRenderSettingInt("shadows", 0);
+    PaperLogger.info("Vivify: realtime shadows off for this level (the game had shadow quality {}; turn on "
+                     "'Map Realtime Shadows' to keep them)",
+                     before);
+    return;
+  }
+  PaperLogger.info("Vivify: could not read the game's shadow quality; realtime shadows left as they are");
+}
+
+// With "Map Reflection Probes" off (the default), realtime reflection probes
+// are off for the whole Vivify level (0.15.1). A realtime probe renders the
+// scene six more times into a cubemap -- every frame, for Get Your Wish's
+// 512 px HDR probe -- and both maps that crashed on their first frame in
+// 0.15.0 (Get Your Wish, Burning Sands) turn realtime probes on at time 0 and
+// spawn probes. Probes then keep whatever they last held (the skybox, or a
+// baked cubemap), which is also what fixes Get Your Wish's oversized water
+// reflections. Saved and put back with the level's other render settings.
+//
+// 0.15.3: maps may use them again by default, reduced at spawn
+// (ReduceReflectionProbes) unless "Full Reflection Probes" is on; off still
+// with the setting off, and always in crash recovery mode.
+void Runtime::DisableRealtimeReflectionProbesForLevel() {
+  if (GetMapReflectionProbes() && !_recoveryMode && !_skipReflectionProbes) {
+    PaperLogger.info("Vivify: maps may turn realtime reflection probes on ({})",
+                     GetFullReflectionProbes() ? "full quality" : "reduced: 128 px, one face a frame, no HDR");
+    return;
+  }
+  SaveRenderSetting("realtimeReflectionProbes", RenderSettingKind::Bool);
+  for (auto const& saved : _savedRenderSettings) {
+    if (saved.name != "realtimeReflectionProbes" || !std::holds_alternative<bool>(saved.saved)) continue;
+    bool const before = std::get<bool>(saved.saved);
+    ApplyRenderSettingBool("realtimeReflectionProbes", false);
+    PaperLogger.info("Vivify: realtime reflection probes off for this level ({}; the game had them {})",
+                     _recoveryMode           ? "crash recovery mode"
+                     : _skipReflectionProbes ? "they were on when this map last crashed"
+                                             : "'Map Reflection Probes' is off",
+                     before ? "on" : "off");
+    return;
+  }
+  PaperLogger.info("Vivify: could not read realtimeReflectionProbes; left as it is");
+}
+
+// Crash recovery mode (0.15.2) for a map on the recovery list: one that last
+// time crashed, or froze and was backed out of (see VivifyRecovery.hpp). A
+// Quest app cannot be given more memory than the system allows, so this frees
+// what it can before the map starts and keeps the map's own use down:
+//   - assets nothing uses any more are unloaded and the managed heap collected;
+//   - textures load at half resolution (QualitySettings.masterTextureLimit 1:
+//     a quarter of the memory), put back with the level's render settings;
+//   - map effects render at half resolution or less (GetEffectResolutionPercent);
+//   - an effect that was starting when the map went down is skipped.
+void Runtime::EnterRecoveryModeIfNeeded() {
+  _recoveryMode = false;
+  _recoverySkippedBlits.clear();
+  SetRecoveryModeActive(false);
+  // A map that went down right after its own saber trail was created plays
+  // without that trail (0.15.15), with Crash Recovery Mode off as well: the
+  // alternative is a map that crashes every time.
+  _skipMapTrails = !_selectedLevelPath.empty() && Recovery::SkipsMapTrails(_selectedLevelPath);
+  _skipMapTrailsLogged = false;
+  if (_skipMapTrails) {
+    PaperLogger.warn("Vivify crash recovery: this map went down right after its own saber trail was created last "
+                     "time; it plays without that trail (your own trail stays). 'Forget Crash Recovery' in the "
+                     "advanced settings gives it back");
+    NoteVisualProblem("Map saber trail skipped: the game crashed right after it was created last time");
+  }
+  _skipReflectionProbes = !_selectedLevelPath.empty() && Recovery::SkipsReflectionProbes(_selectedLevelPath);
+  if (_skipReflectionProbes) {
+    PaperLogger.warn("Vivify crash recovery: this map went down with realtime reflection probes on last time; it "
+                     "plays with them off. 'Forget Crash Recovery' in the advanced settings gives them back");
+    NoteVisualProblem("Realtime reflection probes off: the game crashed with them on last time");
+  }
+  if (!GetCrashRecovery() || _selectedLevelPath.empty() || !Recovery::InRecovery(_selectedLevelPath)) return;
+  _recoveryMode = true;
+  _recoverySkippedBlits = Recovery::SkippedBlits(_selectedLevelPath);
+  SetRecoveryModeActive(true);
+  std::string skipped;
+  for (auto const& blit : _recoverySkippedBlits) skipped += (skipped.empty() ? "" : ", ") + blit;
+  PaperLogger.warn("Vivify crash recovery: this map did not end cleanly last time, so it plays in recovery mode: "
+                   "unused assets unloaded, textures at half resolution, effects at {}% or less{}{}. 'Forget "
+                   "Crash Recovery' in the advanced settings turns it off for every map",
+                   GetEffectResolutionPercent(), skipped.empty() ? "" : ", skipping ", skipped);
+  NoteVisualProblem("Crash recovery mode: textures at half resolution" +
+                    (skipped.empty() ? std::string() : ", effect(s) skipped: " + skipped));
+  try {
+    UnityEngine::Resources::UnloadUnusedAssets();
+    System::GC::Collect();
+  } catch (...) {
+  }
+  ApplyRenderSettingInt("masterTextureLimit", 1);
+}
+
+bool Runtime::IsRecoverySkippedBlit(std::string const& normalizedAsset) const {
+  if (!_recoveryMode || normalizedAsset.empty()) return false;
+  return std::find(_recoverySkippedBlits.begin(), _recoverySkippedBlits.end(), normalizedAsset) !=
+         _recoverySkippedBlits.end();
 }
 
 void Runtime::RestoreRenderSettings() {

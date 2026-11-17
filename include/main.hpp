@@ -1,6 +1,16 @@
 #pragma once
 
 #include <string>
+#include <string_view>
+
+// The lite build (CMake: VIVIFY_LITE=1, see .github/workflows/build.yml) keeps
+// the feature set of 0.14.7: every setting and behaviour added after it is
+// switched off and hidden. The full build keeps all of them.
+#ifdef VIVIFY_LITE
+inline constexpr bool kLiteBuild = true;
+#else
+inline constexpr bool kLiteBuild = false;
+#endif
 // paper2_scotland2 4.7.0's shared/backtrace.hpp calls std::ifstream but includes
 // only <sstream>, and beatsaber-hook pulls that header in from
 // config-utils.hpp -> utils-functions.h. libc++ used to leak <fstream> through
@@ -18,11 +28,22 @@
 #include "_config.hpp"
 Configuration &getConfig();
 bool GetMultipassRenderingEnabled();
+bool GetExperimentalSeparateEye();
+bool GetUniformTriangleTessellation();
 bool GetVivifyDebugLogging();
+// Send Logs (0.15.20); only acts with Debug Logging on too.
+bool GetSendLogs();
 bool GetDisableBeat0FilmgrainBlit();
 bool GetDisableAllBlits();
 bool GetDisableCreateCameraDepth();
 bool GetDisableCustomNoteVisuals();
+bool GetMapSabers();
+int GetFieldOfViewPercent();
+bool GetGeometryRightEyeCopy();
+int GetVivifyFoveationLevel();
+bool GetGeometryEffectsBothEyes();
+bool GetSaberLightsOnMapObjects();
+bool GetFlatScreenGuard();
 bool GetDisableVisualsInMultiplayer();
 bool GetDisableVRCenterAdjust();
 bool GetConvertPcBundlesOnDevice();
@@ -36,9 +57,70 @@ bool GetAudioLinkEnabled();
 // Whether SetRenderingSettings may turn on realtime shadows (off: the
 // shadow* quality settings in it are ignored).
 bool GetMapRealtimeShadows();
+// The game's own mirrors during a Vivify map; a per-map setting (0.15.18).
+bool GetGameMirrors();
+// Per-map settings (0.15.18): the settings above read the selected map's
+// own value first. Called when a map is selected.
+void SelectSettingsMap(std::string const& levelPath);
+bool GetMapReflectionProbes();
+bool GetFullReflectionProbes();
+bool GetSingleViewMapCameras();
+// Auto Effect Resolution (0.15.3): fed every gameplay frame's duration, reset
+// when a level starts.
+void ReportGameplayFrame(float seconds);
+void ResetAutoEffectResolution();
+// Crash recovery (0.15.2): the setting, and whether the level now playing is
+// in recovery mode (caps the effect resolution at 50%).
+bool GetCrashRecovery();
+bool GetRecoveryModeActive();
+void SetRecoveryModeActive(bool active);
+// Flushes the Vivify logs after every line until `seconds` from now, so a
+// native crash in that window leaves its last step in the files (0.15.1).
+void FlushVivifyLogsEveryLineFor(int seconds);
+// Replay render mode (0.14.9): converted maps get single-screen programs only,
+// for replay and recording renderers. The headset draws none of them.
+bool GetReplayRenderMode();
+// The Replay mod is playing back a replay (watching or rendering), and
+// rendering one to video (0.15.19).
+bool GetReplayPlaying();
+bool GetReplayRendering();
+// Vivify's replay recorder (0.15.22, full build only).
+bool GetRecordReplays();
+bool GetEstimatedLook();
+// A loaded mod's handle by id, ignoring case; nullptr when not loaded.
+void* LoadedModHandle(std::string_view id);
+bool GetRecordReplaysWithBeatLeader();
+// Flushes the session and global logs to disk now.
+void FlushVivifyLogs();
+bool GetReplayRenderModeSetting();
+bool GetReplayModInstalled();
+// "Use Windows Bundle For This Map", by song folder.
+bool GetWindowsBundleForMap(std::string const& levelPath);
+void SetWindowsBundleForMap(std::string const& levelPath, bool enabled);
+// Experimental blit companion (0.14.10, opt-in from 0.14.11).
+bool GetBlitScreenTextureFix();
+// Compile converted maps' shaders in the menu before play (0.14.15).
+bool GetPrepareShadersBeforePlaying();
+// Draw geometry-shader effects without their geometry stage (opt-in, 0.14.17).
+bool GetDrawGeometryShaderEffects();
+// Conservative chart proof, shared by every main/helper/donor conversion.
+namespace Vivify { bool MapAllowsImmutableMaterialFeatures(std::string const& sourceBundlePath); }
 // Whether a shader a map's Quest bundle shipped empty is replaced by the PC
 // build of it, converted (VivifyAssets.cpp).
 bool GetUsePcShadersForEmptyShaders();
+// Fraction (0.25-1) of the eye resolution that map post-process effects render
+// at (0.14.20); 1 renders them at full resolution, as before.
+float GetEffectResolutionScale();
+int GetEffectResolutionPercent();
+// Culling (0.14.23): offscreen animators in a map's prefabs skip their update;
+// the main camera draws nothing beyond GetFarCullingDistance() metres (0: off).
+bool GetOffscreenCulling();
+// Crash guard (0.14.24): whether interrupted loads of a converted bundle count
+// toward its untranslated fallback.
+bool GetCrashGuard();
+// Whether a Quest bundle missing shaders is replaced by its converted PC build.
+bool GetUsePcBundleForMissingShaders();
+int GetFarCullingDistance();
 // Empty when the stand-in shader should be chosen automatically.
 std::string GetStandInShaderName();
 // Whether a map carrying the Vivify requirement still submits its score.

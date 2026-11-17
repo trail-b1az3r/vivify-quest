@@ -34,12 +34,24 @@
 // The implementation is deliberately free of Unity/il2cpp dependencies so it
 // can be unit-tested on a host compiler.
 
+#include <filesystem>
+#include <set>
+#include <map>
 #include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>
+#include <unordered_map>
 
 namespace Vivify::BundleConvert {
+inline constexpr int kShaderConversionVersion = 27;
+inline constexpr std::string_view kRenderDependencyCacheProof = "render-dependencies-v5-unique-asset-identity";
+inline constexpr std::string_view kRenderDependencyAssetPrefix = "assets/__vivify_internal__/render/";
+// Main, companion and explicit-eye caches must agree on translator changes.
+inline std::string ShaderCacheVersion(std::string_view scope) {
+  return std::string(scope) + "-converter" + std::to_string(kShaderConversionVersion) + "-" +
+      std::string(kRenderDependencyCacheProof);
+}
 
 // Unity BuildTarget ids that show up in SerializedFile headers.
 inline constexpr int32_t kBuildTargetStandaloneOSX = 2;
@@ -142,6 +154,36 @@ struct ShaderScan {
   // compile them for the bundle's platform and shipped them empty. Nothing can
   // draw them from this bundle; the PC build of the same map can stand in.
   std::vector<std::string> emptyShaderNames;
+  // GrabPass texture names the bundle's shaders use (0.15.29), e.g. Silent's
+  // Clear Water grabs "_GrabTextureWater" for its reflections.
+  std::vector<std::string> grabTextureNames;
+  // Shaders with GLSL programs of which none is a multiview (two-eye) one:
+  // the shader has no stereo code, so it can only draw one eye at a time.
+  std::vector<std::string> singleViewOnlyShaderNames;
+  // Shaders that have two-eye programs, but whose one-eye programs sample a
+  // texture no two-eye program does: in a headset the shader leaves that part
+  // out. Fall Away's Aeroluna/OverlayUITex lays its HUD texture over the
+  // screen only in its one-eye program.
+  std::vector<std::string> stereoDropsTextureShaderNames;
+  // Per shader, the uniforms its GLSL programs declare as `int`.
+  std::map<std::string, std::set<std::string>> intUniformNames;
+  // Per shader, the textures its GLSL programs sample.
+  std::map<std::string, std::set<std::string>> samplerNamesByShader;
+  // Whether any program names _CameraDepthTexture (GLSL text, a DXBC resource
+  // table, or a parameter blob): only then does the map need the depth
+  // pre-pass that renders it.
+  bool samplesCameraDepth = false;
+  std::vector<std::string> cameraDepthShaderNames;
+  // Conservative stage classification for runtime multiview reuse. Complete
+  // only when every shader has readable parsed pass/program metadata.
+  bool sceneStageInfoComplete = false;
+  std::vector<std::string> separateEyeShaderNames;
+  // Stage presence is not stage translation. GLES links for VS/FS/GS do not
+  // establish that retained DirectX hull/domain programs can run on Quest.
+  std::vector<std::string> tessellationShaderNames;
+  // Union of bindings read by every referenced GLES variant of each shader.
+  // Unknown/unreadable forms use the full mask. Duplicate names are unioned.
+  std::unordered_map<std::string, uint16_t> stereoBindingMasks;
 };
 
 // What a shader-translating conversion did.
@@ -163,6 +205,13 @@ struct ShaderConversion {
   // the per-eye stereo maths that multiview needs.
   int stereoVariantsRemapped = 0;
   int stereoVariantsSplit = 0;  // separateStereoVariants: variants renamed to STEREO_MULTIVIEW_ON
+  int geometryStagesDropped = 0;  // variants linked without the geometry stage they could not use
+  int variantsSkipped = 0;  // program refs of variants a Quest never selects, left untranslated
+  int tessellationShadersUntranslated = 0;
+  int tessellationShadersTranslated = 0;
+  std::vector<std::string> tessellationShaderNamesTranslated;
+  int immutableMaterialShaders = 0;
+  int renderDependencyEntries = 0;
   // Block-compressed textures seen, and how many had their m_IsReadable flag
   // set so the mod can decode them on device. A texture that is already
   // readable, or in a format a Quest can sample, is not counted as marked.
@@ -196,6 +245,11 @@ struct ShaderConversion {
 // means the bundle was rewritten and is loadable, and the counters say how much
 // of it will actually render.
 struct ShaderConversionOptions {
+  bool exposeRenderDependencies = false;
+  // Explicit chart-level authorization is required. The converter additionally
+  // proves the bundle's component/animation/material conditions before use.
+  // Runtime callers must validate the named material flags before rendering.
+  bool specializeImmutableMaterialFeatures = false;
   // Give each stereo-aware shader separate single-view and multiview programs,
   // the way Unity builds its own Quest shaders. The plain variants get a
   // single-view translation of the plain program -- what blits, render
@@ -207,10 +261,72 @@ struct ShaderConversionOptions {
   // program in any single-view framebuffer, which is what made offscreen draws
   // on converted maps flicker or show garbage. Only turn this on when the game
   // actually uses STEREO_MULTIVIEW_ON, or the eye cameras draw nothing.
-  // Applies to Unity 2021 bundles only: a 2019 bundle picks variants through
-  // m_NameIndices, which the rename cannot reach, so it keeps the pre-0.14
-  // behaviour.
+  // A 2021 bundle's keyword is renamed in m_ParsedForm.m_KeywordNames.
   bool separateStereoVariants = false;
+  // Also split Unity 2019 bundles, renaming STEREO_INSTANCING_ON in each
+  // pass's m_NameIndices, which is what a 2019 bundle picks variants by.
+  // (0.14.0-0.14.4 renamed it in the program entries instead, which Unity
+  // does not read, and the eye cameras drew nothing.) Without it a 2019
+  // bundle's plain variants hold multiview programs: right for the headset,
+  // invisible to single-screen cameras such as replay renderers.
+  bool splitUnity2019 = false;
+  // Replay render mode: every program translated single-view, plain variants
+  // keeping their own code. For replay and recording renderers, which draw
+  // through one single-screen camera; the headset's two-eye pass draws none
+  // of it. Overrides the options above.
+  //
+  // (The splits above rename the stereo keyword to STEREO_MULTIVIEW_ON so the
+  // headset picks the multiview variant. On the headset it never did, in
+  // either the 2021 or the 2019 layout: 0.14.0-0.14.4 and 0.14.8 made
+  // converted maps invisible, and 0.14.8's merged Hold My Hand kaleidoscope
+  // drew nothing. The mod no longer turns them on.)
+  bool singleViewOnly = false;
+  // Experimental eye-specific shader companions, not replacement main bundles.
+  // Requires singleViewOnly; -1 is the existing single-view behavior, 0/1
+  // selects the left/right logical eye for the experimental renderer.
+  int singleViewStereoEye = -1;
+  // Donors loaded into the game must not shadow normal shaders by name.
+  // Prefix both serialized shader-name fields; leave ordinary modes alone.
+  bool namespaceEyeShaders = false;
+  // Isolated plain shaders for authored texture cameras (no SPI remapping).
+  bool namespaceSingleViewShaders = false;
+  // Eye-specific post effects draw a mono _MainTex while retaining logical-eye
+  // instructions. Scene materials may use real _MainTex arrays, so keep these
+  // in a separate donor rather than changing every scene shader's sampler.
+  bool singleViewBlit = false;
+  // An isolated donor: replace geometry passes with exact empty multiview
+  // programs only if all geometry variants prove a perspective-camera early
+  // return; retain ordinary passes as native multiview programs. Other shaders
+  // remain isolated ordinary eye-zero donors.
+  bool nativePerspectiveDonor = false;
+  // Optional, default off. Translate the narrowly verified uniform
+  // triangle HS/DS pair only in isolated explicit scene-eye donors. A failed
+  // tessellation shader rejects the entire requested output, never emits a
+  // partial VS/GS approximation. Native multiview and blit donors are excluded.
+  bool uniformTriangleTessellation = false;
+  // Give the output's internal files ("CAB-...") new names, so it can be
+  // loaded beside the main conversion of the same bundle. Its textures do not
+  // load (their streams name the old files); it is for its shaders.
+  bool renameArchiveFiles = false;
+  // Link a variant whose geometry stage cannot run (multiview forbids one)
+  // without it, adding the object-to-clip transform when the geometry stage
+  // did the projection, instead of leaving the variant on DirectX. Off in the
+  // mod since 0.14.13: maps looked better and started faster without it.
+  bool dropUntranslatableGeometry = false;
+  // Link every variant with a geometry stage without it, translatable or not
+  // (0.15.9). A geometry stage in a two-eye program only runs for both eyes
+  // where the driver has EXT_multiview_tessellation_geometry_shader; the
+  // Quest's does not, and such effects (grass, fur, wireframes) drew in the
+  // left eye only. Without the stage they are the plain mesh, in both eyes.
+  bool dropGeometryStages = false;
+  // Geometry stages under multiview draw a copy of their output into the
+  // right eye (GlslOptions::geometryRightEyeCopy, 0.15.12).
+  bool geometryRightEyeCopy = false;
+  // Leave untranslated the variants a Quest never selects in a converted
+  // map: GPU instancing (turned off on converted materials) and unsplit
+  // single-pass stereo. Most of a PC bundle's programs; far less to load and
+  // compile. Not for donor builds, whose materials keep their instancing.
+  bool skipQuestUnusedVariants = false;
 };
 
 ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
@@ -253,6 +369,22 @@ ShaderMerge MergeShadersInto(std::string const& questPath, std::string const& do
 std::string DescribeShaderScan(ShaderScan const& scan);
 
 std::string_view StatusText(Status status);
+
+// The converter's revision: bumped whenever a change alters what it writes,
+// so a cached conversion from an older revision is redone. The mod keys its
+// cache on it; the standalone library reports it (vivify_convert_revision).
+inline constexpr int kConverterRevision = kShaderConversionVersion;
+
+// A path given as UTF-8 text. On Windows a narrow std::string path is read in
+// the system code page, so a non-ASCII folder name (a map title, a user name)
+// could not be opened; elsewhere this is the path as given.
+inline std::filesystem::path Utf8Path(std::string const& text) {
+#ifdef _WIN32
+  return std::filesystem::path(std::u8string(text.begin(), text.end()));
+#else
+  return std::filesystem::path(text);
+#endif
+}
 std::string BuildTargetName(int32_t target);
 
 }

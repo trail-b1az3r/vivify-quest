@@ -1,11 +1,13 @@
 #include "VivifyDxbc.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <climits>
 #include <deque>
 #include <cstdio>
 #include <cstring>
 #include <deque>
+#include <map>
 #include <set>
 
 namespace Vivify::Dxbc {
@@ -1042,12 +1044,20 @@ std::string DisassembleProgram(Program const& program) {
 // GLSL ES emission
 // ---------------------------------------------------------------------------
 //
-// The register model is deliberately the naive one: every DXBC temp becomes a
-// vec4 and integer operations round-trip through floatBitsToInt/intBitsToFloat.
-// DXBC registers are typeless -- the same four bytes are read as float by one
-// instruction and as int by the next -- and any model that tries to infer a
-// type per register has to be right every time or it silently miscompiles. The
-// bit-cast form is always right, and the driver's optimiser removes the casts.
+// The register model is deliberately the naive one: DXBC registers are
+// typeless -- the same four bytes are read as float by one instruction and as
+// int by the next -- and any model that tries to infer a type per register has
+// to be right every time or it silently miscompiles. So every temp holds raw
+// bits, as an ivec4, and each instruction reinterprets them: a float read is
+// intBitsToFloat(r0.x), an int read is r0.x itself, a float result is stored
+// as floatBitsToInt(...).
+//
+// Until 0.14.22 temps were vec4s holding integers as float bits. GLSL ES lets
+// a GPU flush denormal floats to zero, and Adreno does: the integers 1, 2, 3
+// are denormals as floats, so a loop counter stored that way never got past
+// zero and the shader looped forever -- a GPU hang on the first frame that drew
+// it, which is how every converted map froze on start. Integers now never pass
+// through a float variable. (IsBitsRegister names what is stored this way.)
 //
 // The output version is not fixed. GLSL ES 3.00 covers an ordinary vertex or
 // fragment shader; textureGather, uaddCarry, imulExtended, multisample fetches
@@ -1085,6 +1095,36 @@ std::string FormatIntLiteral(uint32_t bits) {
   // unary operator applied to a positive constant that does not fit.
   if (value == INT32_MIN) return "(-2147483647 - 1)";
   return std::to_string(value);
+}
+
+// Registers that hold raw bits as ivec4s (see the register model above): the
+// temps r#, the indexable temps x#[...], and the integer built-in aliases.
+bool IsBitsRegister(std::string const& name) {
+  if (name.size() >= 2 && (name[0] == 'r' || name[0] == 'x') && name[1] >= '0' && name[1] <= '9') return true;
+  static constexpr std::string_view kAliases[] = {
+      "vFrontFace", "vVertexID", "vInstanceID", "vRTArrayIndex", "vPrimitiveID", "vSampleIndex",
+      "vGsInstanceID", "vThreadID", "vThreadGroupID", "vThreadIDInGroup", "vThreadIDInGroupFlattened"};
+  for (auto alias : kAliases) {
+    if (name == alias) return true;
+  }
+  return false;
+}
+
+// The argument of `function(...)` when that call is the whole of expression,
+// so a cast this emitter wrapped around a value can be taken off again rather
+// than undone by its inverse (which would pass the bits through a float).
+std::optional<std::string> UnwrapCall(std::string const& expression, std::string_view function) {
+  if (expression.size() < function.size() + 2 || expression.compare(0, function.size(), function) != 0 ||
+      expression[function.size()] != '(' || expression.back() != ')') {
+    return std::nullopt;
+  }
+  int depth = 0;
+  for (size_t i = function.size(); i < expression.size(); i++) {
+    if (expression[i] == '(') depth++;
+    if (expression[i] == ')') depth--;
+    if (depth == 0 && i != expression.size() - 1) return std::nullopt;
+  }
+  return expression.substr(function.size() + 1, expression.size() - function.size() - 2);
 }
 
 int PopCount4(uint8_t mask) {
@@ -1131,6 +1171,7 @@ struct MappedTexture {
   int coordinateComponents = 0;
   bool comparison = false;  // declared as a shadow sampler
   bool multisample = false;
+  bool singleLayerArray = false;
 };
 
 // A read/write resource: a D3D UAV, or a structured/raw shader resource. These
@@ -1195,6 +1236,18 @@ class GlslEmitter {
   std::string DestName(Operand const& operand, uint8_t& mask);
   void WriteDest(Instruction const& instruction, Operand const& dest, std::string const& expression);
   void Line(std::string const& text);
+  // EmitVertex, preceded for a right-eye copy by the move into that eye.
+  void EmitVertexLine() {
+    if (EyeCopyActive()) {
+      Line("if (vivify_EyeCopy != 0) gl_Position = vivify_LeftToRight * gl_Position;");
+      Line("gl_Layer = vivify_EyeCopy;");
+    }
+    Line("EmitVertex();");
+  }
+  bool EyeCopyActive() const {
+    return _options.multiview && _options.geometryRightEyeCopy && _program.stage == Stage::Geometry;
+  }
+  uint32_t _gsInvocations = 1;
 
   MappedTexture const* TextureFor(Operand const& resource);
   MappedStorage const* StorageFor(Operand const& operand);
@@ -1204,6 +1257,7 @@ class GlslEmitter {
   SignatureElement const* FindSignature(std::vector<SignatureElement> const& signature,
                                         uint32_t registerIndex) const;
   std::string VaryingName(SignatureElement const& element, bool vertexInput) const;
+  std::string OutputVaryingName(SignatureElement const& element) const;
   std::string InterpolationQualifier(uint32_t registerIndex) const;
 
   Program const& _program;
@@ -1218,6 +1272,9 @@ class GlslEmitter {
   bool _failed = false;
   std::string _error;
   int _version = 300;
+  // Geometry pass-through varyings, input name -> renamed output name (see
+  // GlslResult::renamedVaryings).
+  std::map<std::string, std::string> _geometryPassThrough;
 
   std::vector<std::vector<MappedVariable>> _constantBuffers;  // by cb bind point
   std::vector<MappedTexture> _textures;                       // by t# register
@@ -1250,6 +1307,7 @@ class GlslEmitter {
   std::string _stereoEyeIndexType;  // set when unity_StereoEyeIndex is fed from the view
   bool _writesRTArrayIndex = false;
   bool _stereoInstanced = false;
+  bool _emitViewIndexVarying = false;
   bool _declaredRuntimeInstancingSize = false;
   // Thread-group shared memory, one entry per declared block.
   struct SharedBlock {
@@ -1284,6 +1342,17 @@ std::string GlslEmitter::VaryingName(SignatureElement const& element, bool verte
     if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'))) c = '_';
   }
   return (vertexInput ? "in_" : "vs_") + name + std::to_string(element.semanticIndex);
+}
+
+// A geometry program's pass-through output takes gs_ rather than vs_ (see
+// _geometryPassThrough); every other output keeps its name.
+std::string GlslEmitter::OutputVaryingName(SignatureElement const& element) const {
+  std::string name = VaryingName(element, false);
+  if (_program.stage == Stage::Geometry) {
+    auto renamed = _geometryPassThrough.find(name);
+    if (renamed != _geometryPassThrough.end()) return renamed->second;
+  }
+  return name;
 }
 
 // dcl_input_ps carries the interpolation mode in its opcode controls. Getting
@@ -1459,7 +1528,8 @@ bool GlslEmitter::BuildConstantBuffers() {
         entry.scalarDeclaration = columns == 1;
         entry.declaration = "uniform " + VecType(static_cast<int>(columns), prefix) + " " +
                             entry.name + ";";
-        if (_options.multiview && variable.name == "unity_StereoEyeIndex" && columns == 1) {
+        if ((_options.multiview || _options.singleViewStereoEye >= 0) &&
+            variable.name == "unity_StereoEyeIndex" && columns == 1) {
           // Single-pass (double-wide) stereo, what PC Beat Saber used before
           // 1.29.4, draws each eye separately and tells the shader which one
           // through this uniform. Under multiview both eyes are one draw and
@@ -1578,10 +1648,16 @@ bool GlslEmitter::BuildResources() {
     MappedTexture texture;
     texture.name = binding.name;
     texture.dimension = binding.dimension;
+    if ((binding.dimension == 5 || binding.dimension == 7) &&
+        std::find(_options.singleViewTextures.begin(), _options.singleViewTextures.end(), binding.name) !=
+            _options.singleViewTextures.end()) {
+      texture.dimension = binding.dimension == 5 ? 4 : 6;
+      texture.singleLayerArray = true;
+    }
     texture.comparison = comparisonTextures.count(binding.bindPoint) != 0;
 
     std::string shape;
-    switch (binding.dimension) {
+    switch (texture.dimension) {
       case 4: shape = "2D"; texture.coordinateComponents = 2; break;
       case 5: shape = "2DArray"; texture.coordinateComponents = 3; break;
       case 6:
@@ -1669,8 +1745,8 @@ bool GlslEmitter::BuildSignatures() {
   if (stage == Stage::Hull || stage == Stage::Domain) {
     // A hull shader is not one program: it is a control-point phase plus fork
     // and join phases with their own instruction streams and their own
-    // register spaces. Translating it wrong would be worse than not translating
-    // it, and no Vivify map has ever needed one on this target.
+    // register spaces. These stages occur in real maps (including Yoi's grass).
+    // Report their retained DirectX stages separately from linked VS/FS/GS.
     Fail("tessellation (" + std::string(StageName(stage)) +
          ") programs are not translated; the shader keeps its DirectX programs");
     return false;
@@ -1701,8 +1777,15 @@ bool GlslEmitter::BuildSignatures() {
       case kSvRenderTargetArrayIndex:
         // The eye index in PC single-pass instanced stereo. It is a built-in
         // here too -- gl_ViewID_OVR under multiview, eye 0 otherwise -- bound
-        // in the prologue.
+        // in the prologue. A geometry stage reads it too: the vertex stage's
+        // layer write is a dummy here, so under multiview the eye comes from
+        // the view, handed over by the vertex stage as vivify_ViewIndex
+        // (gl_ViewID_OVR is vertex and fragment only); single-view is eye 0.
         if (isPixel) continue;
+        if (isGeometry) {
+          if (_options.multiview) _declarations += "flat in highp int vivify_ViewIndex[];\n";
+          continue;
+        }
         Fail("input semantic '" + element.semanticName +
              "' is SV_RenderTargetArrayIndex outside a pixel program");
         return false;
@@ -1717,22 +1800,16 @@ bool GlslEmitter::BuildSignatures() {
       // A geometry shader reads its inputs per vertex, so every varying is an
       // array sized by the input primitive.
       //
-      // Its outputs feed the fragment stage, which was compiled separately and
-      // expects the same vs_SEMANTIC# names the vertex stage writes -- so a
-      // geometry shader that passes a semantic straight through would have to
-      // declare one name as both an input and an output. That is not legal
-      // GLSL, and renaming either side breaks the link with a program this
-      // translator never sees. Programs are translated one at a time, so the
-      // pipeline-wide rename the name scheme would need is not available; the
-      // collision is reported instead of guessed at.
+      // Its outputs feed the fragment stage, and the vertex stage writes the
+      // same vs_SEMANTIC# name it reads, so a semantic the geometry stage
+      // passes straight through would be one name as both input and output,
+      // which is not legal GLSL. The output takes gs_ instead, and the link
+      // renames the fragment stage's input to match (LinkStages). Refusing this
+      // left the whole variant on DirectX: grey or missing geometry.
       for (auto const& output : _program.outputSignature) {
         if (output.systemValueType != kSvUndefined) continue;
         if (VaryingName(output, false) != name) continue;
-        Fail("this geometry program passes '" + element.semanticName +
-             std::to_string(element.semanticIndex) +
-             "' through, which would need one varying name to be both its input and its "
-             "output; translating stages separately cannot rename it on both sides");
-        return false;
+        _geometryPassThrough[name] = "gs_" + name.substr(3);
       }
       _declarations += "in vec4 " + name + "[];\n";
     } else {
@@ -1763,8 +1840,33 @@ bool GlslEmitter::BuildSignatures() {
           _writesRTArrayIndex = true;
           _stereoInstanced = true;
           _declarations += "vec4 vivify_RTArrayIndexOut;\n";
+          if (_options.multiview) {
+            // For a geometry stage that reads the layer back as the eye:
+            // gl_ViewID_OVR does not exist there, so the view comes through
+            // this varying. A fragment stage never declares it, and an
+            // output nothing reads is legal and dropped at link (0.15.1).
+            _declarations += "flat out highp int vivify_ViewIndex;\n";
+            _emitViewIndexVarying = true;
+          }
           continue;
         }
+        if (_options.singleViewStereoEye >= 0) {
+          // A donor drawing into one ordinary 2D eye target must not route
+          // that output to array layer 1. Native multiview uses upstream's
+          // layer routing below; explicit-eye donors keep ordinary output.
+          _writesRTArrayIndex = true;
+          _declarations += "vec4 vivify_RTArrayIndexOut;\n";
+          continue;
+        }
+        // A geometry stage writes the layer the program computed for its eye,
+        // under multiview too (0.15.11). OVR_multiview leaves a geometry stage
+        // undefined; on the Quest's driver it runs, and its primitives went to
+        // the left eye whatever it did: with gl_Layer = 0 before 0.15.1
+        // (the eye came from an instance ID that was never remapped), and with
+        // no layer write after it (the driver then uses layer 0). Since 0.15.4
+        // the vertex stage's instance ID carries the view, so the eye the
+        // program computes is the right one, and writing it is what routes
+        // each primitive to its eye.
         if (!Require(320, "SV_RenderTargetArrayIndex")) return false;
         continue;  // gl_Layer
       case kSvClipDistance:
@@ -1782,12 +1884,24 @@ bool GlslEmitter::BuildSignatures() {
     }
 
     if (isPixel) {
+      // Depth and coverage have no render target: their signature entry sits in
+      // register 0xFFFFFFFF, and some bundles leave its system-value type
+      // undefined, so the switch above does not catch them. They are written
+      // through gl_FragDepth / gl_SampleMask by operand type. Declared here they
+      // became layout(location = 4294967295), which no GLSL ES compiler takes --
+      // Through The Screen's depth-only AreaLit shader drew nothing (0.15.0).
+      std::string lower = element.semanticName;
+      std::transform(lower.begin(), lower.end(), lower.begin(),
+                     [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+      if (element.registerIndex == 0xFFFFFFFFu || lower.rfind("sv_depth", 0) == 0 || lower == "sv_coverage") {
+        continue;
+      }
       _declarations += "layout(location = " + std::to_string(element.registerIndex) +
                        ") out vec4 " + element.semanticName +
                        std::to_string(element.semanticIndex) + ";\n";
       continue;
     }
-    _declarations += "out vec4 " + VaryingName(element, false) + ";\n";
+    _declarations += "out vec4 " + OutputVaryingName(element) + ";\n";
   }
   return !_failed;
 }
@@ -1879,6 +1993,7 @@ bool GlslEmitter::BuildStageDeclarations() {
       }
       case OP_DCL_GS_INSTANCE_COUNT:
         if (!instruction.extra.empty() && instruction.extra[0] > 1) {
+          _gsInvocations = instruction.extra[0];
           _declarations += "layout(invocations = " + std::to_string(instruction.extra[0]) + ") in;\n";
         }
         break;
@@ -2000,7 +2115,7 @@ std::string GlslEmitter::RegisterName(Operand const& operand) {
       if (_program.stage == Stage::Pixel) {
         return element->semanticName + std::to_string(element->semanticIndex);
       }
-      return VaryingName(*element, false);
+      return OutputVaryingName(*element);
     }
     case kOperandOutputDepth:
     case kOperandOutputDepthGreaterEqual:
@@ -2217,6 +2332,7 @@ std::string GlslEmitter::SrcBase(Operand const& operand, uint8_t mask) {
     if (!(mask & (1u << i))) continue;
     swizzle += kComponentNames[operand.numComponents == 1 ? 0 : (operand.swizzle[i] & 0x3u)];
   }
+  if (IsBitsRegister(name)) return "intBitsToFloat(" + name + swizzle + ")";
   return name + swizzle;
 }
 
@@ -2255,7 +2371,11 @@ std::string GlslEmitter::SrcInt(Operand const& operand, uint8_t mask) {
   } else {
     std::string const base = SrcBase(operand, mask);
     if (_failed) return {};
-    text = "floatBitsToInt(" + base + ")";
+    if (auto bits = UnwrapCall(base, "intBitsToFloat")) {
+      text = *bits;
+    } else {
+      text = "floatBitsToInt(" + base + ")";
+    }
   }
   switch (operand.modifier) {
     case Modifier::Neg: return "(-" + text + ")";
@@ -2285,6 +2405,8 @@ std::string GlslEmitter::SrcUint(Operand const& operand, uint8_t mask) {
   }
   std::string const base = SrcBase(operand, mask);
   if (_failed) return {};
+  if (auto bits = UnwrapCall(base, "intBitsToFloat")) return VecType(count, "u") + "(" + *bits + ")";
+  if (auto bits = UnwrapCall(base, "uintBitsToFloat")) return *bits;
   return "floatBitsToUint(" + base + ")";
 }
 
@@ -2332,6 +2454,19 @@ void GlslEmitter::WriteDest(Instruction const& instruction, Operand const& dest,
   std::string swizzle = ".";
   for (int i = 0; i < 4; i++) {
     if (mask & (1u << i)) swizzle += kComponentNames[i];
+  }
+  if (IsBitsRegister(name)) {
+    // Stored as bits: an integer result as it is, a float one bit-cast.
+    std::string bits;
+    if (auto inner = UnwrapCall(value, "intBitsToFloat"); inner && !instruction.saturate) {
+      bits = *inner;
+    } else if (auto innerUint = UnwrapCall(value, "uintBitsToFloat"); innerUint && !instruction.saturate) {
+      bits = VecType(PopCount4(mask), "i") + "(" + *innerUint + ")";
+    } else {
+      bits = "floatBitsToInt(" + value + ")";
+    }
+    Line(name + swizzle + " = " + bits + ";");
+    return;
   }
   Line(name + swizzle + " = " + value + ";");
 }
@@ -2464,6 +2599,40 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
     if (operands.size() <= index) return 0x1;
     return operands[index].numComponents == 4 ? operands[index].mask : 0x1;
   };
+  // Whether a typeless copy (mov, movc) of operands [first, first + count)
+  // into operands[0] should move bits rather than floats: unsaturated, the
+  // sources unmodified (a modifier makes it float arithmetic), and either the
+  // destination a bits register or a source a literal.
+  auto copiesBits = [&](size_t first, size_t count) {
+    if (instruction.saturate || operands.empty() || operands.size() < first + count) return false;
+    bool literal = false;
+    for (size_t i = first; i < first + count; i++) {
+      if (operands[i].modifier != Modifier::None) return false;
+      if (operands[i].type == kOperandImmediate32) literal = true;
+    }
+    if (literal) return true;
+    if (operands[0].type == kOperandTemp || operands[0].type == kOperandIndexableTemp) return true;
+    return false;
+  };
+  // selector ? whenSet : whenClear, per component, on integer vectors (GLSL ES
+  // 3.00 has no mix() for them). Vectors go through locals so each operand is
+  // evaluated once.
+  auto selectBits = [&](std::string const& selector, std::string const& whenSet, std::string const& whenClear,
+                        int count, char const* tag) -> std::string {
+    if (count == 1) return "((" + selector + " != 0) ? " + whenSet + " : " + whenClear + ")";
+    std::string const suffix = std::string(tag) + std::to_string(instruction.tokenOffset);
+    std::string const type = VecType(count, "i");
+    Line(type + " sel_" + suffix + " = " + selector + ";");
+    Line(type + " set_" + suffix + " = " + whenSet + ";");
+    Line(type + " clr_" + suffix + " = " + whenClear + ";");
+    std::string text = type + "(";
+    for (int i = 0; i < count; i++) {
+      std::string const c(1, kComponentNames[i]);
+      if (i != 0) text += ", ";
+      text += "(sel_" + suffix + "." + c + " != 0) ? set_" + suffix + "." + c + " : clr_" + suffix + "." + c;
+    }
+    return text + ")";
+  };
 
   // The per-component ALU shape: every source is read with the destination's
   // mask, so a masked write only evaluates the components it writes.
@@ -2553,8 +2722,8 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
 
   // ---- texture fetches ----------------------------------------------------
   auto emitSample = [&](char const* function, char const* offsetFunction, int extraOperand,
-                        bool comparison) {
-    if (operands.size() < 4) {
+                        bool comparison, bool levelZero = false) {
+    if (operands.size() < (comparison ? 5u : 4u)) {
       Fail("a texture fetch with too few operands");
       return;
     }
@@ -2573,6 +2742,28 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       Fail("'" + OpcodeName(opcode) + "' filters texture '" + texture->name +
            "', which GLSL ES can only fetch by texel");
       return;
+    }
+    bool const implicitArrayOffset = comparison && !levelZero && texture->dimension == 5 && instruction.hasSampleOffsets;
+    if (implicitArrayOffset) {
+      // Core ES has no textureOffset(sampler2DArrayShadow, ...). Preserve
+      // implicit fragment LOD through its explicit-gradient offset overload;
+      // non-fragment implicit sampling uses the base image instead.
+      function = "textureGrad"; offsetFunction = "textureGradOffset";
+    }
+    if (levelZero) {
+      // sample_c_lz ignores derivatives. Ordinary texture() would choose a
+      // different mip as the screen/camera moves. The 2D shadow overload has
+      // explicit LOD; array/cube shadow overloads use zero gradients to select
+      // the base image without requiring texture_shadow_lod extensions.
+      if (texture->dimension == 4) {
+        function = "textureLod"; offsetFunction = "textureLodOffset";
+      } else if (texture->dimension == 5 || texture->dimension == 9) {
+        function = "textureGrad";
+        offsetFunction = texture->dimension == 5 ? "textureGradOffset" : nullptr;
+      } else {
+        Fail("level-zero comparison on this texture shape has no core GLSL ES form");
+        return;
+      }
     }
     int coordinateComponents = texture->coordinateComponents;
     if (comparison) {
@@ -2608,6 +2799,25 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
     } else {
       call += SrcFloat(operands[1], static_cast<uint8_t>((1u << coordinateComponents) - 1u));
     }
+    if (levelZero) {
+      if (texture->dimension == 4) call += ", 0.0";
+      else {
+        auto const zero = texture->dimension == 9 ? "vec3(0.0)" : "vec2(0.0)";
+        call += std::string(", ") + zero + ", " + zero;
+      }
+    } else if (implicitArrayOffset) {
+      if (_program.stage == Stage::Pixel) {
+        auto const uv = SrcFloat(operands[1], 0x3);
+        call += ", dFdx(" + uv + "), dFdy(" + uv + ")";
+      } else call += ", vec2(0.0), vec2(0.0)";
+    }
+    // textureOffset(..., offset, bias) differs from
+    // textureLodOffset(..., lod, offset). Preserve each overload's order.
+    int offsetComponents = texture->coordinateComponents;
+    if (texture->dimension == 5 || texture->dimension == 7) offsetComponents = 2;
+    if (texture->dimension == 10) offsetComponents = 3;
+    auto const offset = SampleOffsetArgument(instruction, offsetComponents);
+    if (opcode == OP_SAMPLE_B) call += offset;
     if (extraOperand >= 0) {
       if (operands.size() <= static_cast<size_t>(extraOperand)) {
         Fail("a texture fetch is missing its lod/bias operand");
@@ -2618,11 +2828,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
     // The offset is a separate argument in GLSL and rides on the instruction
     // in DXBC. Its component count follows the texture's addressable
     // dimensions, not the coordinate's -- an array layer takes no offset.
-    int offsetComponents = texture->coordinateComponents;
-    if (texture->dimension == 5) offsetComponents = 2;   // Texture2DArray
-    if (texture->dimension == 7) offsetComponents = 2;   // Texture2DMSArray
-    if (texture->dimension == 10) offsetComponents = 3;  // TextureCubeArray
-    call += SampleOffsetArgument(instruction, offsetComponents);
+    if (opcode != OP_SAMPLE_B) call += offset;
     call += ")";
 
     uint8_t const mask = destMask();
@@ -2636,7 +2842,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
   };
 
   auto emitGather = [&](bool comparison) {
-    if (operands.size() < 4) {
+    if (operands.size() < (comparison ? 5u : 4u)) {
       Fail("a gather4 with too few operands");
       return;
     }
@@ -2659,6 +2865,9 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
     std::string call = instruction.hasSampleOffsets ? "textureGatherOffset(" : "textureGather(";
     call += texture->name + ", " +
             SrcFloat(operands[1], static_cast<uint8_t>((1u << texture->coordinateComponents) - 1u));
+    // Shadow gather overloads take their comparison before the texel offset;
+    // non-shadow overloads take the selected channel after it.
+    if (comparison) call += ", " + ScalarFloat(operands[operands.size() - 1]);
     if (instruction.hasSampleOffsets) {
       int offsetComponents = texture->coordinateComponents;
       if (texture->dimension == 5) offsetComponents = 2;   // Texture2DArray
@@ -2668,9 +2877,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       }
       call += SampleOffsetArgument(instruction, offsetComponents);
     }
-    if (comparison) {
-      call += ", " + ScalarFloat(operands[operands.size() - 1]);
-    } else {
+    if (!comparison) {
       // Without a comparison, the channel gathered is the resource operand's
       // first swizzle slot: gather4 reads one channel of four neighbouring
       // texels, and the swizzle is how D3D says which.
@@ -2836,7 +3043,14 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
   switch (opcode) {
     // ---- moves and float arithmetic ----------------------------------------
     case OP_MOV:
-      WriteDest(instruction, operands[0], SrcFloat(operands[1], destMask()));
+      // mov copies bits. A copy into a bits register, or of a literal, goes
+      // through the integer view: as a float literal, -1 (DXBC's "true") is a
+      // NaN with no GLSL spelling and 1 is a denormal a GPU may flush to zero.
+      if (copiesBits(1, 1)) {
+        WriteDest(instruction, operands[0], "intBitsToFloat(" + SrcInt(operands[1], destMask()) + ")");
+      } else {
+        WriteDest(instruction, operands[0], SrcFloat(operands[1], destMask()));
+      }
       break;
     case OP_ADD: binary("+"); break;
     case OP_MUL: binary("*"); break;
@@ -2901,6 +3115,12 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       uint8_t const mask = destMask();
       int const count = PopCount4(mask);
       std::string const selector = SrcInt(operands[1], mask);
+      if (copiesBits(2, 2)) {
+        WriteDest(instruction, operands[0],
+                  "intBitsToFloat(" + selectBits(selector, SrcInt(operands[2], mask), SrcInt(operands[3], mask),
+                                                 count, "movc") + ")");
+        break;
+      }
       std::string const a = SrcFloat(operands[2], mask);
       std::string const b = SrcFloat(operands[3], mask);
       std::string expression;
@@ -3063,6 +3283,22 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       std::string const selector = SrcInt(operands[2], maskA);
       std::string const first = "swapA" + std::to_string(instruction.tokenOffset);
       std::string const second = "swapB" + std::to_string(instruction.tokenOffset);
+      if (!instruction.saturate && operands.size() > 4 && operands[3].modifier == Modifier::None &&
+          operands[4].modifier == Modifier::None) {
+        // As bits, like mov: see OP_MOV.
+        Line(VecType(countA, "i") + " " + first + " = " + SrcInt(operands[3], maskA) + ";");
+        Line(VecType(PopCount4(maskB), "i") + " " + second + " = " + SrcInt(operands[4], maskB) + ";");
+        if (operands[0].type != kOperandNull) {
+          WriteDest(instruction, operands[0],
+                    "intBitsToFloat(" + selectBits(selector, second, first, countA, "swapc0") + ")");
+        }
+        if (operands[1].type != kOperandNull) {
+          std::string const selectorB = SrcInt(operands[2], maskB);
+          WriteDest(instruction, operands[1],
+                    "intBitsToFloat(" + selectBits(selectorB, first, second, PopCount4(maskB), "swapc1") + ")");
+        }
+        break;
+      }
       Line(VecType(countA, "") + " " + first + " = " + SrcFloat(operands[3], maskA) + ";");
       Line(VecType(PopCount4(maskB), "") + " " + second + " = " + SrcFloat(operands[4], maskB) +
            ";");
@@ -3210,10 +3446,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       break;
     case OP_SAMPLE_C: emitSample("texture", "textureOffset", -1, true); break;
     case OP_SAMPLE_C_LZ:
-      // There is no textureLod for a 2D shadow sampler in GLSL ES, and
-      // sample_c_lz always reads mip zero. In a fragment shader the ordinary
-      // fetch is the closest thing and is what Unity's own translator emits.
-      emitSample("texture", "textureOffset", -1, true);
+      emitSample("texture", "textureOffset", -1, true, true);
       break;
     case OP_SAMPLE_D: {
       if (operands.size() < 6) {
@@ -3324,7 +3557,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
         if (i < sizeComponents) {
           components[i] = sizeComponents == 1 ? size : size + "." + kComponentNames[i];
         } else {
-          components[i] = i == 3 ? "1" : "0";
+          components[i] = (i == 3 || (i == 2 && texture->singleLayerArray)) ? "1" : "0";
         }
       }
       uint8_t const mask = destMask();
@@ -3530,7 +3763,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
     // ---- geometry shader output ---------------------------------------------
     case OP_EMIT:
     case OP_EMIT_STREAM:
-      Line("EmitVertex();");
+      EmitVertexLine();
       break;
     case OP_CUT:
     case OP_CUT_STREAM:
@@ -3538,7 +3771,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       break;
     case OP_EMITTHENCUT:
     case OP_EMITTHENCUT_STREAM:
-      Line("EmitVertex();");
+      EmitVertexLine();
       Line("EndPrimitive();");
       break;
 
@@ -3659,6 +3892,11 @@ bool GlslEmitter::EmitBody() {
 
 GlslResult GlslEmitter::Run() {
   GlslResult result;
+  if (_options.singleViewStereoEye < -1 || _options.singleViewStereoEye > 1 ||
+      (_options.multiview && _options.singleViewStereoEye >= 0)) {
+    result.error = "singleViewStereoEye must be -1, 0 or 1 and cannot be combined with multiview";
+    return result;
+  }
   if (!_program.ok) {
     result.error = _program.error.empty() ? "the program did not parse" : _program.error;
     return result;
@@ -3687,7 +3925,7 @@ GlslResult GlslEmitter::Run() {
                      " temporary registers";
       return result;
     }
-    std::string line = "vec4 ";
+    std::string line = "ivec4 ";
     for (uint32_t i = 0; i < _program.tempCount; i++) {
       if (i != 0) line += ", ";
       line += "r" + std::to_string(i);
@@ -3699,7 +3937,7 @@ GlslResult GlslEmitter::Run() {
       result.error = "indexable temp x" + std::to_string(temp.index) + " has an impossible size";
       return result;
     }
-    addPrologue("vec4 x" + std::to_string(temp.index) + "[" + std::to_string(temp.arraySize) + "];");
+    addPrologue("ivec4 x" + std::to_string(temp.index) + "[" + std::to_string(temp.arraySize) + "];");
   }
   // The built-in aliases. Every one of these is a GLSL built-in of some scalar
   // or integer type, and the register model reads registers as vec4s, so each
@@ -3707,42 +3945,69 @@ GlslResult GlslEmitter::Run() {
   if (_usedFrontFace) {
     // HLSL's front-face input is a bool that the bytecode reads as an
     // all-bits-set integer, which is not what a GLSL bool converts to.
-    addPrologue("vec4 vFrontFace = vec4(intBitsToFloat(gl_FrontFacing ? -1 : 0));");
+    addPrologue("ivec4 vFrontFace = ivec4(gl_FrontFacing ? -1 : 0);");
   }
-  if (_usedVertexID) addPrologue("vec4 vVertexID = intBitsToFloat(ivec4(gl_VertexID));");
+  if (_usedVertexID) addPrologue("ivec4 vVertexID = ivec4(gl_VertexID);");
   if (_usedInstanceID) {
-    if (_options.multiview && _stereoInstanced) {
+    bool const spi = _stereoInstanced || (_options.stereoInstancedProgram && _program.stage == Stage::Vertex);
+    if (_options.singleViewStereoEye >= 0 && spi) {
+      addPrologue("ivec4 vInstanceID = ivec4(gl_InstanceID * 2 + " +
+                  std::to_string(_options.singleViewStereoEye) + ");");
+    } else if (_options.multiview && spi) {
       // One multiview draw per real instance stands in for SPI's two, so the
       // SPI numbering is rebuilt: eye in bit 0, real instance above it.
-      addPrologue("vec4 vInstanceID = intBitsToFloat(ivec4(gl_InstanceID * 2 + int(gl_ViewID_OVR)));");
+      addPrologue("ivec4 vInstanceID = ivec4(gl_InstanceID * 2 + int(gl_ViewID_OVR));");
     } else {
-      addPrologue("vec4 vInstanceID = intBitsToFloat(ivec4(gl_InstanceID));");
+      addPrologue("ivec4 vInstanceID = ivec4(gl_InstanceID);");
     }
   }
   if (!_stereoEyeIndexType.empty()) {
-    addPrologue("unity_StereoEyeIndex = " + _stereoEyeIndexType + "(gl_ViewID_OVR);");
+    std::string const eye = _options.singleViewStereoEye >= 0
+                                ? std::to_string(_options.singleViewStereoEye) : "gl_ViewID_OVR";
+    addPrologue("unity_StereoEyeIndex = " + _stereoEyeIndexType + "(" + eye + ");");
   }
   if (_usedRTArrayIndexIn) {
-    addPrologue(_options.multiview
-                    ? "vec4 vRTArrayIndex = intBitsToFloat(ivec4(int(gl_ViewID_OVR)));"
-                    : "vec4 vRTArrayIndex = intBitsToFloat(ivec4(0));");
+    if (_options.singleViewStereoEye >= 0) {
+      addPrologue("ivec4 vRTArrayIndex = ivec4(" + std::to_string(_options.singleViewStereoEye) + ");");
+    } else if (!_options.multiview) {
+      addPrologue("ivec4 vRTArrayIndex = ivec4(0);");
+    } else if (_program.stage == Stage::Geometry) {
+      addPrologue("ivec4 vRTArrayIndex = ivec4(vivify_ViewIndex[0]);");
+    } else {
+      addPrologue("ivec4 vRTArrayIndex = ivec4(int(gl_ViewID_OVR));");
+    }
   }
-  if (_usedPrimitiveID) addPrologue("vec4 vPrimitiveID = intBitsToFloat(ivec4(gl_PrimitiveID));");
-  if (_usedSampleIndex) addPrologue("vec4 vSampleIndex = intBitsToFloat(ivec4(gl_SampleID));");
+  if (_emitViewIndexVarying) addPrologue("vivify_ViewIndex = int(gl_ViewID_OVR);");
+  if (_usedPrimitiveID) addPrologue("ivec4 vPrimitiveID = ivec4(gl_PrimitiveID);");
+  if (_usedSampleIndex) addPrologue("ivec4 vSampleIndex = ivec4(gl_SampleID);");
+  // The right-eye copy runs on a second invocation of its own; a stage that
+  // already instances itself keeps its invocations and gets no copy.
+  bool const eyeCopy = EyeCopyActive() && _gsInvocations <= 1;
+  if (EyeCopyActive()) {
+    if (eyeCopy) {
+      addPrologue("int vivify_EyeCopy = gl_InvocationID;");
+      std::string const cb = "vivify_cb_UnityStereoGlobals";
+      addPrologue("mat4 vivify_LeftToRight = mat4(" + cb + "[28], " + cb + "[29], " + cb + "[30], " + cb +
+                  "[31]) * inverse(mat4(" + cb + "[24], " + cb + "[25], " + cb + "[26], " + cb + "[27]));");
+    } else {
+      addPrologue("int vivify_EyeCopy = 0;");
+      addPrologue("mat4 vivify_LeftToRight = mat4(1.0);");
+    }
+  }
   if (_usedGsInstanceID) {
-    addPrologue("vec4 vGsInstanceID = intBitsToFloat(ivec4(gl_InvocationID));");
+    addPrologue("ivec4 vGsInstanceID = ivec4(gl_InvocationID);");
   }
   if (_usedThreadID) {
-    addPrologue("vec4 vThreadID = uintBitsToFloat(uvec4(gl_GlobalInvocationID, 0u));");
+    addPrologue("ivec4 vThreadID = ivec4(uvec4(gl_GlobalInvocationID, 0u));");
   }
   if (_usedThreadGroupID) {
-    addPrologue("vec4 vThreadGroupID = uintBitsToFloat(uvec4(gl_WorkGroupID, 0u));");
+    addPrologue("ivec4 vThreadGroupID = ivec4(uvec4(gl_WorkGroupID, 0u));");
   }
   if (_usedThreadIDInGroup) {
-    addPrologue("vec4 vThreadIDInGroup = uintBitsToFloat(uvec4(gl_LocalInvocationID, 0u));");
+    addPrologue("ivec4 vThreadIDInGroup = ivec4(uvec4(gl_LocalInvocationID, 0u));");
   }
   if (_usedThreadIDFlattened) {
-    addPrologue("vec4 vThreadIDInGroupFlattened = uintBitsToFloat(uvec4(gl_LocalInvocationIndex));");
+    addPrologue("ivec4 vThreadIDInGroupFlattened = ivec4(uvec4(gl_LocalInvocationIndex));");
   }
 
   std::string immediateBuffer;
@@ -3768,15 +4033,37 @@ GlslResult GlslEmitter::Run() {
 
   std::string source;
   source += "#version " + std::to_string(_version) + " es\n";
-  bool const needsViewId = _options.multiview && (_program.stage == Stage::Vertex || _usedRTArrayIndexIn ||
-                                                  !_stereoEyeIndexType.empty());
+  bool const needsViewId =
+      _options.multiview && (_program.stage == Stage::Vertex ||
+                             (_usedRTArrayIndexIn && _program.stage != Stage::Geometry) ||
+                             !_stereoEyeIndexType.empty());
   if (needsViewId) {
     source += "#extension GL_OVR_multiview2 : require\n";
     if (_program.stage == Stage::Vertex) source += "layout(num_views = 2) in;\n";
   }
+  if (_options.multiview && _program.stage == Stage::Geometry) {
+    // A geometry stage in a two-eye program (0.15.8). OVR_multiview alone
+    // forbids one; EXT_multiview_tessellation_geometry_shader allows it, on
+    // the condition that the geometry shader declares the same view count as
+    // the vertex shader. Without the declaration the program is not a valid
+    // multiview program: grass, fur and wireframes drew in the left eye only,
+    // or not at all. Where the driver has the extension the stage now runs
+    // once per view; where it does not, the source is as it was.
+    source += "#extension GL_OVR_multiview2 : enable\n";
+    source += "#extension GL_EXT_multiview_tessellation_geometry_shader : enable\n";
+    source += "#ifdef GL_EXT_multiview_tessellation_geometry_shader\n";
+    source += "layout(num_views = 2) in;\n";
+    source += "#endif\n";
+  }
   source += "precision highp float;\n";
   source += "precision highp int;\n";
   source += _declarations;
+  if (eyeCopy) {
+    source += "layout(invocations = 2) in;\n";
+    if (std::find(_uniformNames.begin(), _uniformNames.end(), "UnityStereoGlobals") == _uniformNames.end()) {
+      source += "layout(std140) uniform UnityStereoGlobals { vec4 vivify_cb_UnityStereoGlobals[68]; };\n";
+    }
+  }
   source += immediateBuffer;
   // Subroutines have to be able to reach the temps, and DXBC gives them one
   // shared register file rather than a stack frame, so the registers are file
@@ -3829,6 +4116,7 @@ GlslResult GlslEmitter::Run() {
   result.uniforms = _uniformNames;
   result.samplers = _samplerList;
   result.version = _version;
+  for (auto const& [from, to] : _geometryPassThrough) result.renamedVaryings.emplace_back(from, to);
   result.stereoInstanced = _stereoInstanced;
   return result;
 }
