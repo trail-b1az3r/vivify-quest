@@ -1,0 +1,57 @@
+=== Vivify 0.15.20 native crash at 1794877000 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x64006900000002
+thread 25626 'UnityMain'
+pc 0x7d29b0b91c  lr 0x7d29b0b964  sp 0x7d380e2440  fp 0x7d380e2510
+backtrace:
+  #00 pc 0x7d29b0b91c  libunity.so +0x6d691c
+  #01 lr 0x7d29b0b964  libunity.so +0x6d6964
+  #02 fp 0x7d24a3078c  libil2cpp.so +0x21ba78c
+  #03 fp 0x7b6463fb4c  libVivify.so +0x37bb4c
+  #04 fp 0x7b6463c124  libVivify.so +0x378124
+  #05 fp 0x7b64590d80  libVivify.so +0x2ccd80 (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+  #06 fp 0x7b644a23b8  libVivify.so +0x1de3b8
+  #07 fp 0x7d24a30840  libil2cpp.so +0x21ba840
+  #08 fp 0x7d24a3078c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify visual check: mirror 'Mirror' isEnabled=true scale=(0.00,0.00,0.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceMirror' shader='Custom/Mirror' supported=true queue=2005 block: _Cutout=0.00 _Color=(0.00,
+  Vivify visual check: cameras that may render the mirror: 'MainCamera' stereo=true eye=3 target=screen mask=0x3d3bff37
+  Vivify visual check at 30s: 248 active renderer(s), 0 with no runnable shader; most drawn: Custom/Parametric3SliceSprite x50, Ree/BlurSaber x39, Custom/TransparentNeonLight x30, Ree/CustomModelOpaque x26, Custom/CustomParticles x21, Custom
+  Vivify custom event: type='SetMaterialProperty' time=31.058825 songTime=31.0708
+  Vivify custom event: type='SetMaterialProperty' time=31.058825 songTime=31.0708
+  Vivify custom event: type='SetMaterialProperty' time=31.411764 songTime=31.413269
+  Vivify custom event: type='SetMaterialProperty' time=31.764708 songTime=31.773499
+  Vivify custom event: type='SetMaterialProperty' time=32.117645 songTime=32.129578
+  Vivify custom event: type='SetMaterialProperty' time=32.47059 songTime=32.47638
+  Vivify custom event: type='SetMaterialProperty' time=32.82353 songTime=32.823914
+  Vivify custom event: type='SetMaterialProperty' time=33.17647 songTime=33.196472
+  Vivify custom event: type='SetMaterialProperty' time=33.52941 songTime=33.539673
+  Vivify custom event: type='SetMaterialProperty' time=33.882355 songTime=33.89801
+  Vivify custom event: type='SetMaterialProperty' time=34.235294 songTime=34.237976
+  Vivify custom event: type='SetMaterialProperty' time=34.588238 songTime=34.594177
+  Vivify custom event: type='SetMaterialProperty' time=34.941177 songTime=34.94763
+  Vivify custom event: type='SetMaterialProperty' time=35.29412 songTime=35.300537
+  Vivify custom event: type='SetMaterialProperty' time=35.47059 songTime=35.47827
+  Vivify custom event: type='SetMaterialProperty' time=35.647057 songTime=35.66327
+  Vivify custom event: type='SetMaterialProperty' time=35.82353 songTime=35.83075
+  Vivify custom event: type='SetMaterialProperty' time=36 songTime=36.01001
+  Vivify custom event: type='SetMaterialProperty' time=36.176468 songTime=36.18988
+  Vivify custom event: type='SetMaterialProperty' time=36.35294 songTime=36.365906
+  Vivify custom event: type='SetMaterialProperty' time=36.52941 songTime=36.53058
+  Vivify custom event: type='DestroyObject' time=36.52941 songTime=36.53058
+  Vivify DestroyObject: destroying live prefab id='Stars'
+  Vivify custom event: type='DestroyObject' time=36.52941 songTime=36.53058
+  Vivify DestroyObject: destroying live prefab id='StarsClose'
+  Vivify custom event: type='SetMaterialProperty' time=36.705883 songTime=36.714966
+  Vivify custom event: type='SetMaterialProperty' time=36.705883 songTime=36.714966
+  Vivify custom event: type='Blit' time=36.705883 songTime=36.714966
+  Vivify material: context=Blit asset=assets/materials/pp_glitch.mat material='PP_Glitch' shader='nasafrasa/PostProcessing/FMS_Cat/Glitch' supported=true internalError=false
+  Vivify Blit event: time=36.705883 asset='assets/materials/pp_glitch.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=0.5
+  Vivify custom event: type='InstantiatePrefab' time=36.705883 songTime=36.714966
+  Vivify InstantiatePrefab: asset='assets/sky2.prefab' id='Sky2 - Fractal' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='Sky2 - Fractal' asset='assets/sky2.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify custom event: type='DestroyObject' time=36.705883 songTime=36.714966
+  Vivify DestroyObject: destroying live prefab id='Sky1 - Galaxy'
+  Vivify custom event: type='DestroyObject' time=36.705883 songTime=36.714966
+  Vivify DestroyObject: destroying live prefab id='Skybox1 - Space'
+=== end ===
+
