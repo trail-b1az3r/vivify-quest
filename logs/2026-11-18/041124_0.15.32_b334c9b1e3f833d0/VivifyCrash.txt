@@ -1,0 +1,57 @@
+=== Vivify 0.15.32 native crash at 1794975068 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0xdddddddddddfa6
+thread 6250 'UnityMain'
+pc 0x706bfdf538  lr 0x7069905840  sp 0x70fc226430  fp 0x70fc226490
+backtrace:
+  #00 pc 0x706bfdf538  libil2cpp.so +0x4894538
+  #01 lr 0x7069905840  libil2cpp.so +0x21ba840
+  #02 fp 0x706990578c  libil2cpp.so +0x21ba78c
+  #03 fp 0x6ed762b390  libVivify.so +0x396390
+  #04 fp 0x6ed762a054  libVivify.so +0x395054
+  #05 fp 0x6ed757bb30  libVivify.so +0x2e6b30 (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+  #06 fp 0x6ed7488810  libVivify.so +0x1f3810
+  #07 fp 0x7069905840  libil2cpp.so +0x21ba840
+  #08 fp 0x706990578c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify custom event: type='SetMaterialProperty' time=51.517242 songTime=0
+  Vivify custom event: type='SetMaterialProperty' time=51.517242 songTime=0
+  Vivify custom event: type='SetMaterialProperty' time=51.724136 songTime=0
+  Vivify custom event: type='SetMaterialProperty' time=51.724136 songTime=0
+  Vivify custom event: type='SetMaterialProperty' time=52.34483 songTime=0
+  Vivify custom event: type='SetMaterialProperty' time=52.34483 songTime=0
+  Vivify custom event: type='SetMaterialProperty' time=52.551723 songTime=0
+  Vivify custom event: type='SetMaterialProperty' time=52.551723 songTime=0
+  Vivify custom event: type='SetMaterialProperty' time=53.068966 songTime=0
+  Vivify custom event: type='SetMaterialProperty' time=53.068966 songTime=0
+  Vivify custom event: type='SetMaterialProperty' time=54.206898 songTime=0
+  Vivify custom event: type='SetMaterialProperty' time=54.206898 songTime=0
+  Vivify custom event: type='AssignObjectPrefab' time=55.034485 songTime=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/white outline note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/aether/prefabs/custom objects/white outline note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/white outline note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify custom event: type='AssignObjectPrefab' time=70.75862 songTime=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/black outline note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/aether/prefabs/custom objects/black outline note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/black outline note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify custom event: type='Blit' time=104.68966 songTime=0
+  Vivify material: context=Blit asset=assets/aether/materials/fadewhite.mat material='FadeWhite' shader='Swifter/Blit/SimpleColor' supported=true internalError=false
+  Vivify Blit event: time=104.68966 asset='assets/aether/materials/fadewhite.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=16
+  Vivify custom event: type='SetMaterialProperty' time=108 songTime=0
+  Vivify custom event: type='Blit' time=108 songTime=0
+  Vivify material: context=Blit asset=assets/aether/materials/ambient/261 - bokeh.mat material='261 - Bokeh' shader='Swifter/Blit/Bokeh' supported=true internalError=false
+  Vivify Blit event: time=108 asset='assets/aether/materials/ambient/261 - bokeh.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=10
+  Vivify custom event: type='InstantiatePrefab' time=108 songTime=0
+  Vivify InstantiatePrefab: asset='assets/aether/prefabs/sections/ambient.prefab' id='prefab_ambient_1' alreadyLive=false
+  Vivify InstantiatePrefab: GPU instancing off on 43 particle system(s) of 'assets/aether/prefabs/sections/ambient.prefab'
+  Vivify InstantiatePrefab spawned: id='prefab_ambient_1' asset='assets/aether/prefabs/sections/ambient.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify custom event: type='DestroyObject' time=108 songTime=0
+  Vivify DestroyObject: destroying live prefab id='prefab_drop_1'
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify field of view: 150% for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify multiplayer check: inMultiplayerGameplay=false multiplayerModLoaded=true
+=== end ===
+

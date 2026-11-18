@@ -1,0 +1,103 @@
+=== Vivify 0.15.32 session log, started 2026-11-17 21:11:23 ===
+[INFO] Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+[INFO] Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global-p86.txt
+[INFO] Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+[INFO] Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+[WARN] Vivify crash recovery: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' did not end: the game crashed or was closed while it played (last sign of life 0 s into the song); it plays in recovery mode next time, without the effect 'assets/aether/materials/ambient/261 - bokeh.mat' that was starting when it went down
+[WARN] Vivify: the game crashed last time; the report (also in VivifyCrash.txt) follows
+[WARN] Vivify crash report: === Vivify 0.15.32 native crash at 1794975068 (seconds since 1970) ===
+[WARN] Vivify crash report: SIGSEGV (bad memory access), code 1, fault address 0xdddddddddddfa6
+[WARN] Vivify crash report: thread 6250 'UnityMain'
+[WARN] Vivify crash report: pc 0x706bfdf538  lr 0x7069905840  sp 0x70fc226430  fp 0x70fc226490
+[WARN] Vivify crash report: backtrace:
+[WARN] Vivify crash report:   #00 pc 0x706bfdf538  libil2cpp.so +0x4894538
+[WARN] Vivify crash report:   #01 lr 0x7069905840  libil2cpp.so +0x21ba840
+[WARN] Vivify crash report:   #02 fp 0x706990578c  libil2cpp.so +0x21ba78c
+[WARN] Vivify crash report:   #03 fp 0x6ed762b390  libVivify.so +0x396390
+[WARN] Vivify crash report:   #04 fp 0x6ed762a054  libVivify.so +0x395054
+[WARN] Vivify crash report:   #05 fp 0x6ed757bb30  libVivify.so +0x2e6b30 (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+[WARN] Vivify crash report:   #06 fp 0x6ed7488810  libVivify.so +0x1f3810
+[WARN] Vivify crash report:   #07 fp 0x7069905840  libil2cpp.so +0x21ba840
+[WARN] Vivify crash report:   #08 fp 0x706990578c  libil2cpp.so +0x21ba78c
+[WARN] Vivify crash report: last Vivify log lines (oldest first):
+[WARN] Vivify crash report:   Vivify custom event: type='SetMaterialProperty' time=51.517242 songTime=0
+[WARN] Vivify crash report:   Vivify custom event: type='SetMaterialProperty' time=51.517242 songTime=0
+[WARN] Vivify crash report:   Vivify custom event: type='SetMaterialProperty' time=51.724136 songTime=0
+[WARN] Vivify crash report:   Vivify custom event: type='SetMaterialProperty' time=51.724136 songTime=0
+[WARN] Vivify crash report:   Vivify custom event: type='SetMaterialProperty' time=52.34483 songTime=0
+[WARN] Vivify crash report:   Vivify custom event: type='SetMaterialProperty' time=52.34483 songTime=0
+[WARN] Vivify crash report:   Vivify custom event: type='SetMaterialProperty' time=52.551723 songTime=0
+[WARN] Vivify crash report:   Vivify custom event: type='SetMaterialProperty' time=52.551723 songTime=0
+[WARN] Vivify crash report:   Vivify custom event: type='SetMaterialProperty' time=53.068966 songTime=0
+[WARN] Vivify crash report:   Vivify custom event: type='SetMaterialProperty' time=53.068966 songTime=0
+[WARN] Vivify crash report:   Vivify custom event: type='SetMaterialProperty' time=54.206898 songTime=0
+[WARN] Vivify crash report:   Vivify custom event: type='SetMaterialProperty' time=54.206898 songTime=0
+[WARN] Vivify crash report:   Vivify custom event: type='AssignObjectPrefab' time=55.034485 songTime=0
+[WARN] Vivify crash report:   Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/white outline note.prefab' tracks=1 additive=false saberType=-
+[WARN] Vivify crash report:   Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/aether/prefabs/custom objects/white outline note dot.prefab' tracks=1 additive=false saberType=-
+[WARN] Vivify crash report:   Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/white outline note debris.prefab' tracks=1 additive=false saberType=-
+[WARN] Vivify crash report:   Vivify custom event: type='AssignObjectPrefab' time=70.75862 songTime=0
+[WARN] Vivify crash report:   Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/black outline note.prefab' tracks=1 additive=false saberType=-
+[WARN] Vivify crash report:   Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/aether/prefabs/custom objects/black outline note dot.prefab' tracks=1 additive=false saberType=-
+[WARN] Vivify crash report:   Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/black outline note debris.prefab' tracks=1 additive=false saberType=-
+[WARN] Vivify crash report:   Vivify custom event: type='Blit' time=104.68966 songTime=0
+[WARN] Vivify crash report:   Vivify material: context=Blit asset=assets/aether/materials/fadewhite.mat material='FadeWhite' shader='Swifter/Blit/SimpleColor' supported=true internalError=false
+[WARN] Vivify crash report:   Vivify Blit event: time=104.68966 asset='assets/aether/materials/fadewhite.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=16
+[WARN] Vivify crash report:   Vivify custom event: type='SetMaterialProperty' time=108 songTime=0
+[WARN] Vivify crash report:   Vivify custom event: type='Blit' time=108 songTime=0
+[WARN] Vivify crash report:   Vivify material: context=Blit asset=assets/aether/materials/ambient/261 - bokeh.mat material='261 - Bokeh' shader='Swifter/Blit/Bokeh' supported=true internalError=false
+[WARN] Vivify crash report:   Vivify Blit event: time=108 asset='assets/aether/materials/ambient/261 - bokeh.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=10
+[WARN] Vivify crash report:   Vivify custom event: type='InstantiatePrefab' time=108 songTime=0
+[WARN] Vivify crash report:   Vivify InstantiatePrefab: asset='assets/aether/prefabs/sections/ambient.prefab' id='prefab_ambient_1' alreadyLive=false
+[WARN] Vivify crash report:   Vivify InstantiatePrefab: GPU instancing off on 43 particle system(s) of 'assets/aether/prefabs/sections/ambient.prefab'
+[WARN] Vivify crash report:   Vivify InstantiatePrefab spawned: id='prefab_ambient_1' asset='assets/aether/prefabs/sections/ambient.prefab' tracks=1 animators=1 offscreenCulled=0
+[WARN] Vivify crash report:   Vivify custom event: type='DestroyObject' time=108 songTime=0
+[WARN] Vivify crash report:   Vivify DestroyObject: destroying live prefab id='prefab_drop_1'
+[WARN] Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+[WARN] Vivify crash report:   Vivify field of view: 150% for this map
+[WARN] Vivify crash report:   Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+[WARN] Vivify crash report:   Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+[WARN] Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+[WARN] Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+[WARN] Vivify crash report:   Vivify multiplayer check: inMultiplayerGameplay=false multiplayerModLoaded=true
+[WARN] Vivify crash report: === end ===
+[INFO] Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+[INFO] Installing hook: SaberModelController_Init to offset: 0x707d6e5928
+[INFO] Installing hook: GameNoteController_Init to offset: 0x707d5e31d0
+[INFO] Installing hook: BombNoteController_Init to offset: 0x707d5e02d4
+[INFO] Installing hook: BurstSliderGameNoteController_Init to offset: 0x707d5e1668
+[INFO] Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x707d683bb8
+[INFO] Installing hook: NoteDebris_Init to offset: 0x707d5e62e8
+[INFO] Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x707db7a968
+[INFO] Installing hook: ImageEffectController_OnRenderImage to offset: 0x707d4d8018
+[INFO] Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x707db7de78
+[INFO] Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x707db7d9f0
+[INFO] Installing hook: MirrorRendererSO_OnDisable to offset: 0x707db7ef2c
+[INFO] Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x707db7e7f4
+[INFO] Installing hook: VRCenterAdjust_Start to offset: 0x707d62d37c
+[INFO] Installing hook: VRCenterAdjust_OnEnable to offset: 0x707d62d58c
+[INFO] Installing hook: VRCenterAdjust_OnDisable to offset: 0x707d62d658
+[INFO] Installing hook: VRCenterAdjust_Update to offset: 0x707d62d560
+[INFO] Installing hook: VRCenterAdjust_ResetRoom to offset: 0x707d62d3e0
+[INFO] Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x707d62d4a4
+[INFO] Installing hook: PauseController_Pause to offset: 0x707d69f7ec
+[INFO] Installing hook: PauseMenuManager_ShowMenu to offset: 0x707d6a9c54
+[INFO] Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x707d6aa734
+[INFO] Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x707d6aa094
+[INFO] Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x707d6a9d88
+[INFO] Installing hook: GamePause_Resume to offset: 0x707d6a5178
+[INFO] Installing hook: Recorder_InstallBindings to offset: 0x707d6ee294
+[INFO] Installing hook: Recorder_HeightLateUpdate to offset: 0x707d6e28b8
+[INFO] Installing hook: Recorder_SpawnNote to offset: 0x707d5d9928
+[INFO] Installing hook: Recorder_SpawnObstacle to offset: 0x707d5d8dec
+[INFO] Installing hook: Recorder_NoteWasCut to offset: 0x707d5dade4
+[INFO] Installing hook: Recorder_ScoreLateUpdate to offset: 0x707d6e844c
+[INFO] Installing hook: Recorder_ScoreStart to offset: 0x707d6e8038
+[INFO] Installing hook: Recorder_ComputeSwingRating to offset: 0x707c1abdb4
+[INFO] Installing hook: Recorder_ProcessSwing to offset: 0x707c1ac690
+[INFO] Installing hook: Recorder_SpawnControllerStart to offset: 0x707d5dbae0
+[INFO] Installing hook: Recorder_ShowPause to offset: 0x707d6a9c54
+[INFO] Installing hook: Recorder_Resume to offset: 0x707d6aa76c
+[INFO] Installing hook: Recorder_Finish to offset: 0x707d6391dc
+[INFO] Vivify: loaded mods (58): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavcodec.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavformat.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libweb-utils.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaverplusplus.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbstheaterjs.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libcustom-types.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libsongdetails.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libtinyxml
+[INFO] 2.so 0.0.0, BSML 0.4.55, BetterHaptics 0.1.1, EasyOffsetQuest 0.1.7, FakeId 0.1.9, FasterScroll 1.17.0, NoPromo 0.1.13, bsdc 0.6.4, bstheater 0.1.0, CrashReporter 0.1.20, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.2.7, smoothedcontroller 1.7.4, SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether 2.2.5, BetterSongSearch 2.2.13, ModifiersCoreQuest 0.1.0, CustomJSONData 0.24.5, Tracks 2.5.4, Vivify 0.15.32, PlaylistCore 1.5.5, bl 0.9.666, BetterSongList 1.0.8, CameraUtils 1.1.11, Chroma 2.10.3, cyrillic-fix 1.0.0, DiscordRichPresence 0.3.5, HitScoreVisualizer 3.0.1, sq 1.0.3, morebuttons 1.0.4, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, PlaylistDownloader 0.3.1, PlaylistManager 1.4.1, ReeSabers 0.4.0, Replay 0.5.2, SongDownloader 0.8.8, StudioSync 0.9.3, unicode 0.1.7
