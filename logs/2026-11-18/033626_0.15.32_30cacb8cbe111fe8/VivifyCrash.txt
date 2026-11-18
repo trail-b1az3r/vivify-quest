@@ -1,0 +1,57 @@
+=== Vivify 0.15.32 native crash at 1794972958 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0xaab44de7811c7d
+thread 17508 'UnityMain'
+pc 0x7279d7a538  lr 0x72776a0840  sp 0x72f8621460  fp 0x72f86214c0
+backtrace:
+  #00 pc 0x7279d7a538  libil2cpp.so +0x4894538
+  #01 lr 0x72776a0840  libil2cpp.so +0x21ba840
+  #02 fp 0x72776a078c  libil2cpp.so +0x21ba78c
+  #03 fp 0x70c3dd7390  libVivify.so +0x396390
+  #04 fp 0x70c3dd6054  libVivify.so +0x395054
+  #05 fp 0x70c3d27b30  libVivify.so +0x2e6b30 (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+  #06 fp 0x70c3c34810  libVivify.so +0x1f3810
+  #07 fp 0x72776a0840  libil2cpp.so +0x21ba840
+  #08 fp 0x72776a078c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify InstantiatePrefab: asset='assets/yoi okashi/assets/ringpf0.prefab' id='rg3' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='rg3' asset='assets/yoi okashi/assets/ringpf0.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=15
+  Vivify custom event: type='InstantiatePrefab' time=252.68571 songTime=252.7032
+  Vivify InstantiatePrefab: asset='assets/yoi okashi/assets/ringpf0.prefab' id='rg4' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='rg4' asset='assets/yoi okashi/assets/ringpf0.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=15
+  Vivify custom event: type='InstantiatePrefab' time=252.85715 songTime=252.86104
+  Vivify InstantiatePrefab: asset='assets/yoi okashi/assets/ringpf0.prefab' id='rg5' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='rg5' asset='assets/yoi okashi/assets/ringpf0.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=15
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=15
+  Vivify custom event: type='DestroyObject' time=253.02858 songTime=253.03981
+  Vivify DestroyObject: destroying live prefab id='city'
+  Vivify custom event: type='InstantiatePrefab' time=253.02858 songTime=253.03981
+  Vivify InstantiatePrefab: asset='assets/yoi okashi/assets/skypf.prefab' id='skypf' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='skypf' asset='assets/yoi okashi/assets/skypf.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify custom event: type='DestroyObject' time=253.02858 songTime=253.03981
+  Vivify DestroyObject: destroying live prefab id='ring0'
+  Vivify custom event: type='DestroyObject' time=253.02858 songTime=253.03981
+  Vivify DestroyObject: destroying live prefab id='ring1'
+  Vivify custom event: type='DestroyObject' time=253.02858 songTime=253.03981
+  Vivify DestroyObject: destroying live prefab id='ring2'
+  Vivify custom event: type='DestroyObject' time=253.02858 songTime=253.03981
+  Vivify DestroyObject: destroying live prefab id='ring3'
+  Vivify custom event: type='DestroyObject' time=253.02858 songTime=253.03981
+  Vivify DestroyObject: destroying live prefab id='ring4'
+  Vivify custom event: type='DestroyObject' time=253.02858 songTime=253.03981
+  Vivify DestroyObject: destroying live prefab id='ring5'
+  Vivify custom event: type='DestroyObject' time=253.02858 songTime=253.03981
+  Vivify DestroyObject: destroying live prefab id='ring6'
+  Vivify custom event: type='DestroyObject' time=253.02858 songTime=253.03981
+  Vivify DestroyObject: destroying live prefab id='ring7'
+  Vivify custom event: type='InstantiatePrefab' time=253.02858 songTime=253.03981
+  Vivify InstantiatePrefab: asset='assets/yoi okashi/assets/ringpf0.prefab' id='rg6' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='rg6' asset='assets/yoi okashi/assets/ringpf0.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify custom event: type='Blit' time=253.02858 songTime=253.03981
+  Vivify material: context=Blit asset=assets/yoi okashi/assets/cs_glitch.mat material='cs_glitch' shader='Camera/FMS_Cat_Glitch' supported=true internalError=false
+  Vivify Blit event: time=253.02858 asset='assets/yoi okashi/assets/cs_glitch.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=1
+  Vivify scene route: native multiview; no separate-eye scene renders needed for this frame
+=== end ===
+
