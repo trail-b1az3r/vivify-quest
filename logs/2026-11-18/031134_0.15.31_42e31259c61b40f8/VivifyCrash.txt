@@ -1,0 +1,63 @@
+=== Vivify 0.15.31 native crash at 1794966966 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27bb000063aa
+thread 31484 'IL2CPP Threadpo'
+pc 0x78e46fc9d8  lr 0x78e46fc9a8  sp 0x78376d2980  fp 0x78376d2a20
+backtrace:
+  #00 pc 0x78e46fc9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x78e46fc9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x77ca349c64  libmetacore.so +0xcdc64
+  #03 fp 0x77db55655c  libsl2.so +0x4fb55c
+  #04 fp 0x77db555e74  libsl2.so +0x4fae74
+  #05 fp 0x77db555d48  libsl2.so +0x4fad48
+  #06 fp 0x77db555ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x75d6321130  libcustom-json-data.so +0x1cd130
+  #08 fp 0x7747dec25c  libil2cpp.so +0x1fde25c
+  #09 fp 0x7747fc878c  libil2cpp.so +0x21ba78c
+  #10 fp 0x75d6305bf4  libcustom-json-data.so +0x1b1bf4
+  #11 fp 0x75d6305354  libcustom-json-data.so +0x1b1354 (_ZN56Hook_BeatmapDataLoader_GetBeatmapDataFromSaveDataJson_v256hook_BeatmapDataLoader_GetBeatmapDataFromSaveDataJson_v2E13StringWrapperIPN6System6StringEES4_N15GlobalNamespace17BeatmapDifficultyEfbPNS5_16IEnvironmentInfoENS5_23BeatmapLevelDataVersionEPNS5_22PlayerSpecificSettingsEPNS5_27IBeatmapLightEventConverterE +0x1f4)
+  #12 fp 0x75d63208f0  libcustom-json-data.so +0x1cc8f0
+  #13 fp 0x7748524dcc  libil2cpp.so +0x2716dcc
+  #14 fp 0x7747f7bd08  libil2cpp.so +0x216dd08
+last Vivify log lines (oldest first):
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=14
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=14
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=14
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=14
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify frame stall: the game did not draw for 0.9s (songTime 264.84, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743Aether____111_______-_Swifter_/4968d__743Aether____111_______-_Swifter__d12c831dbcb
+  Vivify frame took 62.1ms, over the 50ms budget
+  Vivify custom event: type='DestroyObject' time=271.86206 songTime=271.88934
+  Vivify DestroyObject: destroying live prefab id='prefab_outro_2'
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.02,1.53,-0.06) fwd=(-0.02,-0.37,0.93)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify separate-eye: eye image is anti-aliased (4x MSAA, quality setting 4); anti-aliasing off for this level so the separate-eye scene can be drawn
+  Vivify separate-eye: anti-aliasing restored (4)
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=6 synced=0 secondaryCameras=0 declaredTextures=0 assets=298
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify Send Logs: uploaded 2 file part(s), 1602 KB (logs/2026-11-18/014042_0.15.31_e002c497c199aaaf 8741927; stored 2, deduplicated 0; 0 bytes saved cumulatively
+  )
+  Vivify Send Logs: relay health check succeeded
+  Vivify Send Logs: uploaded 5 file part(s), 2370 KB (logs/2026-11-18/014051_0.15.31_69ef22101d418952 a8745e6; stored 5, deduplicated 0; 0 bytes saved cumulatively
+  )
+  Vivify Send Logs: uploaded 2 file part(s), 3072 KB (logs/2026-11-18/014057_0.15.31_cde68a118a88b7d7 bdfe79f; stored 2, deduplicated 0; 0 bytes saved cumulatively
+  )
+  Vivify Send Logs: uploaded 2 file part(s), 2749 KB (logs/2026-11-18/014104_0.15.31_aef43eea36425fff 54bdb5a; stored 2, deduplicated 0; 0 bytes saved cumulatively
+  )
+  Vivify Send Logs: reached the 8 MB upload limit; use the menu button for the larger manual upload
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/19ef0 (Nasty _ Nasty _ Spell - Joshabi)' isCustom=true hasDetails=true
+=== end ===
+
