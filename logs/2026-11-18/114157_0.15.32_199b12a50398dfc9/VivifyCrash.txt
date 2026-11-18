@@ -1,0 +1,118 @@
+=== Vivify 0.15.32 native crash at 1794979391 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x28a3000042ca
+thread 17272 'UnityMain'
+pc 0x7208d179d8  lr 0x7208d179a8  sp 0x710a23f710  fp 0x710a23f7b0
+backtrace:
+  #00 pc 0x7208d179d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7208d179a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x708ef50c64  libmetacore.so +0xcdc64
+  #03 fp 0x7114f1155c  libsl2.so +0x4fb55c
+  #04 fp 0x7114f10e74  libsl2.so +0x4fae74
+  #05 fp 0x7114f10d48  libsl2.so +0x4fad48
+  #06 fp 0x7114f10ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x6f18bb3fd4  libBetterHaptics.so +0x10afd4
+  #08 fp 0x7078693ee0  libil2cpp.so +0x4aeeee0
+  #09 fp 0x7075d5f78c  libil2cpp.so +0x21ba78c
+  #10 fp 0x72202316c3
+  #11 fp 0x710a241f80
+last Vivify log lines (oldest first):
+  Vivify shaders: bundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43999__42-flux_-_Aeroluna_/43999__42-flux_-_Aeroluna__0d5a97b9f666d9fb.vivify' converted=true total=76 runnable=76 noAndroidProgram=0 deviceReject
+  Vivify: play button blocked by Vivify ("Preparing shaders 0/105...")
+  Vivify: preparing the shaders of 105 material(s) before play ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43999__42-flux_-_Aeroluna_/43999__42-flux_-_Aeroluna__0d5a97b9f666d9fb.vivify')
+  Vivify: play button blocked by Vivify ("Preparing shaders 0/105..."), VivifyRenderer ("Preparing map effects...")
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43999__42-flux_-_Aeroluna_/43999__42-flux_-_Aeroluna__0d5a97b9f666d9fb.vivify' grabs _BlackHoleGrabTex, _GrabTexture, _EclipseGrabTex, _Base
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43999__42-flux_-_Aeroluna_/43999__42-flux_-_Aeroluna__0d5a97b9f666d9fb.vivify' -> needed by BlackHole/BlackHole, PostProcessing/VolumetricFog, L
+  Vivify: 2 shader(s) in this map's Quest bundle have no two-eye program; a screen effect using one runs once per eye
+  Vivify: this map's Quest bundle ships 1 shader(s) with no programs ('WACOMalt/WACOWater4'); looking for the map's PC build to stand in for them
+  Vivify: the Quest bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleAndroid2021.vivify' is missing 1 shader(s) its PC build has; playing the PC build '/sdcard/ModData/com.beatgames.
+  Vivify: the last load of converted bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43999__42-flux_-_Aeroluna_/43999__42-flux_-_Aeroluna__0d5a97b9f666d9fb.vivify' never finished (the game crashed, or was closed 
+  Vivify using cached converted bundle: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43999__42-flux_-_Aeroluna_/43999__42-flux_-_Aeroluna__0d5a97b9f666d9fb.vivify'
+  Vivify: play button blocked by VivifyRenderer ("Preparing map effects...")
+  Vivify bundle already preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43999__42-flux_-_Aeroluna_/43999__42-flux_-_Aeroluna__0d5a97b9f666d9fb.vivify'
+  Vivify: play button blocked by VivifyRenderer ("Preparing map effects..."), Vivify ("Preparing shaders 10/105...")
+  Vivify Blit: queued screen-texture shaders for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)' behind the previous load
+  Vivify shader preparation: material 'Glass' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'Glass' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'WACOWater4' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'WACOWater4' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'Default-ParticleSystem' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'Default-ParticleSystem' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'ShadedEclipse' pass 1 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'ShadedEclipse' pass 1 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'BlackHole' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'BlackHole' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify Blit: 76 single-view shader(s) ready for blits into screen textures and the map's texture cameras ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43999__42-flux_-_Aeroluna_/43999__42-flux_-_Aeroluna__0d5a97b9f
+  Vivify texture cameras: 0 more single-view shader(s) from the map's prefabs
+  Vivify: shaders of 105 material(s) prepared in 4.6s
+  Vivify shader preparation: 342 pass bind attempt(s), 10 non-binding/exception result(s), including non-draw passes; compilation is not pixel validation
+  Vivify: play button blocked by VivifyRenderer ("Preparing map effects...")
+  Vivify separate-eye classification: complete=true, 2 geometry/tessellation shader(s)
+  Vivify separate-eye donor 3 ready: 76 shader object(s), 210 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 5 ready: 0 shader object(s), 0 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 2 ready: 76 shader object(s), 210 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 1 ready: 76 shader object(s), 210 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 4 ready: 76 shader object(s), 210 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 0 ready: 76 shader object(s), 210 asset bindings, 0 ambiguous display name(s)
+  Vivify renderer preflight: shader '__VivifyEye0__/Sun/ShadedEclipse' is unsupported
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify: play button blocked by VivifyRenderer ("Map effects could not be prepared. Turn off the experimental renderer to play.")
+=== end ===
+
+=== Vivify 0.15.32 native crash at 1795002103 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7195b8e668
+thread 31642 'UnityMain'
+pc 0x7208d10714  lr 0x6eca6268a0  sp 0x70a4df8af0  fp 0x70a4df8eb0
+backtrace:
+  #00 pc 0x7208d10714  libc.so +0xc7714
+  #01 lr 0x6eca6268a0  libchatplex-sdk-bs.so +0x81a8a0
+  #02 fp 0x6eca626ca4  libchatplex-sdk-bs.so +0x81aca4
+  #03 fp 0x6eca4eae38  libchatplex-sdk-bs.so +0x6dee38
+  #04 fp 0x6eca4b9610  libchatplex-sdk-bs.so +0x6ad610 (_ZN6CP_SDK5Utils5Hooks12InstallHooksEv +0x40)
+  #05 fp 0x6eca591888  libchatplex-sdk-bs.so +0x785888 (late_load +0x58)
+  #06 fp 0x7112154b9c  libsl2.so +0x543b9c
+  #07 fp 0x70994ebfb4  libunity.so +0xab1fb4
+  #08 fp 0x72202926c3
+  #09 fp 0x70a4df9f40
+last Vivify log lines (oldest first):
+  Installing hook: SaberModelController_Init to offset: 0x7095c1a928
+  Installing hook: GameNoteController_Init to offset: 0x7095b181d0
+  Installing hook: BombNoteController_Init to offset: 0x7095b152d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x7095b16668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7095bb8bb8
+  Installing hook: NoteDebris_Init to offset: 0x7095b1b2e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x70960af968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x7095a0d018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x70960b2e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x70960b29f0
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x70960b3f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x70960b37f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x7095b6237c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x7095b6258c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7095b62658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7095b62560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7095b623e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7095b624a4
+  Installing hook: PauseController_Pause to offset: 0x7095bd47ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7095bdec54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7095bdf734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7095bdf094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7095bded88
+  Installing hook: GamePause_Resume to offset: 0x7095bda178
+  Installing hook: Recorder_InstallBindings to offset: 0x7095c23294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x7095c178b8
+  Installing hook: Recorder_SpawnNote to offset: 0x7095b0e928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x7095b0ddec
+  Installing hook: Recorder_NoteWasCut to offset: 0x7095b0fde4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7095c1d44c
+  Installing hook: Recorder_ScoreStart to offset: 0x7095c1d038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x70946e0db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x70946e1690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7095b10ae0
+  Installing hook: Recorder_ShowPause to offset: 0x7095bdec54
+  Installing hook: Recorder_Resume to offset: 0x7095bdf76c
+  Installing hook: Recorder_Finish to offset: 0x7095b6e1dc
+  Vivify: loaded mods (86): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMapLoader.so 0.0.0, BSML 0.4.55, CongXinJian 0.1.0, DlcSorter 0.1.13, EasyOffsetQuest 0.1.7, FakeId 0.1.9, FasterScroll 1.17.0, anytext 1.0.1, bsdc 0.6.4, bstheater 0.1
+  coreVisualizer 3.0.1, sq 1.0.3, MappingExtensions 0.25.4, morebuttons 1.0.4, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistDownloader 0.3.1, Playlist
+=== end ===
+
