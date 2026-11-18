@@ -1,0 +1,107 @@
+=== Vivify 0.15.33 native crash at 1794980869 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x140018
+thread 30671 'Thread-3'
+pc 0x708c615740  lr 0x708c6156f8  sp 0x6f983a4480  fp 0x6f983a47b0
+backtrace:
+  #00 pc 0x708c615740  libunity.so +0x13ee740
+  #01 lr 0x708c6156f8  libunity.so +0x13ee6f8
+  #02 fp 0x708c7fb9f4  libunity.so +0x15d49f4
+  #03 fp 0x7217116334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify custom event: type='Blit' time=12.773334 songTime=12.780463
+  Vivify Blit event: time=12.773334 asset='<none>' source='_Main' targets=1 priority=-11 pass=-1 order=7 durationBeats=0
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify custom event: type='SetRenderingSettings' time=12.8 songTime=12.803573
+  Vivify SetRenderingSettings: time=12.8 durationSeconds=0 immediate=true
+  Vivify custom event: type='DestroyObject' time=12.8 songTime=12.803573
+  Vivify DestroyObject: destroying live prefab id='clockscene'
+  Vivify custom event: type='SetGlobalProperty' time=12.8 songTime=12.803573
+  Vivify custom event: type='InstantiatePrefab' time=12.8 songTime=12.803573
+  Vivify InstantiatePrefab: asset='assets/monitor/monitorscene.prefab' id='monitorscene' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='monitorscene' asset='assets/monitor/monitorscene.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify custom event: type='Blit' time=12.8 songTime=12.803573
+  Vivify material: context=Blit asset=assets/blendexperiment/blender.mat material='Blender' shader='PostProcessing/Difference' supported=true internalError=false
+  Vivify Blit event: time=12.8 asset='assets/blendexperiment/blender.mat' source='_Main' targets=1 priority=-12 pass=-1 order=7 durationBeats=16
+  Vivify custom event: type='SetCameraProperty' time=12.8 songTime=12.803573
+  Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=true bloomPrePass=unset mainEffect=unset
+  Vivify custom event: type='Blit' time=12.8 songTime=12.803573
+  Vivify material: context=Blit asset=assets/shaders/distortnotes/one.mat material='One' shader='PostProcessing/DistortNotes' supported=true internalError=false
+  Vivify Blit event: time=12.8 asset='assets/shaders/distortnotes/one.mat' source='_Main' targets=1 priority=2 pass=0 order=7 durationBeats=64
+  Vivify culling pass on 'MainCamera': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x3d3bff37
+  Vivify culling pass on 'MirrorCam-93944': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x25107f20
+  Vivify culling pass on 'MirrorCam-93944': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x25107f20
+=== end ===
+
+=== Vivify 0.15.33 native crash at 1794980876 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x71868ae00c
+thread 1805 'UnityMain'
+pc 0x721710d714  lr 0x6ec5d37f48  sp 0x70a45f8af0  fp 0x70a45f8eb0
+backtrace:
+  #00 pc 0x721710d714  libc.so +0xc7714
+  #01 lr 0x6ec5d37f48  libchroma.so +0x333f48
+  #02 fp 0x6ec5ca7a48  libchroma.so +0x2a3a48 (_Z43InstallBeatmapObjectCallbackControllerHooksv +0x10c)
+  #03 fp 0x6ec5d33f50  libchroma.so +0x32ff50 (late_load +0x2b4)
+  #04 fp 0x71037dcb9c  libsl2.so +0x543b9c
+  #05 fp 0x708a532fb4  libunity.so +0xab1fb4
+  #06 fp 0x721918a6c3
+last Vivify log lines (oldest first):
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Installing hook: SaberModelController_Init to offset: 0x7086a51928
+  Installing hook: GameNoteController_Init to offset: 0x708694f1d0
+  Installing hook: BombNoteController_Init to offset: 0x708694c2d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x708694d668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x70869efbb8
+  Installing hook: NoteDebris_Init to offset: 0x70869522e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7086ee6968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x7086844018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7086ee9e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7086ee99f0
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7086eeaf2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7086eea7f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x708699937c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x708699958c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7086999658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7086999560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x70869993e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x70869994a4
+  Installing hook: PauseController_Pause to offset: 0x7086a0b7ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7086a15c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7086a16734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7086a16094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7086a15d88
+  Installing hook: GamePause_Resume to offset: 0x7086a11178
+  Installing hook: Recorder_InstallBindings to offset: 0x7086a5a294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x7086a4e8b8
+  Installing hook: Recorder_SpawnNote to offset: 0x7086945928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x7086944dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x7086946de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7086a5444c
+  Installing hook: Recorder_ScoreStart to offset: 0x7086a54038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7085517db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7085518690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7086947ae0
+  Installing hook: Recorder_ShowPause to offset: 0x7086a15c54
+  Installing hook: Recorder_Resume to offset: 0x7086a1676c
+  Installing hook: Recorder_Finish to offset: 0x70869a51dc
+  Vivify: loaded mods (58): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, BSML 0.4.55, EasyOffsetQuest 0.1.7, FakeId 0.1.9, FasterScroll 1.17.0, NoPromo 0.1.13, bsdc 0.6.4, bstheater 0.1.0, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpand
+=== end ===
+
