@@ -1,0 +1,163 @@
+=== Vivify 0.15.33 native crash at 1794980770 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x4
+thread 27398 'Thread-3'
+pc 0x709126f740  lr 0x709126f6f8  sp 0x6f9f04e480  fp 0x6f9f04e7b0
+backtrace:
+  #00 pc 0x709126f740  libunity.so +0x13ee740
+  #01 lr 0x709126f6f8  libunity.so +0x13ee6f8
+  #02 fp 0x70914559f4  libunity.so +0x15d49f4
+  #03 fp 0x7217116334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify custom event: type='Blit' time=12.773334 songTime=12.774575
+  Vivify Blit event: time=12.773334 asset='<none>' source='_Main' targets=1 priority=-11 pass=-1 order=7 durationBeats=0
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify custom event: type='SetRenderingSettings' time=12.8 songTime=12.804976
+  Vivify SetRenderingSettings: time=12.8 durationSeconds=0 immediate=true
+  Vivify custom event: type='DestroyObject' time=12.8 songTime=12.804976
+  Vivify DestroyObject: destroying live prefab id='clockscene'
+  Vivify custom event: type='SetGlobalProperty' time=12.8 songTime=12.804976
+  Vivify custom event: type='InstantiatePrefab' time=12.8 songTime=12.804976
+  Vivify InstantiatePrefab: asset='assets/monitor/monitorscene.prefab' id='monitorscene' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='monitorscene' asset='assets/monitor/monitorscene.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify custom event: type='Blit' time=12.8 songTime=12.804976
+  Vivify material: context=Blit asset=assets/blendexperiment/blender.mat material='Blender' shader='PostProcessing/Difference' supported=true internalError=false
+  Vivify Blit event: time=12.8 asset='assets/blendexperiment/blender.mat' source='_Main' targets=1 priority=-12 pass=-1 order=7 durationBeats=16
+  Vivify custom event: type='SetCameraProperty' time=12.8 songTime=12.804976
+  Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=true bloomPrePass=unset mainEffect=unset
+  Vivify custom event: type='Blit' time=12.8 songTime=12.804976
+  Vivify material: context=Blit asset=assets/shaders/distortnotes/one.mat material='One' shader='PostProcessing/DistortNotes' supported=true internalError=false
+  Vivify Blit event: time=12.8 asset='assets/shaders/distortnotes/one.mat' source='_Main' targets=1 priority=2 pass=0 order=7 durationBeats=64
+  Vivify culling pass on 'MainCamera': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x3d3bff37
+  Vivify culling pass on 'MirrorCam-86334': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x25107f20
+  Vivify culling pass on 'MirrorCam-86334': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x25107f20
+=== end ===
+
+=== Vivify 0.15.33 native crash at 1794980778 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x71833e3f08
+thread 30114 'UnityMain'
+pc 0x721710d6fc  lr 0x6f16f630ec  sp 0x70f4858a10  fp 0x70f4858dd0
+backtrace:
+  #00 pc 0x721710d6fc  libc.so +0xc76fc
+  #01 lr 0x6f16f630ec  libMultiplayerCore.so +0x41d0ec
+  #02 fp 0x6f16e6df54  libMultiplayerCore.so +0x327f54
+  #03 fp 0x6f16f625f4  libMultiplayerCore.so +0x41c5f4 (late_load +0xce8)
+  #04 fp 0x7101f86b9c  libsl2.so +0x543b9c
+  #05 fp 0x70876c7fb4  libunity.so +0xab1fb4
+  #06 fp 0x72190956c3
+last Vivify log lines (oldest first):
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify custom event: type='Blit' time=12.773334 songTime=12.774575
+  Vivify crash report:   Vivify Blit event: time=12.773334 asset='<none>' source='_Main' targets=1 priority=-11 pass=-1 order=7 durationBeats=0
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify custom event: type='SetRenderingSettings' time=12.8 songTime=12.804976
+  Vivify crash report:   Vivify SetRenderingSettings: time=12.8 durationSeconds=0 immediate=true
+  Vivify crash report:   Vivify custom event: type='DestroyObject' time=12.8 songTime=12.804976
+  Vivify crash report:   Vivify DestroyObject: destroying live prefab id='clockscene'
+  Vivify crash report:   Vivify custom event: type='SetGlobalProperty' time=12.8 songTime=12.804976
+  Vivify crash report:   Vivify custom event: type='InstantiatePrefab' time=12.8 songTime=12.804976
+  Vivify crash report:   Vivify InstantiatePrefab: asset='assets/monitor/monitorscene.prefab' id='monitorscene' alreadyLive=false
+  Vivify crash report:   Vivify InstantiatePrefab spawned: id='monitorscene' asset='assets/monitor/monitorscene.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify crash report:   Vivify custom event: type='Blit' time=12.8 songTime=12.804976
+  Vivify crash report:   Vivify material: context=Blit asset=assets/blendexperiment/blender.mat material='Blender' shader='PostProcessing/Difference' supported=true internalError=false
+  Vivify crash report:   Vivify Blit event: time=12.8 asset='assets/blendexperiment/blender.mat' source='_Main' targets=1 priority=-12 pass=-1 order=7 durationBeats=16
+  Vivify crash report:   Vivify custom event: type='SetCameraProperty' time=12.8 songTime=12.804976
+  Vivify crash report:   Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=true bloomPrePass=unset mainEffect=unset
+  Vivify crash report:   Vivify custom event: type='Blit' time=12.8 songTime=12.804976
+  Vivify crash report:   Vivify material: context=Blit asset=assets/shaders/distortnotes/one.mat material='One' shader='PostProcessing/DistortNotes' supported=true internalError=false
+  Vivify crash report:   Vivify Blit event: time=12.8 asset='assets/shaders/distortnotes/one.mat' source='_Main' targets=1 priority=2 pass=0 order=7 durationBeats=64
+  Vivify crash report:   Vivify culling pass on 'MainCamera': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x3d3bff37
+  Vivify crash report:   Vivify culling pass on 'MirrorCam-86334': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x25107f20
+  Vivify crash report:   Vivify culling pass on 'MirrorCam-86334': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x25107f20
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
+=== Vivify 0.15.33 native crash at 1794980786 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7194feb94c
+thread 30361 'UnityMain'
+pc 0x721710d6e4  lr 0x70ab79fb3c  sp 0x7096bf8ae0  fp 0x7096bf8ea0
+backtrace:
+  #00 pc 0x721710d6e4  libc.so +0xc76e4
+  #01 lr 0x70ab79fb3c  libEasyOffsetQuest.so +0x19db3c
+  #02 fp 0x70ab79ff40  libEasyOffsetQuest.so +0x19df40
+  #03 fp 0x70ab728240  libEasyOffsetQuest.so +0x126240
+  #04 fp 0x70ab7325f0  libEasyOffsetQuest.so +0x1305f0 (late_load +0xb0)
+  #05 fp 0x71045fe7a8  libsl2.so +0x5437a8
+  #06 fp 0x7098933fb4  libunity.so +0xab1fb4
+  #07 fp 0x72190956c3
+last Vivify log lines (oldest first):
+  Vivify crash report:   Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify crash report:   Vivify custom event: type='Blit' time=12.773334 songTime=12.774575
+  Vivify crash report:   Vivify crash report:   Vivify Blit event: time=12.773334 asset='<none>' source='_Main' targets=1 priority=-11 pass=-1 order=7 durationBeats=0
+  Vivify crash report:   Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify crash report:   Vivify custom event: type='SetRenderingSettings' time=12.8 songTime=12.804976
+  Vivify crash report:   Vivify crash report:   Vivify SetRenderingSettings: time=12.8 durationSeconds=0 immediate=true
+  Vivify crash report:   Vivify crash report:   Vivify custom event: type='DestroyObject' time=12.8 songTime=12.804976
+  Vivify crash report:   Vivify crash report:   Vivify DestroyObject: destroying live prefab id='clockscene'
+  Vivify crash report:   Vivify crash report:   Vivify custom event: type='SetGlobalProperty' time=12.8 songTime=12.804976
+  Vivify crash report:   Vivify crash report:   Vivify custom event: type='InstantiatePrefab' time=12.8 songTime=12.804976
+  Vivify crash report:   Vivify crash report:   Vivify InstantiatePrefab: asset='assets/monitor/monitorscene.prefab' id='monitorscene' alreadyLive=false
+  Vivify crash report:   Vivify crash report:   Vivify InstantiatePrefab spawned: id='monitorscene' asset='assets/monitor/monitorscene.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify crash report:   Vivify crash report:   Vivify custom event: type='Blit' time=12.8 songTime=12.804976
+  Vivify crash report:   Vivify crash report:   Vivify material: context=Blit asset=assets/blendexperiment/blender.mat material='Blender' shader='PostProcessing/Difference' supported=true internalError=false
+  Vivify crash report:   Vivify crash report:   Vivify Blit event: time=12.8 asset='assets/blendexperiment/blender.mat' source='_Main' targets=1 priority=-12 pass=-1 order=7 durationBeats=16
+  Vivify crash report:   Vivify crash report:   Vivify custom event: type='SetCameraProperty' time=12.8 songTime=12.804976
+  Vivify crash report:   Vivify crash report:   Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=true bloomPrePass=unset mainEffect=unset
+  Vivify crash report:   Vivify crash report:   Vivify custom event: type='Blit' time=12.8 songTime=12.804976
+  Vivify crash report:   Vivify crash report:   Vivify material: context=Blit asset=assets/shaders/distortnotes/one.mat material='One' shader='PostProcessing/DistortNotes' supported=true internalError=false
+  Vivify crash report:   Vivify crash report:   Vivify Blit event: time=12.8 asset='assets/shaders/distortnotes/one.mat' source='_Main' targets=1 priority=2 pass=0 order=7 durationBeats=64
+  Vivify crash report:   Vivify crash report:   Vivify culling pass on 'MainCamera': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x3d3bff37
+  Vivify crash report:   Vivify crash report:   Vivify culling pass on 'MirrorCam-86334': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x25107f20
+  Vivify crash report:   Vivify crash report:   Vivify culling pass on 'MirrorCam-86334': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x25107f20
+  Vivify crash report:   Vivify crash report: === end ===
+  Vivify crash report:   Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
