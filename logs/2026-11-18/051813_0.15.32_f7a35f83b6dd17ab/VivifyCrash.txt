@@ -1,0 +1,52 @@
+=== Vivify 0.15.32 native crash at 1794979080 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x9d48
+thread 4434 'Thread-3'
+pc 0x70a39f0740  lr 0x70a39f06f8  sp 0x6fb3128480  fp 0x6fb31287b0
+backtrace:
+  #00 pc 0x70a39f0740  libunity.so +0x13ee740
+  #01 lr 0x70a39f06f8  libunity.so +0x13ee6f8
+  #02 fp 0x70a3bd69f4  libunity.so +0x15d49f4
+  #03 fp 0x7208d19334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify material 'Water': '_InvertNormals' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'Water': '_TexCoordSpace' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'Water': '_TexCoordSpaceSwizzle' is an int in shader 'Mochie/Water'; set as integer 1
+  Vivify material 'Water': '_VisualizeFlowmap' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'Water 2': '_BackfaceReflections' is an int in shader 'Mochie/Water'; set as integer 1
+  Vivify material 'Water 2': '_BlendNoiseSource' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'Water 2': '_DetailTextureMode' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'Water 2': '_FlowMapUV' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'Water 2': '_InvertNormals' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'Water 2': '_TexCoordSpace' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'Water 2': '_TexCoordSpaceSwizzle' is an int in shader 'Mochie/Water'; set as integer 1
+  Vivify material 'Water 2': '_VisualizeFlowmap' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify: maps may turn realtime reflection probes on (full quality)
+  Vivify: 'Map Realtime Shadows' is on; the game's shadow quality is left as it is
+  Vivify preload prefab: asset='assets/main.prefab' id='main1' instance=true
+  Vivify preload prefab: asset='assets/drop thing.prefab' id='drop1' instance=true
+  Vivify preload prefab: asset='assets/post drop.prefab' id='idk1' instance=true
+  Vivify PreloadInstantiatePrefabs: 3 prefab event(s) preloaded
+  Vivify catch-up event: type='Blit' time=0
+  Vivify material: context=Blit asset=assets/shaders/material.mat material='material' shader='Custom/BitcrushEffect' supported=true internalError=false
+  Vivify Blit event: time=0 asset='assets/shaders/material.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=99999
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/main.prefab' id='main1' alreadyLive=false
+  Vivify: watching cameras (reflection probes, the map's HUD)
+  Vivify InstantiatePrefab spawned: id='main1' asset='assets/main.prefab' tracks=0 animators=1 offscreenCulled=1
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/rsih saber.prefab' tracks=0 additive=false saberType=0
+  Vivify AssignObjectPrefab(trail): asset='assets/rsih saber/mats/rsih_saber_trail.mat' saberType=0 additive=false
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/rsih saber.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/rsih saber/mats/rsih_saber_trail.mat' saberType=1 additive=false
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=8 hiddenOriginals=6
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber replaced (type 0): models=1 trails=1 spawned=2 renderers=8 hiddenOriginals=6
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_realtimeReflectionProbes'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_realtimeReflectionProbes'
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 4 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=7 livePrefabs=1 preloadedPrefabs=3
+=== end ===
+
