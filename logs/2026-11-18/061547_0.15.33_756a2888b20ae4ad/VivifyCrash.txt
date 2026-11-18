@@ -1,0 +1,111 @@
+=== Vivify 0.15.33 native crash at 1794982533 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0xa0977434001c8
+thread 20722 'UnityMain'
+pc 0x7077c69538  lr 0x707558f840  sp 0x70f6a2fd40  fp 0x70f6a2fda0
+backtrace:
+  #00 pc 0x7077c69538  libil2cpp.so +0x4894538
+  #01 lr 0x707558f840  libil2cpp.so +0x21ba840
+  #02 fp 0x707558f78c  libil2cpp.so +0x21ba78c
+  #03 fp 0x6ebaddf760  libVivify.so +0x397760
+  #04 fp 0x6ebadde42c  libVivify.so +0x39642c
+  #05 fp 0x6ebad2f1f8  libVivify.so +0x2e71f8 (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+  #06 fp 0x6ebac3bba0  libVivify.so +0x1f3ba0
+  #07 fp 0x707558f840  libil2cpp.so +0x21ba840
+  #08 fp 0x707558f78c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify custom event: type='SetMaterialProperty' time=36.705883 songTime=36.71039
+  Vivify custom event: type='SetMaterialProperty' time=36.705883 songTime=36.71039
+  Vivify custom event: type='Blit' time=36.705883 songTime=36.71039
+  Vivify material: context=Blit asset=assets/materials/pp_glitch.mat material='PP_Glitch' shader='nasafrasa/PostProcessing/FMS_Cat/Glitch' supported=true internalError=false
+  Vivify Blit event: time=36.705883 asset='assets/materials/pp_glitch.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=0.5
+  Vivify custom event: type='InstantiatePrefab' time=36.705883 songTime=36.71039
+  Vivify InstantiatePrefab: asset='assets/sky2.prefab' id='Sky2 - Fractal' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='Sky2 - Fractal' asset='assets/sky2.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify custom event: type='DestroyObject' time=36.705883 songTime=36.71039
+  Vivify DestroyObject: destroying live prefab id='Sky1 - Galaxy'
+  Vivify custom event: type='DestroyObject' time=36.705883 songTime=36.71039
+  Vivify DestroyObject: destroying live prefab id='Skybox1 - Space'
+=== end ===
+
+=== Vivify 0.15.33 native crash at 1794982541 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x718c565204
+thread 23761 'UnityMain'
+pc 0x721710d6e4  lr 0x6f1ef7de58  sp 0x70f8a3ab10  fp 0x70f8a3aed0
+backtrace:
+  #00 pc 0x721710d6e4  libc.so +0xc76e4
+  #01 lr 0x6f1ef7de58  libBetterSongSearch.so +0x378e58
+  #02 fp 0x6f1ef79f20  libBetterSongSearch.so +0x374f20 (late_load +0x1248)
+  #03 fp 0x7103957b9c  libsl2.so +0x543b9c
+  #04 fp 0x709030efb4  libunity.so +0xab1fb4
+  #05 fp 0x72190956c3
+last Vivify log lines (oldest first):
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify crash report:   Vivify custom event: type='SetMaterialProperty' time=36.705883 songTime=36.71039
+  Vivify crash report:   Vivify custom event: type='SetMaterialProperty' time=36.705883 songTime=36.71039
+  Vivify crash report:   Vivify custom event: type='Blit' time=36.705883 songTime=36.71039
+  Vivify crash report:   Vivify material: context=Blit asset=assets/materials/pp_glitch.mat material='PP_Glitch' shader='nasafrasa/PostProcessing/FMS_Cat/Glitch' supported=true internalError=false
+  Vivify crash report:   Vivify Blit event: time=36.705883 asset='assets/materials/pp_glitch.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=0.5
+  Vivify crash report:   Vivify custom event: type='InstantiatePrefab' time=36.705883 songTime=36.71039
+  Vivify crash report:   Vivify InstantiatePrefab: asset='assets/sky2.prefab' id='Sky2 - Fractal' alreadyLive=false
+  Vivify crash report:   Vivify InstantiatePrefab spawned: id='Sky2 - Fractal' asset='assets/sky2.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify crash report:   Vivify custom event: type='DestroyObject' time=36.705883 songTime=36.71039
+  Vivify crash report:   Vivify DestroyObject: destroying live prefab id='Sky1 - Galaxy'
+  Vivify crash report:   Vivify custom event: type='DestroyObject' time=36.705883 songTime=36.71039
+  Vivify crash report:   Vivify DestroyObject: destroying live prefab id='Skybox1 - Space'
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
