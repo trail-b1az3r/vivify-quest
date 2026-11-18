@@ -1,0 +1,258 @@
+=== Vivify 0.15.20 native crash at 1794917101 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27fe00001d79
+thread 7584 'UnityMain'
+pc 0x7ebdcee9d8  lr 0x7ebdcee9a8  sp 0x7da6301650  fp 0x7da63016f0
+backtrace:
+  #00 pc 0x7ebdcee9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7ebdcee9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7d2d702c64  libmetacore.so +0xcdc64
+  #03 fp 0x7e2c1d6674  libart.so +0x646674 (_ZN3art7Runtime5AbortEPKc +0x5b4)
+  #04 fp 0x7ec9d8f500  libbase.so +0x19500
+  #05 fp 0x7ec9d8ea04  libbase.so +0x18a04 (_ZN7android4base10LogMessageD1Ev +0x164)
+  #06 fp 0x7e2bfe9414  libart.so +0x459414 (_ZN3art9JavaVMExt8JniAbortEPKcS2_ +0x9d4)
+  #07 fp 0x7e2bfe9490  libart.so +0x459490 (_ZN3art9JavaVMExt9JniAbortVEPKcS2_St9__va_list +0x70)
+  #08 fp 0x7e2bfdb450  libart.so +0x44b450
+  #09 fp 0x7e2bfde248  libart.so +0x44e248
+  #10 fp 0x7e2bfdd148  libart.so +0x44d148
+  #11 fp 0x7e2bfcbb9c  libart.so +0x43bb9c
+  #12 fp 0x7b9b94dce0  libHeartBeatQuest.so +0x254ce0 (_ZN7_JNIEnv13CallIntMethodEP8_jobjectP10_jmethodIDz +0x78)
+  #13 fp 0x7b9b94d368  libHeartBeatQuest.so +0x254368 (_ZN9HeartBeat9ModObject17OnApplicationQuitEv +0x28)
+  #14 fp 0x7b9b94bc94  libHeartBeatQuest.so +0x252c94 (_ZN12custom_types15invoker_creatorIMN9HeartBeat9ModObjectEFvvEE15instance_invokeITpTnmJEEEvPFvPS2_ES7_PPvNSt6__ndk116integer_sequenceImJXspT_EEEESA_ +0x30)
+  #15 fp 0x7d196b8840  libil2cpp.so +0x21ba840
+  #16 fp 0x7d196b878c  libil2cpp.so +0x21ba78c
+  #17 fp 0x7ecb3816c3
+  #18 fp 0x7da6302f40
+last Vivify log lines (oldest first):
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.05,1.46,0.14) fwd=(-0.05,0.00,1.00)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3fd67 (Godzilla - LeChoobie (feat. Astellic))' isCustom=true hasDetails=true
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(0.05,1.47,0.18) fwd=(0.21,-0.02,0.98)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.17,1.47,0.18) fwd=(-0.02,-0.02,1.00)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/46cee (It's Me - Nolanimations & Awzzie)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/b94b (chaos eater  - Schwank & Lobster)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/42d4e (Simulation - VoltageO)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/42d4e (Simulation - VoltageO)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b3da (CENSORED!! - Saltyfish)' isCustom=true hasDetails=true
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(-0.04,1.48,-0.03) fwd=(0.13,0.03,0.99)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.08,1.48,-0.03) fwd=(-0.07,-0.01,1.00)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b3da (CENSORED!! - Saltyfish)' isCustom=true hasDetails=true
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(0.05,1.48,-0.01) fwd=(-0.67,0.07,0.74)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.13,1.48,0.02) fwd=(-0.08,0.05,0.99)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54382 (MARCESCENCE - guy4n)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b3da (CENSORED!! - Saltyfish)' isCustom=true hasDetails=true
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(-0.07,1.50,-0.08) fwd=(0.24,0.01,0.97)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.07,1.50,-0.07) fwd=(0.23,0.00,0.97)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.55,-0.12) fwd=(0.80,0.48,0.36)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.05,1.54,-0.09) fwd=(0.77,0.44,0.47)
+  Vivify main camera cullingMask is now 0x3d3aff37
+=== end ===
+
+=== Vivify 0.15.20 native crash at 1794948919 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27fe000069e2
+thread 27177 'UnityMain'
+pc 0x7ebdcee9d8  lr 0x7ebdcee9a8  sp 0x7d22b62970  fp 0x7d22b62a10
+backtrace:
+  #00 pc 0x7ebdcee9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7ebdcee9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7d3c50dc64  libmetacore.so +0xcdc64
+  #03 fp 0x7d24d93114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x7d24d93264  libil2cpp.so +0x2226264
+  #05 fp 0x7dad306d48  libsl2.so +0x4fad48
+  #06 fp 0x7dad306ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7b45a37400  libdiscordrichpresence.so +0x1c3400
+  #08 fp 0x7d24df20c8  libil2cpp.so +0x22850c8
+  #09 fp 0x7d24d2778c  libil2cpp.so +0x21ba78c
+  #10 fp 0x7b52855384  libplaylistcore.so +0x22d384
+  #11 fp 0x7b52854388  libplaylistcore.so +0x22c388 (_ZN52Hook_LevelCollectionNavigationController_DidActivate52hook_LevelCollectionNavigationController_DidActivateEPN15GlobalNamespace35LevelCollectionNavigationControllerEbbb +0x60c)
+  #12 fp 0x7b528d611c  libplaylistcore.so +0x2ae11c
+  #13 fp 0x7b4f49ce44  libbsl.so +0x139e44
+  #14 fp 0x7d24df20c8  libil2cpp.so +0x22850c8
+  #15 fp 0x7ba43b10a8  libRandomSongPicker.so +0x1220a8
+  #16 fp 0x7b4ab54964  libchatplex-sdk-bs.so +0x6dc964
+  #17 fp 0x7d24df20c8  libil2cpp.so +0x22850c8
+  #18 fp 0x7d24d2778c  libil2cpp.so +0x21ba78c
+  #19 fp 0x7d266d82a0  libil2cpp.so +0x3b6b2a0
+last Vivify log lines (oldest first):
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Installing hook: SaberModelController_Init to offset: 0x7d26758928
+  Installing hook: GameNoteController_Init to offset: 0x7d266561d0
+  Installing hook: BombNoteController_Init to offset: 0x7d266532d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x7d26654668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7d266f6bb8
+  Installing hook: NoteDebris_Init to offset: 0x7d266592e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7d26bed968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x7d2654b018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7d26bf0e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7d26bf09f0
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7d26bf1f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7d26bf17f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x7d266a037c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x7d266a058c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7d266a0658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7d266a0560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7d266a03e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7d266a04a4
+  Installing hook: PauseController_Pause to offset: 0x7d267127ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7d2671cc54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7d2671d734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7d2671d094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7d2671cd88
+  Installing hook: GamePause_Resume to offset: 0x7d26718178
+  Vivify: loaded mods (94): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  .0, /data/user/0/com.beatgames.beatsaber/files/libs/libreflectcpp.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libsongdetails.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libtinyxml2.so 0.0.0, DlcSorter 0.1.13, Fa
+  bomb-qolorer 0.2.1, AudioLink 0.1.6, BetterSongList 1.0.8, CameraUtils 1.1.11, ChatPlexSDK-BS 6.4.5, Chroma 2.10.3, CustomModels 1.2.1, cyrillic-fix 1.0.0, DiscordRichPresence 0.3.5, Qounters++ 1.1.5, expcounter 0.2.0, HitScoreVisualizer 3
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.86,1.45,-1.93) fwd=(-0.54,-0.19,0.82)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify Send Logs: upload failed (http 503, curl 0)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.51,-0.83) fwd=(0.07,0.19,0.98)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.35,1.48,-0.11) fwd=(0.04,-0.04,1.00)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+=== end ===
+
+=== Vivify 0.15.20 native crash at 1794949015 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27fe00001f36
+thread 8138 'UnityMain'
+pc 0x7ebdcee9d8  lr 0x7ebdcee9a8  sp 0x7d9e242970  fp 0x7d9e242a10
+backtrace:
+  #00 pc 0x7ebdcee9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7ebdcee9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7d3630ec64  libmetacore.so +0xcdc64
+  #03 fp 0x7d15674114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x7d15674264  libil2cpp.so +0x2226264
+  #05 fp 0x7daf542d48  libsl2.so +0x4fad48
+  #06 fp 0x7daf542ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7b4187b400  libdiscordrichpresence.so +0x1c3400
+  #08 fp 0x7d156d30c8  libil2cpp.so +0x22850c8
+  #09 fp 0x7d1560878c  libil2cpp.so +0x21ba78c
+  #10 fp 0x7b4f837384  libplaylistcore.so +0x22d384
+  #11 fp 0x7b4f836388  libplaylistcore.so +0x22c388 (_ZN52Hook_LevelCollectionNavigationController_DidActivate52hook_LevelCollectionNavigationController_DidActivateEPN15GlobalNamespace35LevelCollectionNavigationControllerEbbb +0x60c)
+  #12 fp 0x7b4f8b811c  libplaylistcore.so +0x2ae11c
+  #13 fp 0x7b4c7f1e44  libbsl.so +0x139e44
+  #14 fp 0x7d156d30c8  libil2cpp.so +0x22850c8
+  #15 fp 0x7b9b9b40a8  libRandomSongPicker.so +0x1220a8
+  #16 fp 0x7b4975f964  libchatplex-sdk-bs.so +0x6dc964
+  #17 fp 0x7d156d30c8  libil2cpp.so +0x22850c8
+  #18 fp 0x7d1560878c  libil2cpp.so +0x21ba78c
+  #19 fp 0x7d16fb92a0  libil2cpp.so +0x3b6b2a0
+last Vivify log lines (oldest first):
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Installing hook: SaberModelController_Init to offset: 0x7d17039928
+  Installing hook: GameNoteController_Init to offset: 0x7d16f371d0
+  Installing hook: BombNoteController_Init to offset: 0x7d16f342d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x7d16f35668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7d16fd7bb8
+  Installing hook: NoteDebris_Init to offset: 0x7d16f3a2e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7d174ce968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x7d16e2c018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7d174d1e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7d174d19f0
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7d174d2f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7d174d27f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x7d16f8137c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x7d16f8158c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7d16f81658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7d16f81560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7d16f813e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7d16f814a4
+  Installing hook: PauseController_Pause to offset: 0x7d16ff37ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7d16ffdc54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7d16ffe734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7d16ffe094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7d16ffdd88
+  Installing hook: GamePause_Resume to offset: 0x7d16ff9178
+  Vivify: loaded mods (94): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  .0, /data/user/0/com.beatgames.beatsaber/files/libs/libreflectcpp.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libsongdetails.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libtinyxml2.so 0.0.0, DlcSorter 0.1.13, Fa
+  bomb-qolorer 0.2.1, AudioLink 0.1.6, BetterSongList 1.0.8, CameraUtils 1.1.11, ChatPlexSDK-BS 6.4.5, Chroma 2.10.3, CustomModels 1.2.1, cyrillic-fix 1.0.0, DiscordRichPresence 0.3.5, Qounters++ 1.1.5, expcounter 0.2.0, HitScoreVisualizer 3
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify Send Logs: upload failed (http 503, curl 0)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.07,1.51,-0.47) fwd=(0.31,0.28,0.91)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.30,1.46,-0.54) fwd=(-0.85,-0.08,0.52)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.42,1.48,-0.50) fwd=(-0.82,0.05,0.57)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+=== end ===
+
+=== Vivify 0.15.20 native crash at 1794949903 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x10
+thread 14970 'UnityMain'
+pc 0x7b4e835970  lr 0x7b4e8358fc  sp 0x7d32d10530  fp 0x7d32d117a0
+backtrace:
+  #00 pc 0x7b4e835970  libmpex.so +0x1eb970 (_ZN21MultiplayerExtensions8Patchers18EnvironmentPatcher19LightInjectionFixesEPN15GlobalNamespace21GameplayCoreInstallerE +0x1678)
+  #01 lr 0x7b4e8358fc  libmpex.so +0x1eb8fc (_ZN21MultiplayerExtensions8Patchers18EnvironmentPatcher19LightInjectionFixesEPN15GlobalNamespace21GameplayCoreInstallerE +0x1604)
+  #02 fp 0x7b4e7e203c  libmpex.so +0x19803c
+  #03 fp 0x7b4d8a84a4  libnoodleextensions.so +0x2464a4
+  #04 fp 0x7b3bdc516c  libreesabers.so +0xd2316c (_ZN9ReeSabers28Hook_OnGameplayCoreInstaller28hook_OnGameplayCoreInstallerEPN15GlobalNamespace21GameplayCoreInstallerE +0x1c)
+  #05 fp 0x7b3bdc9b08  libreesabers.so +0xd27b08
+  #06 fp 0x7d2576f074  libil2cpp.so +0x4b24074
+last Vivify log lines (oldest first):
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/bokehmat.mat material='bokehMat' shader='GirlHell/Pixel' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/bonedustmat.mat material='boneDustMat' shader='GirlHell/BoneDust' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/bonemat.mat material='boneMat' shader='GirlHell/Flat' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/brainmat.mat material='brainMat' shader='GirlHell/Flat' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/chainmat.mat material='chainMat' shader='GirlHell/Flat' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/damagemat.mat material='damageMat' shader='GirlHell/BrainDamage' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/dustmat.mat material='dustMat' shader='GirlHell/Dust' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/endcardmat.mat material='endCardMat' shader='GirlHell/Sign' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/fragbonemat.mat material='fragBoneMat' shader='GirlHell/Flat' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/fragheartmat.mat material='fragHeartMat' shader='GirlHell/Flat' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/ghostcyanmat.mat material='ghostCyanMat' shader='GirlHell/Ghost' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/ghostmagentamat.mat material='ghostMagentaMat' shader='GirlHell/Ghost' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/glitchmat.mat material='glitchMat' shader='GirlHell/Glitch' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/heartfxmat.mat material='heartFxMat' shader='GirlHell/HeartFX' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/heartmat.mat material='heartMat' shader='GirlHell/Flat' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/lightningmat.mat material='lightningMat' shader='GirlHell/Lightning' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/monitormat.mat material='monitorMat' shader='GirlHell/MonitorScreen' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/neuronmat.mat material='neuronMat' shader='GirlHell/Neurons' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/notefleshmat.mat material='noteFleshMat' shader='GirlHell/NoteFlesh' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/noteglitchmat.mat material='noteGlitchMat' shader='GirlHell/NoteGlitch' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/noteglitchmatl.mat material='noteGlitchMatL' shader='GirlHell/NoteGlitch' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/noteglitchmatr.mat material='noteGlitchMatR' shader='GirlHell/NoteGlitch' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/noteneuronmat.mat material='noteNeuronMat' shader='GirlHell/NoteNeuron' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/pixelmat.mat material='pixelMat' shader='GirlHell/Pixel' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/risemat.mat material='riseMat' shader='GirlHell/Rise' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/signmat.mat material='signMat' shader='GirlHell/Sign' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/sizemat.mat material='sizeMat' shader='GirlHell/SizeText' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/skullmat.mat material='skullMat' shader='GirlHell/Flat' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/slowmat.mat material='slowMat' shader='GirlHell/SlowMo' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/sparkmat.mat material='sparkMat' shader='GirlHell/Pixel' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/staticmat.mat material='staticMat' shader='GirlHell/StaticWalls' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/tvonmat.mat material='tvOnMat' shader='GirlHell/TVOn' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/veinmat.mat material='veinMat' shader='GirlHell/Veins' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/vhsmat.mat material='vhsMat' shader='GirlHell/VHS' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/wavebigmat.mat material='waveBigMat' shader='GirlHell/Wave' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/wavemat.mat material='waveMat' shader='GirlHell/Wave' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/zapmat.mat material='zapMat' shader='GirlHell/Zap' supported=true internalError=false
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/550ba ([VIVIFY] GIRL HELL 1999 - Error404)/bundleAndroid2021.vivify' -> needed by GirlHell/SizeText, GirlHell/VHS, GirlHell/TVOn, GirlHell/BrainDa
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=111
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bee7 (LET THE WORLD BURN  - )' isCustom=true hasDetails=true
+=== end ===
+
