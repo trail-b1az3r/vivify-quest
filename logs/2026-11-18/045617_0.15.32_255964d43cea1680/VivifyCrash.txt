@@ -1,0 +1,57 @@
+=== Vivify 0.15.32 native crash at 1794977769 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x25000000d4
+thread 16078 'UnityMain'
+pc 0x79e9b711a4  lr 0x79e9702ea0  sp 0x7a4c47ba00  fp 0x7a4c47baa0
+backtrace:
+  #00 pc 0x79e9b711a4  libunity.so +0xb411a4
+  #01 lr 0x79e9702ea0  libunity.so +0x6d2ea0
+  #02 fp 0x79e430378c  libil2cpp.so +0x21ba78c
+  #03 fp 0x78240b3958  libchroma.so +0x278958 (_ZN6Chroma29EnvironmentEnhancementManager17GetAllGameObjectsEv +0x154)
+  #04 fp 0x78240b8e18  libchroma.so +0x27de18 (_ZN6Chroma29EnvironmentEnhancementManager4InitEPN14CustomJSONData17CustomBeatmapDataEPN7Zenject11DiContainerE +0x470)
+  #05 fp 0x782404e454  libchroma.so +0x213454
+  #06 fp 0x7a08fd69c4  libcustom-types.so +0x2d49c4
+  #07 fp 0x79e69f34a8  libil2cpp.so +0x48aa4a8
+  #08 fp 0x79e430378c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.SetRoomTransformOffset skipped: isolation toggle enabled
+  VRCenterAdjust.OnEnable skipped: isolation toggle enabled
+  VRCenterAdjust.OnDisable skipped: isolation toggle enabled
+  VRCenterAdjust.OnDisable skipped: isolation toggle enabled
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.05,1.82,-0.07) fwd=(0.00,-0.05,1.00)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=1 preloaded=2 synced=0 secondaryCameras=0 declaredTextures=0 assets=24
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify Send Logs: uploaded 2 file part(s), 520 KB (logs/2026-11-18/045541_0.15.32_fb048acfd17627a0 085ca25; stored 2, deduplicated 0; 3145873 bytes saved cumulatively
+  )
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongLoader/CustomWIPLevels/Asriel Dreemurr Bossfight' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=true geometryEffects=false
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongLoader/CustomWIPLevels/Asriel Dreemurr Bossfight/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle already preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongLoader/CustomWIPLevels/Asriel Dreemurr Bossfight/bundleAndroid2021.vivify'
+  Vivify: the Replay mod's button is clickable again now that the map is ready
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.
+  Vivify saber chain saberNode: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Lo
+  Vivify saber chain initParent: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- L
+  Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(-0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=
+  Vivify saber chain saberNode: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+  Vivify saber chain initParent: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <-
+=== end ===
+
