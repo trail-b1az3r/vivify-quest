@@ -1,0 +1,135 @@
+=== Vivify 0.15.17 native crash at 1794811864 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7ab939e4c0
+thread 19212 'UnityMain'
+pc 0x7b646e953c  lr 0x78672e8ac0  sp 0x7a442bb850  fp 0x7a442bbc10
+backtrace:
+  #00 pc 0x7b646e953c  libc.so +0xc653c
+  #01 lr 0x78672e8ac0  libsongcore.so +0x4d6ac0
+  #02 fp 0x78671c15b0  libsongcore.so +0x3af5b0
+  #03 fp 0x78672e29c4  libsongcore.so +0x4d09c4 (late_load +0xd30)
+  #04 fp 0x7a50161b9c  libsl2.so +0x543b9c
+  #05 fp 0x79d2b17fb4  libunity.so +0xab1fb4
+  #06 fp 0x7b6dea16c3
+  #07 fp 0x7a442bcf40
+last Vivify log lines (oldest first):
+  Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global.txt
+  Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+  Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
+=== Vivify 0.15.17 native crash at 1794886862 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x1cb
+thread 19654 'UnityMain'
+pc 0x79cdec6538  lr 0x79cb7ec840  sp 0x7a464664c0  fp 0x7a46466520
+backtrace:
+  #00 pc 0x79cdec6538  libil2cpp.so +0x4894538
+  #01 lr 0x79cb7ec840  libil2cpp.so +0x21ba840
+  #02 fp 0x79cb7ec78c  libil2cpp.so +0x21ba78c
+  #03 fp 0x781d04a9c4  libVivify.so +0x34e9c4
+  #04 fp 0x781d046fa0  libVivify.so +0x34afa0
+  #05 fp 0x781cfab110  libVivify.so +0x2af110 (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+  #06 fp 0x781cec8a50  libVivify.so +0x1cca50
+  #07 fp 0x79cb7ec840  libil2cpp.so +0x21ba840
+  #08 fp 0x79cb7ec78c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify custom event: type='Blit' time=44.57143 songTime=44.58539
+  Vivify material: context=Blit asset=assets/shader/oldmat.mat material='oldmat' shader='Hidden/Old' supported=true internalError=false
+  Vivify Blit event: time=44.57143 asset='assets/shader/oldmat.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=0.125
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify CreateScreenTexture: id='_Old1' size=1680x1760 layers=2 dimension=5 graphicsFormat=4 filter=-1
+=== end ===
+
+=== Vivify 0.15.17 native crash at 1794962700 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x50000003b
+thread 27601 'UnityMain'
+pc 0x79eeb47ea4  lr 0x79eeb47ea0  sp 0x7a05df6800  fp 0x7a05df68a0
+backtrace:
+  #00 pc 0x79eeb47ea4  libunity.so +0x6d2ea4
+  #01 lr 0x79eeb47ea0  libunity.so +0x6d2ea0
+  #02 fp 0x79e8dd878c  libil2cpp.so +0x21ba78c
+  #03 fp 0x781f085958  libchroma.so +0x278958 (_ZN6Chroma29EnvironmentEnhancementManager17GetAllGameObjectsEv +0x154)
+  #04 fp 0x781f08ae18  libchroma.so +0x27de18 (_ZN6Chroma29EnvironmentEnhancementManager4InitEPN14CustomJSONData17CustomBeatmapDataEPN7Zenject11DiContainerE +0x470)
+  #05 fp 0x781f020454  libchroma.so +0x213454
+  #06 fp 0x7a066ee9c4  libcustom-types.so +0x2d49c4
+  #07 fp 0x79eb4c84a8  libil2cpp.so +0x48aa4a8
+  #08 fp 0x79e8dd878c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/52ec6 (Raise Up Your Bat - CyanIsGooder)/bundleAndroid2021.vivify'
+  Vivify material: context=bundle-load asset=assets/materials/spritesbackground.mat material='SpritesBackground' shader='RUYB/Sprite' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/ui/game/susiehitfx 1.mat material='SusieHitFX 1' shader='RUYB/SpriteGrab' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/ui/game/susiehitfx.mat material='SusieHitFX' shader='RUYB/SpriteGrab' supported=true internalError=false
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/52ec6 (Raise Up Your Bat - CyanIsGooder)/bundleAndroid2021.vivify' -> not needed
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=24
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bd60 (The Snail - Vainstains)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=80% sceneDepth=true prepareShaders=true geometryEffects=false 
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bd60 (The Snail - Vainstains)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4bd60__The_Snail_-_Vainstains__d82f670babb2e350.vivify'
+  Vivify material: context=bundle-load asset=assets/disco_lights.mat material='Disco_Lights' shader='Legacy Shaders/Particles/Additive' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/small_snail_friends.mat material='small_snail_friends' shader='BeatSaber/Standard' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/snail.mat material='snail' shader='BeatSaber/Standard' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/models/final_text.mat material='final_text' shader='Unlit/vs_flatglow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/models/texts/texts_1.mat material='texts_1' shader='Unlit/vs_flatglow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/models/texts/texts_2.mat material='texts_2' shader='Unlit/vs_flatglow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/models/texts/texts_3.mat material='texts_3' shader='Unlit/vs_flatglow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/models/texts/texts_4.mat material='texts_4' shader='Unlit/vs_flatglow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/models/texts/texts_5.mat material='texts_5' shader='Unlit/vs_flatglow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/models/texts/texts_6.mat material='texts_6' shader='Unlit/vs_flatglow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/sky_mat.mat material='sky_mat' shader='Vivify/ExampleSkybox' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/terrainmat.mat material='TerrainMat' shader='BeatSaber/Standard' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/tube.mat material='tube' shader='BeatSaber/Tube_OptimizedNoise_FastMath' supported=true internalError=false
+  Vivify: play button blocked by Vivify ("Preparing shaders 0/16...")
+  Vivify: preparing the shaders of 16 material(s) before play ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4bd60__The_Snail_-_Vainstains__d82f670babb2e350.vivify')
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4bd60__The_Snail_-_Vainstains__d82f670babb2e350.vivify' -> needed by Legacy Shaders/Particles/Additive
+  Vivify shader preparation: material 'Distort' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'Distort' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify: shaders of 16 material(s) prepared in 0.5s
+  Vivify shader preparation: 48 pass bind attempt(s), 2 non-binding/exception result(s), including non-draw passes; compilation is not pixel validation
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.
+  Vivify saber chain saberNode: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Lo
+  Vivify saber chain initParent: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- L
+  Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(-0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=
+  Vivify saber chain saberNode: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+  Vivify saber chain initParent: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <-
+=== end ===
+
