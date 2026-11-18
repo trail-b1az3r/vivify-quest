@@ -1,0 +1,57 @@
+=== Vivify 0.15.32 native crash at 1794973192 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0xd00000000001c8
+thread 19801 'UnityMain'
+pc 0x707b63a538  lr 0x7078f60840  sp 0x709361f460  fp 0x709361f4c0
+backtrace:
+  #00 pc 0x707b63a538  libil2cpp.so +0x4894538
+  #01 lr 0x7078f60840  libil2cpp.so +0x21ba840
+  #02 fp 0x7078f6078c  libil2cpp.so +0x21ba78c
+  #03 fp 0x6ed5030390  libVivify.so +0x396390
+  #04 fp 0x6ed502f054  libVivify.so +0x395054
+  #05 fp 0x6ed4f80b30  libVivify.so +0x2e6b30 (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+  #06 fp 0x6ed4e8d810  libVivify.so +0x1f3810
+  #07 fp 0x7078f60840  libil2cpp.so +0x21ba840
+  #08 fp 0x7078f6078c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify custom event: type='SetMaterialProperty' time=84 songTime=84.04822
+  Vivify custom event: type='SetMaterialProperty' time=84 songTime=84.04822
+  Vivify custom event: type='SetMaterialProperty' time=84 songTime=84.04822
+  Vivify custom event: type='SetMaterialProperty' time=84 songTime=84.04822
+  Vivify custom event: type='SetMaterialProperty' time=84 songTime=84.04822
+  Vivify custom event: type='Blit' time=84 songTime=84.04822
+  Vivify material: context=Blit asset=assets/materials/post processing/buildupeffects.mat material='BuildupEffects' shader='You/EdgeHighlights' supported=true internalError=false
+  Vivify Blit event: time=84 asset='assets/materials/post processing/buildupeffects.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=6.5
+  Vivify custom event: type='InstantiatePrefab' time=84 songTime=84.04822
+  Vivify InstantiatePrefab: asset='assets/prefabs/objects/flower.prefab' id='prefab_flower_1' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_flower_1' asset='assets/prefabs/objects/flower.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify custom event: type='InstantiatePrefab' time=84 songTime=84.04822
+  Vivify InstantiatePrefab: asset='assets/prefabs/effects/explosions.prefab' id='prefab_explosions_1' alreadyLive=false
+  Vivify InstantiatePrefab: GPU instancing off on 2 particle system(s) of 'assets/prefabs/effects/explosions.prefab'
+  Vivify InstantiatePrefab spawned: id='prefab_explosions_1' asset='assets/prefabs/effects/explosions.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify custom event: type='InstantiatePrefab' time=84 songTime=84.04822
+  Vivify InstantiatePrefab: asset='assets/prefabs/effects/builduppanel.prefab' id='prefab_builduppanel_1' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_builduppanel_1' asset='assets/prefabs/effects/builduppanel.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify custom event: type='DestroyObject' time=84 songTime=84.04822
+  Vivify DestroyObject: destroying live prefab id='prefab_ambientscene_1'
+=== end ===
+
