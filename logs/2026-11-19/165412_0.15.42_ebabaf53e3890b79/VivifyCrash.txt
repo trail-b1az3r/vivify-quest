@@ -1,0 +1,60 @@
+=== Vivify 0.15.39 native crash at 1795107240 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x28a300002a0b
+thread 10957 'UnityMain'
+pc 0x78c13089d8  lr 0x78c13089a8  sp 0x77962512f0  fp 0x7796251390
+backtrace:
+  #00 pc 0x78c13089d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x78c13089a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7717b59c64  libmetacore.so +0xcdc64
+  #03 fp 0x779d3b055c  libsl2.so +0x4fb55c
+  #04 fp 0x779d3afe74  libsl2.so +0x4fae74
+  #05 fp 0x779d3afd48  libsl2.so +0x4fad48
+  #06 fp 0x779d3afce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x758db97fd4  libBetterHaptics.so +0x10afd4
+  #08 fp 0x76ee781ee0  libil2cpp.so +0x4aeeee0
+  #09 fp 0x76ebe4d78c  libil2cpp.so +0x21ba78c
+  #10 fp 0x78b4fcc6c3
+  #11 fp 0x7796253b60
+last Vivify log lines (oldest first):
+  Installing hook: GamePause_Resume to offset: 0x76ed83e178
+  Installing hook: Recorder_InstallBindings to offset: 0x76ed887294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x76ed87b8b8
+  Installing hook: Recorder_SpawnNote to offset: 0x76ed772928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x76ed771dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x76ed773de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x76ed88144c
+  Installing hook: Recorder_ScoreStart to offset: 0x76ed881038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x76ec344db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x76ec345690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x76ed774ae0
+  Installing hook: Recorder_ShowPause to offset: 0x76ed842c54
+  Installing hook: Recorder_Resume to offset: 0x76ed84376c
+  Installing hook: Recorder_Finish to offset: 0x76ed7d21dc
+  Vivify: loaded mods (85): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMapLoader.so 0.0.0, BSML 0.4.55, CongXinJian 0.1.0, DlcSorter 0.1.13, EasyOffsetQuest 0.1.7, FakeId 0.1.9, FasterScroll 1.17.0, anytext 1.0.1, bsdc 0.6.4, bstheater 0.1
+  .0.3, MappingExtensions 0.25.4, morebuttons 1.0.4, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistDownloader 0.3.1, PlaylistManager 1.4.1, practicetwe
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.22,0.00) fwd=(-0.37,-0.05,0.93)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.33,-0.06) fwd=(-0.13,-0.02,0.99)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify Send Logs: uploaded 4 file part(s), 1130 KB (logs/2026-11-19/165042_0.15.39_ffe2364f7499358d 9d1cda7; stored 4, deduplicated 0; 12729823 bytes saved cumulatively
+  )
+  Vivify updater: Looking for the build...
+  Vivify updater: Downloading the latest build of main...
+  Vivify: the game uses STEREO_MULTIVIEW_ON (61 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b715 (Peer Gynt - 3psilon9 vs. x-mens)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.01,1.03,-0.05) fwd=(0.06,0.10,0.99)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera cullingMask is now 0x7f7bfdf7
+  Vivify updater: Installing the latest build of main...
+  Vivify updater: replacing /sdcard/ModData/com.beatgames.beatsaber/Modloader/mods/libVivify.so
+  Vivify updater: Installed Vivify 0.15.42 (the latest build of main). Restart Beat Saber to use it.
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.14,-0.01) fwd=(-0.09,0.16,0.98)
+  Vivify main camera cullingMask is now 0x3d3aff37
+=== end ===
+
