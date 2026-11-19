@@ -1,0 +1,58 @@
+=== Vivify 0.15.42 native crash at 1795107750 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0xe95d8331999b60
+thread 19252 'UnityMain'
+pc 0x7716a56538  lr 0x771437c840  sp 0x7792419380  fp 0x77924193e0
+backtrace:
+  #00 pc 0x7716a56538  libil2cpp.so +0x4894538
+  #01 lr 0x771437c840  libil2cpp.so +0x21ba840
+  #02 fp 0x771437c78c  libil2cpp.so +0x21ba78c
+  #03 fp 0x755d2155d0  libVivify.so +0x3a25d0
+  #04 fp 0x755d211b64  libVivify.so +0x39eb64
+  #05 fp 0x755d15f644  libVivify.so +0x2ec644 (_ZN6Vivify13CameraApplier13RenderEffectsEPN11UnityEngine13RenderTextureES3_ +0x2e0)
+  #06 fp 0x755d15ed28  libVivify.so +0x2ebd28 (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+  #07 fp 0x755d06ac40  libVivify.so +0x1f7c40
+  #08 fp 0x771437c840  libil2cpp.so +0x21ba840
+  #09 fp 0x771437c78c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/gemstone note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/gemstone note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/gemstone note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/gemstone note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/black outline note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/aether/prefabs/custom objects/black outline note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/black outline note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/black outline note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/aether/prefabs/custom objects/black outline note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/black outline note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/white outline note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/aether/prefabs/custom objects/white outline note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/white outline note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 182 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=37 livePrefabs=1 preloadedPrefabs=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify main camera cullingMask is now 0x7f7bfdf7
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify: Reduce Debris player option = true (custom debris disabled)
+  Vivify custom event: type='SetMaterialProperty' time=2.0689654 songTime=2.0731807
+  Vivify custom event: type='SetMaterialProperty' time=2.0689654 songTime=2.0731807
+  Vivify custom event: type='SetMaterialProperty' time=2.0689654 songTime=2.0731807
+  Vivify custom event: type='Blit' time=2.0689654 songTime=2.0731807
+  Vivify material: context=Blit asset=assets/aether/materials/intro/introbokeh.mat material='IntroBokeh' shader='Swifter/Blit/Bokeh' supported=true internalError=false
+  Vivify Blit event: time=2.0689654 asset='assets/aether/materials/intro/introbokeh.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=10
+=== end ===
+
