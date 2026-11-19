@@ -1,0 +1,58 @@
+=== Vivify 0.15.42 native crash at 1795108003 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x76c0f488a0
+thread 30867 'UnityMain'
+pc 0x76c0f488a0  lr 0x77083b5554  sp 0x779442aca0  fp 0x779442ad00
+backtrace:
+  #00 pc 0x76c0f488a0
+  #01 lr 0x77083b5554  libil2cpp.so +0x4894554
+  #02 fp 0x7705cdb78c  libil2cpp.so +0x21ba78c
+  #03 fp 0x75433cd5d0  libVivify.so +0x3a25d0
+  #04 fp 0x75433c9b64  libVivify.so +0x39eb64
+  #05 fp 0x7543317644  libVivify.so +0x2ec644 (_ZN6Vivify13CameraApplier13RenderEffectsEPN11UnityEngine13RenderTextureES3_ +0x2e0)
+  #06 fp 0x7543316d28  libVivify.so +0x2ebd28 (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+  #07 fp 0x7543222c40  libVivify.so +0x1f7c40
+  #08 fp 0x7705cdb840  libil2cpp.so +0x21ba840
+  #09 fp 0x7705cdb78c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify catch-up event: type='SetMaterialProperty' time=52.551723
+  Vivify catch-up event: type='SetMaterialProperty' time=52.551723
+  Vivify catch-up event: type='SetMaterialProperty' time=53.068966
+  Vivify catch-up event: type='SetMaterialProperty' time=53.068966
+  Vivify catch-up event: type='SetMaterialProperty' time=54.206898
+  Vivify catch-up event: type='SetMaterialProperty' time=54.206898
+  Vivify catch-up event: type='AssignObjectPrefab' time=55.034485
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/white outline note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/aether/prefabs/custom objects/white outline note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/white outline note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=70.75862
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/black outline note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/aether/prefabs/custom objects/black outline note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/black outline note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up: replayed 221 event(s) up to time=99.83773
+  Vivify PrepareBeatmap done: assets=37 livePrefabs=1 preloadedPrefabs=6
+  Vivify frame took 236.2ms, over the 50ms budget
+  Vivify visual check at 100s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+  Vivify visual check at 100s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check at 100s: 23 active renderer(s), 0 with no runnable shader; most drawn: Custom/CustomParticles x7, Custom/GlowingInstancedHD x2, Custom/Glowing x2, Custom/SimpleLit x2, Swifter/SaberTrail x2, Custom/GrabPassTexture1 x1, 
+  Vivify grab texture '_GrabTexture1' at 100s: render texture dimension=5 layers=2 1008x1008 msaa=1
+  Vivify visual check: main camera cullingMask=0x7f7bfdf7 depthTextureMode=1 clearFlags=2
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify visual check at 100s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check at 100s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check at 100s: 23 active renderer(s), 0 with no runnable shader; most drawn: Custom/CustomParticles x7, Custom/GlowingInstancedHD x2, Custom/Glowing x2, Custom/SimpleLit x2, Swifter/SaberTrail x2, Custom/GrabPassTexture1 x1, 
+  Vivify grab texture '_GrabTexture1' at 100s: render texture dimension=5 layers=2 1008x1008 msaa=1
+  Vivify visual check at 100s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify grab texture '_GrabTexture1' at 100s: render texture dimension=5 layers=2 1008x1008 msaa=1
+  Vivify Send Logs: uploaded 3 file part(s), 446 KB (logs/2026-11-19/170629_0.15.42_f8d2b2b2a0384447 62396c3; stored 3, deduplicated 0; 12729826 bytes saved cumulatively
+  )
+  Vivify text check +1s: prefab='assets/aether/prefabs/sections/drop.prefab' text='Aether' active=false enabled=true chars=10 shown=10 lossyScale=(1,1,1) font='times SDF' dynamic=true sourceFont=true mesh vertices=36 uv2[0]=(0,0.04) bounds=(
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify custom event: type='Blit' time=104.68966 songTime=104.69067
+  Vivify material: context=Blit asset=assets/aether/materials/fadewhite.mat material='FadeWhite' shader='Swifter/Blit/SimpleColor' supported=true internalError=false
+  Vivify Blit event: time=104.68966 asset='assets/aether/materials/fadewhite.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=16
+=== end ===
+
