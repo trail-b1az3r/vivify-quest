@@ -1,0 +1,57 @@
+=== Vivify 0.15.20 native crash at 1795046779 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x0
+thread 2085 'UnityMain'
+pc 0x0  lr 0x714bbd7554  sp 0x7147317d90  fp 0x7147317df0
+backtrace:
+  #00 pc 0x0
+  #01 lr 0x714bbd7554  libil2cpp.so +0x4894554
+  #02 fp 0x71494fd78c  libil2cpp.so +0x21ba78c
+  #03 fp 0x6f8a3dfb4c  libVivify.so +0x37bb4c
+  #04 fp 0x6f8a3dc124  libVivify.so +0x378124
+  #05 fp 0x6f8a330d80  libVivify.so +0x2ccd80 (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+  #06 fp 0x6f8a2423b8  libVivify.so +0x1de3b8
+  #07 fp 0x71494fd840  libil2cpp.so +0x21ba840
+  #08 fp 0x71494fd78c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/assetbundles/noteveryone/not.prefab' id='not' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='not' asset='assets/assetbundles/noteveryone/not.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/assetbundles/noteveryone/everyone.prefab' id='everyone' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='everyone' asset='assets/assetbundles/noteveryone/everyone.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/assetbundles/noteveryone/understands.prefab' id='understands' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='understands' asset='assets/assetbundles/noteveryone/understands.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/assetbundles/noteveryone/house.prefab' id='house' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='house' asset='assets/assetbundles/noteveryone/house.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/assetbundles/noteveryone/music.prefab' id='music' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='music' asset='assets/assetbundles/noteveryone/music.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/assetbundles/noteveryone/its.prefab' id='its' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='its' asset='assets/assetbundles/noteveryone/its.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/assetbundles/noteveryone/a.prefab' id='a' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='a' asset='assets/assetbundles/noteveryone/a.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/assetbundles/noteveryone/spiritual.prefab' id='spiritual' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='spiritual' asset='assets/assetbundles/noteveryone/spiritual.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/assetbundles/noteveryone/thing.prefab' id='thing' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='thing' asset='assets/assetbundles/noteveryone/thing.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/assetbundles/mirr.prefab' id='vivify_prefab_490594066176' alreadyLive=false
+  Vivify prefab camera 'Camera' renders into texture 'the' (500x500): set to no eye, so it draws there instead of into the headset view
+  Vivify InstantiatePrefab spawned: id='vivify_prefab_490594066176' asset='assets/assetbundles/mirr.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='CreateCamera' time=0
+  Vivify CreateCamera: id='theintrothing' colorTexture='_Notes' depthTexture='<none>' size=1856x1936 mainEffect=true
+  Vivify catch-up: replayed 15 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=55 livePrefabs=12 preloadedPrefabs=52
+  Vivify culling pass on 'VivifyCamera_theintrothing': whitelist=true tracks=1 trackedGOs=1 movedGOs=1 camMask=0x00400000
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify culling pass on 'VivifyCamera_theintrothing': whitelist=true tracks=1 trackedGOs=1 movedGOs=1 camMask=0x00400000
+=== end ===
+
