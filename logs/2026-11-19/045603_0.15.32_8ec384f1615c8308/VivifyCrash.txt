@@ -1,0 +1,57 @@
+=== Vivify 0.15.32 native crash at 1795052997 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x26cb43958107ed
+thread 31590 'UnityMain'
+pc 0x79ebf37538  lr 0x79e985d840  sp 0x7a003d54b0  fp 0x7a003d5510
+backtrace:
+  #00 pc 0x79ebf37538  libil2cpp.so +0x4894538
+  #01 lr 0x79e985d840  libil2cpp.so +0x21ba840
+  #02 fp 0x79e985d78c  libil2cpp.so +0x21ba78c
+  #03 fp 0x7829e540f8  libVivify.so +0x39d0f8
+  #04 fp 0x7829e4cb30  libVivify.so +0x395b30
+  #05 fp 0x7829d9db30  libVivify.so +0x2e6b30 (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+  #06 fp 0x7829caa810  libVivify.so +0x1f3810
+  #07 fp 0x79e985d840  libil2cpp.so +0x21ba840
+  #08 fp 0x79e985d78c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='Blit' time=0
+  Vivify material: context=Blit asset=assets/girlhell/materials/vhsmat.mat material='vhsMat' shader='GirlHell/VHS' supported=true internalError=false
+  Vivify Blit event: time=0 asset='assets/girlhell/materials/vhsmat.mat' source='_Main' targets=1 priority=-1 pass=-1 order=7 durationBeats=6.75
+  Vivify catch-up event: type='SetCameraProperty' time=0
+  Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=false bloomPrePass=unset mainEffect=unset
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/girlhell/prefabs/tvnotel.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/girlhell/prefabs/tvnotedotl.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/girlhell/prefabs/tvnoter.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/girlhell/prefabs/tvnotedotr.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/girlhell/prefabs/heartnote.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/girlhell/prefabs/heartnotedot.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/girlhell/prefabs/brainnote.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/girlhell/prefabs/brainnotedot.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up: replayed 48 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=111 livePrefabs=0 preloadedPrefabs=1337
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+=== end ===
+
