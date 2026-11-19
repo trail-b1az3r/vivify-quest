@@ -1,0 +1,120 @@
+=== Vivify 0.15.20 native crash at 1795043998 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27fe00003ade
+thread 15154 'UnityMain'
+pc 0x72d57629d8  lr 0x72d57629a8  sp 0x71715f7950  fp 0x71715f79f0
+backtrace:
+  #00 pc 0x72d57629d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x72d57629a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x713cb3fc64  libmetacore.so +0xcdc64
+  #03 fp 0x71ce35a55c  libsl2.so +0x4fb55c
+  #04 fp 0x71ce359e74  libsl2.so +0x4fae74
+  #05 fp 0x71ce359d48  libsl2.so +0x4fad48
+  #06 fp 0x71ce375b9c  libsl2.so +0x516b9c (__cxa_get_exception_ptr +0x0)
+  #07 fp 0x71ce375b78  libsl2.so +0x516b78
+  #08 fp 0x6f18203894  libscoresaber.so +0x5bd894
+  #09 fp 0x6f181febb0  libscoresaber.so +0x5b8bb0
+  #10 fp 0x6f181fe29c  libscoresaber.so +0x5b829c
+  #11 fp 0x6f181ff758  libscoresaber.so +0x5b9758 (_ZN10ScoreSaber2UI5Other14ScoreInfoModal4ShowERNS_4Data5ScoreEPN15GlobalNamespace12BeatmapLevelENS6_10BeatmapKeyEii +0x41c)
+  #12 fp 0x6f18040b4c  libscoresaber.so +0x3fab4c (_ZN10ScoreSaber11CustomTypes10Components33LeaderboardScoreInfoButtonHandler18ShowScoreInfoModalEi +0xa8)
+  #13 fp 0x6f17fe2c60  libscoresaber.so +0x39cc60
+  #14 fp 0x7127500144  libil2cpp.so +0x29a1144
+last Vivify log lines (oldest first):
+  Vivify material: context=bundle-load asset=assets/yoi okashi/assets/t1.mat material='t1' shader='BeatSaber/UberFogNT' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/yoi okashi/assets/t2.mat material='t2' shader='BeatSaber/UberFogNT' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/yoi okashi/assets/t3.mat material='t3' shader='BeatSaber/UberFogNT' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/yoi okashi/assets/t4.mat material='t4' shader='BeatSaber/UberFogNT' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/yoi okashi/assets/t5.mat material='t5' shader='BeatSaber/UberFogNT' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/yoi okashi/assets/t6.mat material='t6' shader='BeatSaber/UberFogNT' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/yoi okashi/assets/t7.mat material='t7' shader='BeatSaber/UberFogNT' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/yoi okashi/assets/t8.mat material='t8' shader='BeatSaber/UberFogNT' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/yoi okashi/assets/textam.mat material='textam' shader='Unlit/BasicParticleBlending' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/yoi okashi/assets/textbm.mat material='textbm' shader='Unlit/BasicParticleBlending' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/yoi okashi/assets/textcm.mat material='textcm' shader='Unlit/BasicParticleBlending' supported=true internalError=false
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a4b (Yoi Okashi to Warui Okashi - Elecast) (Vivify)/bundleAndroid2021.vivify' -> not needed
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=124
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/48a37 (HYPERCLOCKED - SaltyFish)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=true geometryEffects=true 
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/48a37 (HYPERCLOCKED - SaltyFish)/bundleAndroid2021.vivify'
+  Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/48a37 (HYPERCLOCKED - SaltyFish)/ExpertPlusStandard.dat' at condition 679
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/48a37 (HYPERCLOCKED - SaltyFish)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/48a37 (HYPERCLOCKED - SaltyFish)/bundleAndroid2021.vivify'
+  Vivify material: context=bundle-load asset=assets/materials/cuzvhsbarsucks.mat material='cuzvhsbarsucks' shader='Custom/VRMeshSplitRGB_Glow_Move' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/flash.mat material='Flash' shader='Custom/FakeGlowSplit' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/words.mat material='words' shader='Custom/VRMeshSplitRGB_Glow_Move' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/bloom.mat material='Bloom' shader='Custom/BloomBlit' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/butwhore.mat material='butwhore' shader='Custom/YepThisIsDefAShader' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/dontbreakplease.mat material='dontbreakplease' shader='Custom/InsideOutSphereWithDuplicationVR' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/dupe2.mat material='dupe2' shader='Custom/CameraRenderTextureVR' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/fried.mat material='fried' shader='Custom/PhotoStyleContrastHSV' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/glitchy.mat material='glitchy' shader='BeatSaber/Glitch' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/intro.mat material='iNTRO' shader='Custom/HorizontalStretchWithStrongerDisplacement' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/moreglitch.mat material='MOREGLITCH' shader='BeatSaber/Glitch' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/picturemat.mat material='picturemat' shader='Hidden/Old' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/pixel.mat material='Pixel' shader='Custom/VerticalStretchWithStrongerDisplacement' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/pixelsort.mat material='pixelsort' shader='Custom/weebolwobble' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/sepscreen.mat material='Sepscreen' shader='BeatSaber/PostProcessingWithGap' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/split.mat material='Split' shader='Custom/PostProcessingWithGapBlit' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/vhs.mat material='VHS' shader='BeatSaber/VHS' supported=true internalError=false
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/48a37 (HYPERCLOCKED - SaltyFish)/bundleAndroid2021.vivify' -> needed by Legacy Shaders/Particles/Alpha Blended Premultiply
+=== end ===
+
+=== Vivify 0.15.20 native crash at 1795046606 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x723b07fbac
+thread 1056 'UnityMain'
+pc 0x72d575b6fc  lr 0x717f8849f4  sp 0x7150800b00  fp 0x7150800ec0
+backtrace:
+  #00 pc 0x72d575b6fc  libc.so +0xc76fc
+  #01 lr 0x717f8849f4  libmenuvisualizers.so +0x3d9f4
+  #02 fp 0x717f87e6a8  libmenuvisualizers.so +0x376a8
+  #03 fp 0x717f88404c  libmenuvisualizers.so +0x3d04c
+  #04 fp 0x717f8841d4  libmenuvisualizers.so +0x3d1d4 (late_load +0xe0)
+  #05 fp 0x71cef547a8  libsl2.so +0x5437a8
+  #06 fp 0x71512b9fb4  libunity.so +0xab1fb4
+  #07 fp 0x72e18b56c3
+  #08 fp 0x7150801f40
+last Vivify log lines (oldest first):
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/yoi okashi/assets/t3.mat material='t3' shader='BeatSaber/UberFogNT' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/yoi okashi/assets/t4.mat material='t4' shader='BeatSaber/UberFogNT' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/yoi okashi/assets/t5.mat material='t5' shader='BeatSaber/UberFogNT' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/yoi okashi/assets/t6.mat material='t6' shader='BeatSaber/UberFogNT' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/yoi okashi/assets/t7.mat material='t7' shader='BeatSaber/UberFogNT' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/yoi okashi/assets/t8.mat material='t8' shader='BeatSaber/UberFogNT' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/yoi okashi/assets/textam.mat material='textam' shader='Unlit/BasicParticleBlending' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/yoi okashi/assets/textbm.mat material='textbm' shader='Unlit/BasicParticleBlending' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/yoi okashi/assets/textcm.mat material='textcm' shader='Unlit/BasicParticleBlending' supported=true internalError=false
+  Vivify crash report:   Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a4b (Yoi Okashi to Warui Okashi - Elecast) (Vivify)/bundleAndroid2021.vivify' -> not needed
+  Vivify crash report:   Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=124
+  Vivify crash report:   Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/48a37 (HYPERCLOCKED - SaltyFish)' isCustom=true hasDetails=true
+  Vivify crash report:   Vivify score submission: enabled for this Vivify map
+  Vivify crash report:   Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=tru
+  Vivify crash report:   Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/48a37 (HYPERCLOCKED - SaltyFish)/bundleAndroid2021.vivify'
+  Vivify crash report:   Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/48a37 (HYPERCLOCKED - SaltyFish)/ExpertPlusStandard.dat' at condition 679
+  Vivify crash report:   Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/48a37 (HYPERCLOCKED - SaltyFish)/bundleAndroid2021.vivify'
+  Vivify crash report:   Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify crash report:   Vivify: play button is enabled (no mod is blocking it)
+  Vivify crash report:   Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/48a37 (HYPERCLOCKED - SaltyFish)/bundleAndroid2021.vivify'
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/materials/cuzvhsbarsucks.mat material='cuzvhsbarsucks' shader='Custom/VRMeshSplitRGB_Glow_Move' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/materials/flash.mat material='Flash' shader='Custom/FakeGlowSplit' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/materials/words.mat material='words' shader='Custom/VRMeshSplitRGB_Glow_Move' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/shaders/bloom.mat material='Bloom' shader='Custom/BloomBlit' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/shaders/butwhore.mat material='butwhore' shader='Custom/YepThisIsDefAShader' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/shaders/dontbreakplease.mat material='dontbreakplease' shader='Custom/InsideOutSphereWithDuplicationVR' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/shaders/dupe2.mat material='dupe2' shader='Custom/CameraRenderTextureVR' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/shaders/fried.mat material='fried' shader='Custom/PhotoStyleContrastHSV' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/shaders/glitchy.mat material='glitchy' shader='BeatSaber/Glitch' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/shaders/intro.mat material='iNTRO' shader='Custom/HorizontalStretchWithStrongerDisplacement' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/shaders/moreglitch.mat material='MOREGLITCH' shader='BeatSaber/Glitch' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/shaders/picturemat.mat material='picturemat' shader='Hidden/Old' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/shaders/pixel.mat material='Pixel' shader='Custom/VerticalStretchWithStrongerDisplacement' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/shaders/pixelsort.mat material='pixelsort' shader='Custom/weebolwobble' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/shaders/sepscreen.mat material='Sepscreen' shader='BeatSaber/PostProcessingWithGap' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/shaders/split.mat material='Split' shader='Custom/PostProcessingWithGapBlit' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/shaders/vhs.mat material='VHS' shader='BeatSaber/VHS' supported=true internalError=false
+  Vivify crash report:   Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/48a37 (HYPERCLOCKED - SaltyFish)/bundleAndroid2021.vivify' -> needed by Legacy Shaders/Particles/Alpha Blended Premultiply
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
