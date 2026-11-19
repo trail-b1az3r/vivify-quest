@@ -1,0 +1,52 @@
+=== Vivify 0.15.36 native crash at 1795054800 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x3d05d7404
+thread 19465 'Thread-195'
+pc 0x7042239740  lr 0x70422396f8  sp 0x6f4d382480  fp 0x6f4d3827b0
+backtrace:
+  #00 pc 0x7042239740  libunity.so +0x13ee740
+  #01 lr 0x70422396f8  libunity.so +0x13ee6f8
+  #02 fp 0x704241f9f4  libunity.so +0x15d49f4
+  #03 fp 0x71d28d6334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify custom event: type='CreateCamera' time=12.533333 songTime=12.53543
+  Vivify CreateCamera: id='NotesOneCam' colorTexture='_NotesOne' depthTexture='_NotesOne_Depth' size=1344x1408 mainEffect=true
+  Vivify culling pass on 'VivifyCamera_NotesOneCam': whitelist=true tracks=1 trackedGOs=3 movedGOs=12 camMask=0x00400000
+  Vivify separate-eye prototype: keeping normal frame: map uses mid-frame effects or secondary cameras
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify: Reduce Debris player option = false (custom debris enabled)
+  Vivify culling pass on 'VivifyCamera_NotesOneCam': whitelist=true tracks=1 trackedGOs=4 movedGOs=16 camMask=0x00400000
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify custom event: type='Blit' time=12.773334 songTime=12.831969
+  Vivify Blit event: time=12.773334 asset='<none>' source='_Main' targets=1 priority=-11 pass=-1 order=7 durationBeats=0
+  Vivify custom event: type='SetRenderingSettings' time=12.8 songTime=12.831969
+  Vivify SetRenderingSettings: time=12.8 durationSeconds=0 immediate=true
+  Vivify custom event: type='DestroyObject' time=12.8 songTime=12.831969
+  Vivify DestroyObject: destroying live prefab id='clockscene'
+  Vivify custom event: type='SetGlobalProperty' time=12.8 songTime=12.831969
+  Vivify custom event: type='InstantiatePrefab' time=12.8 songTime=12.831969
+  Vivify InstantiatePrefab: asset='assets/monitor/monitorscene.prefab' id='monitorscene' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='monitorscene' asset='assets/monitor/monitorscene.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify custom event: type='Blit' time=12.8 songTime=12.831969
+  Vivify material: context=Blit asset=assets/blendexperiment/blender.mat material='Blender' shader='PostProcessing/Difference' supported=true internalError=false
+  Vivify Blit event: time=12.8 asset='assets/blendexperiment/blender.mat' source='_Main' targets=1 priority=-12 pass=-1 order=7 durationBeats=16
+  Vivify custom event: type='SetCameraProperty' time=12.8 songTime=12.831969
+  Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=true bloomPrePass=unset mainEffect=unset
+  Vivify custom event: type='Blit' time=12.8 songTime=12.831969
+  Vivify material: context=Blit asset=assets/shaders/distortnotes/one.mat material='One' shader='PostProcessing/DistortNotes' supported=true internalError=false
+  Vivify Blit event: time=12.8 asset='assets/shaders/distortnotes/one.mat' source='_Main' targets=1 priority=2 pass=0 order=7 durationBeats=64
+  Vivify culling pass on 'VivifyCamera_NotesOneCam': whitelist=true tracks=1 trackedGOs=4 movedGOs=16 camMask=0x00400000
+  Vivify culling pass on 'MainCamera': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x3d3bff37
+  Vivify culling pass on 'MirrorCam-271618': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x25107f20
+  Vivify culling pass on 'MirrorCam-271618': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x25107f20
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+=== end ===
+
