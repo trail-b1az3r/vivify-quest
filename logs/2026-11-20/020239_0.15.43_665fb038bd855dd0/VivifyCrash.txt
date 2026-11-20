@@ -1,0 +1,58 @@
+=== Vivify 0.15.43 native crash at 1795140150 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27e20000580c
+thread 22583 'UnityMain'
+pc 0x7ea8f2a9d8  lr 0x7ea8f2a9a8  sp 0x7d86221a70  fp 0x7d86221b10
+backtrace:
+  #00 pc 0x7ea8f2a9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7ea8f2a9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7d25741c64  libmetacore.so +0xcdc64
+  #03 fp 0x7d9199a55c  libsl2.so +0x4fb55c
+  #04 fp 0x7d91999e74  libsl2.so +0x4fae74
+  #05 fp 0x7d91999d48  libsl2.so +0x4fad48
+  #06 fp 0x7d91999ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7b609fcf10  libVivify.so +0x1f7f10
+  #08 fp 0x7d14b1d840  libil2cpp.so +0x21ba840
+  #09 fp 0x7d14b1d78c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/aether/prefabs/custom objects/white outline note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/aether/prefabs/custom objects/white outline note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/aether/prefabs/custom objects/white outline note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 120 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=298 livePrefabs=1 preloadedPrefabs=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify multiplayer check: inMultiplayerGameplay=false multiplayerModLoaded=true
+  Vivify separate-eye: eye images at 100% (1344x1408 of 1344x1408)
+  Vivify scene route: separate eyes; native compatibility was not established
+  Vivify scene route detail: perspective=true shadowsDisabled=true effectsCompatible=true image=1344x1408 XR=1344x1408 viewportScale=1 bloom=false
+  Vivify native scene blocker: material='97-101 Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify separate-eye 0: configured its own native bloom pre-pass
+  Vivify separate-eye 0: depth=1344x1408, color=1344x1408, rendering map effects in the eye camera callback
+  Vivify separate-eye 0 grab '_GrabTexture1__VivifyEye0' frame 2956: nothing bound
+  Vivify separate-eye 0 grab '_GrabTextureWater__VivifyEye0' frame 2956: nothing bound
+  Vivify separate-eye 1: configured its own native bloom pre-pass
+  Vivify separate-eye 1: depth=1344x1408, color=1344x1408, rendering map effects in the eye camera callback
+  Vivify separate-eye 1 grab '_GrabTexture1__VivifyEye1' frame 2956: nothing bound
+  Vivify separate-eye 1 grab '_GrabTextureWater__VivifyEye1' frame 2956: nothing bound
+  Vivify separate-eye prototype: two scene renders completed before main culling, 32 tracked material renderer(s); Quest validation required
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify scene route: native multiview; no separate-eye scene renders needed for this frame
+  Vivify: Reduce Debris player option = false (custom debris enabled)
+  Vivify custom event: type='SetMaterialProperty' time=2.0689654 songTime=2.0745196
+  Vivify custom event: type='SetMaterialProperty' time=2.0689654 songTime=2.0745196
+  Vivify custom event: type='SetMaterialProperty' time=2.0689654 songTime=2.0745196
+  Vivify custom event: type='Blit' time=2.0689654 songTime=2.0745196
+  Vivify material: context=Blit asset=assets/aether/materials/intro/introbokeh.mat material='IntroBokeh' shader='Swifter/Blit/Bokeh' supported=true internalError=false
+  Vivify Blit event: time=2.0689654 asset='assets/aether/materials/intro/introbokeh.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=10
+  Vivify stereo screen effect processing failed: A SafePtr<T> instance is holding a null handle!
+=== end ===
+
