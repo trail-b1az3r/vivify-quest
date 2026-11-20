@@ -1,0 +1,68 @@
+=== Vivify 0.15.43 native crash at 1795139304 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27e2000074c8
+thread 29954 'UnityMain'
+pc 0x7ea8f2a9d8  lr 0x7ea8f2a9a8  sp 0x7d8623e380  fp 0x7d8623e420
+backtrace:
+  #00 pc 0x7ea8f2a9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7ea8f2a9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7d2b4fbc64  libmetacore.so +0xcdc64
+  #03 fp 0x7d18f00114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x7d18f00264  libil2cpp.so +0x2226264
+  #05 fp 0x7d93146d48  libsl2.so +0x4fad48
+  #06 fp 0x7d93146ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7d36d2b8d8  libbsml.so +0x4b18d8
+  #08 fp 0x7b67ea1090  libbl.so +0x87b090 (_ZN19Hook_ModalView_Show19hook_ModalView_ShowEPN4HMUI9ModalViewEbbPN6System6ActionE +0x38)
+  #09 fp 0x7b67ea6f4c  libbl.so +0x880f4c
+  #10 fp 0x7d18e94840  libil2cpp.so +0x21ba840
+  #11 fp 0x7d18e9478c  libil2cpp.so +0x21ba78c
+  #12 fp 0x7d36bd17ac  libbsml.so +0x3577ac
+  #13 fp 0x7b60a95bf8  libdiscordrichpresence.so +0x16fbf8
+  #14 fp 0x7d36c52040  libbsml.so +0x3d8040 (_ZN4BSML19MainThreadScheduler6UpdateEv +0x1104)
+  #15 fp 0x7d36b74e08  libbsml.so +0x2fae08
+  #16 fp 0x7d18e94840  libil2cpp.so +0x21ba840
+  #17 fp 0x7d18e9478c  libil2cpp.so +0x21ba78c
+  #18 fp 0x7ea3bd56c3
+  #19 fp 0x7d86242120
+last Vivify log lines (oldest first):
+  Vivify material: context=bundle-load asset=assets/__vivify_internal__/render/9123692361559123389 material='FireworkSparkle' shader='Custom/FadeParticle' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/black.mat material='Black' shader='nasafrasa/Unlit Black' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/note/nurturesabertrail.mat material='NurtureSaberTrail' shader='nasafrasa/Unlit Nurture Saber Trail' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/white.mat material='White' shader='nasafrasa/Unlit White' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/ppunderwater.mat material='PPUnderwater' shader='nasafrasa/PPUnderwater' supported=true internalError=false
+  Vivify shaders: bundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f82e__Get_Your_Wish_-_nasafrasa_/4f82e__Get_Your_Wish_-_nasafrasa__e6800bd0cf3e9df4.vivify' converted=true total=26 runnable=26 noAndroidProgram=
+  Vivify Projector interface: managedType=false nativeGetMaterial=true nativeSetMaterial=true
+  Vivify: play button blocked by Vivify ("Preparing shaders 0/71...")
+  Vivify: preparing the shaders of 71 material(s) before play ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f82e__Get_Your_Wish_-_nasafrasa_/4f82e__Get_Your_Wish_-_nasafrasa__e6800bd0cf3e9df4.vivify')
+  Vivify: play button blocked by Vivify ("Preparing shaders 0/71..."), VivifyRenderer ("Preparing map effects...")
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f82e__Get_Your_Wish_-_nasafrasa_/4f82e__Get_Your_Wish_-_nasafrasa__e6800bd0cf3e9df4.vivify' grabs _GrabTexture
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f82e__Get_Your_Wish_-_nasafrasa_/4f82e__Get_Your_Wish_-_nasafrasa__e6800bd0cf3e9df4.vivify' -> needed by Silent/Clear Water
+  Vivify shader preparation: material 'Underwater' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'Underwater' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify separate-eye classification: complete=true, 0 geometry/tessellation shader(s)
+  Vivify Blit: 27 single-view shader(s) ready for blits into screen textures and the map's texture cameras ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f82e__Get_Your_Wish_-_nasafrasa_/4f82e__Get_Your_Wish_-_nasafr
+  Vivify texture cameras: 0 more single-view shader(s) from the map's prefabs
+  Vivify shader preparation: material 'CensorEffectMat' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'CensorEffectMat' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify separate-eye donor 0 ready: 26 shader object(s), 100 asset bindings, 0 ambiguous display name(s)
+  Vivify: shaders of 71 material(s) prepared in 1.5s
+  Vivify shader preparation: 154 pass bind attempt(s), 4 non-binding/exception result(s), including non-draw passes; compilation is not pixel validation
+  Vivify: play button blocked by VivifyRenderer ("Preparing map effects...")
+  Vivify separate-eye donor 1 ready: 26 shader object(s), 100 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 2 ready: 26 shader object(s), 100 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 3 ready: 26 shader object(s), 100 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 4 ready: 26 shader object(s), 100 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 5 ready: 0 shader object(s), 0 asset bindings, 0 ambiguous display name(s)
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify renderer preflight complete: map effects ready; GPU image/performance validation is still required
+  Vivify: the Replay mod's button is clickable again now that the map is ready
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify saber chain modelNode(smc): BasicSaberModel(Clone)[w=(0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0
+  Vivify saber chain saberNode: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Lo
+  Vivify saber chain initParent: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- L
+  Vivify saber chain modelNode(smc): BasicSaberModel(Clone)[w=(-0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l
+  Vivify saber chain saberNode: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+  Vivify saber chain initParent: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <-
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(0.24,1.74,0.10) fwd=(0.05,-0.22,0.97)
+  Vivify main camera cullingMask is now 0x3d3bff37
+=== end ===
+
