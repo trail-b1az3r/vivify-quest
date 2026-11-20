@@ -1,0 +1,65 @@
+=== Vivify 0.15.45 native crash at 1795210516 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x2838000072b6
+thread 29411 'UnityMain'
+pc 0x7eb4924818  lr 0x7eb49247e8  sp 0x7d9026d9c0  fp 0x7d9026da60
+backtrace:
+  #00 pc 0x7eb4924818  libc.so +0xcd818 (abort +0xa8)
+  #01 lr 0x7eb49247e8  libc.so +0xcd7e8 (abort +0x78)
+  #02 fp 0x7d33675820  libmetacore.so +0x1d820
+  #03 fp 0x7d4a18dfb4  libcustom-types.so +0x4f2fb4
+  #04 fp 0x7d4a18d8cc  libcustom-types.so +0x4f28cc
+  #05 fp 0x7d4a18d7a0  libcustom-types.so +0x4f27a0
+  #06 fp 0x7d4a1a95f4  libcustom-types.so +0x50e5f4 (__cxa_get_exception_ptr +0x0)
+  #07 fp 0x7d4a1a95d0  libcustom-types.so +0x50e5d0
+  #08 fp 0x7bba5446e4  libVivify.so +0x2a66e4
+  #09 fp 0x7bba545cec  libVivify.so +0x2a7cec (_ZN6Vivify18FollowedSaberTrail10LateUpdateEv +0x98)
+  #10 fp 0x7d22fe1af4  libil2cpp.so +0x34d3af4
+  #11 fp 0x7d22fe1a68  libil2cpp.so +0x34d3a68
+  #12 fp 0x7d94c1c69c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #13 fp 0x7d94c1c748  libgame.so +0x19748 (android_main +0x78)
+  #14 fp 0x7d94c24920  libgame.so +0x21920
+  #15 fp 0x7eb498e2b0  libc.so +0x1372b0
+  #16 fp 0x7eb4926174  libc.so +0xcf174
+last Vivify log lines (oldest first):
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/enddot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/note base 1.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/tunnel.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/tunnel dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/note base 1.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/wireframe.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/wireframedot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/note base 1.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=0 asset='assets/prefabs/wireframechainbase.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=2 asset='assets/prefabs/note base 1.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=0 asset='assets/prefabs/wireframechainlink.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=2 asset='assets/prefabs/note base 1.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/note base.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/note base dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/note base 1.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/custom note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/custom note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/drop2note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/drop2dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/note base 1.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/prefabs/rsih saber.prefab' tracks=0 additive=false saberType=0
+  Vivify AssignObjectPrefab(trail): asset='assets/rsih saber/mats/rsih_saber_trail.mat' saberType=0 additive=false
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/prefabs/rsih saber.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/rsih saber/mats/rsih_saber_trail.mat' saberType=1 additive=false
+  Vivify event 'AssignObjectPrefab' (time=0) threw and was skipped: Method: Init failed with an exception: System.NullReferenceException: Object reference not set to an instance of an object.
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 15 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=36 livePrefabs=5 preloadedPrefabs=6
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify: switched off a saber light from another mod for this level ('Point Light', intensity 1, shadows off); 'Saber Lights On Map Objects' in settings keeps them
+=== end ===
+
