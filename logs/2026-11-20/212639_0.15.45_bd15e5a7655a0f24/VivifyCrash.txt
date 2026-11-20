@@ -1,0 +1,65 @@
+=== Vivify 0.15.45 native crash at 1795209973 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x283800006505
+thread 25896 'UnityMain'
+pc 0x7eb4924818  lr 0x7eb49247e8  sp 0x7d9247d9c0  fp 0x7d9247da60
+backtrace:
+  #00 pc 0x7eb4924818  libc.so +0xcd818 (abort +0xa8)
+  #01 lr 0x7eb49247e8  libc.so +0xcd7e8 (abort +0x78)
+  #02 fp 0x7d924a0820  libmetacore.so +0x1d820
+  #03 fp 0x7d45f9afb4  libcustom-types.so +0x4f2fb4
+  #04 fp 0x7d45f9a8cc  libcustom-types.so +0x4f28cc
+  #05 fp 0x7d45f9a7a0  libcustom-types.so +0x4f27a0
+  #06 fp 0x7d45fb65f4  libcustom-types.so +0x50e5f4 (__cxa_get_exception_ptr +0x0)
+  #07 fp 0x7d45fb65d0  libcustom-types.so +0x50e5d0
+  #08 fp 0x7bad9256e4  libVivify.so +0x2a66e4
+  #09 fp 0x7bad926cec  libVivify.so +0x2a7cec (_ZN6Vivify18FollowedSaberTrail10LateUpdateEv +0x98)
+  #10 fp 0x7d1ee1daf4  libil2cpp.so +0x34d3af4
+  #11 fp 0x7d1ee1da68  libil2cpp.so +0x34d3a68
+  #12 fp 0x7dfb25969c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #13 fp 0x7dfb259748  libgame.so +0x19748 (android_main +0x78)
+  #14 fp 0x7dfb261920  libgame.so +0x21920
+  #15 fp 0x7eb498e2b0  libc.so +0x1372b0
+  #16 fp 0x7eb4926174  libc.so +0xcf174
+last Vivify log lines (oldest first):
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/scaredthin/notedebris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/scaredthin/note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/scaredthin/notenoarrows.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/scaredthin/notedebris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/scaredthin/note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/scaredthin/notenoarrows.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/scaredthin/notedebris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/scaredthin/note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/scaredthin/notenoarrows.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/scaredthin/notedebris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/scaredthin/notemodel.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/scaredthin/notemodel.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/scaredthin/notedebris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/prefabs/scaredthin/waiver9saber.prefab' tracks=0 additive=false saberType=0
+  Vivify AssignObjectPrefab(trail): asset='assets/materials/scaredthin/saber/trail.mat' saberType=0 additive=false
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/prefabs/scaredthin/waiver9saber.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/materials/scaredthin/saber/trail.mat' saberType=1 additive=false
+  Vivify event 'AssignObjectPrefab' (time=0) threw and was skipped: Method: Init failed with an exception: System.NullReferenceException: Object reference not set to an instance of an object.
+  Vivify catch-up: replayed 28 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=53 livePrefabs=0 preloadedPrefabs=14
+  VRCenterAdjust.OnEnable skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=3
+  VRCenterAdjust.Start skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  VRCenterAdjust.Update skipped: missing _settingsManager=true _settingsApplicator=true
+=== end ===
+
