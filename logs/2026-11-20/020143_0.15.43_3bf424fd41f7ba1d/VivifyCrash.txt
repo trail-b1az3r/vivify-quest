@@ -1,0 +1,58 @@
+=== Vivify 0.15.43 native crash at 1795140070 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27e200004cff
+thread 19751 'UnityMain'
+pc 0x7ea8f2a9d8  lr 0x7ea8f2a9a8  sp 0x7d883d5a70  fp 0x7d883d5b10
+backtrace:
+  #00 pc 0x7ea8f2a9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7ea8f2a9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7d1aad7c64  libmetacore.so +0xcdc64
+  #03 fp 0x7d929a855c  libsl2.so +0x4fb55c
+  #04 fp 0x7d929a7e74  libsl2.so +0x4fae74
+  #05 fp 0x7d929a7d48  libsl2.so +0x4fad48
+  #06 fp 0x7d929a7ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7b59c10f10  libVivify.so +0x1f7f10
+  #08 fp 0x7d0bb11840  libil2cpp.so +0x21ba840
+  #09 fp 0x7d0bb1178c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify visual check at 30s: 155 active renderer(s), 0 with no runnable shader; most drawn: Custom/Parametric3SliceSprite x50, Custom/TransparentNeonLight x30, Custom/OpaqueNeonLight x18, Custom/CustomParticles x18, Custom/SimpleLit x9, nas
+  Vivify grab texture '_GrabTextureWater' at 30s: nothing bound
+  Vivify custom event: type='SetMaterialProperty' time=31.058825 songTime=31.061132
+  Vivify custom event: type='SetMaterialProperty' time=31.058825 songTime=31.061132
+  Vivify custom event: type='SetMaterialProperty' time=31.411764 songTime=31.412054
+  Vivify custom event: type='SetMaterialProperty' time=31.764708 songTime=31.77086
+  Vivify custom event: type='SetMaterialProperty' time=32.117645 songTime=32.118202
+  Vivify custom event: type='SetMaterialProperty' time=32.47059 songTime=32.475845
+  Vivify custom event: type='SetMaterialProperty' time=32.82353 songTime=32.826912
+  Vivify custom event: type='SetMaterialProperty' time=33.17647 songTime=33.179344
+  Vivify custom event: type='SetMaterialProperty' time=33.52941 songTime=33.533417
+  Vivify custom event: type='SetMaterialProperty' time=33.882355 songTime=33.886826
+  Vivify custom event: type='SetMaterialProperty' time=34.235294 songTime=34.238197
+  Vivify custom event: type='SetMaterialProperty' time=34.588238 songTime=34.5914
+  Vivify custom event: type='SetMaterialProperty' time=34.941177 songTime=34.94314
+  Vivify custom event: type='SetMaterialProperty' time=35.29412 songTime=35.299194
+  Vivify custom event: type='SetMaterialProperty' time=35.47059 songTime=35.47557
+  Vivify custom event: type='SetMaterialProperty' time=35.647057 songTime=35.652603
+  Vivify custom event: type='SetMaterialProperty' time=35.82353 songTime=35.83274
+  Vivify custom event: type='SetMaterialProperty' time=36 songTime=36.00699
+  Vivify custom event: type='SetMaterialProperty' time=36.176468 songTime=36.178017
+  Vivify custom event: type='SetMaterialProperty' time=36.35294 songTime=36.360634
+  Vivify custom event: type='SetMaterialProperty' time=36.52941 songTime=36.532177
+  Vivify custom event: type='DestroyObject' time=36.52941 songTime=36.532177
+  Vivify DestroyObject: destroying live prefab id='Stars'
+  Vivify custom event: type='DestroyObject' time=36.52941 songTime=36.532177
+  Vivify DestroyObject: destroying live prefab id='StarsClose'
+  Vivify custom event: type='SetMaterialProperty' time=36.705883 songTime=36.714844
+  Vivify custom event: type='SetMaterialProperty' time=36.705883 songTime=36.714844
+  Vivify custom event: type='Blit' time=36.705883 songTime=36.714844
+  Vivify material: context=Blit asset=assets/materials/pp_glitch.mat material='PP_Glitch' shader='nasafrasa/PostProcessing/FMS_Cat/Glitch' supported=true internalError=false
+  Vivify Blit event: time=36.705883 asset='assets/materials/pp_glitch.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=0.5
+  Vivify custom event: type='InstantiatePrefab' time=36.705883 songTime=36.714844
+  Vivify InstantiatePrefab: asset='assets/sky2.prefab' id='Sky2 - Fractal' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='Sky2 - Fractal' asset='assets/sky2.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify custom event: type='DestroyObject' time=36.705883 songTime=36.714844
+  Vivify DestroyObject: destroying live prefab id='Sky1 - Galaxy'
+  Vivify custom event: type='DestroyObject' time=36.705883 songTime=36.714844
+  Vivify DestroyObject: destroying live prefab id='Skybox1 - Space'
+  Vivify stereo screen effect processing failed: A SafePtr<T> instance is holding a null handle!
+=== end ===
+
