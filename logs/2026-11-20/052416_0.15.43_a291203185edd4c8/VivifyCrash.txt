@@ -1,0 +1,116 @@
+=== Vivify 0.15.42 native crash at 1795152241 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x28a300002b6f
+thread 11178 'UnityMain'
+pc 0x78c13089d8  lr 0x78c13089a8  sp 0x7792246ea0  fp 0x7792246f40
+backtrace:
+  #00 pc 0x78c13089d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x78c13089a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x772e154c64  libmetacore.so +0xcdc64
+  #03 fp 0x779d17655c  libsl2.so +0x4fb55c
+  #04 fp 0x779d175e74  libsl2.so +0x4fae74
+  #05 fp 0x779d175d48  libsl2.so +0x4fad48
+  #06 fp 0x779d175ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x75b0143fd4  libBetterHaptics.so +0x10afd4
+  #08 fp 0x77174f3ee0  libil2cpp.so +0x4aeeee0
+  #09 fp 0x7714bbf78c  libil2cpp.so +0x21ba78c
+  #10 fp 0x78b4e5c6c3
+  #11 fp 0x7792249710
+last Vivify log lines (oldest first):
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7716538658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7716538560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x77165383e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x77165384a4
+  Installing hook: PauseController_Pause to offset: 0x77165aa7ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x77165b4c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x77165b5734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x77165b5094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x77165b4d88
+  Installing hook: GamePause_Resume to offset: 0x77165b0178
+  Installing hook: Recorder_InstallBindings to offset: 0x77165f9294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x77165ed8b8
+  Installing hook: Recorder_SpawnNote to offset: 0x77164e4928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x77164e3dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x77164e5de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x77165f344c
+  Installing hook: Recorder_ScoreStart to offset: 0x77165f3038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x77150b6db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x77150b7690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x77164e6ae0
+  Installing hook: Recorder_ShowPause to offset: 0x77165b4c54
+  Installing hook: Recorder_Resume to offset: 0x77165b576c
+  Installing hook: Recorder_Finish to offset: 0x77165441dc
+  Vivify: loaded mods (85): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMapLoader.so 0.0.0, BSML 0.4.55, CongXinJian 0.1.0, DlcSorter 0.1.13, EasyOffsetQuest 0.1.7, FakeId 0.1.9, FasterScroll 1.17.0, anytext 1.0.1, bsdc 0.6.4, bstheater 0.1
+  .0.3, MappingExtensions 0.25.4, morebuttons 1.0.4, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistDownloader 0.3.1, PlaylistManager 1.4.1, practicetwe
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify Send Logs: uploaded 5 file part(s), 59 KB (logs/2026-11-20/052242_0.15.42_6c017d324a28cf9c ed51d41; stored 5, deduplicated 0; 12729827 bytes saved cumulatively
+  )
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.01,1.67,-0.01) fwd=(-0.02,0.00,1.00)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.77,-0.01) fwd=(0.01,0.07,1.00)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify updater: Looking for the build...
+  Vivify updater: Downloading the latest build of main...
+  Vivify updater: Installing the latest build of main...
+  Vivify updater: replacing /sdcard/ModData/com.beatgames.beatsaber/Modloader/mods/libVivify.so
+  Vivify updater: Installed Vivify 0.15.43 (the latest build of main). Restart Beat Saber to use it.
+=== end ===
+
+=== Vivify 0.15.43 native crash at 1795152248 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x77fb31bf2c
+thread 17422 'UnityMain'
+pc 0x78c13016e4  lr 0x772ed46ac0  sp 0x778c278850  fp 0x778c278c10
+backtrace:
+  #00 pc 0x78c13016e4  libc.so +0xc76e4
+  #01 lr 0x772ed46ac0  libsongcore.so +0x4d6ac0
+  #02 fp 0x772ec20bd8  libsongcore.so +0x3b0bd8
+  #03 fp 0x772ed409c4  libsongcore.so +0x4d09c4 (late_load +0xd30)
+  #04 fp 0x779cbe2b9c  libsl2.so +0x543b9c
+  #05 fp 0x771312cfb4  libunity.so +0xab1fb4
+  #06 fp 0x78b4e5c6c3
+  #07 fp 0x778c279f40
+last Vivify log lines (oldest first):
+  Vivify crash report:   Installing hook: VRCenterAdjust_ResetRoom to offset: 0x77165383e0
+  Vivify crash report:   Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x77165384a4
+  Vivify crash report:   Installing hook: PauseController_Pause to offset: 0x77165aa7ec
+  Vivify crash report:   Installing hook: PauseMenuManager_ShowMenu to offset: 0x77165b4c54
+  Vivify crash report:   Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x77165b5734
+  Vivify crash report:   Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x77165b5094
+  Vivify crash report:   Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x77165b4d88
+  Vivify crash report:   Installing hook: GamePause_Resume to offset: 0x77165b0178
+  Vivify crash report:   Installing hook: Recorder_InstallBindings to offset: 0x77165f9294
+  Vivify crash report:   Installing hook: Recorder_HeightLateUpdate to offset: 0x77165ed8b8
+  Vivify crash report:   Installing hook: Recorder_SpawnNote to offset: 0x77164e4928
+  Vivify crash report:   Installing hook: Recorder_SpawnObstacle to offset: 0x77164e3dec
+  Vivify crash report:   Installing hook: Recorder_NoteWasCut to offset: 0x77164e5de4
+  Vivify crash report:   Installing hook: Recorder_ScoreLateUpdate to offset: 0x77165f344c
+  Vivify crash report:   Installing hook: Recorder_ScoreStart to offset: 0x77165f3038
+  Vivify crash report:   Installing hook: Recorder_ComputeSwingRating to offset: 0x77150b6db4
+  Vivify crash report:   Installing hook: Recorder_ProcessSwing to offset: 0x77150b7690
+  Vivify crash report:   Installing hook: Recorder_SpawnControllerStart to offset: 0x77164e6ae0
+  Vivify crash report:   Installing hook: Recorder_ShowPause to offset: 0x77165b4c54
+  Vivify crash report:   Installing hook: Recorder_Resume to offset: 0x77165b576c
+  Vivify crash report:   Installing hook: Recorder_Finish to offset: 0x77165441dc
+  Vivify crash report:   Vivify: loaded mods (85): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/li
+  Vivify crash report:   2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMapLoader.so 0.0.0, BSML 0.4.55, CongXinJian 0.1.0, DlcSorter 0.1.13, EasyOffsetQuest 0.1.7, FakeId 0.1.9, FasterScroll 1.17.0, anytext 1.0.1, bs
+  Vivify crash report:   .0.3, MappingExtensions 0.25.4, morebuttons 1.0.4, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistDownloader 0.3.1, PlaylistMan
+  Vivify crash report:   Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify crash report:   Vivify Send Logs: uploaded 5 file part(s), 59 KB (logs/2026-11-20/052242_0.15.42_6c017d324a28cf9c ed51d41; stored 5, deduplicated 0; 12729827 bytes saved cumulatively
+  Vivify crash report:   )
+  Vivify crash report:   Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.01,1.67,-0.01) fwd=(-0.02,0.00,1.00)
+  Vivify crash report:   Vivify main camera cullingMask is now 0x3818ff37
+  Vivify crash report:   Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify crash report:   Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.77,-0.01) fwd=(0.01,0.07,1.00)
+  Vivify crash report:   Vivify main camera cullingMask is now 0x3818ff37
+  Vivify crash report:   Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify crash report:   Vivify updater: Looking for the build...
+  Vivify crash report:   Vivify updater: Downloading the latest build of main...
+  Vivify crash report:   Vivify updater: Installing the latest build of main...
+  Vivify crash report:   Vivify updater: replacing /sdcard/ModData/com.beatgames.beatsaber/Modloader/mods/libVivify.so
+  Vivify crash report:   Vivify updater: Installed Vivify 0.15.43 (the latest build of main). Restart Beat Saber to use it.
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
