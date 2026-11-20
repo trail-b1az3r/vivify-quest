@@ -1,0 +1,58 @@
+=== Vivify 0.15.43 native crash at 1795139690 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27e200001482
+thread 5304 'UnityMain'
+pc 0x7ea8f2a9d8  lr 0x7ea8f2a9a8  sp 0x7d88c43150  fp 0x7d88c431f0
+backtrace:
+  #00 pc 0x7ea8f2a9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7ea8f2a9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7d1a11cc64  libmetacore.so +0xcdc64
+  #03 fp 0x7d937c255c  libsl2.so +0x4fb55c
+  #04 fp 0x7d937c1e74  libsl2.so +0x4fae74
+  #05 fp 0x7d937c1d48  libsl2.so +0x4fad48
+  #06 fp 0x7d937c1ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7b5f0a4f10  libVivify.so +0x1f7f10
+  #08 fp 0x7d07087840  libil2cpp.so +0x21ba840
+  #09 fp 0x7d0708778c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+  Vivify custom event: type='SetMaterialProperty' time=166.73051 songTime=166.73862
+  Vivify custom event: type='SetMaterialProperty' time=166.73051 songTime=166.73862
+  Vivify custom event: type='SetMaterialProperty' time=166.73051 songTime=166.73862
+  Vivify custom event: type='Blit' time=166.73685 songTime=166.73862
+  Vivify material: context=Blit asset=assets/ppunderwater.mat material='PPUnderwater' shader='nasafrasa/PPUnderwater' supported=true internalError=false
+  Vivify Blit event: time=166.73685 asset='assets/ppunderwater.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=32
+  Vivify custom event: type='InstantiatePrefab' time=166.73685 songTime=166.73862
+  Vivify InstantiatePrefab: asset='assets/sky6.prefab' id='Sky6' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='Sky6' asset='assets/sky6.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify custom event: type='InstantiatePrefab' time=166.73685 songTime=166.73862
+  Vivify InstantiatePrefab: asset='assets/waterunder.prefab' id='water2' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='water2' asset='assets/waterunder.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify custom event: type='InstantiatePrefab' time=166.73685 songTime=166.73862
+  Vivify InstantiatePrefab: asset='assets/lightstreaks.prefab' id='lightstreaks' alreadyLive=false
+  Vivify InstantiatePrefab: GPU instancing off on 1 particle system(s) of 'assets/lightstreaks.prefab'
+  Vivify InstantiatePrefab spawned: id='lightstreaks' asset='assets/lightstreaks.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify custom event: type='InstantiatePrefab' time=166.73685 songTime=166.73862
+  Vivify InstantiatePrefab: asset='assets/fireworksair.prefab' id='fireworks296' alreadyLive=false
+  Vivify InstantiatePrefab: GPU instancing off on 32 particle system(s) of 'assets/fireworksair.prefab'
+  Vivify InstantiatePrefab spawned: id='fireworks296' asset='assets/fireworksair.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify custom event: type='DestroyObject' time=166.73685 songTime=166.73862
+  Vivify DestroyObject: destroying live prefab id='Sky5'
+  Vivify custom event: type='DestroyObject' time=166.73685 songTime=166.73862
+  Vivify DestroyObject: destroying live prefab id='lanterns'
+  Vivify custom event: type='DestroyObject' time=166.73685 songTime=166.73862
+  Vivify DestroyObject: destroying live prefab id='prefab_oceancalm_2'
+  Vivify stereo screen effect processing failed: A SafePtr<T> instance is holding a null handle!
+=== end ===
+
