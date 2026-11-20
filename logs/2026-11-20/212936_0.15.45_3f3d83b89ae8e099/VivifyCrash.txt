@@ -1,0 +1,65 @@
+=== Vivify 0.15.45 native crash at 1795210167 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x283800003300
+thread 13136 'UnityMain'
+pc 0x7eb4924818  lr 0x7eb49247e8  sp 0x7d902549c0  fp 0x7d90254a60
+backtrace:
+  #00 pc 0x7eb4924818  libc.so +0xcd818 (abort +0xa8)
+  #01 lr 0x7eb49247e8  libc.so +0xcd7e8 (abort +0x78)
+  #02 fp 0x7d2c8c0820  libmetacore.so +0x1d820
+  #03 fp 0x7d421dffb4  libcustom-types.so +0x4f2fb4
+  #04 fp 0x7d421df8cc  libcustom-types.so +0x4f28cc
+  #05 fp 0x7d421df7a0  libcustom-types.so +0x4f27a0
+  #06 fp 0x7d421fb5f4  libcustom-types.so +0x50e5f4 (__cxa_get_exception_ptr +0x0)
+  #07 fp 0x7d421fb5d0  libcustom-types.so +0x50e5d0
+  #08 fp 0x7bb53a16e4  libVivify.so +0x2a66e4
+  #09 fp 0x7bb53a2cec  libVivify.so +0x2a7cec (_ZN6Vivify18FollowedSaberTrail10LateUpdateEv +0x98)
+  #10 fp 0x7d20730af4  libil2cpp.so +0x34d3af4
+  #11 fp 0x7d20730a68  libil2cpp.so +0x34d3a68
+  #12 fp 0x7de419b69c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #13 fp 0x7de419b748  libgame.so +0x19748 (android_main +0x78)
+  #14 fp 0x7de41a3920  libgame.so +0x21920
+  #15 fp 0x7eb498e2b0  libc.so +0x1372b0
+  #16 fp 0x7eb4926174  libc.so +0xcf174
+last Vivify log lines (oldest first):
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify: Reduce Debris player option = true (custom debris disabled)
+  Vivify visual check at 5s: 5 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: a live note has 4 renderer(s):
+  Vivify visual check:   'NoteCube' enabled=true active=true layer=8 material='NoteLW' shader='Custom/NoteLW' supported=true queue=2004 block: _Cutout=0.00 _Color=(0.78,0.08,0.08,1.00)
+  Vivify visual check:   'NoteArrow' enabled=true active=true layer=8 material='NoteArrowLW' shader='GraphicsTweaks/GlowingInstancedLWBloom' supported=true queue=2002 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'NoteArrowGlow' enabled=true active=true layer=8 material='NoteArrowGlow' shader='GraphicsTweaks/CustomParticlesBloom' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.78,0.08,0.08,1.00)
+  Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='GraphicsTweaks/CustomParticlesBloom' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.78,0.08,0.08,1.00)
+  Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+  Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check: mirror 'TrackMirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'TrackMirror' enabled=true active=true layer=4 material='GridFakeMirror' shader='GraphicsTweaks/SimpleLitBloomVerified' supported=true queue=1970 bl
+  Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='GraphicsTweaks/SimpleLitBloomVerified' supported=true queu
+  Vivify visual check: cameras that may render the mirror: 'MainCamera' stereo=true eye=3 target=screen mask=0x3d3bfdb7
+  Vivify visual check at 5s: 216 active renderer(s), 0 with no runnable shader; most drawn: GraphicsTweaks/OpaqueNeonLightBloom x78, GraphicsTweaks/SimpleLitBloomVerified x56, GraphicsTweaks/TransparentNeonLightBloom x28, GraphicsTweaks/Cust
+  Vivify visual check: main camera cullingMask=0x3d3bfdb7 depthTextureMode=0 clearFlags=2
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify custom event: type='Blit' time=28.714285 songTime=28.718502
+  Vivify material: context=Blit asset=assets/postprocess.mat material='PostProcess' shader='Custom/PostProcess' supported=true internalError=false
+  Vivify Blit event: time=28.714285 asset='assets/postprocess.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=60
+  Vivify custom event: type='InstantiatePrefab' time=28.714285 songTime=28.718502
+  Vivify InstantiatePrefab: asset='assets/blankbgbackup.prefab' id='vivify_prefab_525086792432' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='vivify_prefab_525086792432' asset='assets/blankbgbackup.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=3 hideOriginal=true hiddenOriginals=3
+  Vivify custom event: type='AssignObjectPrefab' time=29.142857 songTime=29.145718
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/saberl.prefab' tracks=0 additive=false saberType=0
+  Vivify AssignObjectPrefab(trail): asset='assets/sabertrail.mat' saberType=0 additive=false
+  Vivify event 'AssignObjectPrefab' (time=29.142857) threw and was skipped: Method: Init failed with an exception: System.NullReferenceException: Object reference not set to an instance of an object.
+  Vivify custom event: type='AssignObjectPrefab' time=29.142857 songTime=29.145718
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/saberr.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/sabertrail.mat' saberType=1 additive=false
+  Vivify event 'AssignObjectPrefab' (time=29.142857) threw and was skipped: Method: Init failed with an exception: System.NullReferenceException: Object reference not set to an instance of an object.
+=== end ===
+
