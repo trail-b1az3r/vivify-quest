@@ -1,0 +1,52 @@
+=== Vivify 0.15.44 native crash at 1795195966 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0xfffff7c332d4c4
+thread 5101 'Thread-3'
+pc 0x71e5a6a740  lr 0x71e5a6a6f8  sp 0x70f3504480  fp 0x70f35047b0
+backtrace:
+  #00 pc 0x71e5a6a740  libunity.so +0x13ee740
+  #01 lr 0x71e5a6a6f8  libunity.so +0x13ee6f8
+  #02 fp 0x71e5c509f4  libunity.so +0x15d49f4
+  #03 fp 0x735d0d5334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify custom event: type='Blit' time=128.01111 songTime=128.01984
+  Vivify material: context=Blit asset=assets/shaders/pixelsort.mat material='PixelSort' shader='PostProcessing/PixelSort' supported=true internalError=false
+  Vivify Blit event: time=128.01111 asset='assets/shaders/pixelsort.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=3
+  Vivify custom event: type='Blit' time=128.01111 songTime=128.01984
+  Vivify material: context=Blit asset=assets/shaders/colormultiply.mat material='ColorMultiply' shader='PostProcessing/ColorMultiply' supported=true internalError=false
+  Vivify Blit event: time=128.01111 asset='assets/shaders/colormultiply.mat' source='_Main' targets=1 priority=1 pass=-1 order=7 durationBeats=3
+  Vivify custom event: type='Blit' time=128.01111 songTime=128.01984
+  Vivify material: context=Blit asset=assets/shaders/distortnotes/one.mat material='One' shader='PostProcessing/DistortNotes' supported=true internalError=false
+  Vivify Blit event: time=128.01111 asset='assets/shaders/distortnotes/one.mat' source='_Main' targets=1 priority=2 pass=0 order=7 durationBeats=64
+  Vivify custom event: type='CreateCamera' time=128.01111 songTime=128.01984
+  Vivify CreateCamera: id='NotesOneCam' colorTexture='_NotesOne' depthTexture='_NotesOne_Depth' size=1856x1936 mainEffect=true
+  Vivify custom event: type='DestroyObject' time=128.01111 songTime=128.01984
+  Vivify DestroyObject: destroying live prefab id='wormhole1'
+  Vivify custom event: type='InstantiatePrefab' time=128.01111 songTime=128.01984
+  Vivify InstantiatePrefab: asset='assets/monitor/monitorscene.prefab' id='monitorscene' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='monitorscene' asset='assets/monitor/monitorscene.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify custom event: type='SetCameraProperty' time=128.01111 songTime=128.01984
+  Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=false bloomPrePass=unset mainEffect=unset
+  Vivify custom event: type='SetMaterialProperty' time=128.01111 songTime=128.01984
+  Vivify culling pass on 'VivifyCamera_NotesOneCam': whitelist=true tracks=1 trackedGOs=22 movedGOs=76 camMask=0x00400000
+=== end ===
+
