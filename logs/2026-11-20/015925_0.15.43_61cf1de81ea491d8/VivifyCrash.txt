@@ -1,0 +1,114 @@
+=== Vivify 0.15.43 native crash at 1795139948 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27e20000365e
+thread 13947 'UnityMain'
+pc 0x7ea8f2a9d8  lr 0x7ea8f2a9a8  sp 0x7d8c621a70  fp 0x7d8c621b10
+backtrace:
+  #00 pc 0x7ea8f2a9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7ea8f2a9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7d318e5c64  libmetacore.so +0xcdc64
+  #03 fp 0x7d9471c55c  libsl2.so +0x4fb55c
+  #04 fp 0x7d9471be74  libsl2.so +0x4fae74
+  #05 fp 0x7d9471bd48  libsl2.so +0x4fad48
+  #06 fp 0x7d9471bce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7b75052f10  libVivify.so +0x1f7f10
+  #08 fp 0x7d23eb7840  libil2cpp.so +0x21ba840
+  #09 fp 0x7d23eb778c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify visual check at 30s: 157 active renderer(s), 0 with no runnable shader; most drawn: Custom/Parametric3SliceSprite x50, Custom/TransparentNeonLight x30, Custom/OpaqueNeonLight x18, Custom/CustomParticles x18, Custom/SimpleLit x9, Cus
+  Vivify grab texture '_GrabTextureWater' at 30s: nothing bound
+  Vivify custom event: type='SetMaterialProperty' time=31.058825 songTime=31.067097
+  Vivify custom event: type='SetMaterialProperty' time=31.058825 songTime=31.067097
+  Vivify custom event: type='SetMaterialProperty' time=31.411764 songTime=31.421234
+  Vivify custom event: type='SetMaterialProperty' time=31.764708 songTime=31.771427
+  Vivify custom event: type='SetMaterialProperty' time=32.117645 songTime=32.125813
+  Vivify custom event: type='SetMaterialProperty' time=32.47059 songTime=32.475025
+  Vivify custom event: type='SetMaterialProperty' time=32.82353 songTime=32.824738
+  Vivify custom event: type='SetMaterialProperty' time=33.17647 songTime=33.177525
+  Vivify custom event: type='SetMaterialProperty' time=33.52941 songTime=33.639645
+  Vivify custom event: type='SetMaterialProperty' time=33.882355 songTime=33.88985
+  Vivify custom event: type='SetMaterialProperty' time=34.235294 songTime=34.236862
+  Vivify custom event: type='SetMaterialProperty' time=34.588238 songTime=34.588478
+  Vivify custom event: type='SetMaterialProperty' time=34.941177 songTime=34.948067
+  Vivify custom event: type='SetMaterialProperty' time=35.29412 songTime=35.29953
+  Vivify custom event: type='SetMaterialProperty' time=35.47059 songTime=35.47641
+  Vivify custom event: type='SetMaterialProperty' time=35.647057 songTime=35.64905
+  Vivify custom event: type='SetMaterialProperty' time=35.82353 songTime=35.82843
+  Vivify custom event: type='SetMaterialProperty' time=36 songTime=36.006874
+  Vivify custom event: type='SetMaterialProperty' time=36.176468 songTime=36.177277
+  Vivify custom event: type='SetMaterialProperty' time=36.35294 songTime=36.354797
+  Vivify custom event: type='SetMaterialProperty' time=36.52941 songTime=36.529747
+  Vivify custom event: type='DestroyObject' time=36.52941 songTime=36.529747
+  Vivify DestroyObject: destroying live prefab id='Stars'
+  Vivify custom event: type='DestroyObject' time=36.52941 songTime=36.529747
+  Vivify DestroyObject: destroying live prefab id='StarsClose'
+  Vivify custom event: type='SetMaterialProperty' time=36.705883 songTime=36.713577
+  Vivify custom event: type='SetMaterialProperty' time=36.705883 songTime=36.713577
+  Vivify custom event: type='Blit' time=36.705883 songTime=36.713577
+  Vivify material: context=Blit asset=assets/materials/pp_glitch.mat material='PP_Glitch' shader='nasafrasa/PostProcessing/FMS_Cat/Glitch' supported=true internalError=false
+  Vivify Blit event: time=36.705883 asset='assets/materials/pp_glitch.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=0.5
+  Vivify custom event: type='InstantiatePrefab' time=36.705883 songTime=36.713577
+  Vivify InstantiatePrefab: asset='assets/sky2.prefab' id='Sky2 - Fractal' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='Sky2 - Fractal' asset='assets/sky2.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify custom event: type='DestroyObject' time=36.705883 songTime=36.713577
+  Vivify DestroyObject: destroying live prefab id='Sky1 - Galaxy'
+  Vivify custom event: type='DestroyObject' time=36.705883 songTime=36.713577
+  Vivify DestroyObject: destroying live prefab id='Skybox1 - Space'
+  Vivify stereo screen effect processing failed: A SafePtr<T> instance is holding a null handle!
+=== end ===
+
+=== Vivify 0.15.43 native crash at 1795139959 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7e1878b798
+thread 16802 'UnityMain'
+pc 0x7ea8f236fc  lr 0x7b49483230  sp 0x7d8a857750  fp 0x7d8a857b10
+backtrace:
+  #00 pc 0x7ea8f236fc  libc.so +0xc76fc
+  #01 lr 0x7b49483230  libreplay.so +0x39a230
+  #02 fp 0x7b49483630  libreplay.so +0x39a630
+  #03 fp 0x7b4941e6e0  libreplay.so +0x3356e0 (_ZN7Hooking13__InstallHookI45Hook_MenuTransitionsHelper_StartStandardLevelKN5Paper18ConstLoggerContextILm7EEELb1EEEvRT0_Pv +0xfc)
+  #04 fp 0x7b4942c994  libreplay.so +0x343994 (late_load +0xf4)
+  #05 fp 0x7d9359bb9c  libsl2.so +0x543b9c
+  #06 fp 0x7d1b4e4fb4  libunity.so +0xab1fb4
+  #07 fp 0x7ea3b006c3
+last Vivify log lines (oldest first):
+  Installing hook: SaberModelController_Init to offset: 0x7d188f6928
+  Installing hook: GameNoteController_Init to offset: 0x7d187f41d0
+  Installing hook: BombNoteController_Init to offset: 0x7d187f12d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x7d187f2668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7d18894bb8
+  Installing hook: NoteDebris_Init to offset: 0x7d187f72e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7d18d8b968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x7d186e9018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7d18d8ee78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7d18d8e9f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x7d18d8fbb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7d18d8ff2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7d18d8f7f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x7d1883e37c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x7d1883e58c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7d1883e658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7d1883e560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7d1883e3e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7d1883e4a4
+  Installing hook: PauseController_Pause to offset: 0x7d188b07ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7d188bac54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7d188bb734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7d188bb094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7d188bad88
+  Installing hook: GamePause_Resume to offset: 0x7d188b6178
+  Installing hook: Recorder_InstallBindings to offset: 0x7d188ff294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x7d188f38b8
+  Installing hook: Recorder_SpawnNote to offset: 0x7d187ea928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x7d187e9dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x7d187ebde4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7d188f944c
+  Installing hook: Recorder_ScoreStart to offset: 0x7d188f9038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7d173bcdb4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7d173bd690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7d187ecae0
+  Installing hook: Recorder_ShowPause to offset: 0x7d188bac54
+  Installing hook: Recorder_Resume to offset: 0x7d188bb76c
+  Installing hook: Recorder_Finish to offset: 0x7d1884a1dc
+  Vivify: loaded mods (56): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, FakeId 0.1.9, BSML 0.4.55, FasterScroll 1.17.0, NoPromo 0.1.13, bstheater 0.1.0, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.
+=== end ===
+
