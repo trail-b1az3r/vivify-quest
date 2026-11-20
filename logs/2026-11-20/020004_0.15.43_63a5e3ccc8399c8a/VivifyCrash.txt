@@ -1,0 +1,68 @@
+=== Vivify 0.15.43 native crash at 1795139988 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27e2000042bd
+thread 17120 'UnityMain'
+pc 0x7ea8f2a9d8  lr 0x7ea8f2a9a8  sp 0x7d8e84f380  fp 0x7d8e84f420
+backtrace:
+  #00 pc 0x7ea8f2a9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7ea8f2a9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7d28106c64  libmetacore.so +0xcdc64
+  #03 fp 0x7d150b7114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x7d150b7264  libil2cpp.so +0x2226264
+  #05 fp 0x7d9698bd48  libsl2.so +0x4fad48
+  #06 fp 0x7d9698bce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7d3f2fd8d8  libbsml.so +0x4b18d8
+  #08 fp 0x7b5b885090  libbl.so +0x87b090 (_ZN19Hook_ModalView_Show19hook_ModalView_ShowEPN4HMUI9ModalViewEbbPN6System6ActionE +0x38)
+  #09 fp 0x7b5b88af4c  libbl.so +0x880f4c
+  #10 fp 0x7d1504b840  libil2cpp.so +0x21ba840
+  #11 fp 0x7d1504b78c  libil2cpp.so +0x21ba78c
+  #12 fp 0x7d3f1a37ac  libbsml.so +0x3577ac
+  #13 fp 0x7b53e30bf8  libdiscordrichpresence.so +0x16fbf8
+  #14 fp 0x7d3f224040  libbsml.so +0x3d8040 (_ZN4BSML19MainThreadScheduler6UpdateEv +0x1104)
+  #15 fp 0x7d3f146e08  libbsml.so +0x2fae08
+  #16 fp 0x7d1504b840  libil2cpp.so +0x21ba840
+  #17 fp 0x7d1504b78c  libil2cpp.so +0x21ba78c
+  #18 fp 0x7ea3bd56c3
+  #19 fp 0x7d8e853120
+last Vivify log lines (oldest first):
+  Vivify PreloadInstantiatePrefabs: 17 prefab event(s) preloaded
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/sky1.prefab' id='Sky1 - Galaxy' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='Sky1 - Galaxy' asset='assets/sky1.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/skybox1.prefab' id='Skybox1 - Space' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='Skybox1 - Space' asset='assets/skybox1.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/stars.prefab' id='Stars' alreadyLive=false
+  Vivify InstantiatePrefab: GPU instancing off on 1 particle system(s) of 'assets/stars.prefab'
+  Vivify InstantiatePrefab spawned: id='Stars' asset='assets/stars.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/starsclose.prefab' id='StarsClose' alreadyLive=false
+  Vivify InstantiatePrefab: GPU instancing off on 1 particle system(s) of 'assets/starsclose.prefab'
+  Vivify InstantiatePrefab spawned: id='StarsClose' asset='assets/starsclose.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify catch-up: replayed 15 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=72 livePrefabs=4 preloadedPrefabs=17
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify multiplayer check: inMultiplayerGameplay=false multiplayerModLoaded=true
+  Vivify scene route: native multiview; no separate-eye scene renders needed for this frame
+  Vivify custom event: type='SetMaterialProperty' time=2.1176472 songTime=2.1238332
+  Vivify custom event: type='SetMaterialProperty' time=2.1176472 songTime=2.1238332
+  Vivify custom event: type='SetMaterialProperty' time=2.1176472 songTime=2.1238332
+  Vivify custom event: type='SetMaterialProperty' time=2.1176472 songTime=2.1238332
+  Vivify custom event: type='SetMaterialProperty' time=2.1176472 songTime=2.1238332
+  Vivify custom event: type='SetMaterialProperty' time=2.1176472 songTime=2.1238332
+  Vivify custom event: type='SetMaterialProperty' time=2.1176472 songTime=2.1238332
+  Vivify: Reduce Debris player option = false (custom debris enabled)
+=== end ===
+
