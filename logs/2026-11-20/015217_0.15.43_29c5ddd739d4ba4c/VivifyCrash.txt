@@ -1,0 +1,114 @@
+=== Vivify 0.15.43 native crash at 1795139514 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27e200007ddc
+thread 32254 'UnityMain'
+pc 0x7ea8f2a9d8  lr 0x7ea8f2a9a8  sp 0x7d8ca3a150  fp 0x7d8ca3a1f0
+backtrace:
+  #00 pc 0x7ea8f2a9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7ea8f2a9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7d2af57c64  libmetacore.so +0xcdc64
+  #03 fp 0x7d9734f55c  libsl2.so +0x4fb55c
+  #04 fp 0x7d9734ee74  libsl2.so +0x4fae74
+  #05 fp 0x7d9734ed48  libsl2.so +0x4fad48
+  #06 fp 0x7d9734ece8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7b740aaf10  libVivify.so +0x1f7f10
+  #08 fp 0x7d17f0f840  libil2cpp.so +0x21ba840
+  #09 fp 0x7d17f0f78c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+  Vivify custom event: type='SetMaterialProperty' time=166.73051 songTime=166.7458
+  Vivify custom event: type='SetMaterialProperty' time=166.73051 songTime=166.7458
+  Vivify custom event: type='SetMaterialProperty' time=166.73051 songTime=166.7458
+  Vivify custom event: type='Blit' time=166.73685 songTime=166.7458
+  Vivify material: context=Blit asset=assets/ppunderwater.mat material='PPUnderwater' shader='nasafrasa/PPUnderwater' supported=true internalError=false
+  Vivify Blit event: time=166.73685 asset='assets/ppunderwater.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=32
+  Vivify custom event: type='InstantiatePrefab' time=166.73685 songTime=166.7458
+  Vivify InstantiatePrefab: asset='assets/sky6.prefab' id='Sky6' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='Sky6' asset='assets/sky6.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify custom event: type='InstantiatePrefab' time=166.73685 songTime=166.7458
+  Vivify InstantiatePrefab: asset='assets/waterunder.prefab' id='water2' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='water2' asset='assets/waterunder.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify custom event: type='InstantiatePrefab' time=166.73685 songTime=166.7458
+  Vivify InstantiatePrefab: asset='assets/lightstreaks.prefab' id='lightstreaks' alreadyLive=false
+  Vivify InstantiatePrefab: GPU instancing off on 1 particle system(s) of 'assets/lightstreaks.prefab'
+  Vivify InstantiatePrefab spawned: id='lightstreaks' asset='assets/lightstreaks.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify custom event: type='InstantiatePrefab' time=166.73685 songTime=166.7458
+  Vivify InstantiatePrefab: asset='assets/fireworksair.prefab' id='fireworks296' alreadyLive=false
+  Vivify InstantiatePrefab: GPU instancing off on 32 particle system(s) of 'assets/fireworksair.prefab'
+  Vivify InstantiatePrefab spawned: id='fireworks296' asset='assets/fireworksair.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify custom event: type='DestroyObject' time=166.73685 songTime=166.7458
+  Vivify DestroyObject: destroying live prefab id='Sky5'
+  Vivify custom event: type='DestroyObject' time=166.73685 songTime=166.7458
+  Vivify DestroyObject: destroying live prefab id='lanterns'
+  Vivify custom event: type='DestroyObject' time=166.73685 songTime=166.7458
+  Vivify DestroyObject: destroying live prefab id='prefab_oceancalm_2'
+  Vivify stereo screen effect processing failed: A SafePtr<T> instance is holding a null handle!
+=== end ===
+
+=== Vivify 0.15.43 native crash at 1795139531 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7e17751198
+thread 4886 'UnityMain'
+pc 0x7ea8f236fc  lr 0x7b48821230  sp 0x7d8c4ad750  fp 0x7d8c4adb10
+backtrace:
+  #00 pc 0x7ea8f236fc  libc.so +0xc76fc
+  #01 lr 0x7b48821230  libreplay.so +0x39a230
+  #02 fp 0x7b48821630  libreplay.so +0x39a630
+  #03 fp 0x7b487bc6e0  libreplay.so +0x3356e0 (_ZN7Hooking13__InstallHookI45Hook_MenuTransitionsHelper_StartStandardLevelKN5Paper18ConstLoggerContextILm7EEELb1EEEvRT0_Pv +0xfc)
+  #04 fp 0x7b487ca994  libreplay.so +0x343994 (late_load +0xf4)
+  #05 fp 0x7d92f5eb9c  libsl2.so +0x543b9c
+  #06 fp 0x7d1c929fb4  libunity.so +0xab1fb4
+  #07 fp 0x7ea3bd56c3
+last Vivify log lines (oldest first):
+  Installing hook: SaberModelController_Init to offset: 0x7d17893928
+  Installing hook: GameNoteController_Init to offset: 0x7d177911d0
+  Installing hook: BombNoteController_Init to offset: 0x7d1778e2d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x7d1778f668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7d17831bb8
+  Installing hook: NoteDebris_Init to offset: 0x7d177942e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7d17d28968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x7d17686018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7d17d2be78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7d17d2b9f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x7d17d2cbb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7d17d2cf2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7d17d2c7f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x7d177db37c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x7d177db58c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7d177db658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7d177db560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7d177db3e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7d177db4a4
+  Installing hook: PauseController_Pause to offset: 0x7d1784d7ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7d17857c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7d17858734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7d17858094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7d17857d88
+  Installing hook: GamePause_Resume to offset: 0x7d17853178
+  Installing hook: Recorder_InstallBindings to offset: 0x7d1789c294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x7d178908b8
+  Installing hook: Recorder_SpawnNote to offset: 0x7d17787928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x7d17786dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x7d17788de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7d1789644c
+  Installing hook: Recorder_ScoreStart to offset: 0x7d17896038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7d16359db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7d1635a690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7d17789ae0
+  Installing hook: Recorder_ShowPause to offset: 0x7d17857c54
+  Installing hook: Recorder_Resume to offset: 0x7d1785876c
+  Installing hook: Recorder_Finish to offset: 0x7d177e71dc
+  Vivify: loaded mods (56): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, FakeId 0.1.9, BSML 0.4.55, FasterScroll 1.17.0, NoPromo 0.1.13, bstheater 0.1.0, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.
+=== end ===
+
