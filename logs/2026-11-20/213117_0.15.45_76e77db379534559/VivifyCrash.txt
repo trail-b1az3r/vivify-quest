@@ -1,0 +1,65 @@
+=== Vivify 0.15.45 native crash at 1795210269 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x28380000538f
+thread 21430 'UnityMain'
+pc 0x7eb4924818  lr 0x7eb49247e8  sp 0x7d925079c0  fp 0x7d92507a60
+backtrace:
+  #00 pc 0x7eb4924818  libc.so +0xcd818 (abort +0xa8)
+  #01 lr 0x7eb49247e8  libc.so +0xcd7e8 (abort +0x78)
+  #02 fp 0x7d92830820  libmetacore.so +0x1d820
+  #03 fp 0x7d4c113fb4  libcustom-types.so +0x4f2fb4
+  #04 fp 0x7d4c1138cc  libcustom-types.so +0x4f28cc
+  #05 fp 0x7d4c1137a0  libcustom-types.so +0x4f27a0
+  #06 fp 0x7d4c12f5f4  libcustom-types.so +0x50e5f4 (__cxa_get_exception_ptr +0x0)
+  #07 fp 0x7d4c12f5d0  libcustom-types.so +0x50e5d0
+  #08 fp 0x7bc9b6d6e4  libVivify.so +0x2a66e4
+  #09 fp 0x7bc9b6ecec  libVivify.so +0x2a7cec (_ZN6Vivify18FollowedSaberTrail10LateUpdateEv +0x98)
+  #10 fp 0x7d35b8aaf4  libil2cpp.so +0x34d3af4
+  #11 fp 0x7d35b8aa68  libil2cpp.so +0x34d3a68
+  #12 fp 0x7d95e9f69c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #13 fp 0x7d95e9f748  libgame.so +0x19748 (android_main +0x78)
+  #14 fp 0x7d95ea7920  libgame.so +0x21920
+  #15 fp 0x7eb498e2b0  libc.so +0x1372b0
+  #16 fp 0x7eb4926174  libc.so +0xcf174
+last Vivify log lines (oldest first):
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/fogfield.prefab' id='vivify_prefab_527000105120' alreadyLive=false
+  Vivify InstantiatePrefab: GPU instancing off on 3 particle system(s) of 'assets/fogfield.prefab'
+  Vivify InstantiatePrefab spawned: id='vivify_prefab_527000105120' asset='assets/fogfield.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/reflection probe.prefab' id='vivify_prefab_527000104960' alreadyLive=false
+  Vivify reflection probe 'Reflection Probe(Clone)' reduced: 512 px -> 128 px, no HDR, refreshed once a second
+  Vivify: watching cameras (reflection probes, the map's HUD)
+  Vivify texture cameras: this map's prefabs render into textures; from the next time it is selected, those cameras get single-view shaders ('Single-View Map Cameras')
+  Vivify InstantiatePrefab spawned: id='vivify_prefab_527000104960' asset='assets/reflection probe.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/notes/whitenotearrow.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/notes/whitenotedot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/notes/whitenotearrowdebris.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=0 asset='assets/notes/whitenotechainhead.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=2 asset='assets/notes/whitenotechainheaddebris.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=0 asset='assets/notes/whitenotechainlink.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=2 asset='assets/notes/whitenotechainlinkdebris.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/nurture saber alt.prefab' tracks=0 additive=false saberType=0
+  Vivify AssignObjectPrefab(trail): asset='assets/materials/note/nurturesabertrail.mat' saberType=0 additive=false
+  Vivify event 'AssignObjectPrefab' (time=0) threw and was skipped: Method: Init failed with an exception: System.NullReferenceException: Object reference not set to an instance of an object.
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/notes/the other ones/blacknotearrow.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/notes/the other ones/blacknotedot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/notes/the other ones/blacknotearrowdebris.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=0 asset='assets/notes/the other ones/blacknotechainhead.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=2 asset='assets/notes/the other ones/blacknotechainheaddebris.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=0 asset='assets/notes/the other ones/blacknotechainlink.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=2 asset='assets/notes/the other ones/blacknotechainlinkdebris.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/nurture saber.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/materials/note/nurturesabertrail.mat' saberType=1 additive=false
+  Vivify event 'AssignObjectPrefab' (time=0) threw and was skipped: Method: Init failed with an exception: System.NullReferenceException: Object reference not set to an instance of an object.
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 20 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=57 livePrefabs=17 preloadedPrefabs=35
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+=== end ===
+
