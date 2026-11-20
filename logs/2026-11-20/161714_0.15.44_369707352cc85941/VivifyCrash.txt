@@ -1,0 +1,59 @@
+=== Vivify 0.15.44 native crash at 1795191429 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27b100004b79
+thread 19354 'UnityMain'
+pc 0x7ee015a9d8  lr 0x7ee015a9a8  sp 0x7dce84ef40  fp 0x7dce84efe0
+backtrace:
+  #00 pc 0x7ee015a9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7ee015a9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7d754d0234  libmetacore.so +0xce234
+  #03 fp 0x7d5bbf4114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x7d5bbf4264  libil2cpp.so +0x2226264
+  #05 fp 0x7dd3189d48  libsl2.so +0x4fad48
+  #06 fp 0x7dd3189ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7bb862521c  libbsl.so +0x13a21c
+  #08 fp 0x7d5bc530c8  libil2cpp.so +0x22850c8
+  #09 fp 0x7d5bc530c8  libil2cpp.so +0x22850c8
+  #10 fp 0x7d5bb8878c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7d5da527f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x7d5d50137c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x7d5d50158c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7d5d501658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7d5d501560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7d5d5013e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7d5d5014a4
+  Installing hook: PauseController_Pause to offset: 0x7d5d5737ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7d5d57dc54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7d5d57e734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7d5d57e094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7d5d57dd88
+  Installing hook: GamePause_Resume to offset: 0x7d5d579178
+  Installing hook: Recorder_InstallBindings to offset: 0x7d5d5c2294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x7d5d5b68b8
+  Installing hook: Recorder_SpawnNote to offset: 0x7d5d4ad928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x7d5d4acdec
+  Installing hook: Recorder_NoteWasCut to offset: 0x7d5d4aede4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7d5d5bc44c
+  Installing hook: Recorder_ScoreStart to offset: 0x7d5d5bc038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7d5c07fdb4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7d5c080690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7d5d4afae0
+  Installing hook: Recorder_ShowPause to offset: 0x7d5d57dc54
+  Installing hook: Recorder_Resume to offset: 0x7d5d57e76c
+  Installing hook: Recorder_Finish to offset: 0x7d5d50d1dc
+  Vivify: loaded mods (33): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0
+  iplayer 6.4.5, ReeSabers 0.3.20, SongDownloader 0.8.8, unicode 0.1.7
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.01,0.85,0.02) fwd=(-0.04,0.29,0.96)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.00,0.84,0.02) fwd=(0.13,0.13,0.98)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.03,0.84,-0.00) fwd=(0.38,0.20,0.90)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify Send Logs: uploaded 3 file part(s), 549 KB (logs/2026-11-20/161659_0.15.44_da39053630147350 3913596; stored 3, deduplicated 0; 14385685 bytes saved cumulatively
+  )
+=== end ===
+
