@@ -1,0 +1,503 @@
+=== Vivify 0.15.29 native crash at 1794860446 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x5c2dfe39c1c476
+thread 25077 'UnityMain'
+pc 0x7bb5fbe538  lr 0x7bb38e4840  sp 0x7c1c2664c0  fp 0x7c1c266520
+backtrace:
+  #00 pc 0x7bb5fbe538  libil2cpp.so +0x4894538
+  #01 lr 0x7bb38e4840  libil2cpp.so +0x21ba840
+  #02 fp 0x7bb38e478c  libil2cpp.so +0x21ba78c
+  #03 fp 0x7a062473a8  libVivify.so +0x3983a8
+  #04 fp 0x7a06243980  libVivify.so +0x394980
+  #05 fp 0x7a06194d08  libVivify.so +0x2e5d08 (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+  #06 fp 0x7a060a2290  libVivify.so +0x1f3290
+  #07 fp 0x7bb38e4840  libil2cpp.so +0x21ba840
+  #08 fp 0x7bb38e478c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/note base 1.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/tunnel.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/tunnel dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/note base 1.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/wireframe.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/wireframedot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/note base 1.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=0 asset='assets/prefabs/wireframechainbase.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=2 asset='assets/prefabs/note base 1.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=0 asset='assets/prefabs/wireframechainlink.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=2 asset='assets/prefabs/note base 1.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/note base.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/note base dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/note base 1.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/custom note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/custom note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/drop2note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/drop2dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/note base 1.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/prefabs/rsih saber.prefab' tracks=0 additive=false saberType=0
+  Vivify AssignObjectPrefab(trail): asset='assets/rsih saber/mats/rsih_saber_trail.mat' saberType=0 additive=false
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/prefabs/rsih saber.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/rsih saber/mats/rsih_saber_trail.mat' saberType=1 additive=false
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=8 hiddenOriginals=6
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber replaced (type 0): models=1 trails=1 spawned=2 renderers=8 hiddenOriginals=6
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 15 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=36 livePrefabs=5 preloadedPrefabs=6
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+=== end ===
+
+=== Vivify 0.15.17 native crash at 1795128905 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x283600005100
+thread 20993 'UnityMain'
+pc 0x784ace1818  lr 0x784ace17e8  sp 0x7759839e80  fp 0x7759839f20
+backtrace:
+  #00 pc 0x784ace1818  libc.so +0xcd818 (abort +0xa8)
+  #01 lr 0x784ace17e8  libc.so +0xcd7e8 (abort +0x78)
+  #02 fp 0x76ead2cc64  libmetacore.so +0xcdc64
+  #03 fp 0x76d90c4114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x76d90c4264  libil2cpp.so +0x2226264
+  #05 fp 0x7759878bd8  libdatakeeper.so +0x33bd8
+  #06 fp 0x7759878b78  libdatakeeper.so +0x33b78 (_ZSt9terminatev +0x3c)
+  #07 fp 0x77598a6190  libdatakeeper.so +0x61190
+  #08 fp 0x76d959555c  libil2cpp.so +0x26f755c
+last Vivify log lines (oldest first):
+  Vivify crash report:   Vivify AssignObjectPrefab(trail): asset='assets/rsih saber/mats/rsih_saber_trail.mat' saberType=1 additive=false
+  Vivify crash report:   Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify crash report:   Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=8 hiddenOriginals=6
+  Vivify crash report:   Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify crash report:   Vivify saber replaced (type 0): models=1 trails=1 spawned=2 renderers=8 hiddenOriginals=6
+  Vivify crash report:   Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify crash report:   Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify crash report:   Vivify catch-up: replayed 15 event(s) up to time=0
+  Vivify crash report:   Vivify PrepareBeatmap done: assets=36 livePrefabs=5 preloadedPrefabs=6
+  Vivify crash report:   Vivify main camera: scene depth texture enabled for this map
+  Vivify crash report:   Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify crash report:   Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Installing hook: SaberModelController_Init to offset: 0x76daa89928
+  Installing hook: GameNoteController_Init to offset: 0x76da9871d0
+  Installing hook: BombNoteController_Init to offset: 0x76da9842d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x76da985668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x76daa27bb8
+  Installing hook: NoteDebris_Init to offset: 0x76da98a2e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x76daf1e968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x76da87c018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x76daf21e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x76daf219f0
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x76daf22f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x76daf227f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x76da9d137c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x76da9d158c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x76da9d1658
+  Installing hook: VRCenterAdjust_Update to offset: 0x76da9d1560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x76da9d13e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x76da9d14a4
+  Installing hook: PauseController_Pause to offset: 0x76daa437ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x76daa4dc54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x76daa4e734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x76daa4e094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x76daa4dd88
+  Installing hook: GamePause_Resume to offset: 0x76daa49178
+  Vivify: loaded mods (63): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+   0.1.9, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.2.7, smoothedcontroller 1.7.4, BSNightcoreQuest 0.3.0, BetterHaptics 0.2.0, SongCore 
+=== end ===
+
+=== Vivify 0.15.17 native crash at 1795128916 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x283600005374
+thread 21415 'UnityMain'
+pc 0x784ace1818  lr 0x784ace17e8  sp 0x7740292e80  fp 0x7740292f20
+backtrace:
+  #00 pc 0x784ace1818  libc.so +0xcd818 (abort +0xa8)
+  #01 lr 0x784ace17e8  libc.so +0xcd7e8 (abort +0x78)
+  #02 fp 0x76e9addc64  libmetacore.so +0xcdc64
+  #03 fp 0x76d98ca114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x76d98ca264  libil2cpp.so +0x2226264
+  #05 fp 0x76f0092bd8  libdatakeeper.so +0x33bd8
+  #06 fp 0x76f0092b78  libdatakeeper.so +0x33b78 (_ZSt9terminatev +0x3c)
+  #07 fp 0x76f00c0190  libdatakeeper.so +0x61190
+  #08 fp 0x76d9d9b55c  libil2cpp.so +0x26f755c
+last Vivify log lines (oldest first):
+  Vivify crash report:   Installing hook: VRCenterAdjust_OnDisable to offset: 0x76da9d1658
+  Vivify crash report:   Installing hook: VRCenterAdjust_Update to offset: 0x76da9d1560
+  Vivify crash report:   Installing hook: VRCenterAdjust_ResetRoom to offset: 0x76da9d13e0
+  Vivify crash report:   Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x76da9d14a4
+  Vivify crash report:   Installing hook: PauseController_Pause to offset: 0x76daa437ec
+  Vivify crash report:   Installing hook: PauseMenuManager_ShowMenu to offset: 0x76daa4dc54
+  Vivify crash report:   Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x76daa4e734
+  Vivify crash report:   Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x76daa4e094
+  Vivify crash report:   Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x76daa4dd88
+  Vivify crash report:   Installing hook: GamePause_Resume to offset: 0x76daa49178
+  Vivify crash report:   Vivify: loaded mods (63): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/li
+  Vivify crash report:    0.1.9, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.2.7, smoothedcontroller 1.7.4, BSNightcoreQuest 0.3.0, BetterH
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Installing hook: SaberModelController_Init to offset: 0x76db28f928
+  Installing hook: GameNoteController_Init to offset: 0x76db18d1d0
+  Installing hook: BombNoteController_Init to offset: 0x76db18a2d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x76db18b668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x76db22dbb8
+  Installing hook: NoteDebris_Init to offset: 0x76db1902e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x76db724968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x76db082018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x76db727e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x76db7279f0
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x76db728f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x76db7287f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x76db1d737c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x76db1d758c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x76db1d7658
+  Installing hook: VRCenterAdjust_Update to offset: 0x76db1d7560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x76db1d73e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x76db1d74a4
+  Installing hook: PauseController_Pause to offset: 0x76db2497ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x76db253c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x76db254734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x76db254094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x76db253d88
+  Installing hook: GamePause_Resume to offset: 0x76db24f178
+  Vivify: loaded mods (63): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+   0.1.9, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.2.7, smoothedcontroller 1.7.4, BSNightcoreQuest 0.3.0, BetterHaptics 0.2.0, SongCore 
+=== end ===
+
+=== Vivify 0.15.17 native crash at 1795128926 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x2836000054e3
+thread 21762 'UnityMain'
+pc 0x784ace1818  lr 0x784ace17e8  sp 0x76e3433e80  fp 0x76e3433f20
+backtrace:
+  #00 pc 0x784ace1818  libc.so +0xcd818 (abort +0xa8)
+  #01 lr 0x784ace17e8  libc.so +0xcd7e8 (abort +0x78)
+  #02 fp 0x76eeb54c64  libmetacore.so +0xcdc64
+  #03 fp 0x76cc14a114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x76cc14a264  libil2cpp.so +0x2226264
+  #05 fp 0x76fe283bd8  libdatakeeper.so +0x33bd8
+  #06 fp 0x76fe283b78  libdatakeeper.so +0x33b78 (_ZSt9terminatev +0x3c)
+  #07 fp 0x76fe2b1190  libdatakeeper.so +0x61190
+  #08 fp 0x76cc61b55c  libil2cpp.so +0x26f755c
+last Vivify log lines (oldest first):
+  Vivify crash report:   Installing hook: VRCenterAdjust_OnDisable to offset: 0x76db1d7658
+  Vivify crash report:   Installing hook: VRCenterAdjust_Update to offset: 0x76db1d7560
+  Vivify crash report:   Installing hook: VRCenterAdjust_ResetRoom to offset: 0x76db1d73e0
+  Vivify crash report:   Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x76db1d74a4
+  Vivify crash report:   Installing hook: PauseController_Pause to offset: 0x76db2497ec
+  Vivify crash report:   Installing hook: PauseMenuManager_ShowMenu to offset: 0x76db253c54
+  Vivify crash report:   Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x76db254734
+  Vivify crash report:   Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x76db254094
+  Vivify crash report:   Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x76db253d88
+  Vivify crash report:   Installing hook: GamePause_Resume to offset: 0x76db24f178
+  Vivify crash report:   Vivify: loaded mods (63): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/li
+  Vivify crash report:    0.1.9, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.2.7, smoothedcontroller 1.7.4, BSNightcoreQuest 0.3.0, BetterH
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Installing hook: SaberModelController_Init to offset: 0x76cdb0f928
+  Installing hook: GameNoteController_Init to offset: 0x76cda0d1d0
+  Installing hook: BombNoteController_Init to offset: 0x76cda0a2d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x76cda0b668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x76cdaadbb8
+  Installing hook: NoteDebris_Init to offset: 0x76cda102e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x76cdfa4968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x76cd902018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x76cdfa7e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x76cdfa79f0
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x76cdfa8f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x76cdfa87f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x76cda5737c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x76cda5758c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x76cda57658
+  Installing hook: VRCenterAdjust_Update to offset: 0x76cda57560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x76cda573e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x76cda574a4
+  Installing hook: PauseController_Pause to offset: 0x76cdac97ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x76cdad3c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x76cdad4734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x76cdad4094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x76cdad3d88
+  Installing hook: GamePause_Resume to offset: 0x76cdacf178
+  Vivify: loaded mods (63): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+   0.1.9, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.2.7, smoothedcontroller 1.7.4, BSNightcoreQuest 0.3.0, BetterHaptics 0.2.0, SongCore 
+=== end ===
+
+=== Vivify 0.15.17 native crash at 1795128940 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x283600005686
+thread 22183 'UnityMain'
+pc 0x784ace1818  lr 0x784ace17e8  sp 0x76d6272e80  fp 0x76d6272f20
+backtrace:
+  #00 pc 0x784ace1818  libc.so +0xcd818 (abort +0xa8)
+  #01 lr 0x784ace17e8  libc.so +0xcd7e8 (abort +0x78)
+  #02 fp 0x76e7f22c64  libmetacore.so +0xcdc64
+  #03 fp 0x76b8e79114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x76b8e79264  libil2cpp.so +0x2226264
+  #05 fp 0x76f3186bd8  libdatakeeper.so +0x33bd8
+  #06 fp 0x76f3186b78  libdatakeeper.so +0x33b78 (_ZSt9terminatev +0x3c)
+  #07 fp 0x76f31b4190  libdatakeeper.so +0x61190
+  #08 fp 0x76b934a55c  libil2cpp.so +0x26f755c
+last Vivify log lines (oldest first):
+  Vivify crash report:   Installing hook: VRCenterAdjust_OnDisable to offset: 0x76cda57658
+  Vivify crash report:   Installing hook: VRCenterAdjust_Update to offset: 0x76cda57560
+  Vivify crash report:   Installing hook: VRCenterAdjust_ResetRoom to offset: 0x76cda573e0
+  Vivify crash report:   Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x76cda574a4
+  Vivify crash report:   Installing hook: PauseController_Pause to offset: 0x76cdac97ec
+  Vivify crash report:   Installing hook: PauseMenuManager_ShowMenu to offset: 0x76cdad3c54
+  Vivify crash report:   Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x76cdad4734
+  Vivify crash report:   Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x76cdad4094
+  Vivify crash report:   Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x76cdad3d88
+  Vivify crash report:   Installing hook: GamePause_Resume to offset: 0x76cdacf178
+  Vivify crash report:   Vivify: loaded mods (63): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/li
+  Vivify crash report:    0.1.9, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.2.7, smoothedcontroller 1.7.4, BSNightcoreQuest 0.3.0, BetterH
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Installing hook: SaberModelController_Init to offset: 0x76ba83e928
+  Installing hook: GameNoteController_Init to offset: 0x76ba73c1d0
+  Installing hook: BombNoteController_Init to offset: 0x76ba7392d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x76ba73a668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x76ba7dcbb8
+  Installing hook: NoteDebris_Init to offset: 0x76ba73f2e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x76bacd3968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x76ba631018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x76bacd6e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x76bacd69f0
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x76bacd7f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x76bacd77f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x76ba78637c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x76ba78658c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x76ba786658
+  Installing hook: VRCenterAdjust_Update to offset: 0x76ba786560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x76ba7863e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x76ba7864a4
+  Installing hook: PauseController_Pause to offset: 0x76ba7f87ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x76ba802c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x76ba803734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x76ba803094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x76ba802d88
+  Installing hook: GamePause_Resume to offset: 0x76ba7fe178
+  Vivify: loaded mods (63): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+   0.1.9, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.2.7, smoothedcontroller 1.7.4, BSNightcoreQuest 0.3.0, BetterHaptics 0.2.0, SongCore 
+=== end ===
+
+=== Vivify 0.15.17 native crash at 1795129094 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x77d9e80d94
+thread 23186 'UnityMain'
+pc 0x784acda554  lr 0x7513da1614  sp 0x77464869e0  fp 0x7746486da0
+backtrace:
+  #00 pc 0x784acda554  libc.so +0xc6554
+  #01 lr 0x7513da1614  libnoodleextensions.so +0x2a5614
+  #02 fp 0x7513cdcea8  libnoodleextensions.so +0x1e0ea8 (_Z35InstallBadNoteCutEffectSpawnerHooksv +0x118)
+  #03 fp 0x7513d9b1ec  libnoodleextensions.so +0x29f1ec (_Z21InstallAndRegisterAllv +0x1b8)
+  #04 fp 0x7513da0e34  libnoodleextensions.so +0x2a4e34 (late_load +0x98)
+  #05 fp 0x774c571b9c  libsl2.so +0x543b9c
+  #06 fp 0x76df913fb4  libunity.so +0xab1fb4
+  #07 fp 0x785ba4b6c3
+  #08 fp 0x7746487f40
+last Vivify log lines (oldest first):
+  Vivify crash report:   Installing hook: VRCenterAdjust_OnDisable to offset: 0x76ba786658
+  Vivify crash report:   Installing hook: VRCenterAdjust_Update to offset: 0x76ba786560
+  Vivify crash report:   Installing hook: VRCenterAdjust_ResetRoom to offset: 0x76ba7863e0
+  Vivify crash report:   Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x76ba7864a4
+  Vivify crash report:   Installing hook: PauseController_Pause to offset: 0x76ba7f87ec
+  Vivify crash report:   Installing hook: PauseMenuManager_ShowMenu to offset: 0x76ba802c54
+  Vivify crash report:   Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x76ba803734
+  Vivify crash report:   Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x76ba803094
+  Vivify crash report:   Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x76ba802d88
+  Vivify crash report:   Installing hook: GamePause_Resume to offset: 0x76ba7fe178
+  Vivify crash report:   Vivify: loaded mods (63): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/li
+  Vivify crash report:    0.1.9, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.2.7, smoothedcontroller 1.7.4, BSNightcoreQuest 0.3.0, BetterH
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Installing hook: SaberModelController_Init to offset: 0x76d9f32928
+  Installing hook: GameNoteController_Init to offset: 0x76d9e301d0
+  Installing hook: BombNoteController_Init to offset: 0x76d9e2d2d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x76d9e2e668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x76d9ed0bb8
+  Installing hook: NoteDebris_Init to offset: 0x76d9e332e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x76da3c7968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x76d9d25018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x76da3cae78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x76da3ca9f0
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x76da3cbf2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x76da3cb7f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x76d9e7a37c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x76d9e7a58c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x76d9e7a658
+  Installing hook: VRCenterAdjust_Update to offset: 0x76d9e7a560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x76d9e7a3e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x76d9e7a4a4
+  Installing hook: PauseController_Pause to offset: 0x76d9eec7ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x76d9ef6c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x76d9ef7734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x76d9ef7094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x76d9ef6d88
+  Installing hook: GamePause_Resume to offset: 0x76d9ef2178
+  Vivify: loaded mods (62): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+   0.1.9, CrashReporter 0.2.0, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.2.7, smoothedcontroller 1.7.4, BSNightcoreQuest 0.3.0, BetterHaptics 0.2.0, SongCore 1.1.26, BetterSong
+=== end ===
+
+=== Vivify 0.15.17 native crash at 1795129926 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x6400000001
+thread 23929 'UnityMain'
+pc 0x76d394c91c  lr 0x76d394c964  sp 0x773a633440  fp 0x773a633510
+backtrace:
+  #00 pc 0x76d394c91c  libunity.so +0x6d691c
+  #01 lr 0x76d394c964  libunity.so +0x6d6964
+  #02 fp 0x76ba84f78c  libil2cpp.so +0x21ba78c
+  #03 fp 0x751422c9c4  libVivify.so +0x34e9c4
+  #04 fp 0x7514228fa0  libVivify.so +0x34afa0
+  #05 fp 0x751418d110  libVivify.so +0x2af110 (_ZN6Vivify13CameraApplier13OnRenderImageEPN11UnityEngine13RenderTextureES3_ +0x1a0)
+  #06 fp 0x75140aaa50  libVivify.so +0x1cca50
+  #07 fp 0x76ba84f840  libil2cpp.so +0x21ba840
+  #08 fp 0x76ba84f78c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify material: context=bundle-load asset=assets/shaders/warp.mat material='Warp' shader='Custom/Warp' supported=true internalError=false
+  Vivify texture decode: scanned 44 material(s), replaced 0 unsupported texture reference(s) in 1ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+  Vivify: 'Map Realtime Shadows' is on; the game's shadow quality is left as it is
+  Vivify preload prefab: asset='assets/prefabs/map.prefab' id='intro' instance=true
+  Vivify PreloadInstantiatePrefabs: 1 prefab event(s) preloaded
+  Vivify catch-up event: type='Blit' time=0
+  Vivify material: context=Blit asset=assets/shaders/crt.mat material='CRT' shader='BeatSaber/VHS' supported=true internalError=false
+  Vivify Blit event: time=0 asset='assets/shaders/crt.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=391
+  Vivify catch-up event: type='Blit' time=0
+  Vivify material: context=Blit asset=assets/shaders/blur.mat material='blur' shader='Custom/Blur' supported=true internalError=false
+  Vivify Blit event: time=0 asset='assets/shaders/blur.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=391
+  Vivify catch-up event: type='Blit' time=0
+  Vivify material: context=Blit asset=assets/shaders/warp.mat material='Warp' shader='Custom/Warp' supported=true internalError=false
+  Vivify Blit event: time=0 asset='assets/shaders/warp.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=391
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/prefabs/map.prefab' id='intro' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='intro' asset='assets/prefabs/map.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='SetCameraProperty' time=0
+  Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=false bloomPrePass=unset mainEffect=unset
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/custom note body.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/custom note body.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/custom note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=0 asset='assets/prefabs/custom chain body.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=2 asset='assets/prefabs/custom chain debris.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=0 asset='assets/prefabs/custom chain link body.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=2 asset='assets/prefabs/custom chain link debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/custom note arrow.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/custom note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=0 asset='assets/prefabs/custom chain arrow.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=0 asset='assets/prefabs/custom chain link arrow.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up: replayed 8 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=18 livePrefabs=1 preloadedPrefabs=1
+  Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+=== end ===
+
+=== Vivify 0.15.17 native crash at 1795130095 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x30e48
+thread 2432 'Thread-3'
+pc 0x76e1c2b740  lr 0x76e1c2b6f8  sp 0x75f147f480  fp 0x75f147f7b0
+backtrace:
+  #00 pc 0x76e1c2b740  libunity.so +0x13ee740
+  #01 lr 0x76e1c2b6f8  libunity.so +0x13ee6f8
+  #02 fp 0x76e1e119f4  libunity.so +0x15d49f4
+  #03 fp 0x784ace3174  libc.so +0xcf174
+last Vivify log lines (oldest first):
+  VRCenterAdjust.Update skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify visual check at 5s: 2 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: a live note has 4 renderer(s):
+  Vivify visual check:   'NoteCube' enabled=true active=true layer=8 material='NoteHD' shader='Custom/NoteHD' supported=true queue=2004 block: _Cutout=0.43 _Color=(0.40,0.40,0.40,1.00)
+  Vivify visual check:   'NoteArrow' enabled=true active=true layer=8 material='NoteArrowHD' shader='Custom/GlowingInstancedHD' supported=true queue=2002 block: _Cutout=0.43 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'NoteArrowGlow' enabled=true active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.40,0.40,0.40,0.58)
+  Vivify visual check:   'NoteCircleGlow' enabled=true active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.40,0.40,0.40,0.58)
+  Vivify visual check: 4 light(s) on, 0 with shadows: 'LightRight' type=2 intensity=1.00 shadows=0; 'LightLeft' type=2 intensity=1.00 shadows=0; 'LightFront' type=2 intensity=2.00 shadows=0; 'LightBottom' type=2 intensity=8.00 shadows=0; amb
+  Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout
+  Vivify visual check: cameras that may render the mirror: 'MainCamera' stereo=true eye=3 target=screen mask=0x3d3bff37
+  Vivify visual check at 5s: 87 active renderer(s), 2 with no runnable shader; most drawn: Custom/CustomParticles x21, BeatSaber/Unlit Glow x16, Abstract/Debris2 x16, Saber/SaberReflective x6, Custom/NoteHD x3, Custom/SimpleLit x2, Custom/Gl
+  Vivify visual check: main camera cullingMask=0x3d3bff37 depthTextureMode=1 clearFlags=2
+  Vivify custom event: type='Blit' time=11.2 songTime=11.202712
+  Vivify Blit skipped at time 11.2: 'assets/shaders/blackout.mat' was starting when this map last went down (crash recovery; 'Forget Crash Recovery' in the advanced settings brings it back)
+  Vivify custom event: type='CreateCamera' time=12.533333 songTime=12.537078
+  Vivify CreateCamera: id='NotesOneCam' colorTexture='_NotesOne' depthTexture='_NotesOne_Depth' size=1680x1760 mainEffect=true
+  Vivify culling pass on 'VivifyCamera_NotesOneCam': whitelist=true tracks=1 trackedGOs=3 movedGOs=12 camMask=0x00400000
+  Vivify culling pass on 'VivifyCamera_NotesOneCam': whitelist=true tracks=1 trackedGOs=4 movedGOs=16 camMask=0x00400000
+  Vivify CreateScreenTexture: id='_ScreenTex' size=840x880 layers=2 dimension=5 graphicsFormat=4 filter=-1
+  Vivify culling pass on 'VivifyCamera_NotesOneCam': whitelist=true tracks=1 trackedGOs=4 movedGOs=16 camMask=0x00400000
+  Vivify: Reduce Debris player option = false (custom debris enabled)
+  Vivify custom event: type='Blit' time=12.773334 songTime=12.780654
+  Vivify Blit event: time=12.773334 asset='<none>' source='_Main' targets=1 priority=-11 pass=-1 order=7 durationBeats=0
+  Vivify custom event: type='SetRenderingSettings' time=12.8 songTime=12.800551
+  Vivify SetRenderingSettings: time=12.8 durationSeconds=0 immediate=true
+  Vivify custom event: type='DestroyObject' time=12.8 songTime=12.800551
+  Vivify DestroyObject: destroying live prefab id='clockscene'
+  Vivify custom event: type='SetGlobalProperty' time=12.8 songTime=12.800551
+  Vivify custom event: type='InstantiatePrefab' time=12.8 songTime=12.800551
+  Vivify InstantiatePrefab: asset='assets/monitor/monitorscene.prefab' id='monitorscene' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='monitorscene' asset='assets/monitor/monitorscene.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify custom event: type='Blit' time=12.8 songTime=12.800551
+  Vivify material: context=Blit asset=assets/blendexperiment/blender.mat material='Blender' shader='PostProcessing/Difference' supported=true internalError=false
+  Vivify Blit event: time=12.8 asset='assets/blendexperiment/blender.mat' source='_Main' targets=1 priority=-12 pass=-1 order=7 durationBeats=16
+  Vivify custom event: type='SetCameraProperty' time=12.8 songTime=12.800551
+  Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=true bloomPrePass=unset mainEffect=unset
+  Vivify custom event: type='Blit' time=12.8 songTime=12.800551
+  Vivify material: context=Blit asset=assets/shaders/distortnotes/one.mat material='One' shader='PostProcessing/DistortNotes' supported=true internalError=false
+  Vivify Blit event: time=12.8 asset='assets/shaders/distortnotes/one.mat' source='_Main' targets=1 priority=2 pass=0 order=7 durationBeats=64
+  Vivify culling pass on 'MainCamera': whitelist=false tracks=1 trackedGOs=4 movedGOs=16 camMask=0x3d3bff37
+=== end ===
+
+=== Vivify 0.15.17 native crash at 1795138864 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x30e48
+thread 15296 'Thread-3'
+pc 0x6e3400a740  lr 0x6e3400a6f8  sp 0x6d47058480  fp 0x6d470587b0
+backtrace:
+  #00 pc 0x6e3400a740  libunity.so +0x13ee740
+  #01 lr 0x6e3400a6f8  libunity.so +0x13ee6f8
+  #02 fp 0x6e341f09f4  libunity.so +0x15d49f4
+  #03 fp 0x6fb4b47174  libc.so +0xcf174
+last Vivify log lines (oldest first):
+  Vivify PrepareBeatmap done: assets=71 livePrefabs=1 preloadedPrefabs=21
+  Vivify custom event: type='AssignObjectPrefab' time=0 songTime=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/sabers/saber.prefab' tracks=0 additive=false saberType=0
+  Vivify AssignObjectPrefab(trail): asset='assets/sabers/sabertrail.mat' saberType=0 additive=false
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/sabers/saber.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/sabers/sabertrail.mat' saberType=1 additive=false
+  Vivify sync: registered 'saber(Clone)' with 0 video / 2 animator / 3 particle component(s), startTime=0
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=7 hiddenOriginals=6
+  Vivify sync: registered 'saber(Clone)' with 0 video / 2 animator / 3 particle component(s), startTime=0
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber replaced (type 0): models=1 trails=1 spawned=2 renderers=7 hiddenOriginals=6
+  VRCenterAdjust.OnEnable skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify custom event: type='CreateScreenTexture' time=0 songTime=0
+  Vivify custom event: type='Blit' time=0 songTime=0
+  Vivify Blit skipped at time 0: 'assets/shaders/filmgrain.mat' was starting when this map last went down (crash recovery; 'Forget Crash Recovery' in the advanced settings brings it back)
+  Vivify custom event: type='Blit' time=11.2 songTime=0
+  Vivify Blit skipped at time 11.2: 'assets/shaders/blackout.mat' was starting when this map last went down (crash recovery; 'Forget Crash Recovery' in the advanced settings brings it back)
+  Vivify custom event: type='CreateCamera' time=12.533333 songTime=0
+  Vivify CreateCamera: id='NotesOneCam' colorTexture='_NotesOne' depthTexture='_NotesOne_Depth' size=1680x1760 mainEffect=true
+  Vivify custom event: type='Blit' time=12.773334 songTime=0
+  Vivify Blit event: time=12.773334 asset='<none>' source='_Main' targets=1 priority=-11 pass=-1 order=7 durationBeats=0
+  Vivify custom event: type='SetRenderingSettings' time=12.8 songTime=0
+  Vivify SetRenderingSettings: time=12.8 durationSeconds=0 immediate=true
+  Vivify custom event: type='DestroyObject' time=12.8 songTime=0
+  Vivify DestroyObject: destroying live prefab id='clockscene'
+  Vivify custom event: type='SetGlobalProperty' time=12.8 songTime=0
+  Vivify custom event: type='InstantiatePrefab' time=12.8 songTime=0
+  Vivify InstantiatePrefab: asset='assets/monitor/monitorscene.prefab' id='monitorscene' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='monitorscene' asset='assets/monitor/monitorscene.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify custom event: type='Blit' time=12.8 songTime=0
+  Vivify material: context=Blit asset=assets/blendexperiment/blender.mat material='Blender' shader='PostProcessing/Difference' supported=true internalError=false
+  Vivify Blit event: time=12.8 asset='assets/blendexperiment/blender.mat' source='_Main' targets=1 priority=-12 pass=-1 order=7 durationBeats=16
+  Vivify custom event: type='SetCameraProperty' time=12.8 songTime=0
+  Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=true bloomPrePass=unset mainEffect=unset
+  Vivify custom event: type='Blit' time=12.8 songTime=0
+  Vivify Blit skipped at time 12.8: 'assets/shaders/distortnotes/one.mat' was starting when this map last went down (crash recovery; 'Forget Crash Recovery' in the advanced settings brings it back)
+  VRCenterAdjust.Start skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify culling pass on 'VivifyCamera_NotesOneCam': whitelist=true tracks=1 trackedGOs=1 movedGOs=4 camMask=0x00400000
+  Vivify culling pass on 'MainCamera': whitelist=false tracks=1 trackedGOs=1 movedGOs=4 camMask=0x3d3bff37
+=== end ===
+
