@@ -1,0 +1,166 @@
+=== Vivify 0.15.44 native crash at 1795169383 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x6fb99270b4
+thread 14078 'UnityMain'
+pc 0x703cd4b6fc  lr 0x6cdcef9614  sp 0x6ecf1f89e0  fp 0x6ecf1f8da0
+backtrace:
+  #00 pc 0x703cd4b6fc  libc.so +0xc76fc
+  #01 lr 0x6cdcef9614  libnoodleextensions.so +0x2a5614
+  #02 fp 0x6cdce9fb10  libnoodleextensions.so +0x24bb10 (_Z34InstallMirroredNoteControllerHooksv +0x290)
+  #03 fp 0x6cdcef31ec  libnoodleextensions.so +0x29f1ec (_Z21InstallAndRegisterAllv +0x1b8)
+  #04 fp 0x6cdcef8e34  libnoodleextensions.so +0x2a4e34 (late_load +0x98)
+  #05 fp 0x6f265ceb9c  libsl2.so +0x543b9c
+  #06 fp 0x6ebdcd9fb4  libunity.so +0xab1fb4
+  #07 fp 0x70336c06c3
+  #08 fp 0x6ecf1f9f40
+last Vivify log lines (oldest first):
+  Installing hook: GameNoteController_Init to offset: 0x6eb9a9d1d0
+  Installing hook: BombNoteController_Init to offset: 0x6eb9a9a2d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x6eb9a9b668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x6eb9b3dbb8
+  Installing hook: NoteDebris_Init to offset: 0x6eb9aa02e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x6eba034968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x6eb9992018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x6eba037e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x6eba0379f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x6eba038bb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x6eba038f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x6eba0387f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x6eb9ae737c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x6eb9ae758c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x6eb9ae7658
+  Installing hook: VRCenterAdjust_Update to offset: 0x6eb9ae7560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x6eb9ae73e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x6eb9ae74a4
+  Installing hook: PauseController_Pause to offset: 0x6eb9b597ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x6eb9b63c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x6eb9b64734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x6eb9b64094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x6eb9b63d88
+  Installing hook: GamePause_Resume to offset: 0x6eb9b5f178
+  Installing hook: Recorder_InstallBindings to offset: 0x6eb9ba8294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x6eb9b9c8b8
+  Installing hook: Recorder_SpawnNote to offset: 0x6eb9a93928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x6eb9a92dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x6eb9a94de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x6eb9ba244c
+  Installing hook: Recorder_ScoreStart to offset: 0x6eb9ba2038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x6eb8665db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x6eb8666690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x6eb9a95ae0
+  Installing hook: Recorder_ShowPause to offset: 0x6eb9b63c54
+  Installing hook: Recorder_Resume to offset: 0x6eb9b6476c
+  Installing hook: Recorder_Finish to offset: 0x6eb9af31dc
+  Vivify: loaded mods (69): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, imager 0.1.0, JDFixer 3.4.0, Lapiz 0.2.23, menuvisualizers 0.1.0,  , thanksgiving 1.0.5, transparency 0.1.1, tricksaberlite 0.1.1, SongCore
+  unicode 0.1.7
+=== end ===
+
+=== Vivify 0.15.44 native crash at 1795169957 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x5c
+thread 14390 'Thread-3'
+pc 0x6ea98487b4  lr 0x6ea9848768  sp 0x6dbb544480  fp 0x6dbb5447b0
+backtrace:
+  #00 pc 0x6ea98487b4  libunity.so +0x13ee7b4
+  #01 lr 0x6ea9848768  libunity.so +0x13ee768
+  #02 fp 0x6ea9a2e9f4  libunity.so +0x15d49f4
+  #03 fp 0x703cd54334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify level end: level ended (quit or finished)
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3819ff37 stereoMode=3 multipassSetting=false pos=(0.02,1.26,0.04) fwd=(0.01,-0.21,0.98)
+  Vivify main camera cullingMask is now 0x3819ff37
+  Vivify texture decode: scanned 122 material(s), replaced 0 unsupported texture reference(s) in 2ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify material 'StarNova': '_GridSize' is an int in shader 'Swifter/AftershockParticle'; set as integer 4
+  Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+  Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+  Vivify HUD: 18 object(s) of 'assets/player/ui/outerwildsui.prefab' on layer 17 drawn at 70% of their distance
+  Vivify prefab 'assets/player/ui/outerwildsui.prefab' has objects on headset-only layer(s) 0x00020000; the main camera will draw them, as the PC headset camera does
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify main camera: now draws layer(s) 0x00020000 for this map's headset-only objects
+  Vivify main camera cullingMask is now 0x381bff37
+  Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify Blit check: effect(s) 'Aeroluna/OverlayUITex' -- 3+ colour(s) among 16 blocks going in, 3+ coming out (first rgb=(66,39,9)); screen 1680x1760 slices=2; _ScreenParams before the effects=(1680,1760)
+  Vivify visual check at 5s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+  Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check: mirror 'TrackMirror' isEnabled=true scale=(1.00,1.00,1.00) renderer: 'TrackMirror' enabled=true active=true layer=4 material='GridMirror' shader='Custom/Mirror' supported=true queue=2007 block: _Cutout=0.00 _Color=(0.0
+  Vivify visual check: mirror 'Mirror' isEnabled=true scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceMirror' shader='Custom/Mirror' supported=true queue=2005 block: _Cutout=0.00 _Color=(0.00,
+  Vivify visual check: cameras that may render the mirror: 'CameraRight' stereo=false eye=0 target=texture mask=0xfffffb37; 'Camera' stereo=false eye=0 target=texture mask=0xfffffb37; 'Camera' stereo=false eye=0 target=texture mask=0x20000; 
+  Vivify visual check at 5s: 256 active renderer(s), 0 with no runnable shader; most drawn: Custom/OpaqueNeonLight x78, Custom/SimpleLit x52, Custom/TransparentNeonLight x28, Swifter/SimpleMaterialPointLight x23, Custom/CustomParticles x16, 
+  Vivify grab texture '_GrabTexture1' at 5s: render texture dimension=5 layers=2 1680x1760 msaa=1
+  Vivify grab texture '_GrabTexture2' at 5s: render texture dimension=5 layers=2 1680x1760 msaa=1
+  Vivify grab texture '_GrabTextureWater' at 5s: nothing bound
+  Vivify visual check: main camera cullingMask=0x381bff37 depthTextureMode=1 clearFlags=2
+=== end ===
+
+=== Vivify 0.15.44 native crash at 1795185794 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x6f9cce6194
+thread 11919 'UnityMain'
+pc 0x703cd4b6fc  lr 0x6cd7723614  sp 0x6f1e6809e0  fp 0x6f1e680da0
+backtrace:
+  #00 pc 0x703cd4b6fc  libc.so +0xc76fc
+  #01 lr 0x6cd7723614  libnoodleextensions.so +0x2a5614
+  #02 fp 0x6cd765eea8  libnoodleextensions.so +0x1e0ea8 (_Z35InstallBadNoteCutEffectSpawnerHooksv +0x118)
+  #03 fp 0x6cd771d1ec  libnoodleextensions.so +0x29f1ec (_Z21InstallAndRegisterAllv +0x1b8)
+  #04 fp 0x6cd7722e34  libnoodleextensions.so +0x2a4e34 (late_load +0x98)
+  #05 fp 0x6f29788b9c  libsl2.so +0x543b9c
+  #06 fp 0x6eb50d2fb4  libunity.so +0xab1fb4
+  #07 fp 0x70336c06c3
+  #08 fp 0x6f1e681f40
+last Vivify log lines (oldest first):
+  Installing hook: GameNoteController_Init to offset: 0x6e9cc931d0
+  Installing hook: BombNoteController_Init to offset: 0x6e9cc902d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x6e9cc91668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x6e9cd33bb8
+  Installing hook: NoteDebris_Init to offset: 0x6e9cc962e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x6e9d22a968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x6e9cb88018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x6e9d22de78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x6e9d22d9f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x6e9d22ebb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x6e9d22ef2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x6e9d22e7f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x6e9ccdd37c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x6e9ccdd58c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x6e9ccdd658
+  Installing hook: VRCenterAdjust_Update to offset: 0x6e9ccdd560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x6e9ccdd3e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x6e9ccdd4a4
+  Installing hook: PauseController_Pause to offset: 0x6e9cd4f7ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x6e9cd59c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x6e9cd5a734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x6e9cd5a094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x6e9cd59d88
+  Installing hook: GamePause_Resume to offset: 0x6e9cd55178
+  Installing hook: Recorder_InstallBindings to offset: 0x6e9cd9e294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x6e9cd928b8
+  Installing hook: Recorder_SpawnNote to offset: 0x6e9cc89928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x6e9cc88dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x6e9cc8ade4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x6e9cd9844c
+  Installing hook: Recorder_ScoreStart to offset: 0x6e9cd98038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x6e9b85bdb4
+  Installing hook: Recorder_ProcessSwing to offset: 0x6e9b85c690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x6e9cc8bae0
+  Installing hook: Recorder_ShowPause to offset: 0x6e9cd59c54
+  Installing hook: Recorder_Resume to offset: 0x6e9cd5a76c
+  Installing hook: Recorder_Finish to offset: 0x6e9cce91dc
+  Vivify: loaded mods (69): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, imager 0.1.0, JDFixer 3.4.0, Lapiz 0.2.23, menuvisualizers 0.1.0,  , thanksgiving 1.0.5, transparency 0.1.1, tricksaberlite 0.1.1, SongCore
+  unicode 0.1.7
+=== end ===
+
