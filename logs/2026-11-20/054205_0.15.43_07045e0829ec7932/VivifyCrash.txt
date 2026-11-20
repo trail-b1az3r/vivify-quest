@@ -1,0 +1,63 @@
+=== Vivify 0.15.43 native crash at 1795153310 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27bb00007447
+thread 5304 'IL2CPP Threadpo'
+pc 0x70223659d8  lr 0x70223659a8  sp 0x6c82a93980  fp 0x6c82a93a20
+backtrace:
+  #00 pc 0x70223659d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x70223659a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x6ebf758c64  libmetacore.so +0xcdc64
+  #03 fp 0x6f1b77b55c  libsl2.so +0x4fb55c
+  #04 fp 0x6f1b77ae74  libsl2.so +0x4fae74
+  #05 fp 0x6f1b77ad48  libsl2.so +0x4fad48
+  #06 fp 0x6f1b77ace8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x6d339d7130  libcustom-json-data.so +0x1cd130
+  #08 fp 0x6ea2e8925c  libil2cpp.so +0x1fde25c
+  #09 fp 0x6ea306578c  libil2cpp.so +0x21ba78c
+  #10 fp 0x6d339bbbf4  libcustom-json-data.so +0x1b1bf4
+  #11 fp 0x6d339bb354  libcustom-json-data.so +0x1b1354 (_ZN56Hook_BeatmapDataLoader_GetBeatmapDataFromSaveDataJson_v256hook_BeatmapDataLoader_GetBeatmapDataFromSaveDataJson_v2E13StringWrapperIPN6System6StringEES4_N15GlobalNamespace17BeatmapDifficultyEfbPNS5_16IEnvironmentInfoENS5_23BeatmapLevelDataVersionEPNS5_22PlayerSpecificSettingsEPNS5_27IBeatmapLightEventConverterE +0x1f4)
+  #12 fp 0x6d339d68f0  libcustom-json-data.so +0x1cc8f0
+  #13 fp 0x6ea35c1dcc  libil2cpp.so +0x2716dcc
+  #14 fp 0x6ea3018d08  libil2cpp.so +0x216dd08
+last Vivify log lines (oldest first):
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3cea6 (Mesmerizer - izuna_1)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3cea6 (Mesmerizer - izuna_1)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3cea6 (Mesmerizer - izuna_1)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3819fd37 stereoMode=3 multipassSetting=false pos=(0.09,1.54,-0.02) fwd=(0.20,-0.18,0.96)
+  Vivify main camera cullingMask is now 0x3819fd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.05,1.58,0.01) fwd=(-0.06,0.01,1.00)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3cea6 (Mesmerizer - izuna_1)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3cea6 (Mesmerizer - izuna_1)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3cea6 (Mesmerizer - izuna_1)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3cea6 (Mesmerizer - izuna_1)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3819fd37 stereoMode=3 multipassSetting=false pos=(0.05,1.55,0.00) fwd=(0.25,-0.12,0.96)
+  Vivify main camera cullingMask is now 0x3819fd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.03,1.56,-0.02) fwd=(-0.23,-0.15,0.96)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/909b (FLAMES - Timeweaver)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3cea6 (Mesmerizer - izuna_1)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3cea6 (Mesmerizer - izuna_1)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3cea6 (Mesmerizer - izuna_1)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3819fd37 stereoMode=3 multipassSetting=false pos=(0.10,1.54,-0.01) fwd=(0.26,-0.18,0.95)
+  Vivify main camera cullingMask is now 0x3819fd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.08,1.56,-0.07) fwd=(-0.13,0.04,0.99)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/1a209 (Fallen Symphony - abcbadq & Alice)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/19ef0 (Nasty _ Nasty _ Spell - Joshabi)' isCustom=true hasDetails=true
+=== end ===
+
