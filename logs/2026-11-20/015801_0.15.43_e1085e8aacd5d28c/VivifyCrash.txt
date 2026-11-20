@@ -1,0 +1,58 @@
+=== Vivify 0.15.43 native crash at 1795139847 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27e200002c91
+thread 11444 'UnityMain'
+pc 0x7ea8f2a9d8  lr 0x7ea8f2a9a8  sp 0x7d3a7d5a70  fp 0x7d3a7d5b10
+backtrace:
+  #00 pc 0x7ea8f2a9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7ea8f2a9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7d2f954c64  libmetacore.so +0xcdc64
+  #03 fp 0x7d9570b55c  libsl2.so +0x4fb55c
+  #04 fp 0x7d9570ae74  libsl2.so +0x4fae74
+  #05 fp 0x7d9570ad48  libsl2.so +0x4fad48
+  #06 fp 0x7d9570ace8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7b73c82f10  libVivify.so +0x1f7f10
+  #08 fp 0x7d0c428840  libil2cpp.so +0x21ba840
+  #09 fp 0x7d0c42878c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify preload prefab: asset='assets/scribbles.prefab' id='Intro Scribble' instance=true
+  Vivify PreloadInstantiatePrefabs: 14 prefab event(s) preloaded
+  Vivify catch-up event: type='Blit' time=0
+  Vivify material: context=Blit asset=assets/materials/camerawarm.mat material='CameraWarm' shader='nasafrasa/Post Processing/Warm' supported=true internalError=false
+  Vivify Blit event: time=0 asset='assets/materials/camerawarm.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=160
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/skyboxblack.prefab' id='Skybox Black' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='Skybox Black' asset='assets/skyboxblack.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='SetCameraProperty' time=0
+  Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=false bloomPrePass=unset mainEffect=unset
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/notes/whitenotearrow.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/notes/whitenotedot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/notes/whitenotearrowdebris.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=0 asset='assets/notes/whitenotechainhead.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=2 asset='assets/notes/whitenotechainheaddebris.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=0 asset='assets/notes/whitenotechainlink.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=2 asset='assets/notes/whitenotechainlinkdebris.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/nurturesaberalt.prefab' tracks=0 additive=false saberType=0
+  Vivify AssignObjectPrefab(trail): asset='assets/materials/nurturesabertrail.mat' saberType=0 additive=false
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber replaced (type 0): models=1 trails=1 spawned=2 renderers=5 hiddenOriginals=6
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/notes/the other ones/blacknotearrow.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/notes/the other ones/blacknotedot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/notes/the other ones/blacknotearrowdebris.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=0 asset='assets/notes/the other ones/blacknotechainhead.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=2 asset='assets/notes/the other ones/blacknotechainheaddebris.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=0 asset='assets/notes/the other ones/blacknotechainlink.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=2 asset='assets/notes/the other ones/blacknotechainlinkdebris.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/nurturesaber.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/materials/nurturesabertrail.mat' saberType=1 additive=false
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=3 hiddenOriginals=6
+  Vivify catch-up: replayed 5 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=76 livePrefabs=1 preloadedPrefabs=14
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify multiplayer check: inMultiplayerGameplay=false multiplayerModLoaded=true
+  Vivify stereo screen effect processing failed: A SafePtr<T> instance is holding a null handle!
+=== end ===
+
