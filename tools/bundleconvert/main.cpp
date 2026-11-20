@@ -119,7 +119,8 @@ int main(int argc, char** argv) {
   bool const split = first == "--shaders-split" || split2019;
   // --shaders-single is replay render mode (singleViewOnly).
   // --shaders-companion is the blit companion: single-view, internal files renamed.
-  bool const mono = first == "--shaders-mono-isolated";
+  bool const monoTessellation = first == "--shaders-tess-mono-isolated";
+  bool const mono = first == "--shaders-mono-isolated" || monoTessellation;
   bool const native = first == "--shaders-native-perspective-isolated";
   bool const blit = first == "--shaders-blit-left-isolated" || first == "--shaders-blit-right-isolated";
   bool const tessellation = first == "--shaders-tess-eye-left-isolated" || first == "--shaders-tess-eye-right-isolated";
@@ -147,7 +148,7 @@ int main(int argc, char** argv) {
     options.namespaceSingleViewShaders = mono;
     options.singleViewBlit = blit;
     options.nativePerspectiveDonor = native;
-    options.uniformTriangleTessellation = tessellation;
+    options.uniformTriangleTessellation = tessellation || monoTessellation;
     options.renameArchiveFiles = companion;
     options.dropUntranslatableGeometry = std::getenv("VIVIFY_DROP_GEOMETRY") != nullptr;
     options.dropGeometryStages = std::getenv("VIVIFY_DROP_ALL_GEOMETRY") != nullptr;

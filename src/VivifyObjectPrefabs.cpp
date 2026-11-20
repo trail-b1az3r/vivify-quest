@@ -1,9 +1,17 @@
 #include "VivifyRuntimeInternal.hpp"
 #include "VivifyRecovery.hpp"
 #include "GlobalNamespace/Mirror.hpp"
+#include "GlobalNamespace/BoolSO.hpp"
+#include "GlobalNamespace/MainEffectContainerSO.hpp"
+#include "GlobalNamespace/PyramidBloomMainEffectSO.hpp"
 #include <ctime>
 #include "UnityEngine/SystemInfo.hpp"
+#ifdef VIVIFY_GAME_1_45_3
+#include "GlobalNamespace/OVRManager.hpp"
+#include "Meta/XR/MetaXRFoveationFeature.hpp"
+#else
 #include "Unity/XR/Oculus/Utils.hpp"
+#endif
 #include "custom-types/shared/delegate.hpp"
 #include "System/Delegate.hpp"
 #include "UnityEngine/CameraType.hpp"
@@ -873,6 +881,7 @@ void Runtime::InstantiatePrefab(CustomJSONData::CustomEventData* customEventData
     }
   }
   int const culledAnimators = CullOffscreenAnimators(instance);
+  NoteSpawnedText(instance, data.asset);
   VIVIFY_DEBUG("Vivify InstantiatePrefab spawned: id='{}' asset='{}' tracks={} animators={} offscreenCulled={}",
                storageId, data.asset, data.tracks.size(), animators.size(), culledAnimators);
   _livePrefabs[storageId] = LivePrefab{
@@ -926,9 +935,18 @@ void Runtime::PopActiveDebrisPrefabs() {
 
 }
 
+// Note Draw Distance: turn back on what it turned off.
+void ShowDistanceHiddenNote(VisualReplacement& replacement) {
+  for (auto* renderer : replacement.distanceDisabled)
+    if (IsManagedAlive(renderer)) renderer->set_enabled(true);
+  replacement.distanceDisabled.clear();
+  replacement.distanceHidden = false;
+}
+
 void Runtime::RestoreNoteVisuals(GlobalNamespace::NoteController* noteController) {
   auto it = _noteReplacements.find(noteController);
   if (it == _noteReplacements.end()) return;
+  ShowDistanceHiddenNote(it->second);  // never leave a pooled renderer off
   RestoreReplacementData(it->second);
   _noteReplacements.erase(it);
 }
@@ -959,7 +977,7 @@ void Runtime::DisableOriginalRenderers(UnityEngine::GameObject* gameObject, Visu
   }
 }
 
-void Runtime::DisableOriginalRenderers(ArrayW<UnityEngine::Renderer*, Array<UnityEngine::Renderer*>*> const& renderers,
+void Runtime::DisableOriginalRenderers(ArrayW<UnityEngine::Renderer*> const& renderers,
                                        VisualReplacement& replacement) {
   if (!renderers) return;
   for (int i = 0; i < renderers.size(); i++) {
@@ -1389,10 +1407,35 @@ void Runtime::RefreshSlowProbes() {
   }
 }
 
+// The camera the Replay mod renders a replay with: VivifyMainCamera() picks it
+// out while a replay renders, and it is never Camera.main.
+bool Runtime::IsReplayRenderCamera(UnityEngine::Camera* camera) {
+  if (!IsAlive(camera) || !GetReplayRendering()) return false;
+  auto* main = UnityEngine::Camera::get_main().unsafePtr();
+  return camera != main && camera == VivifyMainCamera();
+}
+
 // Called for every camera Unity renders, the hidden ones a reflection probe
 // uses included: those draw with the map's single-view shaders.
 void Runtime::OnAnyCameraPreCull(UnityEngine::Camera* camera) {
   PullHeadsetHud(camera);
+  // The Replay mod's render camera draws one view into a flat texture, where
+  // the separate-eye renderer cannot run: geometry and tessellation shaders
+  // drew nothing in rendered replays. It draws with the mono donor instead,
+  // as map-authored texture cameras do: full geometry, and tessellation
+  // where both scene eyes translated it (0.15.31).
+  if (_currentBeatmapData != nullptr && IsReplayRenderCamera(camera)) {
+    bool const scoped = SeparateEye::BeginTextureCamera(camera, camera);
+    if (scoped != _replayCameraScoped || !_replayCameraLogged) {
+      _replayCameraLogged = true;
+      PaperLogger.info("Vivify replay render: {}", scoped
+          ? "drawing the map with the single-camera shader copies (geometry and tessellation kept)"
+          : "the single-camera shader copies are not available (Separate-Eye Renderer off or not ready); "
+            "geometry and tessellation shaders may not draw");
+    }
+    _replayCameraScoped = scoped;
+    return;
+  }
   if (_currentBeatmapData == nullptr || !GetSingleViewMapCameras()) return;
   if (!IsAlive(camera) || camera->get_cameraType().value__ != 16) return;  // CameraType.Reflection
   // Hidden probe cameras have no SingleViewCameraShaders component. Use the
@@ -1404,6 +1447,11 @@ void Runtime::OnAnyCameraPreCull(UnityEngine::Camera* camera) {
 }
 
 void Runtime::OnAnyCameraPostRender(UnityEngine::Camera* camera) {
+  if (IsAlive(camera) && _replayCameraScoped && IsReplayRenderCamera(camera)) {
+    SeparateEye::EndTextureCamera(camera);
+    _replayCameraScoped = false;
+    return;
+  }
   if (!IsAlive(camera) || camera->get_cameraType().value__ != 16) return;
   SeparateEye::EndTextureCamera(camera);
   if (!_probeCameraRendering) return;
@@ -1565,6 +1613,26 @@ void Runtime::HideForeignSaberLights() {
 // game had set comes back when the level ends. Screen effects are worked out
 // in the mod's own textures and are not foveated by this.
 void Runtime::ApplyVivifyFoveation() {
+#ifdef VIVIFY_GAME_1_45_3
+  // 1.45.3 runs on OpenXR: the level goes through Meta's foveation feature
+  // (same Off/Low/Medium/High/HighTop scale). It has no eye-tracked switch.
+  int const wanted = GetVivifyFoveationLevel();
+  if (wanted <= 0 || _foveationApplied) return;
+  try {
+    using Feature = Meta::XR::MetaXRFoveationFeature;
+    _foveationBefore = static_cast<int32_t>(Feature::get_foveatedRenderingLevel());
+    _foveationEyeTracked = false;
+    _eyeTrackedBefore = false;
+    _foveationApplied = true;
+    Feature::set_foveatedRenderingLevel(GlobalNamespace::OVRManager_FoveatedRenderingLevel(static_cast<int32_t>(wanted)));
+    PaperLogger.info("Vivify foveated rendering (OpenXR): level {} for this map (was {}), now {}; device '{}'", wanted,
+                     _foveationBefore, static_cast<int32_t>(Feature::get_foveatedRenderingLevel()),
+                     ToStdString(UnityEngine::SystemInfo::get_deviceModel()));
+  } catch (...) {
+    RestoreVivifyFoveation();
+    PaperLogger.warn("Vivify foveated rendering: the headset's foveation could not be set");
+  }
+#else
   int const wanted = GetVivifyFoveationLevel();
   if (wanted <= 0 || _foveationApplied) return;
   try {
@@ -1589,9 +1657,19 @@ void Runtime::ApplyVivifyFoveation() {
     RestoreVivifyFoveation();
     PaperLogger.warn("Vivify foveated rendering: the headset's foveation could not be set");
   }
+#endif
 }
 
 void Runtime::RestoreVivifyFoveation() {
+#ifdef VIVIFY_GAME_1_45_3
+  if (!_foveationApplied) return;
+  try {
+    Meta::XR::MetaXRFoveationFeature::set_foveatedRenderingLevel(
+        GlobalNamespace::OVRManager_FoveatedRenderingLevel(static_cast<int32_t>(_foveationBefore)));
+    _foveationApplied = false;  // a failed restore is retried by a later reset
+  } catch (...) {
+  }
+#else
   if (!_foveationApplied) return;
   bool restored = false;
   try {
@@ -1611,6 +1689,7 @@ void Runtime::RestoreVivifyFoveation() {
   }
   // A later reset retries failed restoration using the original snapshot.
   if (restored && !_foveationEyeTracked) _foveationApplied = false;
+#endif
 }
 
 // Game Mirrors off for this map (0.15.18). The game's mirrors render a
@@ -1624,6 +1703,101 @@ void Runtime::RestoreVivifyFoveation() {
 // Only a mirror with no such material is hidden. Swept about once a second,
 // which catches a mirror the map turns on part way through; everything comes
 // back when the level ends.
+// Game Bloom: the game picks its main post effect (bloom and tone mapping,
+// or none) from the graphics settings into a MainEffectContainerSO. For a
+// Vivify map with Game Bloom on, the container gets the game's bloom effect
+// and its post-process switch on; both come back at reset. Once a level.
+void Runtime::ApplyForcedBloom() {
+  if (_bloomTried || _currentBeatmapData == nullptr || _isResetting || !GetForceBloom()) return;
+  _bloomTried = true;
+  try {
+    auto containers = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::MainEffectContainerSO*>();
+    auto blooms = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::PyramidBloomMainEffectSO*>();
+    if (containers.size() == 0 || blooms.size() == 0) {
+      PaperLogger.warn("Vivify Game Bloom: the game's {} not found; bloom left as the game has it",
+                       containers.size() == 0 ? "main effect container" : "bloom effect");
+      return;
+    }
+    auto* container = containers[0];
+    auto* bloom = static_cast<GlobalNamespace::MainEffectSO*>(blooms[0]);
+    auto current = container->_mainEffect;
+    auto enabled = container->_postProcessEnabled;
+    _bloomContainer = container;
+    _bloomPreviousEffect = current.unsafePtr();
+    _bloomPreviousEnabled = IsManagedAlive(enabled.unsafePtr()) && enabled->get_value();
+    container->_mainEffect = bloom;
+    if (IsManagedAlive(enabled.unsafePtr())) enabled->set_value(true);
+#ifdef VIVIFY_GAME_1_45_3
+    container->OnEnableChanged();  // 1.45.3 resolves the effect in use from the two
+#endif
+    _bloomForced = true;
+    PaperLogger.info("Vivify Game Bloom: bloom on for this map (the game had '{}', post-processing {})",
+                     IsManagedAlive(current.unsafePtr()) ? ToStdString(current->get_name()) : "<none>",
+                     _bloomPreviousEnabled ? "on" : "off");
+  } catch (...) {
+    PaperLogger.warn("Vivify Game Bloom: could not turn the game's bloom on");
+  }
+}
+
+void Runtime::RestoreForcedBloom() {
+  _bloomTried = false;
+  if (!_bloomForced) return;
+  _bloomForced = false;
+  try {
+    auto* container = _bloomContainer ? _bloomContainer.ptr() : nullptr;
+    if (IsManagedAlive(container)) {
+      container->_mainEffect = _bloomPreviousEffect ? _bloomPreviousEffect.ptr() : nullptr;
+      auto enabled = container->_postProcessEnabled;
+      if (IsManagedAlive(enabled.unsafePtr())) enabled->set_value(_bloomPreviousEnabled);
+#ifdef VIVIFY_GAME_1_45_3
+      container->OnEnableChanged();
+#endif
+    }
+  } catch (...) {
+    PaperLogger.warn("Vivify Game Bloom: putting the game's bloom setting back failed");
+  }
+  _bloomContainer = nullptr;
+  _bloomPreviousEffect = nullptr;
+}
+
+void Runtime::UpdateNoteDrawDistance() {
+  int const metres = GetNoteDrawDistance();
+  auto setHidden = [](VisualReplacement& replacement, bool hidden) {
+    if (replacement.distanceHidden == hidden) return;
+    replacement.distanceHidden = hidden;
+    if (hidden) {
+      // Renderer.forceRenderingOff is stripped from the game; turn off only
+      // what is on, and put back exactly that.
+      for (auto* renderer : replacement.replacementRenderers)
+        if (IsManagedAlive(renderer) && renderer->get_enabled()) {
+          renderer->set_enabled(false);
+          replacement.distanceDisabled.push_back(renderer);
+        }
+    } else {
+      ShowDistanceHiddenNote(replacement);
+    }
+  };
+  if (metres <= 0 || _currentBeatmapData == nullptr || _isResetting) {
+    // Off: show anything this hid, once.
+    if (_noteDrawDistanceActive) {
+      for (auto& [note, replacement] : _noteReplacements) setHidden(replacement, false);
+      _noteDrawDistanceActive = false;
+    }
+    return;
+  }
+  auto* camera = VivifyMainCamera();
+  if (!IsAlive(camera)) return;
+  _noteDrawDistanceActive = true;
+  auto const eye = camera->get_transform()->get_position();
+  float const limit = static_cast<float>(metres) * static_cast<float>(metres);
+  for (auto& [note, replacement] : _noteReplacements) {
+    if (!IsManagedAlive(note) || replacement.replacementRenderers.empty()) continue;
+    auto const at = note->get_transform()->get_position();
+    float const dx = at.x - eye.x, dy = at.y - eye.y, dz = at.z - eye.z;
+    setHidden(replacement, dx * dx + dy * dy + dz * dz > limit);
+  }
+}
+
 void Runtime::HideGameMirrors() {
   if (_currentBeatmapData == nullptr || _isResetting || GetGameMirrors()) return;
   float const now = UnityEngine::Time::get_unscaledTime();
@@ -1985,6 +2159,29 @@ void Runtime::ApplySaberTrailVisuals(GlobalNamespace::SaberModelController* smc,
       UnityEngine::Object::Destroy(trailObject);
       continue;
     }
+    // The Separate-Eye Renderer draws only renderers it knows about with its
+    // single-eye shaders; an unknown one keeps its two-eye shader, which
+    // draws nothing in an eye camera. Map trails were never registered, so
+    // they vanished whenever a geometry effect put the scene on the per-eye
+    // path (0.15.32). Sabers and note replacements already are (0.15.35).
+    SeparateEye::RememberRenderers(trailObject);
+    RegisterSingleViewMaterials(trailObject);
+    // The trail's mesh is drawn by a SaberTrailRenderer the trail instantiates
+    // at the scene root (or beside the game's trail), not under trailObject,
+    // so the registration above found nothing; and its material is the
+    // renderer's own copy (set_material), which the Separate-Eye Renderer did
+    // not know. Map trails kept their two-eye shader and vanished whenever a
+    // geometry effect put the scene on the per-eye path (0.15.41).
+    if (auto* trailRenderer = followedTrail->____trailRenderer.unsafePtr(); IsAlive(trailRenderer)) {
+      auto* meshRenderer = static_cast<UnityEngine::Renderer*>(trailRenderer->____meshRenderer.unsafePtr());
+      if (IsAlive(meshRenderer)) {
+        auto materials = meshRenderer->get_sharedMaterials();
+        for (auto trailMaterial : materials) SeparateEye::RememberMaterial(trailMaterial.unsafePtr());
+      }
+      auto rendererObject = trailRenderer->get_gameObject();
+      SeparateEye::RememberRenderers(rendererObject.unsafePtr());
+      RegisterSingleViewMaterials(rendererObject.unsafePtr());
+    }
     replacement.spawnedObjects.emplace_back(trailObject);
     replacement.followedTrails.emplace_back(followedTrail);
   }
@@ -2177,8 +2374,12 @@ void Runtime::SyncReplacementTintColors() {
 }
 
 void Runtime::RestoreAllVisualReplacements() {
-  for (auto& [_, replacement] : _noteReplacements) RestoreReplacementData(replacement);
+  for (auto& [_, replacement] : _noteReplacements) {
+    ShowDistanceHiddenNote(replacement);
+    RestoreReplacementData(replacement);
+  }
   _noteReplacements.clear();
+  _noteDrawDistanceActive = false;
   for (auto& [_, replacement] : _saberReplacements) RestoreReplacementData(replacement);
   _saberReplacements.clear();
   for (auto& [_, replacement] : _debrisReplacements) RestoreReplacementData(replacement);

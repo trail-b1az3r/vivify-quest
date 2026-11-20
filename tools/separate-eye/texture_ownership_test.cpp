@@ -75,6 +75,8 @@ template<class T> bool IsManagedAlive(T* p) { return IsAlive(p); }
 #include "VivifyTextureBindings.hpp"
 
 namespace Vivify {
+// The runtime's ClampWrap only sets the wrap mode; the stand-in passes through.
+inline UnityEngine::RenderTexture* ClampWrap(UnityEngine::RenderTexture* texture) { return texture; }
 namespace RenderTexturePolicy {
 // Descriptor stand-in only; actual allocation/cleanup control flow is extracted.
 Descriptor Describe(UnityEngine::CaptureDescriptor const& d) { return d.value; }

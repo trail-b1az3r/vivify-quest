@@ -96,6 +96,7 @@ std::unordered_map<Material*, NativeCheck> nativeChecks;
 uint64_t nativeCheckEpoch = 1;
 bool completeStageInfo = true;
 std::unordered_set<std::string> separateEyeShaderNames, activeSceneEyeTessellationNames;
+std::vector<std::string> tessellationShaderNames;
 int selectedEye = -1;
 std::string MaterialShaderName(Material* source) { return source->shader->name; }
 Shader* FindDonor(Material* source, int mode) { return donors.at(source->shader).at(mode); }
@@ -188,9 +189,16 @@ int main() {
   check(source.shader == &sourceA && source.instancing && source.flags == HideFlags::None, "authored source remains untouched");
   originals[&source].sourceShader = &sourceA;
   originals[&source].shader = sourceA.name;
-  separateEyeShaderNames.insert(sourceA.name); // Source has a geometry stage.
   auto native = [&] { ++nativeCheckEpoch; return CanUseNativeMaterial(&source); };
-  check(native(), "supported upstream geometry uses native scene path");
+  check(native(), "a supported proven shader without geometry uses the native scene path");
+  // 0.15.31: a geometry stage cannot give the native two-eye program a
+  // correct second eye on the Quest (Aether drew both views in each eye).
+  separateEyeShaderNames.insert(sourceA.name);
+  check(!native(), "a geometry-stage shader takes the scene-eye path");
+  // A tessellation shader is in separateEyeShaderNames too; untranslated or
+  // declined tessellation alone still keeps the native path.
+  tessellationShaderNames.push_back(sourceA.name);
+  check(native(), "declined tessellation alone keeps the native path");
   source.shader = &sourceB;
   check(!CanUseNativeMaterial(&source), "same-cycle shader change invalidates native permission");
   source.shader = nullptr;
@@ -201,6 +209,8 @@ int main() {
   check(!native(), "active paired tessellation keeps its scene-eye path");
   activeSceneEyeTessellationNames.clear();
   check(native(), "declined or disabled tessellation retains upstream native fallback");
+  tessellationShaderNames.clear(); separateEyeShaderNames.clear();
+  check(native(), "native path again once the shader has no geometry stage");
   sourceA.supported = false;
   check(!native(), "unsupported native shader retains donor fallback"); sourceA.supported = true;
   source.shader = &sourceB;

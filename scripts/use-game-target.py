@@ -12,6 +12,13 @@ a CI job that then runs `qpm restore` against qpackages.com.
 --check exits 0 when every range resolves on qpackages.com to a release that
 is built for the target game (its bs-cordl dependency names the target), and
 3 when something is not released yet, listing what. Anything else is an error.
+
+    python3 scripts/use-game-target.py 1.45.3 --local custom-json-data=0.24.6 --local tracks=2.5.5
+
+--local names a package the CI job builds and installs into the local qpm
+repository itself (trail-b1az3r/ports- for 1.45.3, until upstream releases):
+it is not looked up on qpackages.com, its range is pinned to that version,
+and mod.json gets no download link for it (its qmod is installed by hand).
 """
 
 import argparse
@@ -70,10 +77,15 @@ def package_config(package, version):
     return data.get("config", data)
 
 
-def check(target):
+def check(target, local=None):
     missing = []
     resolved = {}
+    local = local or {}
     for package, version_range in target["qpmDependencies"].items():
+        if package in local:
+            if not satisfies(local[package], version_range):
+                missing.append(f"{package} {version_range}: the local build is {local[package]}")
+            continue
         version = newest_matching(package, version_range)
         if version is None:
             missing.append(f"{package} {version_range}: no release")
@@ -88,9 +100,15 @@ def check(target):
     return resolved, missing
 
 
-def apply(target, resolved):
+def apply(target, resolved, local=None):
+    local = local or {}
+    target = dict(target)
+    target["qpmDependencies"] = {**target["qpmDependencies"],
+                                 **{package: f"={version}" for package, version in local.items()}}
     qpm_path = ROOT / "qpm.json"
     qpm = json.loads(qpm_path.read_text())
+    if target.get("ndk"):
+        qpm.setdefault("workspace", {})["ndk"] = target["ndk"]
     removed = set(target.get("removedQpmDependencies", []))
     extra = target.get("qpmDependencyData", {})
     dependencies = []
@@ -119,7 +137,11 @@ def apply(target, resolved):
         package = dep["id"]
         if package not in target["qpmDependencies"]:
             continue
-        dep["version"] = target["qpmDependencies"][package]
+        dep["version"] = target["qpmDependencies"][package].lstrip("=")
+        if package in local:
+            dep["version"] = "^" + local[package]
+            dep.pop("downloadIfMissing", None)
+            continue
         version = resolved.get(package)
         if version:
             link = package_config(package, version)["info"].get("additionalData", {}).get("modLink")
@@ -132,10 +154,20 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("target", help="a file name in targets/ without .json, e.g. 1.45.3")
     parser.add_argument("--check", action="store_true", help="only report whether the dependencies are released")
+    parser.add_argument("--local", action="append", default=[], metavar="PACKAGE=VERSION",
+                        help="a package built and installed into the local qpm repository by the job itself")
     args = parser.parse_args()
 
+    local = {}
+    for item in args.local:
+        package, _, version = item.partition("=")
+        if not package or not version:
+            parser.error(f"--local expects PACKAGE=VERSION, got {item!r}")
+        local[package] = version
     target = json.loads((ROOT / "targets" / f"{args.target}.json").read_text())
-    resolved, missing = check(target)
+    resolved, missing = check(target, local)
+    for package, version in sorted(local.items()):
+        print(f"  local    {package} {version}")
     for package, version in sorted(resolved.items()):
         print(f"  ok       {package} {version}")
     for line in missing:
@@ -146,7 +178,7 @@ def main():
     if args.check:
         print(f"Beat Saber {target['gameVersion']}: every dependency is released")
         return 0
-    apply(target, resolved)
+    apply(target, resolved, local)
     print(f"qpm.json and mod.json now target Beat Saber {target['gameVersion']}")
     return 0
 

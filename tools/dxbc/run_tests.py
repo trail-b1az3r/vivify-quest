@@ -886,6 +886,27 @@ check("it reads the layer from the vertex stage's view index",
       "flat in highp int vivify_ViewIndex[];" in source, source)
 check("and does not use gl_ViewID_OVR, which geometry stages lack", "gl_ViewID_OVR" not in source, source)
 
+# The geometry right-eye copy (0.15.12) is for drivers that run a multiview
+# geometry stage once, for the left eye. Where the driver has
+# EXT_multiview_tessellation_geometry_shader it runs the stage per view, and
+# a copy drew every primitive twice in each eye (Aether z-fought, 0.15.31):
+# the copy, its second invocation and its layer write are compiled out there.
+os.environ["VIVIFY_GEOMETRY_EYE_COPY"] = "1"
+proc, fields, _, source = run("glsl-mv", geometry_layer(False))
+del os.environ["VIVIFY_GEOMETRY_EYE_COPY"]
+check("an eye-copy geometry stage translates", fields.get("ok") == "1", fields.get("error", ""))
+check("its copy is only for drivers without per-view geometry stages",
+      "#ifdef GL_EXT_multiview_tessellation_geometry_shader\n#define VIVIFY_EYE_COPY 0\n#else\n"
+      "#define VIVIFY_EYE_COPY 1\nlayout(invocations = 2) in;\n#endif" in source, source)
+check("the copy's move and layer write are behind VIVIFY_EYE_COPY",
+      "if (VIVIFY_EYE_COPY != 0) {" in source and "vivify_EyeCopy = VIVIFY_EYE_COPY != 0 ? gl_InvocationID : 0;" in source,
+      source)
+check("only one unconditional invocations declaration", source.count("layout(invocations") == 1, source)
+# The branch for a driver with the extension compiles as well (glslang does
+# not define the extension's macro, so the run above compiled the copy).
+glslang_compile(source.replace("#ifdef GL_EXT_multiview_tessellation_geometry_shader", "#if 1", 1),
+                "eye copy with per-view geometry stages")
+
 
 def layer_writing_vertex():
     isgn = m.signature_chunk([{"name": "POSITION", "index": 0, "register": 0}], b"ISGN")
@@ -1093,6 +1114,62 @@ for side in ("left", "right"):
     for label, body, expected in operations:
         _, f, _, source = run("glsl-eye-" + side, pixel_shader(body, textures=(("_CameraDepthTexture", 5),)))
         check(f"{side} mono camera array {label} preserves addressing", f.get("ok") == "1" and expected in source, source or f)
+
+# A screen grab declared 2D in a multiview program is the two-layer grab array
+# on the Quest: it is sampled at the drawing eye's layer (0.15.36). Asset
+# textures and grabs already declared as arrays keep their shapes.
+for name, dimension, promoted in (("_GrabTexture", 4, True), ("_CapturedScene", 4, True),
+                                  ("_MainTex", 4, False), ("_GrabTexture", 5, False)):
+    code = pixel_shader(m.insn(SAMPLE, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0), m.src(SAMPLER_T, 0)),
+                        textures=((name, dimension),))
+    _, f, _, source = run("glsl-mv", code)
+    if promoted:
+        ok = (f"sampler2DArray {name};" in source and
+              f"texture({name}, vec3(vs_TEXCOORD0.xy, vivify_ViewLayer))" in source and
+              "float vivify_ViewLayer = float(gl_ViewID_OVR);" in source and
+              "#extension GL_OVR_multiview2 : require" in source)
+    else:
+        ok = "vivify_ViewLayer" not in source
+    check(f"multiview {name} (dimension {dimension}) {'reads the eye layer' if promoted else 'keeps its shape'}",
+          f.get("ok") == "1" and ok, source or f)
+    _, f, _, source = run("glsl", code)
+    check(f"single-view {name} (dimension {dimension}) is not layered",
+          f.get("ok") == "1" and "vivify_ViewLayer" not in source, source or f)
+grab_operations = [
+    ("lod", m.insn(SAMPLE_L, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0), m.src(SAMPLER_T, 0), m.imm_float(0)),
+     "textureLod(_GrabTexture, vec3(vs_TEXCOORD0.xy, vivify_ViewLayer), 0.0)"),
+    ("gather", m.insn(GATHER4, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0), m.src(SAMPLER_T, 0)),
+     "textureGather(_GrabTexture, vec3(vs_TEXCOORD0.xy, vivify_ViewLayer), 0)"),
+    ("load", m.insn(LD, m.dest(OUTPUT, 0), m.src(INPUT, 0), m.src(RESOURCE, 0)),
+     ", int(vivify_ViewLayer)), "),
+    ("size", m.insn(RESINFO, m.dest(OUTPUT, 0), m.imm_int(0), m.src(RESOURCE, 0), controls=1),
+     "textureSize(_GrabTexture, 0).y"),
+]
+for label, body, expected in grab_operations:
+    _, f, _, source = run("glsl-mv", pixel_shader(body, textures=(("_GrabTexture", 4),)))
+    check(f"multiview grab {label} reads the eye layer", f.get("ok") == "1" and expected in source, source or f)
+
+# A Direct3D-built ComputeGrabScreenPos bakes the top-down grab convention as
+# a (0.5, -0.5) multiply; with flipScreenCopyY (set for passes that read a
+# GrabPass) the -0.5 becomes +0.5, OpenGL's convention (0.15.40). Other
+# constants, and every program without the option, are left alone.
+os.environ["VIVIFY_FLIP_SCREEN_COPY"] = "1"
+flip_cases = [
+    ("xzw lanes", m.insn(MUL, m.dest(OUTPUT, 0, 0xd), m.src(INPUT, 0), m.imm_float(0.5, 0.5, -0.5, 0.5)),
+     "vec3(0.5, 0.5, 0.5)", True),
+    ("xy lanes", m.insn(MUL, m.dest(OUTPUT, 0, 0x3), m.src(INPUT, 0), m.imm_float(0.5, -0.5, 0.0, 0.0)),
+     "vec2(0.5, 0.5)", True),
+    ("two negative lanes", m.insn(MUL, m.dest(OUTPUT, 0, 0x3), m.src(INPUT, 0), m.imm_float(-0.5, -0.5, 0.0, 0.0)),
+     "vec2(-0.5, -0.5)", False),
+    ("other constant", m.insn(MUL, m.dest(OUTPUT, 0, 0x3), m.src(INPUT, 0), m.imm_float(0.25, -0.5, 0.0, 0.0)),
+     "vec2(0.25, -0.5)", False),
+]
+for label, body, expected, _ in flip_cases:
+    _, f, _, source = run("glsl", pixel_shader(body, textures=()))
+    check(f"screen-copy flip: {label}", f.get("ok") == "1" and expected in source, source or f)
+del os.environ["VIVIFY_FLIP_SCREEN_COPY"]
+_, f, _, source = run("glsl", pixel_shader(flip_cases[1][1], textures=()))
+check("screen-copy flip is off by default", f.get("ok") == "1" and "vec2(0.5, -0.5)" in source, source or f)
 
 glslang_enabled = False
 truncation_failures = 0

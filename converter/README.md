@@ -1,4 +1,4 @@
-# Vivify Quest converter (library, CLI, Unity Editor)
+# Vivify Quest converter (library, CLI, desktop app, Unity Editor)
 
 The asset-bundle converter from the Vivify Quest mod, packaged so other
 projects can use it. It turns a PC Vivify bundle (`bundleWindows2021.vivify` or
@@ -17,6 +17,13 @@ It compiles the mod's own sources (`../src/VivifyBundleConvert.cpp`,
 `VivifySerializedFile.cpp`, `VivifyDxbc.cpp`), so it converts exactly as the mod
 does at the same converter revision. The mod's build does not use this folder and
 is unchanged by it.
+
+## Desktop app
+
+**Vivify Quest Converter** is the converter in a window. Drop PC bundles or map
+folders onto it, then click **Convert all**. Get it from the **Converter
+library** workflow's artifacts (`VivifyQuestConverter-app-<platform>`); see
+[gui/README.md](gui/README.md).
 
 ## Unity Editor
 

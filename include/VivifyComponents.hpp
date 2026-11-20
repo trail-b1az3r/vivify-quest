@@ -69,6 +69,9 @@ DECLARE_CLASS_CODEGEN(Vivify, RuntimeBehaviour, UnityEngine::MonoBehaviour) {
   DECLARE_DEFAULT_CTOR();
   DECLARE_SIMPLE_DTOR();
   DECLARE_INSTANCE_METHOD(void, Update);
+#ifdef VIVIFY_GAME_1_45_3
+  DECLARE_INSTANCE_METHOD(void, LateUpdate);
+#endif
   DECLARE_INSTANCE_METHOD(void, OnDestroy);
 };
 

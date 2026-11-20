@@ -956,8 +956,13 @@ class ParsedFormWalker {
       for (auto it = _path.rbegin(); it != _path.rend(); ++it) {
         if (it->name.empty()) continue;
         int32_t subShader, pass;
-        if (it->name == "m_TextureName" && PassOf(subShader, pass) && count > 0)
+        if (it->name == "m_TextureName" && PassOf(subShader, pass) && count > 0) {
           _shader.grabTextures.emplace_back(reinterpret_cast<char const*>(at), count);
+          _shader.grabTextureNameOffsets.push_back(_fileOffset + position - 4);
+        }
+        if (it->name == "m_UseName" && PassOf(subShader, pass) && count > 0 && count <= 65536)
+          _shader.usePasses.emplace_back(std::string(reinterpret_cast<char const*>(at), count),
+                                         _fileOffset + position - 4);
         break;
       }
       // m_ParsedForm.m_Name: the shader's real name. The Shader object's own

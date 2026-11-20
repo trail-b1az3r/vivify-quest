@@ -1160,9 +1160,15 @@ def expect_camera_textures(blit):
         if fields.get("refused") != "0" or fields.get("variantsRefused") != "0": return str((fields, refusals))
         _, _, entries = inspect_converted(dst)
         code = "\n".join(e["code"] for e in entries.values())
+        # 0.15.35: a donor's grab textures carry the donor's suffix, so each
+        # eye camera grabs its own picture (a named GrabPass grabs once per
+        # frame for the first object using the name).
+        suffix = "__VivifyBlitEye1" if blit else "__VivifyEye1"
         for name in resources:
             shape = "2D" if name in ("_CameraDepthTexture", "_CapturedScene") or (blit and name == "_MainTex") else "2DArray"
-            if f"sampler{shape} {name};" not in code: return f"wrong shape for {name}: expected {shape}"
+            declared = name + suffix if name == "_CapturedScene" else name
+            if f"sampler{shape} {declared};" not in code: return f"wrong shape for {declared}: expected {shape}"
+        if "sampler2D _CapturedScene;" in code: return "the grab texture kept its shared name"
         return None
     return validate
 for blit, mode in ((False, "--shaders-eye-right-isolated"), (True, "--shaders-blit-right-isolated")):

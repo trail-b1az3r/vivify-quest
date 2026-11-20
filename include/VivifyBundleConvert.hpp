@@ -44,7 +44,7 @@
 #include <unordered_map>
 
 namespace Vivify::BundleConvert {
-inline constexpr int kShaderConversionVersion = 27;
+inline constexpr int kShaderConversionVersion = 34;
 inline constexpr std::string_view kRenderDependencyCacheProof = "render-dependencies-v5-unique-asset-identity";
 inline constexpr std::string_view kRenderDependencyAssetPrefix = "assets/__vivify_internal__/render/";
 // Main, companion and explicit-eye caches must agree on translator changes.

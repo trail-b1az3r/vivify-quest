@@ -433,7 +433,7 @@ UnityEngine::RenderTexture* SecondaryCameraController::EnsureEyeTexture(
     UnityEngine::Object::Destroy(tex);
   }
   textures.erase(eye); allocations.erase(eye);
-  tex = UnityEngine::RenderTexture::New_ctor(descriptor);
+  tex = ClampWrap(UnityEngine::RenderTexture::New_ctor(descriptor));
   if (!IsManagedAlive(tex)) return nullptr;
   if (!tex->Create()) { UnityEngine::Object::Destroy(tex); return nullptr; }
   textures[eye] = tex;
@@ -543,6 +543,20 @@ void RuntimeBehaviour::Update() {
   Runtime::Instance().Update();
 }
 
+// Beat Saber 1.45.3 (URP): the Separate-Eye Renderer draws its eye images
+// here, after everything has moved and before URP renders the frame; camera
+// renders are not allowed inside URP's render loop.
+#ifdef VIVIFY_GAME_1_45_3
+void RuntimeBehaviour::LateUpdate() {
+  try {
+    SeparateEye::UrpPrepareFrame(VivifyMainCamera());
+  } catch (...) {
+    static bool reported = false;
+    if (!reported) { reported = true; PaperLogger.error("Vivify separate-eye (URP): frame preparation threw"); }
+  }
+}
+#endif
+
 void RuntimeBehaviour::OnDestroy() {
   Runtime::Instance().OnBehaviourDestroyed(this);
 }
@@ -602,17 +616,33 @@ void CameraApplier::OnDisable() {
 }
 
 void CameraApplier::OnRenderImage(UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest) {
-  auto& runtime = Runtime::Instance();
-  if (cameraName == "_Main" && GetExperimentalSeparateEye()) {
-    auto go = get_gameObject();
-    auto* camera = IsManagedAlive(go.unsafePtr()) ? go->GetComponent<UnityEngine::Camera*>() : nullptr;
-    if (SeparateEye::TryRender(camera, src, this)) {
-      runtime.CacheMainRenderDescriptor(src);
-      runtime.ApplyBlits(src, dest, cameraName, -1);
-      return; // both eye images already include pre/main/post effects
+  // Unity calls this through il2cpp; a C++ exception leaving it ends in
+  // std::terminate and the game is gone (0.15.43: every screen effect). One
+  // that throws now costs this frame its effects instead (0.15.44).
+  try {
+    auto& runtime = Runtime::Instance();
+    if (cameraName == "_Main" && GetExperimentalSeparateEye()) {
+      auto go = get_gameObject();
+      auto* camera = IsManagedAlive(go.unsafePtr()) ? go->GetComponent<UnityEngine::Camera*>() : nullptr;
+      if (SeparateEye::TryRender(camera, src, this)) {
+        runtime.CacheMainRenderDescriptor(src);
+        runtime.ApplyBlits(src, dest, cameraName, -1);
+        return; // both eye images already include pre/main/post effects
+      }
     }
+    RenderEffects(src, dest);
+    return;
+  } catch (std::exception const& e) {
+    static int reported = 0;
+    if (reported++ < 5) PaperLogger.error("Vivify screen effects threw ({}); this frame is drawn without them", e.what());
+  } catch (...) {
+    static int reported = 0;
+    if (reported++ < 5) PaperLogger.error("Vivify screen effects threw; this frame is drawn without them");
   }
-  RenderEffects(src, dest);
+  try {
+    if (IsManagedAlive(src)) UnityEngine::Graphics::Blit(src, dest);
+  } catch (...) {
+  }
 }
 
 void CameraApplier::RenderEffects(UnityEngine::RenderTexture* src, UnityEngine::RenderTexture* dest) {
@@ -624,10 +654,7 @@ void CameraApplier::RenderEffects(UnityEngine::RenderTexture* src, UnityEngine::
     auto mainEffectSO = mainEffectController->_mainEffectContainer->get_mainEffect();
     if (mainEffectSO.ptr() != nullptr && IsManagedAlive(mainEffectSO) && mainEffectSO->get_hasPostProcessEffect()) {
       auto renderMain = [&](UnityEngine::RenderTexture* from, UnityEngine::RenderTexture* to) {
-        mainEffectController->OnPreRender();
-        try { mainEffectSO->Render(from, to, mainEffectController->____fadeValue); }
-        catch (...) { mainEffectController->OnPostRender(); throw; }
-        mainEffectController->OnPostRender();
+        RenderMainEffect(mainEffectController, mainEffectSO.ptr(), from, to);
       };
       if (runtime.IsResetting() || GetDisableAllBlits() ||
           (runtime.GetPreEffectsEmpty() && runtime.GetPostEffectsEmpty())) {
@@ -639,7 +666,7 @@ void CameraApplier::RenderEffects(UnityEngine::RenderTexture* src, UnityEngine::
       desc.set_depthBufferBits(0);
       struct Temporary {
         SafePtr<UnityEngine::RenderTexture> value;
-        explicit Temporary(UnityEngine::RenderTextureDescriptor descriptor) : value(UnityEngine::RenderTexture::GetTemporary(descriptor).unsafePtr()) {}
+        explicit Temporary(UnityEngine::RenderTextureDescriptor descriptor) : value(ClampWrap(UnityEngine::RenderTexture::GetTemporary(descriptor).unsafePtr())) {}
         ~Temporary() { if (value && IsManagedAlive(value.ptr())) UnityEngine::RenderTexture::ReleaseTemporary(value.ptr()); }
         UnityEngine::RenderTexture* unsafePtr() const { return value ? value.ptr() : nullptr; }
       };

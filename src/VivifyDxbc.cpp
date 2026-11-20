@@ -1172,6 +1172,9 @@ struct MappedTexture {
   bool comparison = false;  // declared as a shadow sampler
   bool multisample = false;
   bool singleLayerArray = false;
+  // Declared as sampler2DArray but addressed as 2D; the eye's layer is added
+  // to every coordinate (viewLayerTextures).
+  bool viewLayer = false;
 };
 
 // A read/write resource: a D3D UAV, or a structured/raw shader resource. These
@@ -1239,8 +1242,13 @@ class GlslEmitter {
   // EmitVertex, preceded for a right-eye copy by the move into that eye.
   void EmitVertexLine() {
     if (EyeCopyActive()) {
-      Line("if (vivify_EyeCopy != 0) gl_Position = vivify_LeftToRight * gl_Position;");
-      Line("gl_Layer = vivify_EyeCopy;");
+      // VIVIFY_EYE_COPY is 0 where the driver runs the stage once per view
+      // itself (see the source header): there the views route each primitive
+      // and the layer is left alone.
+      Line("if (VIVIFY_EYE_COPY != 0) {");
+      Line("  if (vivify_EyeCopy != 0) gl_Position = vivify_LeftToRight * gl_Position;");
+      Line("  gl_Layer = vivify_EyeCopy;");
+      Line("}");
     }
     Line("EmitVertex();");
   }
@@ -1250,6 +1258,12 @@ class GlslEmitter {
   uint32_t _gsInvocations = 1;
 
   MappedTexture const* TextureFor(Operand const& resource);
+  // A view-layer texture (viewLayerTextures) is addressed with the shader's 2D
+  // coordinate plus the layer of the eye being drawn.
+  static std::string LayeredCoordinate(MappedTexture const& texture, std::string const& coordinate) {
+    if (!texture.viewLayer) return coordinate;
+    return "vec3(" + coordinate + ", vivify_ViewLayer)";
+  }
   MappedStorage const* StorageFor(Operand const& operand);
   std::string SampleOffsetArgument(Instruction const& instruction, int components);
   std::string ResourceSwizzle(Operand const& resource, uint8_t mask);
@@ -1304,6 +1318,8 @@ class GlslEmitter {
   // SV_RenderTargetArrayIndex read by a pixel program (the eye index in PC
   // single-pass instanced stereo) and written by a vertex one.
   bool _usedRTArrayIndexIn = false;
+  bool _usedViewLayer = false;
+  bool _usedPixelStereoEye = false;
   std::string _stereoEyeIndexType;  // set when unity_StereoEyeIndex is fed from the view
   bool _writesRTArrayIndex = false;
   bool _stereoInstanced = false;
@@ -1655,10 +1671,20 @@ bool GlslEmitter::BuildResources() {
       texture.singleLayerArray = true;
     }
     texture.comparison = comparisonTextures.count(binding.bindPoint) != 0;
+    if (_options.multiview && binding.dimension == 4 && !texture.comparison &&
+        (_program.stage == Stage::Pixel || _program.stage == Stage::Vertex) &&
+        std::find(_options.viewLayerTextures.begin(), _options.viewLayerTextures.end(), binding.name) !=
+            _options.viewLayerTextures.end()) {
+      texture.viewLayer = true;
+      _usedViewLayer = true;
+    }
 
     std::string shape;
     switch (texture.dimension) {
-      case 4: shape = "2D"; texture.coordinateComponents = 2; break;
+      case 4:
+        shape = texture.viewLayer ? "2DArray" : "2D";
+        texture.coordinateComponents = 2;
+        break;
       case 5: shape = "2DArray"; texture.coordinateComponents = 3; break;
       case 6:
         shape = "2DMS";
@@ -2225,6 +2251,18 @@ std::string GlslEmitter::ConstantComponent(Operand const& operand, int component
            "') is not an array");
       return {};
     }
+    // unity_StereoScaleOffset (rows 66-67 of the per-eye block) places each
+    // eye in one half of a double-wide image: PC single-pass stereo, which a
+    // 2019 bundle's UNITY_SINGLE_PASS_STEREO variant is built for
+    // (TransformStereoScreenSpaceTex). Under the Quest's multiview each eye
+    // is a whole image of its own, so it is always (1, 1, 0, 0) here (0.15.42).
+    // Get Your Wish's window quad (FX/CensorWorldSpace) squeezed its screen
+    // copy into half the view with it and drew a broken, misplaced picture
+    // where the PC draws the scene behind it, which shows as nothing.
+    if (_options.multiview && found->name == "vivify_cb_UnityStereoGlobals" &&
+        (rowIndex.immediate == 66 || rowIndex.immediate == 67)) {
+      return component < 2 ? "1.0" : "0.0";
+    }
     std::string index = ScalarInt(*rowIndex.relative);
     int64_t const base = static_cast<int64_t>(found->startOffset / 16u);
     int64_t const bias = static_cast<int64_t>(rowIndex.immediate) - base;
@@ -2234,8 +2272,30 @@ std::string GlslEmitter::ConstantComponent(Operand const& operand, int component
     expression = found->name + "[" + index + "]." + kComponentNames[component];
   } else if (found->isArray) {
     uint32_t const withinVariable = byteOffset - found->startOffset;
-    expression = found->name + "[" + std::to_string(withinVariable / found->elementStride) + "]." +
-                 kComponentNames[(withinVariable % found->elementStride) / 4u];
+    uint32_t const element = withinVariable / found->elementStride;
+    // See the relative branch: no double-wide image under multiview.
+    if (_options.multiview && found->name == "vivify_cb_UnityStereoGlobals" && (element == 66 || element == 67)) {
+      return component < 2 ? "1.0" : "0.0";
+    }
+    std::string index = std::to_string(element);
+    // A pixel shader written without UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX
+    // reads the per-eye camera block with unity_StereoEyeIndex left at 0, and
+    // the compiler folds that into fixed left-eye rows. In the right eye it
+    // then projects with the left eye's matrices: Get Your Wish's window quad
+    // (FX/CensorWorldSpace, a grab of the scene behind it) showed a shifted,
+    // broken copy of the view instead of nothing (0.15.42). Under multiview
+    // each eye's pixels now read their own rows: the block holds eight
+    // float4x4[2] (four rows per eye) and then two float3 / float4 [2].
+    if (_options.multiview && _program.stage == Stage::Pixel && found->name == "vivify_cb_UnityStereoGlobals") {
+      int stride = 0;
+      if (element < 64 && element % 8 < 4) stride = 4;
+      else if (element == 64) stride = 1;
+      if (stride != 0) {
+        _usedPixelStereoEye = true;
+        index += " + " + std::to_string(stride) + " * int(gl_ViewID_OVR)";
+      }
+    }
+    expression = found->name + "[" + index + "]." + kComponentNames[(withinVariable % found->elementStride) / 4u];
   } else if (found->scalarDeclaration) {
     expression = found->name;
   } else {
@@ -2797,7 +2857,7 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
               SrcFloat(operands[1], coordinateMask) + ", " +
               ScalarFloat(operands[operands.size() - 1]) + ")";
     } else {
-      call += SrcFloat(operands[1], static_cast<uint8_t>((1u << coordinateComponents) - 1u));
+      call += LayeredCoordinate(*texture, SrcFloat(operands[1], static_cast<uint8_t>((1u << coordinateComponents) - 1u)));
     }
     if (levelZero) {
       if (texture->dimension == 4) call += ", 0.0";
@@ -2864,7 +2924,8 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
 
     std::string call = instruction.hasSampleOffsets ? "textureGatherOffset(" : "textureGather(";
     call += texture->name + ", " +
-            SrcFloat(operands[1], static_cast<uint8_t>((1u << texture->coordinateComponents) - 1u));
+            LayeredCoordinate(*texture, SrcFloat(operands[1], static_cast<uint8_t>(
+                                                                  (1u << texture->coordinateComponents) - 1u)));
     // Shadow gather overloads take their comparison before the texel offset;
     // non-shadow overloads take the selected channel after it.
     if (comparison) call += ", " + ScalarFloat(operands[operands.size() - 1]);
@@ -3469,8 +3530,8 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       if (texture->dimension == 10) gradientComponents = 3;
       uint8_t const gradientMask = static_cast<uint8_t>((1u << gradientComponents) - 1u);
       std::string call = instruction.hasSampleOffsets ? "textureGradOffset(" : "textureGrad(";
-      call += texture->name + ", " + SrcFloat(operands[1], coordinateMask) + ", " +
-              SrcFloat(operands[4], gradientMask) + ", " + SrcFloat(operands[5], gradientMask);
+      call += texture->name + ", " + LayeredCoordinate(*texture, SrcFloat(operands[1], coordinateMask)) +
+              ", " + SrcFloat(operands[4], gradientMask) + ", " + SrcFloat(operands[5], gradientMask);
       call += SampleOffsetArgument(instruction, gradientComponents);
       call += ")";
       WriteDest(instruction, operands[0], call + ResourceSwizzle(resource, destMask()));
@@ -3507,8 +3568,13 @@ bool GlslEmitter::EmitInstruction(Instruction const& instruction) {
       int const coordinateComponents = texture->coordinateComponents;
       uint8_t const coordinateMask = static_cast<uint8_t>((1u << coordinateComponents) - 1u);
       std::string call = instruction.hasSampleOffsets ? "texelFetchOffset(" : "texelFetch(";
-      call += texture->name + ", " + VecType(coordinateComponents, "i") + "(" +
-              SrcInt(operands[1], coordinateMask) + ")";
+      if (texture->viewLayer) {
+        call += texture->name + ", ivec3(" + SrcInt(operands[1], coordinateMask) +
+                ", int(vivify_ViewLayer))";
+      } else {
+        call += texture->name + ", " + VecType(coordinateComponents, "i") + "(" +
+                SrcInt(operands[1], coordinateMask) + ")";
+      }
       if (opcode == OP_LD_MS) {
         // The sample index is a separate operand; a multisample fetch has no
         // mip level.
@@ -3978,6 +4044,7 @@ GlslResult GlslEmitter::Run() {
     }
   }
   if (_emitViewIndexVarying) addPrologue("vivify_ViewIndex = int(gl_ViewID_OVR);");
+  if (_usedViewLayer) addPrologue("float vivify_ViewLayer = float(gl_ViewID_OVR);");
   if (_usedPrimitiveID) addPrologue("ivec4 vPrimitiveID = ivec4(gl_PrimitiveID);");
   if (_usedSampleIndex) addPrologue("ivec4 vSampleIndex = ivec4(gl_SampleID);");
   // The right-eye copy runs on a second invocation of its own; a stage that
@@ -3985,7 +4052,7 @@ GlslResult GlslEmitter::Run() {
   bool const eyeCopy = EyeCopyActive() && _gsInvocations <= 1;
   if (EyeCopyActive()) {
     if (eyeCopy) {
-      addPrologue("int vivify_EyeCopy = gl_InvocationID;");
+      addPrologue("int vivify_EyeCopy = VIVIFY_EYE_COPY != 0 ? gl_InvocationID : 0;");
       std::string const cb = "vivify_cb_UnityStereoGlobals";
       addPrologue("mat4 vivify_LeftToRight = mat4(" + cb + "[28], " + cb + "[29], " + cb + "[30], " + cb +
                   "[31]) * inverse(mat4(" + cb + "[24], " + cb + "[25], " + cb + "[26], " + cb + "[27]));");
@@ -4036,7 +4103,7 @@ GlslResult GlslEmitter::Run() {
   bool const needsViewId =
       _options.multiview && (_program.stage == Stage::Vertex ||
                              (_usedRTArrayIndexIn && _program.stage != Stage::Geometry) ||
-                             !_stereoEyeIndexType.empty());
+                             _usedViewLayer || _usedPixelStereoEye || !_stereoEyeIndexType.empty());
   if (needsViewId) {
     source += "#extension GL_OVR_multiview2 : require\n";
     if (_program.stage == Stage::Vertex) source += "layout(num_views = 2) in;\n";
@@ -4058,8 +4125,26 @@ GlslResult GlslEmitter::Run() {
   source += "precision highp float;\n";
   source += "precision highp int;\n";
   source += _declarations;
+  if (EyeCopyActive()) {
+    // The right-eye copy is only for a driver without
+    // EXT_multiview_tessellation_geometry_shader, which runs the stage once,
+    // for the left eye (0.15.12). A driver with it runs the stage once per
+    // view (the num_views declaration above), each run already drawing into
+    // its own eye; a copy there drew every primitive twice in each eye, its
+    // own and the other eye's, on top of each other: Aether's geometry
+    // effects z-fought, one copy right and one wrong (0.15.31).
+    if (eyeCopy) {
+      source += "#ifdef GL_EXT_multiview_tessellation_geometry_shader\n";
+      source += "#define VIVIFY_EYE_COPY 0\n";
+      source += "#else\n";
+      source += "#define VIVIFY_EYE_COPY 1\n";
+      source += "layout(invocations = 2) in;\n";
+      source += "#endif\n";
+    } else {
+      source += "#define VIVIFY_EYE_COPY 0\n";
+    }
+  }
   if (eyeCopy) {
-    source += "layout(invocations = 2) in;\n";
     if (std::find(_uniformNames.begin(), _uniformNames.end(), "UnityStereoGlobals") == _uniformNames.end()) {
       source += "layout(std140) uniform UnityStereoGlobals { vec4 vivify_cb_UnityStereoGlobals[68]; };\n";
     }
@@ -4213,7 +4298,44 @@ Program WithReflection(Program const& program, ExternalReflection const& reflect
 
 }  // namespace
 
+// See GlslOptions::flipScreenCopyY.
+static int FlipScreenCopyY(Program& program) {
+  int flipped = 0;
+  auto asFloat = [](uint32_t bits) { float f; std::memcpy(&f, &bits, sizeof f); return f; };
+  uint32_t plusHalf; { float h = 0.5f; std::memcpy(&plusHalf, &h, sizeof plusHalf); }
+  for (auto& instruction : program.instructions) {
+    if (instruction.opcode != OP_MUL && instruction.opcode != OP_MAD) continue;
+    if (instruction.operands.size() < 3) continue;
+    auto const& dest = instruction.operands[0];
+    if (dest.selectionMode != 0) continue;
+    for (size_t s = 1; s <= 2; s++) {
+      auto& source = instruction.operands[s];
+      if (source.type != kOperandImmediate32 || source.immediates.size() != 4) continue;
+      int minus = -1, plusCount = 0;
+      bool pattern = true;
+      for (int lane = 0; lane < 4 && pattern; lane++) {
+        if (!(dest.mask & (1u << lane))) continue;
+        float const value = asFloat(source.immediates[lane]);
+        if (value == 0.5f) plusCount++;
+        else if (value == -0.5f && minus < 0) minus = lane;
+        else pattern = false;
+      }
+      if (!pattern || minus < 0 || plusCount < 1) continue;
+      source.immediates[minus] = plusHalf;
+      flipped++;
+    }
+  }
+  return flipped;
+}
+
 GlslResult TranslateToGlsl(Program const& program, GlslOptions const& options) {
+  if (options.flipScreenCopyY) {
+    Program copy = program;
+    FlipScreenCopyY(copy);
+    GlslOptions rest = options;
+    rest.flipScreenCopyY = false;
+    return TranslateToGlsl(copy, rest);
+  }
   if (options.reflection != nullptr && program.constantBuffers.empty() && program.resourceBindings.empty()) {
     Program const patched = WithReflection(program, *options.reflection);
     GlslEmitter emitter(patched, options);

@@ -314,6 +314,14 @@ struct ShaderObject {
   // m_ParsedForm.m_Name, the shader's real name ("Custom/Foo"), when the walk
   // reached it.
   std::string parsedFormName;
+  // File offset of each grab pass's m_TextureName length field, parallel to
+  // grabTextures (0.15.35): isolated donors give each grab texture a name of
+  // their own.
+  std::vector<size_t> grabTextureNameOffsets;
+  // UsePass references (SerializedPass.m_UseName, "Shader/Name/PASS") with
+  // the file offset of each string's length field (0.15.33), so isolated
+  // donors can point them at their own renamed copy of that shader.
+  std::vector<std::pair<std::string, size_t>> usePasses;
   // Named GrabPass render textures, read from each pass's m_TextureName.
   std::vector<std::string> grabTextures;
   // Length-prefixed shader-name strings, file absolute. Used to isolate

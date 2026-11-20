@@ -2,27 +2,27 @@
 
 The relay receives the mod's diagnostic uploads and stores unique log contents on the
 repository's `LOGS` branch. It also hosts a responsive dashboard for browsing
-those uploads. Before committing, it hashes each file with SHA3-256 and skips content already
+those uploads. Before committing, it hashes each file with SHA-256 (Web Crypto) and skips content already
 present on the active branch, including duplicates within one request. A compact
 `.vivify-sha3-index.json` is stored on the branch so normal uploads do not need to
-re-download every historical log. The first upload after upgrading backfills the index
-from existing logs. Mixed uploads store only their new files; fully duplicate uploads
-create no commit. The 30-day retention task also removes expired entries from the index.
+re-download every historical log. Logs stored before the index existed are not
+backfilled (that took one GitHub request per stored log in a single upload). Mixed uploads store only their new files; fully duplicate uploads create a small metadata commit to persist cumulative savings, without adding duplicate log blobs. Both retention tasks remove expired entries from the index. The index also tracks cumulative duplicate bytes/files avoided and the last-seen time for each canonical blob, so recent duplicate uploads remain protected during emergency cleanup.
 
-## Dashboard
+## Dashboard (1.1.0)
 
 The dashboard is a Vite + TypeScript application with a hand-built Material 3
 Expressive-inspired interface. It includes:
 
 - A live upload counter and summary of received files and stored data.
+- Cumulative storage avoided by deduplication, with duplicate-file counts.
 - A 14-day upload traffic graph.
-- A newest-first upload list with search and per-upload file details.
+- A searchable upload list with newest-first, largest-first, and smallest-first sorting by total upload size.
 - An in-browser plain-text log viewer.
 - A responsive layout designed for desktop and phone screens.
 - Automatic refresh every 15 seconds.
 
 The dashboard API exposes:
-- `GET /api/health` for relay status and aggregate counts.
+- `GET /api/health` for relay status, aggregate counts, and deduplication savings.
 - `GET /api/logs` to list uploads, with optional `?date=YYYY-MM-DD` and
   `?upload=<upload-id>` filters.
 - `GET /api/log?path=<encoded-repository-path>` to read one log as plain text.
@@ -35,9 +35,16 @@ listed in the relay's log index; the GitHub write token remains in the Worker
 secret and is never sent to the browser.
 
 A scheduled Worker task runs hourly and removes log files whose upload date is
-more than 30 days old from the active `LOGS` branch. Expiration is based on
-the upload's UTC timestamp encoded in its stored path. This is branch-level retention: because
-Git stores prior commits, an expired file can remain in old commit history.
+more than 30 days old from the active `LOGS` branch. In addition, the relay
+checks active-branch log storage after every accepted upload and during
+scheduled maintenance. When it exceeds `MAX_LOG_STORAGE_BYTES` (default
+450 MiB), it removes all log blobs older than the preceding two hours. The
+dedupe index is updated in the same operation. A blob whose content was
+deduplicated from a recent upload is protected using its last-seen timestamp.
+The emergency cleanup writes a fresh root commit to the `LOGS` branch, so
+deleted log history is no longer reachable from that branch and can eventually
+be reclaimed by GitHub garbage collection. If the recent two-hour window alone
+exceeds the budget, those files are preserved rather than deleted.
 
 
 ## Set up and deploy
@@ -79,7 +86,7 @@ dashboard with hot reload.
 Run `node test.mjs` to test upload validation, content deduplication (existing files,
 within-request duplicates, and mixed uploads), log downloads, listing filters,
 scheduled retention, and GitHub branch commits against a fake GitHub API.
-Run `npm run build` to type-check and build the dashboard.
+Run `npm run build` to type-check and build the dashboard. Wrangler CLI is pinned to 4.163.0; use `npm run deploy` to build and deploy with the project-local CLI.
 
 ## Troubleshooting
 

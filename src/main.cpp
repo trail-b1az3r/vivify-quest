@@ -36,7 +36,7 @@
 #include "bsml/shared/BSML-Lite/Creation/Settings.hpp"
 #include "bsml/shared/BSML/Components/Settings/DropdownListSetting.hpp"
 #include "bsml/shared/BSML-Lite/Creation/Text.hpp"
-#include "beatsaber-hook/shared/utils/typedefs-wrappers.hpp"
+#include "VivifyCompat.hpp"
 #include "HMUI/CurvedTextMeshPro.hpp"
 #include "TMPro/TextMeshProUGUI.hpp"
 #include "TMPro/TextOverflowModes.hpp"
@@ -83,6 +83,8 @@ constexpr std::string_view kMapReflectionProbesConfigKey = "mapReflectionProbesV
 constexpr std::string_view kFullReflectionProbesConfigKey = "fullReflectionProbes";
 constexpr std::string_view kSingleViewMapCamerasConfigKey = "singleViewMapCameras";
 constexpr std::string_view kAutoEffectResolutionConfigKey = "autoEffectResolution";
+constexpr std::string_view kSeparateEyeFollowsEffectResolutionConfigKey = "separateEyeFollowsEffectResolution";
+constexpr std::string_view kSeparateEyeKeepSceneDepthConfigKey = "separateEyeKeepSceneDepth";
 constexpr std::string_view kCrashRecoveryConfigKey = "crashRecovery";
 // On by default from 0.15.19 (new key): it acts only while Replay renders.
 constexpr std::string_view kReplayRenderModeConfigKey = "replayRenderModeV2";
@@ -133,6 +135,7 @@ constexpr std::string_view kOffscreenCullingConfigKey = "offscreenCullingV2";
 constexpr std::string_view kCrashGuardConfigKey = "crashGuard";
 constexpr std::string_view kPcBundleForMissingShadersConfigKey = "pcBundleForMissingShaders";
 constexpr std::string_view kFarCullingConfigKey = "farCullingDistance";
+constexpr std::string_view kNoteDrawDistanceConfigKey = "noteDrawDistance";
 bool gMultipassRenderingEnabled = true;
 bool gExperimentalSeparateEye = false;
 constexpr std::string_view kExperimentalSeparateEyeKey = "experimentalSeparateEyeRenderer";
@@ -202,6 +205,10 @@ bool gSaberLights = false;
 bool gFlatScreenGuard = true;
 // The game's own mirrors during a Vivify map (0.15.18); per map only.
 bool gGameMirrors = true;
+// Game Bloom (0.15.45): turn the game's bloom post-processing on while a
+// Vivify map plays, whatever the game's graphics setting. Some maps only show
+// parts drawn as glow with it (Lifelike's runway text). Per map too.
+bool gForceBloom = false;
 bool gFullReflectionProbes = false;
 bool gSingleViewMapCameras = true;
 bool gAutoEffectResolution = true;
@@ -221,6 +228,32 @@ struct AutoEffectState {
   double fastFor = 0.0;      // how long it has been close to best
   double elapsed = 0.0;
 } gAutoEffect;
+
+// Separate-eye resolution (0.15.38). The Separate-Eye Renderer draws the scene
+// once per eye; with Aether's ambient section (geometry effect, glass rocks,
+// a bokeh blur) that held the game at 33-37 fps, and the headset showing each
+// frame twice made everything that moved ghost. Automatic (the default): while
+// the eyes are drawn separately and frames stay slow against the best this
+// level has managed, the eye images step down 10% at a time (to 50% at least),
+// and back up after a stretch at full speed. A raise that is slow again within
+// 3 s ends the raising for the level, so it does not see-saw. Off by default,
+// "Separate Eyes Follow Effect Resolution" uses the Effect Resolution % instead.
+bool gSeparateEyeFollowsEffectResolution = false;
+// Separate-Eye Renderer: keep the main camera drawing the scene (0.15.45). Off
+// (default), the eye images replace its scene draw, two scene draws a frame,
+// and map effects that read scene depth get none. On, a third draw supplies
+// that depth -- slow.
+bool gSeparateEyeKeepSceneDepth = false;
+std::atomic<int> gSeparateEyePercent{100};
+struct SeparateEyeAutoState {
+  double average = 0.0;
+  double best = 0.0;
+  double slowFor = 0.0;
+  double fastFor = 0.0;
+  double elapsed = 0.0;
+  double sinceRaise = 1e9;
+  int ceiling = 100;
+} gSeparateEyeAuto;
 bool gCrashRecovery = true;
 std::atomic<bool> gRecoveryModeActive{false};
 bool gReplayRenderMode = true;
@@ -252,6 +285,10 @@ bool gCrashGuard = true;
 bool gPcBundleForMissingShaders = false;
 // Metres beyond which the main camera draws nothing; 0 is off (0.14.23).
 int gFarCullingDistance = 0;
+// Note Draw Distance (0.15.45): a map's own note models are not drawn while
+// farther than this from the player; 0 is off. Notes only, unlike Far
+// Culling: Aether's wireframe notes cost frames while still far away.
+int gNoteDrawDistance = 0;
 int gFoveationLevel = 0;
 int gFieldOfView = 100;
 
@@ -510,6 +547,7 @@ std::string MapKeyOf(std::string const& levelPath) {
 // for another map would pick up this map's choice.
 constexpr char const* kMapSettingsConfigKey = "mapSettings";
 constexpr std::string_view kGameMirrorsConfigKey = "gameMirrors";
+constexpr std::string_view kForceBloomConfigKey = "forceBloom";
 
 std::mutex gMapOverridesMutex;
 std::string gMapOverridesFor;  // song folder name the cache below is for
@@ -660,13 +698,30 @@ char const* SettingHint(std::u16string_view label) {
        "bundle. Try it when a map's Quest version looks wrong or is missing things."},
       {u"Effect Resolution %",
        "Draws full-screen map effects at this share of the eye resolution, then scales them up. Lower is "
-       "faster and blurrier; 50% is a quarter of the work. The separate-eye prototype uses 100%."},
+       "faster and blurrier; 50% is a quarter of the work. The Separate-Eye Renderer draws effects at 100%, and "
+       "uses this for its eye images only with Separate Eyes Follow Effect Resolution on."},
+      {u"Game Bloom",
+       "Turns the game's bloom on while a Vivify map plays, even when the game's graphics settings have it "
+       "off. Some maps show parts drawn as glow only with it (Lifelike's runway text). Costs some frame rate. "
+       "Also under This Map, per map."},
       {u"Auto Effect Resolution",
        "Lowers the effect resolution by itself while a map runs slowly, and raises it again when there is "
        "room. The separate-eye prototype keeps effects at 100% and ignores automatic scaling."},
+      {u"Separate Eyes Keep Scene Depth (slow)",
+       "Separate-Eye Renderer on Beat Saber 1.45.3 only. Off (default): the two eye images replace the main camera's scene, so map "
+       "effects that read scene depth (fog, outlines, raymarching) get none. On: the main camera still draws the "
+       "scene for its depth, a third scene draw each frame -- much slower."},
+      {u"Separate Eyes Follow Effect Resolution",
+       "Separate-Eye Renderer only. Off (default): while a map is drawn once per eye and runs slowly, the eye "
+       "images get smaller by themselves (down to 50%) and grow back when there is room, so moving things do "
+       "not ghost. On: the eye images use the Effect Resolution % above, and still get smaller when slow if Auto "
+       "Effect Resolution is on."},
       {u"Offscreen Culling (can hide objects)",
        "Stops animating map objects you are not looking at, to save time. Can leave some objects hidden, so "
        "turn it off if things go missing."},
+      {u"Note Draw Distance (m, 0 = off)",
+       "Notes only: a map's own note models farther than this from you are not drawn until they come closer. "
+       "Helps maps whose notes are expensive to draw (Aether's wireframe notes). 0 draws them all."},
       {u"Far Culling (m, 0 = off)",
        "Does not draw anything farther away than this many metres. 0 draws everything."},
       {u"Field Of View %",
@@ -722,9 +777,9 @@ char const* SettingHint(std::u16string_view label) {
       {u"Map Realtime Shadows", "Allows shadows from a map's own lights. They are expensive on a Quest."},
       {u"Map Reflection Probes",
        "Allows a map's live reflections, at reduced quality. Off removes them and saves time and memory."},
-      {u"Full Reflection Probes",
-       "Runs a map's live reflections at the quality the map asked for, not reduced. Heavy; can crash on "
-       "big maps."},
+      {u"Full-Res Reflections",
+       "Runs a map's live reflections (water, glass) at the resolution and rate the map asked for, instead of "
+       "128 px refreshed once a second. Heavy; can crash on big maps. Also under This Map, per map."},
       {u"Single-View Map Cameras",
        "Fixes a map's in-world screens, portals and mirrors (its own cameras drawing into textures) on "
        "converted maps."},
@@ -907,13 +962,17 @@ bool GlobalMapRealtimeShadows() { return gMapRealtimeShadows; }
 bool GlobalSceneDepth() { return gSceneDepth; }
 bool GlobalAudioLink() { return gAudioLink; }
 bool GlobalGameMirrors() { return gGameMirrors; }
+bool GlobalFullReflectionProbes() { return gFullReflectionProbes; }
+bool GlobalForceBloom() { return gForceBloom; }
 MapSettingRow const kMapSettingRows[] = {
     {"Screen Effects", kDisableAllBlitsConfigKey, true, GlobalDisableAllBlits},
+    {"Game Bloom", kForceBloomConfigKey, false, GlobalForceBloom},
     {"Flat-Screen Effect Guard", kFlatScreenGuardConfigKey, false, GlobalFlatScreenGuard},
     {"Map Sabers", kMapSabersConfigKey, false, GlobalMapSabers},
     {"Custom Note Visuals", kDisableCustomNoteVisualsConfigKey, true, GlobalDisableCustomNoteVisuals},
     {"Game Mirrors", kGameMirrorsConfigKey, false, GlobalGameMirrors},
     {"Reflection Probes", kMapReflectionProbesConfigKey, false, GlobalMapReflectionProbes},
+    {"Full-Res Reflections", kFullReflectionProbesConfigKey, false, GlobalFullReflectionProbes},
     {"Realtime Shadows", kMapRealtimeShadowsConfigKey, false, GlobalMapRealtimeShadows},
     {"Scene Depth", kSceneDepthConfigKey, false, GlobalSceneDepth},
     {"AudioLink", kAudioLinkConfigKey, false, GlobalAudioLink},
@@ -1183,8 +1242,19 @@ void RegisterModSettings() {
               });
           // Steps map effects down while a map runs slow, back up when there
           // is room (0.15.3).
+          toggle(u"Game Bloom", gForceBloom, [](bool value) {
+            SetBoolConfigValue(kForceBloomConfigKey, value, gForceBloom);
+          });
           toggle(u"Auto Effect Resolution", gAutoEffectResolution, [](bool value) {
             SetBoolConfigValue(kAutoEffectResolutionConfigKey, value, gAutoEffectResolution);
+          });
+          // Separate-Eye Renderer image size: automatic, or this (0.15.38).
+          toggle(u"Separate Eyes Follow Effect Resolution", gSeparateEyeFollowsEffectResolution, [](bool value) {
+            SetBoolConfigValue(kSeparateEyeFollowsEffectResolutionConfigKey, value,
+                               gSeparateEyeFollowsEffectResolution);
+          });
+          toggle(u"Separate Eyes Keep Scene Depth (slow)", gSeparateEyeKeepSceneDepth, [](bool value) {
+            SetBoolConfigValue(kSeparateEyeKeepSceneDepthConfigKey, value, gSeparateEyeKeepSceneDepth);
           });
           toggle(u"Offscreen Culling (can hide objects)", gOffscreenCulling,
                  [](bool value) { SetBoolConfigValue(kOffscreenCullingConfigKey, value, gOffscreenCulling); });
@@ -1194,6 +1264,11 @@ void RegisterModSettings() {
               [](float value) {
                 int const metres = std::clamp(static_cast<int>(value + 0.5f), 0, 1000);
                 SetIntConfigValue(kFarCullingConfigKey, metres, gFarCullingDistance);
+              });
+          increment(u"Note Draw Distance (m, 0 = off)", 5.0f, static_cast<float>(gNoteDrawDistance), 0.0f, 200.0f,
+              [](float value) {
+                int const metres = std::clamp(static_cast<int>(value + 0.5f), 0, 200);
+                SetIntConfigValue(kNoteDrawDistanceConfigKey, metres, gNoteDrawDistance);
               });
         }
         increment(u"Field Of View %", 5.0f, static_cast<float>(gFieldOfView), 100.0f, 150.0f, [](float value) {
@@ -1335,9 +1410,10 @@ void RegisterModSettings() {
         advanced(toggle(u"Map Reflection Probes", GetMapReflectionProbes(), [](bool value) {
           SetBoolConfigValue(kMapReflectionProbesConfigKey, value, gMapReflectionProbes);
         }));
-        advanced(toggle(u"Full Reflection Probes", GetFullReflectionProbes(), [](bool value) {
+        // Not under Advanced since 0.15.45, and per map too (This Map).
+        toggle(u"Full-Res Reflections", gFullReflectionProbes, [](bool value) {
           SetBoolConfigValue(kFullReflectionProbesConfigKey, value, gFullReflectionProbes);
-        }));
+        });
         if constexpr (!kLiteBuild) {
           // A map's own cameras that render into textures (TV screens,
           // portals, light meshes) draw with single-view shaders (0.15.3).
@@ -1443,8 +1519,8 @@ void RegisterModSettings() {
             auto list = versionsPtr->values;
             if (!list) return;
             list->Clear();
-            list->Add(reinterpret_cast<System::Object*>(static_cast<Il2CppString*>(StringW("Latest"))));
-            for (auto const& tag : tags) list->Add(reinterpret_cast<System::Object*>(static_cast<Il2CppString*>(StringW(tag))));
+            list->Add(reinterpret_cast<System::Object*>(StringW("Latest").convert()));
+            for (auto const& tag : tags) list->Add(reinterpret_cast<System::Object*>(StringW(tag).convert()));
             versionsPtr->UpdateChoices();
           });
           advanced(button(u"Install Chosen Version", []() {
@@ -1537,6 +1613,7 @@ bool GetMultipassRenderingEnabled() {
 }
 
 bool GetExperimentalSeparateEye() { return !kLiteBuild && gExperimentalSeparateEye; }
+bool GetSeparateEyeKeepSceneDepth() { return !kLiteBuild && gSeparateEyeKeepSceneDepth; }
 // Per map too (0.15.24): it swapped Yoi Okashi's grass shader for its
 // tessellated build when turned on for Lifelike's grass.
 bool GetUniformTriangleTessellation() {
@@ -1624,7 +1701,7 @@ bool GetMapReflectionProbes() {
 }
 
 bool GetFullReflectionProbes() {
-  return gFullReflectionProbes;
+  return MapBool(kFullReflectionProbesConfigKey, gFullReflectionProbes);
 }
 
 bool GetSingleViewMapCameras() {
@@ -1646,6 +1723,8 @@ void SetRecoveryModeActive(bool active) {
 void SelectSettingsMap(std::string const& levelPath) {
   LoadMapOverridesFor(levelPath);
 }
+bool GetForceBloom() { return MapBool(kForceBloomConfigKey, gForceBloom); }
+
 bool GetGameMirrors() {
   return MapBool(kGameMirrorsConfigKey, gGameMirrors);
 }
@@ -1848,9 +1927,75 @@ int GetFarCullingDistance() {
   return kLiteBuild ? 0 : std::clamp(gFarCullingDistance, 0, 1000);
 }
 
+int GetNoteDrawDistance() {
+  return kLiteBuild ? 0 : std::clamp(gNoteDrawDistance, 0, 200);
+}
+
 void ResetAutoEffectResolution() {
   gAutoEffect = AutoEffectState{};
   gAutoEffectPercent.store(100);
+  gSeparateEyeAuto = SeparateEyeAutoState{};
+  gSeparateEyePercent.store(100);
+}
+
+void ReportSeparateEyeFrame(float seconds) {
+  // With Separate Eyes Follow Effect Resolution on, the automatic steps
+  // still apply below that percentage while Auto Effect Resolution is on
+  // (0.15.40): in 0.15.39 the follow setting turned them off entirely, and
+  // Aether's rift held 25 fps at 100%.
+  if (kLiteBuild || !GetExperimentalSeparateEye() ||
+      (gSeparateEyeFollowsEffectResolution && !gAutoEffectResolution)) return;
+  if (!(seconds > 0.0f) || seconds > 0.5f) return;  // a pause or a stall, not pacing
+  auto& s = gSeparateEyeAuto;
+  s.elapsed += seconds;
+  s.sinceRaise += seconds;
+  s.average = s.average == 0.0 ? seconds : s.average * 0.95 + seconds * 0.05;
+  if (s.elapsed < 2.0) return;  // let the average settle after the level starts
+  // The best includes frames drawn the normal way: that is the speed to keep.
+  if (s.best == 0.0 || s.average < s.best) s.best = s.average;
+  if (!Vivify::SeparateEye::RenderingSeparately()) {
+    s.slowFor = s.fastFor = 0.0;
+    return;
+  }
+  int percent = gSeparateEyePercent.load();
+  if (s.average > s.best * 1.3) {
+    s.slowFor += seconds;
+    s.fastFor = 0.0;
+    if (s.slowFor >= 1.0 && percent > 50) {
+      // Far behind (twice the best frame time or worse): two steps at once.
+      int const step = s.average > s.best * 1.8 ? 20 : 10;
+      if (s.sinceRaise < 3.0) s.ceiling = std::max(50, percent - step);
+      percent = std::max(50, percent - step);
+      gSeparateEyePercent.store(percent);
+      s.slowFor = 0.0;
+      PaperLogger.info("Vivify separate-eye resolution: frames at {:.1f} ms against a best of {:.1f} ms; eye "
+                       "images down to {}%", s.average * 1000.0, s.best * 1000.0, percent);
+    }
+  } else if (s.average < s.best * 1.1) {
+    s.fastFor += seconds;
+    s.slowFor = 0.0;
+    if (s.fastFor >= 5.0 && percent < std::min(100, s.ceiling)) {
+      percent = std::min(std::min(100, s.ceiling), percent + 10);
+      gSeparateEyePercent.store(percent);
+      s.fastFor = 0.0;
+      s.sinceRaise = 0.0;
+      PaperLogger.info("Vivify separate-eye resolution: frames back to {:.1f} ms; eye images up to {}%",
+                       s.average * 1000.0, percent);
+    }
+  } else {
+    s.slowFor = s.fastFor = 0.0;
+  }
+}
+
+int GetSeparateEyeResolutionPercent() {
+  if (kLiteBuild) return 100;
+  int const automatic = std::clamp(gSeparateEyePercent.load(), 50, 100);
+  int percent = automatic;
+  if (gSeparateEyeFollowsEffectResolution) {
+    percent = std::clamp(gEffectResolution, 25, 100);
+    if (gAutoEffectResolution) percent = std::min(percent, automatic);
+  }
+  return GetRecoveryModeActive() ? std::min(percent, 50) : percent;
 }
 
 void ReportGameplayFrame(float seconds) {
@@ -1944,7 +2089,11 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kFullReflectionProbesConfigKey, false, gFullReflectionProbes);
   needsWrite |= EnsureBoolConfigValue(kSingleViewMapCamerasConfigKey, true, gSingleViewMapCameras);
   needsWrite |= EnsureBoolConfigValue(kAutoEffectResolutionConfigKey, true, gAutoEffectResolution);
+  needsWrite |= EnsureBoolConfigValue(kSeparateEyeFollowsEffectResolutionConfigKey, false,
+                                      gSeparateEyeFollowsEffectResolution);
+  needsWrite |= EnsureBoolConfigValue(kSeparateEyeKeepSceneDepthConfigKey, false, gSeparateEyeKeepSceneDepth);
   needsWrite |= EnsureBoolConfigValue(kCrashRecoveryConfigKey, true, gCrashRecovery);
+  needsWrite |= EnsureBoolConfigValue(kForceBloomConfigKey, false, gForceBloom);
   needsWrite |= EnsureBoolConfigValue(kReplayRenderModeConfigKey, true, gReplayRenderMode);
   needsWrite |= EnsureBoolConfigValue(kBlitFixConfigKey, false, gBlitFix);
   needsWrite |= EnsureBoolConfigValue(kPrepareShadersConfigKey, false, gPrepareShaders);
@@ -1959,6 +2108,7 @@ void EnsureConfigDefaults() {
   needsWrite |= EnsureBoolConfigValue(kCrashGuardConfigKey, true, gCrashGuard);
   needsWrite |= EnsureBoolConfigValue(kPcBundleForMissingShadersConfigKey, false, gPcBundleForMissingShaders);
   needsWrite |= EnsureIntConfigValue(kFarCullingConfigKey, 0, 0, 1000, gFarCullingDistance);
+  needsWrite |= EnsureIntConfigValue(kNoteDrawDistanceConfigKey, 0, 0, 200, gNoteDrawDistance);
   needsWrite |= EnsureIntConfigValue(kFoveationConfigKey, 0, 0, 4, gFoveationLevel);
   needsWrite |= EnsureIntConfigValue(kFieldOfViewConfigKey, 100, 100, 150, gFieldOfView);
   if (needsWrite) {

@@ -72,6 +72,7 @@ void Runtime::PrepareBeatmap(CustomJSONData::CustomBeatmapData* beatmapData, flo
   SetSongPlaying(true);
   _visualProblems.clear();
   _visualChecksRun = 0;
+  _textChecks.clear();
   _currentBeatmapData = beatmapData;
   _beatmapAD = nullptr;
   _audioTimeSyncController = UnityEngine::Object::FindObjectOfType<GlobalNamespace::AudioTimeSyncController*>();

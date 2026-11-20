@@ -4,7 +4,7 @@
 #include "UnityEngine/Material.hpp"
 #include "UnityEngine/Object.hpp"
 #include "main.hpp"
-#include "beatsaber-hook/shared/utils/il2cpp-functions.hpp"
+#include "VivifyCompat.hpp"
 #include <stdexcept>
 #include <string>
 #include <unordered_map>

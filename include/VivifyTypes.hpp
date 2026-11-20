@@ -26,7 +26,10 @@
 #include "GlobalNamespace/BeatmapCallbacksController.hpp"
 #include "GlobalNamespace/BloomPrePass.hpp"
 #include "GlobalNamespace/BpmController.hpp"
+// 1.45.3 renders with URP and has no ImageEffectController.
+#ifndef VIVIFY_GAME_1_45_3
 #include "GlobalNamespace/ImageEffectController.hpp"
+#endif
 #include "GlobalNamespace/StaticBeatmapObjectSpawnMovementData.hpp"
 #include "UnityEngine/Animator.hpp"
 #include "UnityEngine/AnimatorUpdateMode.hpp"
@@ -103,7 +106,7 @@
 #include "GlobalNamespace/MainEffectContainerSO.hpp"
 #include "GlobalNamespace/MainEffectSO.hpp"
 #include "System/Object.hpp"
-#include "beatsaber-hook/shared/utils/hooking.hpp"
+#include "VivifyCompat.hpp"
 #include "custom-json-data/shared/CustomBeatmapData.h"
 #include "custom-json-data/shared/CustomEventData.h"
 #include "custom-types/shared/macros.hpp"
@@ -120,10 +123,46 @@
 #include "tracks/shared/StaticHolders.hpp"
 #include "web-utils/shared/WebUtils.hpp"
 #include "bsml/shared/BSML/MainThreadScheduler.hpp"
+#ifdef VIVIFY_GAME_1_45_3
+// MetaCore 2 moved its Beat Saber API into metacore-bs.
+#include "metacore-bs/shared/game.hpp"
+#else
 #include "metacore/shared/game.hpp"
-#include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
+#endif
 
 namespace Vivify {
+
+// The game's main post effect (bloom, tone mapping) applied from `from` into
+// `to`, with the controller's per-camera state set around it. 1.45.3 renders
+// with URP, where the effect is a render-graph pass of its own and cannot be
+// run from OnRenderImage, so there it is a plain copy.
+inline void RenderMainEffect(GlobalNamespace::MainEffectController* controller, GlobalNamespace::MainEffectSO* effect,
+                             UnityEngine::RenderTexture* from, UnityEngine::RenderTexture* to) {
+#ifdef VIVIFY_GAME_1_45_3
+  (void)controller; (void)effect;
+  UnityEngine::Graphics::Blit(static_cast<UnityEngine::Texture*>(from), to);
+#else
+  controller->OnPreRender();
+  try { effect->Render(from, to, controller->____fadeValue); }
+  catch (...) { controller->OnPostRender(); throw; }
+  controller->OnPostRender();
+#endif
+}
+// The controller's per-camera shader state (bloom, fade) set for scene drawing.
+inline void MainEffectPreRender(GlobalNamespace::MainEffectController* controller) {
+#ifdef VIVIFY_GAME_1_45_3
+  (void)controller;
+#else
+  controller->OnPreRender();
+#endif
+}
+inline void MainEffectPostRender(GlobalNamespace::MainEffectController* controller) {
+#ifdef VIVIFY_GAME_1_45_3
+  (void)controller;
+#else
+  controller->OnPostRender();
+#endif
+}
 struct FollowedSaberTrail;
 using namespace std::string_view_literals;
 
@@ -347,8 +386,11 @@ struct VisualReplacement {
   std::vector<UnityEngine::Renderer*> replacementRenderers;
   std::vector<FollowedSaberTrail*> followedTrails;
   GlobalNamespace::MaterialPropertyBlockController* materialPropertyBlockController = nullptr;
-  ArrayW<UnityW<UnityEngine::Renderer>, Array<UnityW<UnityEngine::Renderer>>*> originalMaterialBlockRenderers;
+  ArrayW<UnityW<UnityEngine::Renderer>> originalMaterialBlockRenderers;
   bool hasOriginalMaterialBlockRenderers = false;
+  // Note Draw Distance: the replacement renderers it turned off while too far.
+  bool distanceHidden = false;
+  std::vector<UnityEngine::Renderer*> distanceDisabled;
   UnityEngine::Color lastSaberColor;
   bool hasLastSaberColor = false;
 

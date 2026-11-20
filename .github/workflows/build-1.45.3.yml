@@ -3,18 +3,19 @@ name: Build Quest Mod (Beat Saber 1.45.3)
 # A second build of the same source for Beat Saber 1.45.3_30054. The main
 # workflow (build.yml) builds for 1.40.8_7379 from the vendored extern/; this
 # one points qpm.json and mod.json at 1.45.3 (scripts/use-game-target.py,
-# targets/1.45.3.json) and restores everything from qpackages.com.
+# targets/1.45.3.json) and restores from qpackages.com.
 #
-# Vivify links CustomJSONData and Tracks, and as of 0.15.1 neither has a
-# release for 1.45.3 (only unreleased v1.45.3 branches of Tracks, Noodle
-# Extensions and Chroma exist). Until they do, the first step finds that,
-# says so in the run summary, and the run ends without building: not a
-# failure. Once they are released this builds, and anything in Vivify that
-# 1.45.3 changed shows up here as a compile error to port.
+# Vivify links CustomJSONData and Tracks, and neither has a qpm release for
+# 1.45.3 yet. Until they do, this builds them first from the ports in
+# trail-b1az3r/ports- (CustomJSONData 0.24.6, Tracks 2.5.5, plus Noodle
+# Extensions and Chroma for players) and installs them into the runner's
+# local qpm repository, where Vivify's restore finds them (`--local`). Their
+# qmods are uploaded with Vivify's: on the headset they replace the 1.40.8
+# ones, since nothing can download them.
 
+# build.yml now builds 1.45.3 too (job build-1-45-3) and releases it; this
+# copy runs by hand only, until it is turned into the next game version's.
 on:
-  push:
-    branches: [ main, master ]
   workflow_dispatch:
 
 permissions:
@@ -28,58 +29,109 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Check the 1.45.3 dependencies are released
-      id: ready
-      run: |
-        set +e
-        python3 scripts/use-game-target.py 1.45.3 --check | tee check.txt
-        status=${PIPESTATUS[0]}
-        set -e
-        if [ "$status" = 3 ]; then
-          echo "ready=false" >> "$GITHUB_OUTPUT"
-          {
-            echo "### Not built: Beat Saber 1.45.3 dependencies are not released yet"
-            echo '```'
-            grep missing check.txt
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-          echo "::notice::Beat Saber 1.45.3 build skipped: dependencies not released yet (see the run summary)"
-          exit 0
-        fi
-        if [ "$status" != 0 ]; then exit "$status"; fi
-        echo "ready=true" >> "$GITHUB_OUTPUT"
+    - name: Check out the 1.45.3 ports (CustomJSONData, Tracks, Noodle Extensions, Chroma)
+      uses: actions/checkout@v4
+      with:
+        repository: trail-b1az3r/ports-
+        path: ports
 
-    - name: Point qpm.json and mod.json at 1.45.3
-      if: steps.ready.outputs.ready == 'true'
-      run: |
-        python3 scripts/use-game-target.py 1.45.3
-        # The vendored extern/ is 1.40.8's; qpm restores 1.45.3's instead.
-        rm -rf extern extern.cmake qpm.shared.json
-        cp mod.json mod.target.json
+    - name: Install Ninja
+      uses: seanmiddleditch/gha-setup-ninja@v3
 
     - name: Create the QPM cache directory qpm-action saves
-      if: steps.ready.outputs.ready == 'true'
       run: |
         mkdir -p "$HOME/.local/share/QPM-RS/cache"
         touch "$HOME/.local/share/QPM-RS/cache/.keep"
 
-    - name: QPM Action
-      if: steps.ready.outputs.ready == 'true'
+    - name: Install qpm
       uses: Fernthedev/qpm-action@v1
       with:
         workflow_token: ${{ secrets.GITHUB_TOKEN }}
-        restore: true
-        cache: true
-        resolve_ndk: true
+        restore: false
+        cache: false
+
+    - name: Install Rust for Tracks (nightly, aarch64-linux-android, cargo-ndk)
+      run: |
+        rustup toolchain install nightly --profile minimal
+        rustup target add aarch64-linux-android --toolchain nightly
+        cargo install --locked cargo-ndk
+
+    - name: Build and install CustomJSONData (port)
+      working-directory: ports/CustomJSONData
+      run: |
+        python3 - <<'PY'
+        import json
+        q = json.load(open('qpm.json'))
+        q['workspace']['outBinaries'] = ['./build/libcustom-json-data.so']
+        json.dump(q, open('qpm.json', 'w'), indent=2)
+        PY
+        qpm ndk resolve -d
+        qpm restore
+        qpm s build
+        qpm install
+        qpm qmod zip
+
+    - name: Build and install Tracks (port)
+      working-directory: ports/Tracks
+      run: |
+        python3 - <<'PY'
+        import json
+        q = json.load(open('qpm.json'))
+        q['workspace']['outBinaries'] = ['./build/libtracks.so']
+        json.dump(q, open('qpm.json', 'w'), indent=2)
+        PY
+        qpm ndk resolve -d
+        export ANDROID_NDK_HOME="$(cat ndkpath.txt)"
+        qpm restore
+        qpm s build
+        qpm install
+        qpm qmod zip
+
+    - name: Build Noodle Extensions (port, for players)
+      continue-on-error: true
+      working-directory: ports/NoodleExtensions
+      run: |
+        qpm ndk resolve -d
+        qpm restore
+        qpm s build
+        qpm qmod zip
+
+    # The ports repository's Chroma is bsq-ports/Chroma's v1.45.3 branch
+    # without its CMakeLists.txt, so it never built. Take that one file from
+    # the same upstream commit when it is missing. Chroma's build script also
+    # reads the NDK path from scripts/ndkpath.txt, not the root file qpm writes.
+    - name: Build Chroma (port, for players)
+      continue-on-error: true
+      working-directory: ports/Chroma
+      run: |
+        if [ ! -f CMakeLists.txt ]; then
+          curl -fsSL -o CMakeLists.txt \
+            https://raw.githubusercontent.com/bsq-ports/Chroma/4a0af13fc24c2d827333f1041097593c020e2033/CMakeLists.txt
+        fi
+        qpm ndk resolve -d
+        cp ndkpath.txt scripts/ndkpath.txt
+        qpm restore
+        qpm s build
+        qpm qmod zip
+
+    - name: Point qpm.json and mod.json at 1.45.3
+      run: |
+        python3 scripts/use-game-target.py 1.45.3 --local custom-json-data=0.24.6 --local tracks=2.5.5
+        # The vendored extern/ is 1.40.8's; qpm restores 1.45.3's instead.
+        rm -rf extern extern.cmake qpm.shared.json
+        cp mod.json mod.target.json
+
+    - name: Restore Vivify's 1.45.3 dependencies
+      run: |
+        qpm ndk resolve -d
+        qpm restore
 
     - name: Build the full mod
-      if: steps.ready.outputs.ready == 'true'
       env:
         VIVIFY_GAME_TARGET: '1.45.3'
       run: qpm s build
 
     - name: Check the full library's dependencies can be satisfied on device
-      if: steps.ready.outputs.ready == 'true'
       run: |
         so=$(find build -name 'libVivify.so' -print -quit)
         if [ -z "$so" ]; then
@@ -89,18 +141,15 @@ jobs:
         python3 scripts/check-so-dependencies.py "$so"
 
     - name: Create the full QMOD
-      if: steps.ready.outputs.ready == 'true'
       env:
         VIVIFY_GAME_TARGET: '1.45.3'
       run: qpm s qmod
 
     - name: Read mod version
-      if: steps.ready.outputs.ready == 'true'
       id: mod_version
       run: echo "version=$(python3 -c "import json; print(json.load(open('mod.json'))['version'])")" >> "$GITHUB_OUTPUT"
 
     - name: Name the full QMOD
-      if: steps.ready.outputs.ready == 'true'
       run: |
         shopt -s nullglob
         built=(./*.qmod)
@@ -111,18 +160,15 @@ jobs:
         mv "${built[0]}" "./Vivify-v${{ steps.mod_version.outputs.version }}-bs1.45.3.qmod"
 
     - name: Clear the build directory for the lite build
-      if: steps.ready.outputs.ready == 'true'
       run: rm -rf build
 
     - name: Build the lite mod
-      if: steps.ready.outputs.ready == 'true'
       env:
         VIVIFY_GAME_TARGET: '1.45.3'
         VIVIFY_LITE: '1'
       run: qpm s build
 
     - name: Create the lite QMOD
-      if: steps.ready.outputs.ready == 'true'
       env:
         VIVIFY_GAME_TARGET: '1.45.3'
         VIVIFY_LITE: '1'
@@ -137,7 +183,6 @@ jobs:
         cp mod.target.json mod.json
 
     - name: Check the lite QMOD holds the lite library
-      if: steps.ready.outputs.ready == 'true'
       run: |
         so=$(find build -name 'libVivify.so' -print -quit)
         if ! grep -aq ' (lite)' "$so"; then
@@ -146,7 +191,6 @@ jobs:
         fi
 
     - name: Name the lite QMOD
-      if: steps.ready.outputs.ready == 'true'
       run: |
         shopt -s nullglob
         full="./Vivify-v${{ steps.mod_version.outputs.version }}-bs1.45.3.qmod"
@@ -160,11 +204,23 @@ jobs:
         fi
         mv "${built[0]}" "./Vivify-Lite-v${{ steps.mod_version.outputs.version }}-bs1.45.3.qmod"
 
+    # Noodle Extensions and Chroma build with continue-on-error (Vivify does
+    # not need them); say so when one is missing from the upload.
+    - name: Check the ports' QMODs
+      run: |
+        for port in CustomJSONData Tracks NoodleExtensions Chroma; do
+          if ls ports/$port/*.qmod >/dev/null 2>&1; then
+            echo "$port: $(ls ports/$port/*.qmod)"
+          else
+            echo "::warning::the $port port produced no QMOD; it is not in the upload"
+          fi
+        done
+
     - name: Upload Artifact
-      if: steps.ready.outputs.ready == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: Vivify-v${{ steps.mod_version.outputs.version }}-bs1.45.3
         path: |
           ./Vivify-v${{ steps.mod_version.outputs.version }}-bs1.45.3.qmod
           ./Vivify-Lite-v${{ steps.mod_version.outputs.version }}-bs1.45.3.qmod
+          ./ports/*/*.qmod

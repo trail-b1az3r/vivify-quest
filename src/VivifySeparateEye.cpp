@@ -131,6 +131,9 @@ bool captureComplete = false, captureNeedsDepth = false;
 SafePtr<CameraApplier> imageEffects;
 std::unordered_map<UnityEngine::Material*, UnityEngine::Material*> cloneSources;
 int width = 0, height = 0, format = -1;
+// The size of the image the eyes are presented into, and the percentage of it
+// the eye targets were made at (0.15.38). See GetSeparateEyeResolutionPercent.
+int sourceWidth = 0, sourceHeight = 0, targetPercent = 100;
 std::list<SafePtr<UnityEngine::Renderer>> sceneRenderers;
 std::unordered_set<UnityEngine::Renderer*> rendererIndex;
 std::list<SafePtr<UnityEngine::Behaviour>> sceneProjectors;
@@ -151,8 +154,10 @@ uint64_t materialEpoch = 1;
 int timingFrames = 0;
 double preparationMs = 0, peakPreparationMs = 0;
 std::mutex conversionMutex;
+#ifndef VIVIFY_GAME_1_45_3
 using MirrorCache = System::Collections::Generic::Dictionary_2<GlobalNamespace::MirrorRendererSO_CameraTransformData,
                                                               UnityW<UnityEngine::RenderTexture>>;
+#endif
 struct MirrorCopy {
   SafePtr<UnityEngine::Camera> camera;
   SafePtr<GlobalNamespace::MirrorRendererSO> renderer;
@@ -503,21 +508,68 @@ void UnwindTextureCameras() {
   }
 }
 
+// What each eye's renamed GrabPass texture holds right after that eye drew
+// (0.15.39), every 2 s while the eyes are drawn separately. Aether's glass
+// rocks ghost and smear only on this route; the map's grab is named
+// ("_GrabTexture1"), Unity grabs a name once per frame, and each eye's copy of
+// the shader grabs "<name>__VivifyEye<N>". Whether that texture is fresh this
+// frame (a new texture each frame, or the same one kept), its size, and
+// whether it is the eye's own target tell a stale grab from one read while
+// being drawn into.
+std::chrono::steady_clock::time_point lastGrabLog[2];
+void LogEyeGrabs(int eye) {
+  auto const now = std::chrono::steady_clock::now();
+  if (eye < 0 || eye > 1 || now - lastGrabLog[eye] < std::chrono::seconds(2)) return;
+  lastGrabLog[eye] = now;
+  auto names = Runtime::Instance().GrabTextureNames();
+  int logged = 0;
+  for (auto const& base : names) {
+    if (++logged > 4) break;
+    std::string const name = base + "__VivifyEye" + std::to_string(eye);
+    auto* texture = UnityEngine::Shader::GetGlobalTexture(StringW(name)).unsafePtr();
+    if (!Alive(texture)) {
+      PaperLogger.info("Vivify separate-eye {} grab '{}' frame {}: nothing bound", eye, name,
+                       UnityEngine::Time::get_frameCount());
+      continue;
+    }
+    auto* rt = il2cpp_utils::try_cast<UnityEngine::RenderTexture>(texture).value_or(nullptr);
+    PaperLogger.info("Vivify separate-eye {} grab '{}' frame {}: '{}' id={} {}x{} rt={} eyeTarget={} "
+                     "eyeImage={}x{}",
+                     eye, name, UnityEngine::Time::get_frameCount(), std::string(texture->get_name()),
+                     texture->GetInstanceID(), texture->get_width(), texture->get_height(),
+                     Alive(rt) ? "yes" : "no", texture == static_cast<UnityEngine::Texture*>(colors[eye].ptr()) ? "SAME" : "no",
+                     width, height);
+  }
+}
+
 void EnsureTargets(UnityEngine::RenderTextureDescriptor descriptor) {
   int const nextFormat = descriptor.get_graphicsFormat().value__;
-  if (width == descriptor.get_width() && height == descriptor.get_height() && format == nextFormat &&
+  // Drawing every eye's scene twice can halve the frame rate (Aether's
+  // ambient section ran at 33-37 fps), and the headset then shows each frame
+  // twice, shifted: moving things ghost. The eye targets can be smaller than
+  // the image they are presented into; presentation already scales.
+  int const percent = std::clamp(GetSeparateEyeResolutionPercent(), 25, 100);
+  int const nextWidth = std::max(16, (descriptor.get_width() * percent + 50) / 100);
+  int const nextHeight = std::max(16, (descriptor.get_height() * percent + 50) / 100);
+  sourceWidth = descriptor.get_width(); sourceHeight = descriptor.get_height();
+  if (width == nextWidth && height == nextHeight && format == nextFormat &&
       colors[0] && colors[1] && colors[0]->IsCreated() && colors[1]->IsCreated()) return;
   for (auto& texture : colors) { if (texture) texture->Release(); Destroy(texture); }
   if (staging) staging->Release();
   Destroy(staging);
-  width = descriptor.get_width(); height = descriptor.get_height(); format = nextFormat;
+  if (percent != targetPercent || width == 0)
+    PaperLogger.info("Vivify separate-eye: eye images at {}% ({}x{} of {}x{})", percent, nextWidth, nextHeight,
+                     descriptor.get_width(), descriptor.get_height());
+  targetPercent = percent;
+  width = nextWidth; height = nextHeight; format = nextFormat;
+  descriptor.set_width(nextWidth); descriptor.set_height(nextHeight);
   descriptor.set_msaaSamples(1); descriptor.set_depthBufferBits(0);
   descriptor.set_useMipMap(false); descriptor.set_autoGenerateMips(false);
   descriptor.set_useDynamicScale(false); descriptor.set_vrUsage(UnityEngine::VRTextureUsage::None);
   descriptor.set_dimension(UnityEngine::Rendering::TextureDimension::Tex2D);
   descriptor.set_volumeDepth(1); descriptor.set_depthBufferBits(24);
   for (auto& texture : colors) {
-    texture = UnityEngine::RenderTexture::New_ctor(descriptor);
+    texture = ClampWrap(UnityEngine::RenderTexture::New_ctor(descriptor));
     texture->set_name(&texture == &colors[0] ? u"Vivify Eye Color Left" : u"Vivify Eye Color Right");
     if (!texture->Create()) throw std::runtime_error("could not create ordinary eye target");
   }
@@ -534,6 +586,10 @@ void SyncEyeBloom(UnityEngine::Camera* main, UnityEngine::Camera* eyeCamera, int
 
 bool IsPrivateMirror(GlobalNamespace::MirrorRendererSO* renderer) { return privateMirrors.contains(renderer); }
 GlobalNamespace::MirrorRendererSO* MirrorForCurrentCamera(GlobalNamespace::MirrorRendererSO* source) {
+#ifdef VIVIFY_GAME_1_45_3
+  // 1.45.3 (URP) has no MirrorRendererSO render hooks to call this.
+  return source;
+#else
   auto& runtime = Runtime::Instance();
   if (!GetExperimentalSeparateEye() || !Alive(source) || privateMirrors.contains(source) ||
       !runtime.GetCurrentBeatmapData() || runtime.IsResetting() || runtime.IsPauseMenuActive()) return source;
@@ -573,6 +629,7 @@ GlobalNamespace::MirrorRendererSO* MirrorForCurrentCamera(GlobalNamespace::Mirro
   copy->____bloomPrePassEffect = source->____bloomPrePassEffect;
   copy->____clearDepthShader = source->____clearDepthShader;
   return copy;
+#endif
 }
 std::vector<GlobalNamespace::MirrorRendererSO*> MirrorCopies(GlobalNamespace::MirrorRendererSO* source) {
   std::vector<GlobalNamespace::MirrorRendererSO*> result;
@@ -657,8 +714,8 @@ bool BeginTextureCamera(void const* owner, UnityEngine::Camera* camera) {
       SetMaterials(swap, ArrayW<UnityEngine::Material*>(swap.eye[0].ptr()));
     }
     return true;
-  } catch (Il2CppExceptionWrapper const& ex) {
-    reportFailure(il2cpp_utils::ExceptionToString(ex.ex));
+  } catch (Vivify::CSharpException const& ex) {
+    reportFailure(Vivify::ExceptionText(ex));
   } catch (std::exception const& ex) {
     reportFailure(ex.what());
   } catch (...) { reportFailure("unknown native exception"); }
@@ -689,10 +746,19 @@ bool CanUseNativeMaterial(UnityEngine::Material* source) {
   if (cached != nativeChecks.end() && cached->second.epoch == nativeCheckEpoch) return cached->second.compatible;
   NativeMaterialConditions material;
   material.completeStageInfo = completeStageInfo; material.rememberedSource = true;
-  // Prefer upstream's native geometry implementation. Keep our scene path
-  // only when its validated tessellation pair adds the requested hull/domain
-  // stages; untranslated tessellation alone cannot justify extra scene draws.
-  material.sceneEyeTessellation = activeSceneEyeTessellationNames.contains(original->second.shader);
+  // The scene path draws a material when its validated tessellation pair adds
+  // the requested hull/domain stages (untranslated tessellation alone cannot
+  // justify extra scene draws), and -- since 0.15.31 -- whenever its shader
+  // has a geometry stage. The native two-eye program cannot give a geometry
+  // stage a correct second eye on the Quest: without the right-eye copy one
+  // eye drew the other's view, and with it (0.15.12) each eye drew both
+  // views on top of each other, whether or not the driver reported per-view
+  // geometry (Aether's wireframes stayed doubled and z-fought in 0.15.31).
+  // The scene eyes run it single-view, once per eye, as the PC does.
+  std::string const& sourceName = original->second.shader;
+  bool const geometryStage = separateEyeShaderNames.contains(sourceName) &&
+      std::find(tessellationShaderNames.begin(), tessellationShaderNames.end(), sourceName) == tessellationShaderNames.end();
+  material.sceneEyeTessellation = activeSceneEyeTessellationNames.contains(sourceName) || geometryStage;
   material.supported = Alive(shader) && shader->get_isSupported();
   material.sourceShaderMatches = Alive(shader) && shader == original->second.sourceShader.ptr() &&
       MaterialSpecialization::Canonical(std::string(shader->get_name())) == original->second.shader;
@@ -705,6 +771,7 @@ UnityEngine::Material* BlitMaterial(UnityEngine::Material* source) {
   return eye >= 0 && source ? CopyMaterial(source, eye + 3) : source;
 }
 bool IsRenderingEye() { return (rendering && captureEye >= 0) || blitEye >= 0; }
+bool RenderingSeparately() { return GetExperimentalSeparateEye() && sceneRoute == SceneRoute::Separate; }
 bool BeginBlitEye(UnityEngine::Camera* camera, int eye) {
   auto& runtime = Runtime::Instance();
   if (eye < 0 || eye > 1 || rendering || blitEye >= 0 || !GetExperimentalSeparateEye() || failed ||
@@ -770,7 +837,7 @@ void Reset(bool unloadDonors) {
   for (auto& texture : colors) { if (texture) texture->Release(); Destroy(texture); }
   if (staging) staging->Release();
   Destroy(staging);
-  width = height = 0; format = -1;
+  width = height = 0; format = -1; sourceWidth = sourceHeight = 0; targetPercent = 100;
   if (msaaOverridden) {
     UnityEngine::QualitySettings::set_antiAliasing(msaaRestoreValue);
     PaperLogger.info("Vivify separate-eye: anti-aliasing restored ({})", msaaRestoreValue);
@@ -863,6 +930,37 @@ static void PrepareImpl(std::string const& level, std::string const& source, std
         paths[eye] = tessellation.paths[eye];
         if (analyzeBindings) catalogs[eye] = BundleConvert::ScanShaders(paths[eye]).stereoBindingMasks;
         continue;
+      }
+      // The mono donor draws map-authored texture cameras and, since 0.15.31,
+      // the Replay mod's render camera. Where both scene eyes translated the
+      // map's tessellation, the mono donor translates it too, or rendered
+      // replays and map cameras drew no tessellated geometry at all. Its own
+      // cache file; a refusal keeps the ordinary mono donor.
+      bool const monoTessellation = eye == 2 && tessellation.selected;
+      if (monoTessellation) {
+        std::string const tessPath = cache + ".tess-mono-isolated.vivify";
+        std::string const tessVersion = BundleConvert::ShaderCacheVersion(std::string(kVersion) + "-tess-mono");
+        std::string stored; std::ifstream(tessPath + ".version") >> stored;
+        bool ready = stored == tessVersion && std::filesystem::exists(tessPath);
+        if (!ready) {
+          BundleConvert::ShaderConversionOptions options;
+          options.singleViewOnly = true; options.singleViewStereoEye = -1;
+          options.namespaceSingleViewShaders = true; options.renameArchiveFiles = true;
+          options.skipQuestUnusedVariants = true; options.exposeRenderDependencies = true;
+          options.specializeImmutableMaterialFeatures = MapAllowsImmutableMaterialFeatures(source);
+          options.uniformTriangleTessellation = true;
+          auto result = BundleConvert::ConvertShadersToGles(source, tessPath, options);
+          ready = result.ok() && !result.shadersRefused && !result.variantsRefused &&
+                  result.tessellationShadersUntranslated == 0;
+          if (ready) std::ofstream(tessPath + ".version") << tessVersion << '\n';
+          else PaperLogger.warn("Vivify mono donor tessellation declined ({}); map cameras and rendered replays keep "
+                                "the ordinary mono donor", result.message);
+        }
+        if (ready) {
+          paths[eye] = tessPath;
+          PaperLogger.info("Vivify mono donor: tessellation translated for map cameras and rendered replays");
+          continue;
+        }
       }
       std::string version; std::ifstream(paths[eye] + ".version") >> version;
       std::string const cacheVersion = BundleConvert::ShaderCacheVersion(
@@ -1017,10 +1115,15 @@ void PollImpl() {
   for (int budget = 0; budget != 4 && !shaderChecks.empty(); ++budget) {
     auto* shader = shaderChecks.front().ptr();
     if (!Alive(shader) || !shader->get_isSupported()) {
+      std::string const name = Alive(shader) ? std::string(shader->get_name()) : "<destroyed>";
+      PaperLogger.error("Vivify renderer preflight: shader '{}' is unsupported", name);
       failed = true;
-      PaperLogger.error("Vivify renderer preflight: shader '{}' is unsupported", Alive(shader) ? std::string(shader->get_name()) : "<destroyed>");
       if (RetryWithoutTessellation()) return;
-      PreparationFailed(); return;
+      // One donor shader this device cannot run is no reason to block the
+      // map (0.15.33: 42-flux could not be played at all with the renderer
+      // on). It plays with the normal renderer, as a refused conversion does.
+      FallBackToNormalRenderer("its per-eye copy of shader '" + name + "' cannot run on this device");
+      return;
     }
     shaderChecks.pop_front();
   }
@@ -1121,10 +1224,18 @@ bool RenderEyes(UnityEngine::Camera* main, UnityEngine::RenderTextureDescriptor 
   frame.twoLayerArray = desc.get_dimension() == UnityEngine::Rendering::TextureDimension::Tex2DArray &&
                         desc.get_volumeDepth() == 2;
   frame.resolved = desc.get_msaaSamples() == 1;
+#ifdef VIVIFY_GAME_1_45_3
+  // URP: the eye images are blitted into the main image's layers, not
+  // copied raw, so neither MSAA nor cross-type copy support matters.
+  frame.resolved = true;
+#endif
   // This SystemInfo wrapper/enum is stripped from the game's managed API.
   // Unity 2021.3 CopyTextureSupport: Basic=1, DifferentTypes=4.
   int const copy = CopySupport();
   frame.copySupported = (copy & 1) != 0 && (copy & 4) != 0;
+#ifdef VIVIFY_GAME_1_45_3
+  frame.copySupported = true;
+#endif
   // An anti-aliased (MSAA) eye texture is the one obstacle the game's own
   // settings can bring back: Yoi Okashi's tessellated scene ran on 0.15.20,
   // then from Nov 15 every play logged "resolved cross-type texture copies
@@ -1250,12 +1361,19 @@ bool RenderEyes(UnityEngine::Camera* main, UnityEngine::RenderTextureDescriptor 
           GlobalNamespace::MainEffectController* controller;
           explicit SceneEffect(CameraApplier* effects) : controller(effects->hasMainEffect && Alive(effects->mainEffectController)
                                                                     ? effects->mainEffectController : nullptr) {
-            if (controller) controller->OnPreRender();
+            if (controller) MainEffectPreRender(controller);
           }
-          ~SceneEffect() { if (Alive(controller)) controller->OnPostRender(); }
+          ~SceneEffect() { if (Alive(controller)) MainEffectPostRender(controller); }
         } sceneEffect(effects);
         camera->Render();
       }
+#ifdef VIVIFY_GAME_1_45_3
+      // URP calls no OnRenderImage: the camera rendered straight into its
+      // eye target, and the map's effects run on both eyes together later,
+      // in the game's post-processing pass (UrpPresent).
+      captureComplete = true;
+#endif
+      LogEyeGrabs(eye);
       captureEye = -1;
       if (failed || !captureComplete) throw std::runtime_error("eye image callback did not complete");
       RestoreMaterials(swaps);
@@ -1338,6 +1456,10 @@ void PrepareFrame(UnityEngine::Camera* main, CameraApplier* effects) {
   // No culling state is touched on failure. A complete, current stereo image
   // exists before skipping the redundant main-camera geometry and depth pass.
   if (!completedFrame.Ready(frame, reinterpret_cast<uintptr_t>(main))) return;
+#ifdef VIVIFY_GAME_1_45_3
+  // Keep Scene Depth: the main camera still draws, for _CameraDepthTexture.
+  if (GetSeparateEyeKeepSceneDepth()) return;
+#endif
   try {
     suppressedCamera = main;
     suppressedMask = main->get_cullingMask(); suppressedDepth = main->get_depthTextureMode().value__;
@@ -1374,14 +1496,16 @@ bool TryRender(UnityEngine::Camera* main, UnityEngine::RenderTexture* source, Ca
     if (!staging || !staging->IsCreated()) {
       expected.set_dimension(UnityEngine::Rendering::TextureDimension::Tex2DArray);
       expected.set_volumeDepth(2); expected.set_depthBufferBits(0);
-      staging = UnityEngine::RenderTexture::New_ctor(expected);
+      staging = ClampWrap(UnityEngine::RenderTexture::New_ctor(expected));
       staging->set_name(u"Vivify Stereo Staging");
       if (!staging->Create()) throw std::runtime_error("could not create presentation staging array");
     }
     for (int eye = 0; eye != 2; ++eye)
       UnityEngine::Graphics::CopyTexture(colors[eye].ptr(), 0, 0, staging.ptr(), eye, 0);
     Runtime::Instance().ApplyBlits(staging.ptr(), source, "_Main", -1);
-    if (actual.get_width() != expected.get_width() || actual.get_height() != expected.get_height() ||
+    // The eye targets may be deliberately smaller (EnsureTargets); compare
+    // against the size they were made for.
+    if (actual.get_width() != sourceWidth || actual.get_height() != sourceHeight ||
         actual.get_graphicsFormat() != expected.get_graphicsFormat()) {
       LogRejection("late image descriptor change; presenting scaled completed frame and relearning targets");
     }
@@ -1392,4 +1516,50 @@ bool TryRender(UnityEngine::Camera* main, UnityEngine::RenderTexture* source, Ca
     return false;
   }
 }
+#ifdef VIVIFY_GAME_1_45_3
+namespace {
+int urpPostPassFrame = -1;
+}
+void NoteUrpPostPass(UnityEngine::Camera* main, UnityEngine::RenderTexture* color) {
+  urpPostPassFrame = UnityEngine::Time::get_frameCount();
+  if (!Alive(main) || !Alive(color)) return;
+  mainDescriptor = color->get_descriptor(); descriptorCamera = main; descriptorHdr = main->get_allowHDR();
+  xrWidth = UnityEngine::XR::XRSettings::get_eyeTextureWidth(); xrHeight = UnityEngine::XR::XRSettings::get_eyeTextureHeight();
+  xrScale = UnityEngine::XR::XRSettings::get_renderViewportScale();
+}
+void UrpPrepareFrame(UnityEngine::Camera* main) {
+  RestoreMainCamera(); // last frame's suppression and native materials
+  completedFrame.Clear();
+  if (!GetExperimentalSeparateEye() || !Alive(main)) return;
+  // Only the game's post-processing pass can show the eye images. Without it
+  // (bloom off), a main camera with its scene taken away would show black.
+  if (urpPostPassFrame < UnityEngine::Time::get_frameCount() - 1) {
+    LogRejection("the game's post-processing pass is not running (bloom/post-processing off)");
+    return;
+  }
+  auto* effects = main->GetComponent<CameraApplier*>();
+  if (!Alive(effects)) { LogRejection("the main camera has no Vivify camera component"); return; }
+  PrepareFrame(main, effects);
+}
+bool UrpPresent(UnityEngine::Rendering::CommandBuffer* commands, UnityEngine::RenderTexture* color) {
+  auto* main = descriptorCamera ? descriptorCamera.ptr() : nullptr;
+  bool const current = Alive(main) && completedFrame.Ready(UnityEngine::Time::get_frameCount(), reinterpret_cast<uintptr_t>(main));
+  if (!current || !commands || !Alive(color) || !colors[0] || !colors[1]) return false;
+  try {
+    for (int eye = 0; eye != 2; ++eye) RecordEyeIntoLayer(commands, colors[eye].ptr(), color, eye);
+    static bool presentedOnce = false;
+    if (!presentedOnce) {
+      presentedOnce = true;
+      PaperLogger.info("Vivify separate-eye (URP): eye images {}x{} presented into '{}' ({})", width, height,
+                       std::string(color->get_name()),
+                       GetSeparateEyeKeepSceneDepth() ? "main scene kept for depth" : "main scene skipped");
+    }
+    return true;
+  } catch (...) {
+    failed = true;
+    PaperLogger.error("Vivify separate-eye (URP): presenting the eye images failed; normal rendering resumes next frame");
+    return false;
+  }
+}
+#endif
 } // namespace Vivify::SeparateEye

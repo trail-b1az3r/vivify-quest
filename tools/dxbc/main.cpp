@@ -140,7 +140,9 @@ int main(int argc, char** argv) {
       options.singleViewTextures = {"_CameraDepthTexture", "_CameraDepthNormalsTexture", "_CameraMotionVectorsTexture",
                                     "_CameraOpaqueTexture", "_GrabTexture"};
     if (mode.ends_with("-blit")) options.singleViewTextures.push_back("_MainTex");
+    if (options.multiview) options.viewLayerTextures = {"_GrabTexture", "_CapturedScene"};
     options.geometryRightEyeCopy = std::getenv("VIVIFY_GEOMETRY_EYE_COPY") != nullptr;
+    options.flipScreenCopyY = std::getenv("VIVIFY_FLIP_SCREEN_COPY") != nullptr;
     Vivify::Dxbc::GlslResult const result = Vivify::Dxbc::TranslateToGlsl(program, options);
     std::cout << "ok=" << (result.ok ? 1 : 0) << "\n";
     std::cout << "stereoInstanced=" << (result.stereoInstanced ? 1 : 0) << "\n";

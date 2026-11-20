@@ -22,7 +22,7 @@
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/Vector3.hpp"
 #include "UnityEngine/Vector4.hpp"
-#include "beatsaber-hook/shared/utils/typedefs-wrappers.hpp"
+#include "VivifyCompat.hpp"
 
 #include <array>
 #include <chrono>

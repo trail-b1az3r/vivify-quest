@@ -11,6 +11,7 @@
 #include "VivifyReplayFormat.hpp"
 #include "VivifyReplayRecorder.hpp"
 
+
 #if __has_include(<sys/system_properties.h>)
 #include <sys/system_properties.h>  // bionic; absent from the host syntax check
 #define VIVIFY_HAS_SYSTEM_PROPERTIES 1
@@ -25,8 +26,7 @@
 #include <optional>
 #include <thread>
 
-#include "beatsaber-hook/shared/utils/hooking.hpp"
-#include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
+#include "VivifyCompat.hpp"
 #include "custom-types/shared/delegate.hpp"
 #include "scotland2/shared/modloader.h"
 
@@ -66,7 +66,14 @@
 #include "GlobalNamespace/SaberSwingRatingCounter.hpp"
 #include "GlobalNamespace/ScoreController.hpp"
 #include "GlobalNamespace/ScoringElement.hpp"
+#ifdef VIVIFY_GAME_1_45_3
+#include "GlobalNamespace/BeatmapCharacteristic.hpp"
+#include "GlobalNamespace/StandardLevelScenesTransitionSetupData.hpp"
+// 1.45.3 dropped the SO suffix.
+namespace GlobalNamespace { using StandardLevelScenesTransitionSetupDataSO = StandardLevelScenesTransitionSetupData; }
+#else
 #include "GlobalNamespace/StandardLevelScenesTransitionSetupDataSO.hpp"
+#endif
 #include "System/Action_1.hpp"
 #include "System/Collections/Generic/HashSet_1.hpp"
 #include "System/Collections/Generic/List_1.hpp"
@@ -369,11 +376,15 @@ MAKE_HOOK_MATCH(Recorder_SpawnObstacle, &BeatmapObjectManager::AddSpawnedObstacl
 }
 
 MAKE_HOOK_MATCH(Recorder_NoteWasCut, &BeatmapObjectManager::HandleNoteControllerNoteWasCut, void,
-                BeatmapObjectManager* self, NoteController* controller, ByRef<NoteCutInfo> cutInfo) {
+                BeatmapObjectManager* self, NoteController* controller, VIVIFY_IN(NoteCutInfo) cutInfo) {
   Recorder_NoteWasCut(self, controller, cutInfo);
   if (!replay || controller == nullptr) return;
   auto found = noteIds.find(controller->get_noteData());
+#ifdef VIVIFY_GAME_1_45_3
+  if (found != noteIds.end()) noteCuts[found->second] = *cutInfo;
+#else
   if (found != noteIds.end()) noteCuts[found->second] = cutInfo.heldRef;
+#endif
 }
 
 // The note events go into the replay in the order the game scores them,
@@ -513,7 +524,11 @@ MAKE_HOOK_MATCH(Recorder_Finish, &StandardLevelScenesTransitionSetupDataSO::Fini
     if (finished.frames.empty()) return;
 
     auto& info = finished.info;
+#ifdef VIVIFY_GAME_1_45_3
+    info.score = results->get_cumulativeScore();
+#else
     info.score = results->multipliedScore;
+#endif
     if (failed) info.failTime = songTime;
     auto key = self->beatmapKey;
     std::string hash = key.levelId;
@@ -522,10 +537,27 @@ MAKE_HOOK_MATCH(Recorder_Finish, &StandardLevelScenesTransitionSetupDataSO::Fini
     if (auto* level = self->beatmapLevel) {
       info.songName = std::string(level->songName);
       info.mapper = std::string(level->songAuthorName);
+#ifdef VIVIFY_GAME_1_45_3
+      info.environment = std::string(level->GetEnvironmentName(by_ref<GlobalNamespace::BeatmapKey const>(key))._environmentName);
+#else
       info.environment = std::string(level->GetEnvironmentName(key.beatmapCharacteristic, key.difficulty)._environmentName);
+#endif
     }
     info.difficulty = RF::DifficultyName(static_cast<int>(key.difficulty));
+#ifdef VIVIFY_GAME_1_45_3
+    // 1.45.3's characteristic is an enum; these are its serialized names.
+    switch (static_cast<int32_t>(key.characteristic)) {
+      case 0: info.mode = "Standard"; break;
+      case 1: info.mode = "OneSaber"; break;
+      case 2: info.mode = "Legacy"; break;
+      case 3: info.mode = "NoArrows"; break;
+      case 4: info.mode = "360Degree"; break;
+      case 5: info.mode = "90Degree"; break;
+      default: break;
+    }
+#else
     if (key.beatmapCharacteristic) info.mode = std::string(key.beatmapCharacteristic->serializedName);
+#endif
     info.modifiers = Modifiers(self->gameplayModifiers, results->energy);
     if (auto* setup = self->gameplayCoreSceneSetupData) {
       if (auto* player = setup->playerSpecificSettings) {

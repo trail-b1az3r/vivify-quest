@@ -15,6 +15,20 @@
 #include "UnityEngine/Transform.hpp"
 #include "GlobalNamespace/Mirror.hpp"
 #include "GlobalNamespace/MirrorRendererSO.hpp"
+#include "TMPro/TMP_Text.hpp"
+#include "TMPro/TMP_TextInfo.hpp"
+#include "TMPro/TMP_FontAsset.hpp"
+#include "TMPro/TMP_SubMesh.hpp"
+#include "TMPro/AtlasPopulationMode.hpp"
+#include "UnityEngine/Mesh.hpp"
+#include "UnityEngine/Bounds.hpp"
+#include "UnityEngine/Font.hpp"
+#include "UnityEngine/ReflectionProbe.hpp"
+#include "UnityEngine/RenderSettings.hpp"
+#include "UnityEngine/Texture.hpp"
+#include "UnityEngine/Rendering/ReflectionProbeMode.hpp"
+#include "UnityEngine/Rendering/ReflectionProbeRefreshMode.hpp"
+#include "UnityEngine/Rendering/DefaultReflectionMode.hpp"
 
 namespace Vivify {
 
@@ -39,6 +53,14 @@ void Runtime::NoteVisualProblem(std::string problem) {
 
 void Runtime::RunScheduledVisualChecks() {
   if (_pauseMenuActive || _isResetting || _currentBeatmapData == nullptr) return;
+  if (!_textChecks.empty()) {
+    try {
+      RunTextChecks();
+    } catch (...) {
+      _textChecks.clear();
+      PaperLogger.warn("Vivify text check threw");
+    }
+  }
   constexpr int count = static_cast<int>(sizeof(kVisualCheckTimes) / sizeof(kVisualCheckTimes[0]));
   if (_visualChecksRun >= count) return;
   float const songTime = CurrentSongTime();
@@ -50,6 +72,71 @@ void Runtime::RunScheduledVisualChecks() {
     PaperLogger.warn("Vivify visual check threw: {}", e.what());
   } catch (...) {
     PaperLogger.warn("Vivify visual check threw");
+  }
+}
+
+// Delays after a spawn: once TextMeshPro has had a frame or two to build its
+// mesh, and once a map's grow-in animation (Lifelike scales its runway text up
+// from zero over four beats) has finished.
+constexpr float kTextCheckDelays[] = {1.0f, 6.0f};
+
+void Runtime::NoteSpawnedText(UnityEngine::GameObject* instance, std::string const& asset) {
+  if (!IsAlive(instance) || _textChecks.size() >= 16) return;
+  auto texts = instance->GetComponentsInChildren<TMPro::TMP_Text*>(true);
+  if (!texts || texts.size() == 0) return;
+  _textChecks.push_back(TextCheck{instance, asset, CurrentSongTime() + kTextCheckDelays[0], 0});
+}
+
+void Runtime::RunTextChecks() {
+  float const now = CurrentSongTime();
+  for (auto it = _textChecks.begin(); it != _textChecks.end();) {
+    if (!IsAlive(it->instance)) { it = _textChecks.erase(it); continue; }
+    if (now < it->due) { ++it; continue; }
+    auto texts = it->instance->GetComponentsInChildren<TMPro::TMP_Text*>(true);
+    for (int i = 0; texts && i < texts.size() && i < 8; i++) {
+      auto* text = texts[i];
+      if (!IsAlive(text)) continue;
+      auto gameObject = text->get_gameObject();
+      auto font = text->get_font();
+      auto* info = text->get_textInfo();
+      auto mesh = text->get_mesh();
+      auto* material = text->get_fontSharedMaterial().unsafePtr();
+      auto* shader = IsAlive(material) ? material->get_shader().unsafePtr() : nullptr;
+      auto const scale = text->get_transform()->get_lossyScale();
+      int vertices = -1;
+      std::string uv2 = "-";
+      std::string bounds = "-";
+      if (IsAlive(mesh.unsafePtr())) {
+        vertices = mesh->get_vertexCount();
+        auto uvs = mesh->get_uv2();
+        if (uvs && uvs.size() > 0) uv2 = fmt::format("({:.4g},{:.4g})", uvs[0].x, uvs[0].y);
+        auto const size = mesh->get_bounds().get_size();
+        bounds = fmt::format("({:.3g},{:.3g},{:.3g})", size.x, size.y, size.z);
+      }
+      auto* renderer = gameObject->GetComponent<UnityEngine::Renderer*>();
+      auto subMeshes = text->GetComponentsInChildren<TMPro::TMP_SubMesh*>(true);
+      auto const content = text->get_text();
+      PaperLogger.info(
+          "Vivify text check +{:.0f}s: prefab='{}' text='{}' active={} enabled={} chars={} shown={} "
+          "lossyScale=({:.4g},{:.4g},{:.4g}) font='{}' dynamic={} sourceFont={} mesh vertices={} uv2[0]={} "
+          "bounds={} renderer={} material='{}' shader='{}' subMeshes={}",
+          kTextCheckDelays[it->round], it->asset, ToStdString(gameObject->get_name()),
+          BoolText(gameObject->get_activeInHierarchy()), BoolText(text->get_enabled()),
+          content ? ToStdString(content).size() : 0, info != nullptr ? info->characterCount : -1, scale.x, scale.y, scale.z,
+          IsAlive(font.unsafePtr()) ? ToStdString(font->get_name()) : std::string("<none>"),
+          BoolText(IsAlive(font.unsafePtr()) && font->get_atlasPopulationMode().value__ == 1),
+          BoolText(IsAlive(font.unsafePtr()) && IsAlive(font->get_sourceFontFile().unsafePtr())), vertices, uv2,
+          bounds, IsAlive(renderer) ? (renderer->get_enabled() ? "on" : "off") : "none",
+          IsAlive(material) ? ToStdString(material->get_name()) : std::string("<none>"),
+          IsAlive(shader) ? ToStdString(shader->get_name()) : std::string("<none>"), subMeshes ? subMeshes.size() : 0);
+    }
+    it->round++;
+    if (it->round >= static_cast<int>(sizeof(kTextCheckDelays) / sizeof(kTextCheckDelays[0]))) {
+      it = _textChecks.erase(it);
+    } else {
+      it->due += kTextCheckDelays[it->round] - kTextCheckDelays[it->round - 1];
+      ++it;
+    }
   }
 }
 
@@ -185,6 +272,40 @@ void Runtime::RunVisualCheck(std::string_view when) {
                      IsAlive(sun.unsafePtr()) ? ToStdString(sun->get_name()) : std::string("<none>"));
   }
 
+  // Where reflective shaders get their unity_SpecCube0 (0.15.37): the scene's
+  // reflection probes and the environment reflection. Lifelike's and
+  // Luminescent's water reflect from it, and on the headset the reflection
+  // tilts with the head; nothing said which cubemap that is or who redraws it.
+  if (firstCheck || _visualChecksRun == 2) {
+    auto probes = UnityEngine::Object::FindObjectsOfType<UnityEngine::ReflectionProbe*>();
+    std::string probeList;
+    int probeCount = 0;
+    for (int i = 0; probes && i < probes.size(); i++) {
+      auto* probe = probes[i];
+      if (!IsAlive(probe) || !probe->get_enabled()) continue;
+      if (++probeCount > 6) continue;
+      auto probeObject = probe->get_gameObject();
+      auto const position = probe->get_transform()->get_position();
+      auto texture = probe->get_texture();
+      probeList += fmt::format("{}'{}' mode={} refresh={} resolution={} importance={} box={} pos=({:.1f},{:.1f},{:.1f}) "
+                               "texture='{}'",
+                               probeList.empty() ? "" : "; ",
+                               IsAlive(probeObject.unsafePtr()) ? ToStdString(probeObject->get_name()) : "?",
+                               static_cast<int>(probe->get_mode().value__),
+                               static_cast<int>(probe->get_refreshMode().value__), probe->get_resolution(),
+                               probe->get_importance(), BoolText(probe->get_boxProjection()), position.x, position.y,
+                               position.z,
+                               IsAlive(texture.unsafePtr()) ? ToStdString(texture->get_name()) : std::string("<none>"));
+    }
+    auto custom = UnityEngine::RenderSettings::get_customReflectionTexture();
+    PaperLogger.info("Vivify visual check at {}: {} reflection probe(s) on{}{}; environment reflection mode={} "
+                     "custom='{}' intensity={:.2f}",
+                     when, probeCount, probeList.empty() ? "" : ": ", probeList,
+                     static_cast<int>(UnityEngine::RenderSettings::get_defaultReflectionMode().value__),
+                     IsAlive(custom.unsafePtr()) ? ToStdString(custom->get_name()) : std::string("<none>"),
+                     UnityEngine::RenderSettings::get_reflectionIntensity());
+  }
+
   // The game's own mirrors (0.15.1), for reflections that turn with the
   // head instead of staying in place (Lifelike's floor mirror, with
   // GraphicsTweaks' mirrors on). Every enabled camera that sees a mirror
@@ -209,7 +330,11 @@ void Runtime::RunVisualCheck(std::string_view when) {
                                        mirrorRenderer->____stereoTextureWidth, mirrorRenderer->____stereoTextureHeight,
                                        mirrorRenderer->____monoTextureWidth, mirrorRenderer->____monoTextureHeight,
                                        mirrorRenderer->____maxAntiAliasing,
+#ifdef VIVIFY_GAME_1_45_3
+                                       std::string("n/a"))
+#else
                                        BoolText(mirrorRenderer->____disableDepthTexture))
+#endif
                          : std::string("<none>"));
   }
   if (mirrorsShown > 0) {

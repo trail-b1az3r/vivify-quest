@@ -1,4 +1,5 @@
 #include "VivifyRuntimeInternal.hpp"
+#include "UnityEngine/Rendering/GlobalKeyword.hpp"
 #include <regex>
 #include "VivifySeparateEye.hpp"
 #include "VivifyLookEstimate.hpp"
@@ -203,6 +204,16 @@ struct ReplayVariantScope {
 
 std::atomic<int> gMultiviewKeyword{-1};
 
+// A global keyword's name: a field on Unity 2021, a property on Unity 6.
+static std::string GlobalKeywordName(UnityEngine::Rendering::GlobalKeyword const& keyword) {
+#ifdef VIVIFY_GAME_1_45_3
+  StringW name = const_cast<UnityEngine::Rendering::GlobalKeyword&>(keyword).get_name();
+#else
+  StringW name = keyword.m_Name;
+#endif
+  return name ? std::string(name) : std::string();
+}
+
 void DetectMultiviewKeyword() {
   if (gMultiviewKeyword.load() >= 0) return;
   try {
@@ -210,7 +221,7 @@ void DetectMultiviewKeyword() {
     if (!keywords || keywords.size() == 0) return;  // too early; look again later
     bool found = false;
     for (auto const& keyword : keywords) {
-      if (keyword.m_Name && std::string(keyword.m_Name) == "STEREO_MULTIVIEW_ON") found = true;
+      if (GlobalKeywordName(keyword) == "STEREO_MULTIVIEW_ON") found = true;
     }
     gMultiviewKeyword.store(found ? 1 : 0);
     PaperLogger.info("Vivify: the game {} STEREO_MULTIVIEW_ON ({} global keywords); converted shaders get {}",
@@ -2779,7 +2790,7 @@ void Runtime::PollShaderWarmup() {
   std::optional<UnityEngine::Rendering::GlobalKeyword> multiview;
   if (auto keywords = UnityEngine::Shader::GetAllGlobalKeywords()) {
     for (auto const& keyword : keywords) {
-      if (keyword.m_Name && std::string(keyword.m_Name) == "STEREO_MULTIVIEW_ON") multiview = keyword;
+      if (GlobalKeywordName(keyword) == "STEREO_MULTIVIEW_ON") multiview = keyword;
     }
   }
   // Slowly: two materials a frame, so the menu keeps drawing.
@@ -3836,7 +3847,7 @@ UnityEngine::Texture* Runtime::ResolveUsableTexture(UnityEngine::Texture* textur
     return texture;
   }
 
-  ArrayW<uint8_t, Array<uint8_t>*> raw = nullptr;
+  ArrayW<uint8_t> raw = nullptr;
   try {
     raw = source->GetRawTextureData();
   } catch (...) {
@@ -3891,7 +3902,7 @@ UnityEngine::Texture* Runtime::ResolveUsableTexture(UnityEngine::Texture* textur
     _decodedTextures[texture] = nullptr;
     return texture;
   }
-  auto managed = ArrayW<uint8_t, Array<uint8_t>*>(static_cast<il2cpp_array_size_t>(decoded.size()));
+  auto managed = ArrayW<uint8_t>(static_cast<il2cpp_array_size_t>(decoded.size()));
   std::memcpy(managed.begin(), decoded.data(), decoded.size());
   replacement->LoadRawTextureData(managed);
   replacement->Apply();

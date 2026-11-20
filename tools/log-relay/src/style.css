@@ -6,3 +6,23 @@
 @media(max-width:380px){.updated{display:none}.stat-card{padding:12px}.stat-value{font-size:22px}.stat-date{font-size:16px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 .file-entry{display:flex;align-items:stretch;gap:8px;margin:8px 0}.file-entry .file-row{margin:0;flex:1;min-width:0}.file-download{display:flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid #41434c;background:#292c34;border-radius:13px;color:#c9caff;text-decoration:none;font-size:10px;font-weight:600;white-space:nowrap}.file-download:hover{background:#34364a;border-color:#7779b2}.file-download svg{width:16px;height:16px}@media(max-width:380px){.file-entry{gap:5px}.file-download{padding:0 8px;font-size:9px}}
+
+
+/* Dashboard 1.1: denser metrics, clear sort controls, and more deliberate surfaces. */
+.stats-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+.stat-card{box-shadow:0 10px 28px #00000012;transition:transform .18s ease,border-color .18s ease,background .18s ease}
+.stat-card:hover{transform:translateY(-2px);border-color:#555875}
+.stat-saved{background:linear-gradient(145deg,#20352f,#1b2425);border-color:#365b4b}
+.stat-saved .stat-value{color:#a7e2bd}
+.saved-icon{background:#315244;color:#b5ebc8}
+.upload-tools{display:flex;align-items:center;gap:10px;min-width:min(510px,55%)}
+.upload-tools .search-box{width:auto;flex:1;min-width:150px}
+.sort-control{height:38px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #41434c;background:#202229;border-radius:12px;color:#9295a2;font-size:10px;white-space:nowrap}
+.sort-control select{max-width:135px;border:0;outline:0;background:transparent;color:#e4e2e9;font:600 10px 'DM Sans',sans-serif;cursor:pointer}
+.sort-control option{background:#202229;color:#e4e2e9}
+.upload-row{transition:background .15s ease}
+.upload-row:hover .folder-icon{background:#3a3c59}
+.panel{box-shadow:0 14px 40px #0000000c}
+@media(max-width:1250px){.stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.upload-tools{width:100%;min-width:0;flex-direction:column;align-items:stretch}.upload-tools .search-box{width:100%;min-height:38px}.sort-control{justify-content:space-between}.sort-control select{max-width:none;flex:1;text-align:right}}
+@media(prefers-reduced-motion:reduce){.stat-card{transition:none}.stat-card:hover{transform:none}}

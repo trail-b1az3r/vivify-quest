@@ -11,11 +11,477 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.45] - 2026-11-20
+
+### Added
+- **Game Bloom** (Effects, and per map under This Map): turns the game's bloom
+  on while a Vivify map plays, even with it off in the game's graphics
+  settings, and puts the game's choice back after. Lifelike's runway text
+  only shows with bloom.
+- **Note Draw Distance (m, 0 = off)** (Performance): a map's own note models
+  are not drawn while farther than this from you, separately from Far
+  Culling. For maps whose notes are expensive to draw (Aether's wireframe
+  notes).
+- **Full-Res Reflections** is now a main setting (it was Advanced' "Full
+  Reflection Probes") and a per-map one: a map's live reflections at the
+  resolution and rate it asked for. Get Your Wish's water already ran that way
+  in the last test (its probe is 512 px, every frame).
+
+### Changed
+- Beat Saber 1.45.3 build: CustomJSONData and Tracks still have no qpm
+  release for 1.45.3, so the `Build Quest Mod (Beat Saber 1.45.3)` workflow
+  now builds them (and, for players, Noodle Extensions and Chroma) from the
+  ports in trail-b1az3r/ports- and installs them into the runner's local qpm
+  repository before building Vivify. `scripts/use-game-target.py --local
+  PACKAGE=VERSION` takes such locally built packages without looking them up
+  on qpackages.com; targets/1.45.3.json now names NDK r29, as the ports use.
+  The ports' qmods are uploaded with Vivify's, since nothing can download
+  them on the headset. Temporary, until upstream releases.
+- Beat Saber 1.45.3 build: Vivify now compiles against beatsaber-hook 9
+  (`include/VivifyCompat.hpp` maps the older SafePtr, il2cpp_utils,
+  il2cpp_functions and Configuration names onto it, in C++23), bs-cordl 4503
+  and metacore-bs, which now holds MetaCore's Beat Saber API. 1.45.3 renders
+  with URP, so the parts of Vivify built on the old pipeline do not run there
+  yet: the game's ImageEffectController and MirrorRendererSO hooks are left
+  out, the main post effect is a plain copy where Vivify used to run it, the
+  Oculus foveation setting does nothing (the game is on OpenXR), and the
+  replay recorder is not built. The 1.40.8 build is unchanged.
+  `scripts/host-syntax-check.sh` checks 1.45.3 with VIVIFY_HOST_TARGET=1.45.3.
+- Beat Saber 1.45.3: screen effects (Blit events) are drawn again. URP has
+  no OnRenderImage, so Vivify records them into the game's own
+  post-processing pass (MainEffectPostRenderPass), on the main camera's
+  colour texture, into that pass's command buffer, just before the game's
+  bloom. Every effect goes before bloom there, including ones a map puts
+  after it. With the game's bloom/post-processing turned off that pass does
+  not run and effects are not shown (the log says so). Foveated rendering
+  now goes through Meta's OpenXR foveation feature (no eye-tracked mode).
+  Mirrors are the game's own URP planar mirrors; the separate-eye renderer
+  is not ported. Untested on a headset.
+- Beat Saber 1.45.3: map cameras (CreateCamera) render into their own
+  texture, colour and depth, which the map gets as before. URP renders a
+  camera with a target texture as one view from the head's centre, so both
+  eyes see the same image (what Single-View Map Cameras does on 1.40.8); the
+  game's bloom is not applied to it. Before this, such a camera drew over
+  the headset view and captured nothing.
+- Beat Saber 1.45.3: the replay recorder is built again (1.45.3's
+  cumulative score, its enum beatmap characteristic and environment lookup).
+- Beat Saber 1.45.3: the Separate-Eye Renderer (and Triangle Tessellation,
+  which runs inside it) works there again. URP allows no camera renders
+  inside its render loop and calls no OnPreCull/OnRenderImage, so the two
+  eye images are drawn from LateUpdate, before the frame, and copied into
+  the main image's two layers in the game's post-processing pass; the map's
+  screen effects then run on both eyes together. By default the main
+  camera's own scene draw is dropped (two scene draws a frame), and map
+  effects that read scene depth get none. New setting **Separate Eyes Keep
+  Scene Depth (slow)** keeps it, for that depth, at three scene draws. With
+  the game's bloom/post-processing off the renderer stays off (nothing could
+  show the eye images; the log says why).
+- build.yml builds Beat Saber 1.45.3 as well (job `build-1-45-3`) and puts
+  its QMODs, named `-bs1.45.3`, and the CustomJSONData/Tracks/Noodle/Chroma
+  ports on the release. build-1.45.3.yml is now manual-only, for the next
+  game version.
+- The Chroma port is built and uploaded too. The ports repository's copy is
+  bsq-ports/Chroma's v1.45.3 branch without its CMakeLists.txt, so it never
+  built (the step's failure was hidden by continue-on-error); the workflows
+  take that file from the same upstream commit, and give Chroma's build
+  script the NDK path where it looks. A missing port QMOD is now a warning.
+
+### Added
+- Vivify Quest Converter, a desktop app for Windows, Linux and macOS
+  (`converter/gui`). It is the command-line converter in a window: drop PC
+  bundles or map folders on it, then convert them all in turn. Each bundle's
+  report, and what it was built for, is shown beside the queue. The options
+  are the CLI's, with explanations. It uses the same library, and its output
+  is byte-identical to `vivify-convert`'s. The Converter library workflow
+  builds it as `VivifyQuestConverter-app-<platform>`.
+
 ### Changed
 - Log relay uploads now deduplicate identical file contents with SHA3-256 against
   the active `LOGS` branch and within each request. A branch-side hash index avoids
   rescanning historical blobs on normal uploads and is maintained by 30-day retention.
   Fully duplicate uploads create no commit; mixed uploads store only new files.
+
+### Fixed
+- Log relay: back to deduplicating whole identical files. The line-level
+  deduplication stored every distinct log line as its own file on `LOGS`.
+  Three ordinary uploads already hold about 18,800 distinct lines, and GitHub
+  stops listing a tree in full at 100,000 entries, after which every upload
+  was refused. The first upload would also have converted all 534 stored
+  logs, and opening an 11,000-line log took one GitHub request per line,
+  both well past a Worker's request limit. Storage cleanup stays append-only
+  (no forced history rewrite).
+- Log relay: the SHA3 index no longer backfills existing logs on the first
+  upload, which also took one request per stored log. Logs stored before the
+  index existed are not deduplicated against; they leave with the 30-day
+  retention.
+
+## [0.15.44] - 2026-11-20
+
+Not tried on a headset.
+
+### Fixed
+- 0.15.43 crashed the game the moment any screen effect ran: Lifelike at its
+  first frame, Get Your Wish when its underwater effect starts, and every other
+  map with a Blit (SIGABRT, std::terminate from CameraApplier::OnRenderImage).
+  0.15.43's new GC handles were compared with `SafePtr::ptr()`, which throws on
+  an empty handle instead of returning null, and the first effect frame always
+  had an empty one. They are now compared through plain copies of what they
+  hold.
+- CameraApplier::OnRenderImage catches anything thrown inside it, logs it (at
+  most five times) and draws that frame without effects. Unity calls it through
+  il2cpp, where an escaping C++ exception ends the game.
+
+### Notes
+- The other crash reports in the same upload are in other mods: CustomJSONData's
+  thread pool, BetterHaptics, and BSML / BeatLeader's modal views.
+
+## [0.15.43] - 2026-11-19
+
+Not tried on a headset.
+
+### Fixed
+- Lifelike crashed at its first frame (SIGSEGV, fault address 0x1cc, in
+  BlitGuardEvaluate under CameraApplier::RenderEffects). The Flat-Screen
+  Effect Guard's two 16 x 16 sample textures and its read-back texture, and
+  the cached main/scratch effect textures, were held only as raw pointers in
+  native memory, which the game's garbage collector does not see: it could
+  free them while they were still in use, and the guard's next read-back
+  touched freed memory. They are now held with GC handles.
+
+### Notes
+- The other crash in the same upload is in the Tracks mod's own loading
+  (libtracks.so, InstallBeatmapObjectCallbackControllerHooks, at start-up),
+  not in Vivify.
+- 743 Aether on 0.15.42: the separate-eye eye images stepped 80% -> 60% -> 50%
+  within two seconds of the rift (frames at 33-39 ms against a best of 8 ms).
+
+## [0.15.42] - 2026-11-19
+
+Not tried on a headset.
+
+### Fixed
+- Get Your Wish: the square in front of the window at 55 seconds. It is
+  `CubeScreen (1)` in cube.prefab, the only object with CensorEffectMat
+  (FX/CensorWorldSpace): a GrabPass quad with `_Pixelation` fixed at 0.0001
+  and render queue 4000, which on the PC draws the scene behind it again and
+  so shows as nothing. On the headset (2019 bundle, its
+  UNITY_SINGLE_PASS_STEREO variant) it squeezed its screen copy into one half
+  of the view with `unity_StereoScaleOffset`, as for PC single-pass stereo's
+  double-wide image, and drew a broken, misplaced picture. Under the Quest's
+  multiview each eye is a whole image, so two-eye shaders now read
+  unity_StereoScaleOffset as (1, 1, 0, 0). With 0.15.40's grab orientation
+  fix the quad shows the scene behind it, which is nothing, as on the PC.
+- Two-eye pixel shaders written without UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX
+  read the per-eye camera matrices at the left eye's rows in both eyes (the
+  compiler folds unity_StereoEyeIndex 0 in): the right eye projected with the
+  left eye's matrices. Each eye now reads its own rows. (Get Your Wish's 2021
+  bundle has this form of the same quad.)
+- Converted copies are redone once (conversion version 33 -> 34).
+
+## [0.15.41] - 2026-11-19
+
+Not tried on a headset.
+
+### Fixed
+- Map saber trails still vanished while a geometry effect was on screen
+  (0.15.35 did not fix it). A map trail's mesh is drawn by a
+  SaberTrailRenderer that the trail instantiates at the scene root (or beside
+  the game's own trail), not under the trail's object, so 0.15.35 registered
+  an object with no renderer in it; and the trail's material is the
+  renderer's own runtime copy, which the Separate-Eye Renderer did not know
+  and so never gave its single-eye shader. Both are now registered.
+
+## [0.15.40] - 2026-11-19
+
+Not tried on a headset.
+
+### Fixed
+- Screen effects that read a GrabPass upside down: 743 Aether's shockwaves
+  (Swifter/VFX/ShockwaveParticle, a square showing the view flipped) and Get
+  Your Wish's window (FX/CensorWorldSpace, the scene behind it). Unity's
+  ComputeGrabScreenPos, compiled for Direct3D, bakes the top-down grab
+  convention into the bytecode as a multiply by (0.5, -0.5); the Quest's
+  OpenGL grab is stored bottom-up. In passes that read a GrabPass texture,
+  that constant now gets +0.5, as Unity's own OpenGL build of the shader has.
+  Shaders that flip with _ProjectionParams.x (Aether's glass rocks) carry no
+  such constant and are unchanged. Converted copies are redone once
+  (conversion version 32 -> 33).
+- The game's mirror (Lifelike's runway and water, luminescent's lake) turned
+  and slid with the head. It draws its reflection once per eye from a head
+  pose it works out itself; each half is now drawn from the eye's own view
+  and projection, the ones the frame uses. Where the game's pose was already
+  the eye's, nothing changes. The first draw of each level logs how far apart
+  they were ("Vivify mirror: eye pose used for the reflection ...").
+- 743 Aether's rift section ran at 25 fps on the Separate-Eye Renderer with
+  the eye images left at 100%: with "Separate Eyes Follow Effect Resolution"
+  on, the automatic size steps were off entirely. They now also apply in that
+  mode below the Effect Resolution %, while Auto Effect Resolution is on (its
+  default), and step 20% at a time while frames take twice as long as the
+  level's best.
+
+### Notes
+- Lifelike's runway text: on the headset TextMeshPro builds it completely
+  (911 characters, a 2888-vertex mesh, a sound SDF scale, the map's own shader
+  and font), so the text itself is not what is missing. The runway surface
+  under it is the game's track mirror, which the mirror fix above is about.
+
+## [0.15.39] - 2026-11-19
+
+Diagnostics only. Not tried on a headset.
+
+### Added
+- Separate-eye grab check: while the scene is drawn once per eye, every 2 s
+  each eye logs what its own copy of each GrabPass texture holds right after
+  it drew (`<name>__VivifyEye<N>`: which texture, its size, and whether it is
+  that eye's own render target). Aether's glass rocks (Swifter/GlassTerrain,
+  GrabPass "_GrabTexture1") smear and ghost only while the rift (a geometry
+  effect) is on screen, which is exactly when the eyes are drawn separately;
+  with the rift gone the rocks are fine. The rift itself reads no grab, there
+  is no mirror in the map, and the game's bloom pre-pass draws only lights, so
+  this records which of a stale grab or a grab read while being drawn into it
+  is.
+
+## [0.15.38] - 2026-11-19
+
+Not tried on a headset.
+
+### Fixed
+- Aether ghosted from 1:48 to about 2:21, when the rift appears. Its Triangle
+  Explosion is a geometry effect, so since 0.15.32 the Separate-Eye Renderer
+  draws the scene once per eye there, and together with the glass rocks, the
+  star and the bokeh blur the game held 33-37 fps (300 frames every 8-9 s in
+  the log). The headset then shows each frame twice, shifted, and everything
+  that moves ghosts. The eye images were always full size (1680x1760). Now,
+  while the eyes are drawn separately and frames stay slow against the best
+  the level has managed, the eye images step down 10% at a time, after a
+  second of slow frames, to 50% at least. They step back up after 5 s at full
+  speed, and a step up that turns slow again within 3 s stops further steps
+  up for that level. Each change is logged ("Vivify separate-eye resolution:
+  ..."). The picture is softer while it is lowered.
+
+### Added
+- "Separate Eyes Follow Effect Resolution" (Performance, off by default): the
+  Separate-Eye Renderer's eye images use the Effect Resolution % instead of the
+  automatic size.
+
+## [0.15.37] - 2026-11-19
+
+Diagnostics only; nothing that draws is changed. Not tried on a headset.
+
+### Added
+- Text check: a moment after a map prefab with world-space TextMeshPro text
+  spawns, and again six seconds later, the log records what TextMeshPro built
+  for each text: characters shown, the mesh's vertex count and bounds, the
+  SDF scale it wrote into the glyphs (uv2), the object's world scale, the font
+  asset (and whether it is dynamic with no source font) and the shader.
+  Lifelike's runway text draws as something see-through on the Quest. The
+  font, its atlas, the converted shader and the game's TextMeshPro all match
+  the PC, so the next log has to show what is different at run time. Two
+  leads it will settle: the text's parent grows from scale 0 over four beats
+  (TextMeshPro writes the scale into every glyph), and three of its symbols
+  (ϕ, λ, °) are missing from the map's font, which is a dynamic font asset
+  shipped without its source font.
+- Reflection check: the visual checks at 5 s and 30 s also list the scene's
+  reflection probes (mode, refresh, resolution, position, cubemap) and the
+  environment reflection. Lifelike's and Luminescent's water reflect from that
+  cubemap (`unity_SpecCube0`), not from a mirror camera, and on the headset the
+  reflection tilts with the head.
+
+## [0.15.36] - 2026-11-19
+
+Not tried on a headset.
+
+### Fixed
+- Get Your Wish: the window you fly through at 55 seconds was hidden behind a
+  flat grey square. The window frame holds a world-space screen quad
+  (`CubeScreen (1)`, shader FX/CensorWorldSpace) that shows the scene behind
+  it through an unnamed `GrabPass {}`. That is what makes the window look
+  transparent before the sky image fades in. The PC shader declares
+  `_GrabTexture` as a plain 2D texture. On the Quest, with both eyes drawn
+  at once, the screen copy is a two-layer texture (one layer per eye), and
+  a 2D sampler bound to it reads nothing usable in OpenGL ES, so the quad
+  drew grey. In two-eye shader programs, screen-grab textures declared 2D
+  (`_GrabTexture` and every named GrabPass texture of the shader) are now
+  read as the two-layer texture, at the layer of the eye being drawn. This
+  covers normal samples, explicit-level, gradient and gather samples, and
+  texel fetches. Converted copies are redone once (conversion version
+  31 -> 32).
+
+## [0.15.35] - 2026-11-18
+
+Not tried on a headset.
+
+### Fixed
+- Aether's refractive glass rocks (Swifter/GlassTerrain) went flat and
+  lagged, and its shockwaves (Swifter/VFX/ShockwaveParticle) became a tilted
+  square showing the view upside down, once 0.15.32 started drawing geometry
+  effects through the Separate-Eye Renderer. Both use a named GrabPass
+  (`_GrabTexture1`), which Unity fills once per frame for the first object
+  that uses the name, whatever camera draws it. The left-eye camera draws
+  first, so the right eye refracted the left eye's picture, and the main
+  camera's two-eye copy was a frame old. Each renamed shader copy now
+  grabs into a texture of its own (`_GrabTexture1__VivifyEye0`, `...Eye1`,
+  `...Mono`), so every camera refracts its own picture. Converted copies are
+  redone once (conversion version 30 -> 31).
+- Map saber trails vanished in every map while a geometry effect was on
+  screen. The Separate-Eye Renderer draws each eye with single-eye shader
+  copies, but only for renderers it knows about, and map trails were never
+  registered: they kept their two-eye shader, which draws nothing in an eye
+  camera. Trails are now registered like map sabers and note replacements.
+
+### Notes
+- 42-flux has "Use Windows Bundle For This Map" turned on, so Vivify converts
+  its PC build instead of loading Aeroluna's own Quest build (which it
+  downloaded). Its renderer keeps the normal frame on this map ("map uses
+  mid-frame effects"), so the sabers, black frames, arrow-only notes and
+  one-eyed shaders reported there come from the converted PC build, not the
+  Separate-Eye Renderer. Turning the setting off for 42-flux uses the Quest
+  build.
+
+### Known
+- Get Your Wish: a grey stand-in in front of the window at 55 s.
+- Lifelike: the runway text draws as something transparent.
+- Lifelike and Luminescent: water reflections are detached and tilt with
+  the view.
+
+## [0.15.34] - 2026-11-18
+
+Not tried on a headset.
+
+### Fixed
+- A crash when a screen effect started on maps whose effects run once per
+  eye (Aether's bokeh at 2 s, and two other levels in the 0.15.33 logs). All
+  three crash reports point to the same place: the per-eye diagnostic added
+  in 0.15.30 ("Vivify stereo effect eyes"), which crashed inside Unity while
+  reading its small sample image back. The diagnostic is removed. It had
+  already answered its question (Aether's effects come out right in both
+  eyes).
+
+## [0.15.33] - 2026-11-18
+
+Not tried on a headset.
+
+### Fixed
+- 42-flux could not be played with the Separate-Eye Renderer on ("Map effects
+  could not be prepared"). Its Sun/ShadedEclipse shader borrows a pass from
+  Sun/Eclipse by name (`UsePass "Sun/Eclipse/DrawSphere"`). The renderer's
+  per-eye shader copies rename every shader (`__VivifyEye0__/Sun/Eclipse`)
+  but left that reference pointing at the old name. Unity could not resolve
+  it, so it marked the copy unsupported, and that one shader blocked the
+  whole map. UsePass references to shaders in the same bundle are now
+  renamed along with them; references to Unity's built-in shaders are left
+  alone. Converted copies are redone once (conversion version 30).
+- Log uploads are more reliable. A request that fails with a server error
+  (5xx), a rate limit or a dropped connection is retried up to three times,
+  after 4, 12 and 30 seconds; before, the upload stopped at the first failure
+  until the next map ended. Each request now carries at most 1.5 MB instead
+  of 3 MB. Two uploads in the 0.15.32 logs failed with an HTTP 503 from
+  Cloudflare, both carrying a large global log. When Cloudflare answers with
+  its own error page, the log now records its error code and title instead
+  of the start of the HTML. Nothing was lost before either: log offsets only
+  move after a successful upload.
+- Log relay: uploads failed with Cloudflare's "Worker exceeded resource
+  limits" (HTTP 503; the 0.15.33 logs name it now). The relay hashed each
+  uploaded file with SHA3-256 written in JavaScript, about 100 ms of CPU per
+  1.5 MB, which is more than a Worker request is allowed. It now uses SHA-256
+  from Web Crypto, which runs natively: about 5 ms for the same text. Index
+  keys carry a `sha256:` prefix, so the existing SHA3 entries never match;
+  logs stored before the switch are not deduplicated against, and the stored
+  savings totals carry over. The `@noble/hashes` dependency is gone. Needs
+  the relay redeployed (`npx wrangler deploy` in `tools/log-relay`).
+- A per-eye shader copy that cannot run on the device no longer blocks the
+  play button. The map plays with the normal renderer instead and the log
+  says which shader it was, as already happened when a shader could not be
+  converted.
+
+## [0.15.32] - 2026-11-18
+
+Not tried on a headset.
+
+### Fixed
+- Aether's wireframes still doubled and z-fought in 0.15.31, which also
+  made them look much wider than they should. The 0.15.31 logs show these
+  geometry shaders drawn through the native two-eye program ("scene route:
+  native multiview"). On the Quest that program cannot give a geometry
+  shader a correct second eye: without the right-eye copy one eye showed
+  the other eye's view, and with it each eye showed both. Materials whose
+  shader has a geometry stage now take the Separate-Eye Renderer's scene
+  path, which draws each eye with a single-eye program, as tessellated
+  materials already did. In Aether that is the wireframe ("Mawntee/Beat
+  Saber Wireframe 3D-Noise") and "Swifter/TriangleExplosion". While one of
+  them is on screen, the scene is drawn once per eye, which costs more, and
+  anti-aliasing is off for the level. This needs the Separate-Eye Renderer
+  on; without it they draw as before.
+
+### Known
+- Aether's yellow square and thin blue line near the end are not explained
+  by the logs. Neither is a geometry shader, nothing fell back to a stand-in,
+  and the screen effects are fine in both eyes. The two grab-pass shaders
+  (Swifter/VFX/ShockwaveParticle, Swifter/GlassTerrain) read a two-eye
+  image, which matches what is bound during play.
+
+## [0.15.31] - 2026-11-18
+
+Not tried on a headset.
+
+### Fixed
+- Geometry effects drawn twice in each eye, z-fighting (Aether). Since
+  0.15.12, every geometry shader ran a second time to draw a copy into the
+  right eye, for drivers that run geometry shaders for the left eye only.
+  Drivers with EXT_multiview_tessellation_geometry_shader already run them
+  once per eye, so on those each eye got its own copy plus the other eye's,
+  in slightly different places on top of each other: one looked right, the
+  other wrong, and they fought. The copy now only happens where the driver
+  lacks that extension; elsewhere each eye draws its own once. Converted
+  bundles are redone once (conversion version 29).
+- Rendered replays drew no geometry or tessellation shaders (Yoi Okashi's
+  grass, for example). The Replay mod's render camera draws one view into a
+  flat texture, where the Separate-Eye Renderer stands down ("expected a
+  stereo two-layer texture array"), so those materials kept shaders whose
+  geometry or tessellation stages could not run there. The render camera now
+  draws with the renderer's single-camera shader copies, as map-authored
+  texture cameras already did. Those copies keep geometry shaders, and they
+  now also translate tessellation wherever both eyes' copies did (Yoi
+  Okashi: yes; Lifelike's grass: not yet, see 0.15.30). Needs the
+  Separate-Eye Renderer on; the log says which way a replay render went.
+
+## [0.15.30] - 2026-11-17
+
+Not tried on a headset.
+
+### Fixed
+- Doubled strips at the top and bottom of the screen during post-process
+  sections (Lifelike, Luminescent). Vivify's own effect and blit textures
+  -- the per-eye temporaries, the mid-frame targets, the effect textures and
+  the separate-eye targets -- now clamp at their edges. They used to keep
+  whatever wrap mode they were created or pooled with, so an effect that
+  shifts its UVs past the edge (VHS, glitch, warp, chromatic offset) drew a
+  repeated copy of the far side of the picture where PC Vivify, whose
+  temporaries clamp, draws the edge. Textures a map declares keep the wrap
+  mode the map gave them.
+- Triangle Tessellation no longer refuses a shader because one stage
+  compiles a keyword the others do not. Lifelike's Bytesized/Grass has 16
+  vertex variants (the extra 8 for GPU instancing) and 8 of every other
+  stage; the pairing now leaves the instancing variants out and pairs the
+  rest. Converted bundles are redone once (conversion version 28).
+
+### Added
+- A per-eye check for Aether's screen effects. Aether runs its bokeh and
+  fade effects once per eye on the two halves of the native stereo picture.
+  The flat-screen check only ever measured the left eye, so a dead right
+  eye went unreported. Now, once per set of effects each level, both eyes
+  are measured going in and coming out ("Vivify stereo effect eyes: ...").
+  That shows which eye dies, and whether the effect or the scene feeding
+  it is to blame. This is a diagnostic only; nothing is changed yet.
+
+### Known
+- Lifelike's grass still does not draw. With the pairing fixed, its hull
+  shader is the next blocker: it works out a separate tessellation factor
+  for each edge in fork and join phases, and the translator only handles
+  hull shaders that use one uniform factor. That needs a general hull-shader
+  translator, which is a larger piece of work. Luminescent has no geometry
+  or tessellation shaders at all (all 18 of its shaders translate), so
+  anything missing there is a different cause.
 
 ## [0.15.29] - 2026-11-16
 

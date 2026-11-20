@@ -91,6 +91,67 @@ if(NOT MSVC AND NOT APPLE)
   target_link_options(vivify-convert PRIVATE $<$<CONFIG:Release>:-s>)
 endif()
 
+# The desktop app (converter/gui): the converter in a window. Off by default
+# so the library and CLI build with no extra downloads; the Converter library
+# workflow turns it on. Its libraries are fetched at fixed versions.
+option(VIVIFY_CONVERT_GUI "Build the Vivify Quest Converter desktop app" OFF)
+if(VIVIFY_CONVERT_GUI)
+  include(FetchContent)
+  set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+  set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+  set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+  # X11 only on Linux: Wayland desktops run it through XWayland, and the
+  # build needs no wayland-scanner.
+  set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
+  FetchContent_Declare(glfw GIT_REPOSITORY https://github.com/glfw/glfw.git GIT_TAG 3.4 GIT_SHALLOW TRUE)
+  FetchContent_Declare(imgui GIT_REPOSITORY https://github.com/ocornut/imgui.git GIT_TAG v1.91.9b GIT_SHALLOW TRUE
+                       SOURCE_SUBDIR none)
+  # A fixed commit (2025-03-21): the 0.1.0 tag predates settings::available().
+  FetchContent_Declare(pfd GIT_REPOSITORY https://github.com/samhocevar/portable-file-dialogs.git
+                       GIT_TAG c12ea8c9a727f5320a2b4570aee863bbede2a204 SOURCE_SUBDIR none)
+  # SOURCE_SUBDIR none: fetch Dear ImGui and the dialogs without building
+  # their own projects; their sources are compiled into the app below.
+  FetchContent_MakeAvailable(glfw imgui pfd)
+  find_package(OpenGL REQUIRED)
+
+  add_executable(vivify-convert-gui MACOSX_BUNDLE
+      ${CMAKE_CURRENT_SOURCE_DIR}/gui/main.cpp
+      ${imgui_SOURCE_DIR}/imgui.cpp ${imgui_SOURCE_DIR}/imgui_draw.cpp ${imgui_SOURCE_DIR}/imgui_tables.cpp
+      ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+      ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+      ${VIVIFY_CONVERT_SOURCES})
+  target_compile_definitions(vivify-convert-gui PRIVATE VIVIFY_CONVERT_STATIC)
+  target_include_directories(vivify-convert-gui PRIVATE ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends
+                                                        ${pfd_SOURCE_DIR})
+  vivify_convert_setup(vivify-convert-gui)
+  vivify_convert_lto(vivify-convert-gui)
+  target_link_libraries(vivify-convert-gui PRIVATE glfw OpenGL::GL)
+  if(WIN32)
+    # windows.h (pulled in by the file dialogs) must not define min/max.
+    target_compile_definitions(vivify-convert-gui PRIVATE NOMINMAX)
+    target_link_libraries(vivify-convert-gui PRIVATE comdlg32 shell32 ole32)
+  endif()
+  set_target_properties(vivify-convert-gui PROPERTIES
+      OUTPUT_NAME "Vivify Quest Converter"
+      WIN32_EXECUTABLE ON
+      MACOSX_BUNDLE_BUNDLE_NAME "Vivify Quest Converter"
+      MACOSX_BUNDLE_GUI_IDENTIFIER "io.github.vivifyquest.converter")
+  if(MSVC)
+    # A window app with a plain main(): no console window, no WinMain.
+    target_link_options(vivify-convert-gui PRIVATE /ENTRY:mainCRTStartup)
+  elseif(MINGW)
+    target_link_options(vivify-convert-gui PRIVATE -static)
+  endif()
+  if(NOT MSVC AND NOT APPLE)
+    target_link_options(vivify-convert-gui PRIVATE $<$<CONFIG:Release>:-s>)
+  endif()
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_options(vivify-convert-gui PRIVATE -static-libstdc++ -static-libgcc)
+  endif()
+  install(TARGETS vivify-convert-gui RUNTIME DESTINATION bin BUNDLE DESTINATION .)
+endif()
+
 # The C API smoke test (converter/test). Off when this directory is pulled into
 # another project with add_subdirectory.
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)

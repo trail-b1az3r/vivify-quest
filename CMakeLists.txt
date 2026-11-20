@@ -64,6 +64,9 @@ endif()
 if("${VIVIFY_GAME_TARGET}" STREQUAL "1.45.3")
 	message(STATUS "Vivify: building for Beat Saber 1.45.3")
 	add_compile_definitions(VIVIFY_GAME_1_45_3=1)
+	# beatsaber-hook 9 uses std::expected (i2c::result), which is C++23.
+	set(CMAKE_CXX_STANDARD 23)
+	set(CMAKE_CXX_STANDARD_REQUIRED 23)
 endif()
 
 set(COMPILE_ID ${CMAKE_PROJECT_NAME})
@@ -104,13 +107,22 @@ RECURSE_FILES(src_inline_hook_beatsaber_hook_local_extra_c ${EXTERN_DIR}/include
 RECURSE_FILES(src_inline_hook_beatsaber_hook_local_extra_cpp ${EXTERN_DIR}/includes/beatsaber-hook/shared/inline-hook/*.cpp)
 
 set(vivify_hook_dir "${EXTERN_DIR}/includes/beatsaber-hook/shared/inline-hook")
-set(vivify_fixed_hook "${CMAKE_CURRENT_BINARY_DIR}/generated/And64InlineHook.cpp")
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${vivify_hook_dir}/And64InlineHook.cpp")
-include(cmake/FixArm64Relocator.cmake)
-vivify_fix_arm64_relocator("${vivify_hook_dir}/And64InlineHook.cpp" "${vivify_fixed_hook}")
-list(REMOVE_ITEM src_inline_hook_beatsaber_hook_local_extra_cpp "${vivify_hook_dir}/And64InlineHook.cpp")
-target_sources(${COMPILE_ID} PRIVATE "${vivify_fixed_hook}")
-target_include_directories(${COMPILE_ID} PRIVATE "${vivify_hook_dir}")
+if(EXISTS "${vivify_hook_dir}/And64InlineHook.cpp")
+  # Older beatsaber-hook releases ship And64InlineHook as a local source file.
+  # Keep the audited ARM64 relocation patch for those releases.
+  set(vivify_fixed_hook "${CMAKE_CURRENT_BINARY_DIR}/generated/And64InlineHook.cpp")
+  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${vivify_hook_dir}/And64InlineHook.cpp")
+  include(cmake/FixArm64Relocator.cmake)
+  vivify_fix_arm64_relocator("${vivify_hook_dir}/And64InlineHook.cpp" "${vivify_fixed_hook}")
+  list(REMOVE_ITEM src_inline_hook_beatsaber_hook_local_extra_cpp "${vivify_hook_dir}/And64InlineHook.cpp")
+  target_sources(${COMPILE_ID} PRIVATE "${vivify_fixed_hook}")
+  target_include_directories(${COMPILE_ID} PRIVATE "${vivify_hook_dir}")
+else()
+  # Newer beatsaber-hook (9.x, used by Beat Saber 1.45.3) no longer ships
+  # And64InlineHook.cpp in shared/inline-hook. Do not hash or compile a
+  # source file that the dependency intentionally removed.
+  message(STATUS "Vivify: beatsaber-hook has no legacy And64InlineHook.cpp; using its current hook implementation")
+endif()
 
 target_sources(${COMPILE_ID} PRIVATE ${src_inline_hook_beatsaber_hook_local_extra_c})
 target_sources(${COMPILE_ID} PRIVATE ${src_inline_hook_beatsaber_hook_local_extra_cpp})

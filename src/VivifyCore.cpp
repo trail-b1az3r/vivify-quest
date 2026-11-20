@@ -153,8 +153,21 @@ void Runtime::OnBehaviourDestroyed(RuntimeBehaviour* behaviour) {
   if (_behaviour == behaviour) _behaviour = nullptr;
 }
 
+#ifdef VIVIFY_GAME_1_45_3
+// Tracks for 1.45.3 lends its BpmController only for the length of a beatmap
+// callback, so durations in beats are resolved while one runs.
+static thread_local GlobalNamespace::BeatmapCallbacksController* gCallbackController = nullptr;
+#endif
+
 void Runtime::OnCustomEventStatic(GlobalNamespace::BeatmapCallbacksController* callbackController,
                                   CustomJSONData::CustomEventData* customEventData) {
+#ifdef VIVIFY_GAME_1_45_3
+  struct Scope {
+    GlobalNamespace::BeatmapCallbacksController* previous = gCallbackController;
+    explicit Scope(GlobalNamespace::BeatmapCallbacksController* now) { gCallbackController = now; }
+    ~Scope() { gCallbackController = previous; }
+  } const scope(callbackController);
+#endif
   Runtime::Instance().HandleCustomEvent(callbackController, customEventData);
 }
 
@@ -192,6 +205,7 @@ void Runtime::Update() {
     if (!_pauseMenuActive && !(_preEffects.empty() && _postEffects.empty())) {
       ReportGameplayFrame(UnityEngine::Time::get_unscaledDeltaTime());
     }
+    if (!_pauseMenuActive) ReportSeparateEyeFrame(UnityEngine::Time::get_unscaledDeltaTime());
     // Crash recovery's sign of life, every 5 s of play (0.15.2).
     if (frameStart - _lastRecoveryHeartbeat > std::chrono::seconds(5)) {
       _lastRecoveryHeartbeat = frameStart;
@@ -226,6 +240,8 @@ void Runtime::Update() {
     RefreshSlowProbes();
     HideForeignSaberLights();
     HideGameMirrors();
+    UpdateNoteDrawDistance();
+    ApplyForcedBloom();
     SyncReplacementTintColors();
   } catch (std::exception const& ex) {
     LogThrottledUpdateError(ex.what());
@@ -333,10 +349,16 @@ void Runtime::DetectSongRestart() {
 }
 
 float Runtime::CurrentBpm() const {
+#ifdef VIVIFY_GAME_1_45_3
+  if (!gCallbackController) return 0.0f;
+  auto* bpmController = TracksStatic::GetBpmController(gCallbackController);
+  return bpmController ? bpmController->get_currentBpm() : 0.0f;
+#else
   if (TracksStatic::bpmController) {
     return TracksStatic::bpmController->get_currentBpm();
   }
   return 0.0f;
+#endif
 }
 
 float Runtime::DurationBeatsToSeconds(float durationBeats) const {
@@ -714,10 +736,12 @@ void Runtime::ResetRuntime(std::string_view reason) {
   _slowProbes.clear();
   RestoreForeignSaberLights();
   RestoreGameMirrors();
+  RestoreForcedBloom();
   RestoreVivifyFoveation();
   _blitGuardKilled.clear();
   _blitGuardAllOff = false;
   _blitGuardLogged = false;
+  _replayCameraLogged = false;
   _blitGuardLastSample = 0.0f;
   _mainBlitAllocation.reset();
   _scratchBlitAllocation.reset();

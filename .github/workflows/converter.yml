@@ -1,7 +1,7 @@
 name: Converter library
 
-# The converter as a desktop library, command-line tool and Unity Editor
-# package (converter/), for Windows, Linux and macOS. The mod's own build is
+# The converter as a desktop library, command-line tool, desktop app and
+# Unity Editor package (converter/), for Windows, Linux and macOS. The mod's own build is
 # build.yml; this does not touch it.
 
 on:
@@ -53,9 +53,15 @@ jobs:
       with:
         python-version: '3.x'
 
+    - name: Install the desktop app's Linux build dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl-dev libxkbcommon-dev
+
     - name: Configure
       shell: bash
-      run: cmake -S converter -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.configure }}
+      run: cmake -S converter -B build -DCMAKE_BUILD_TYPE=Release -DVIVIFY_CONVERT_GUI=ON ${{ matrix.configure }}
 
     - name: Build
       run: cmake --build build --config Release --parallel
@@ -70,6 +76,28 @@ jobs:
       with:
         name: vivify-convert-${{ matrix.name }}
         path: out/
+        if-no-files-found: error
+
+    # The desktop app on its own, for people who only want to convert maps.
+    - name: Collect the desktop app
+      shell: bash
+      run: |
+        set -e
+        mkdir -p app
+        if [ -d "out/Vivify Quest Converter.app" ]; then
+          cp -R "out/Vivify Quest Converter.app" app/
+        elif [ -f "out/bin/Vivify Quest Converter.exe" ]; then
+          cp "out/bin/Vivify Quest Converter.exe" app/
+        else
+          cp "out/bin/Vivify Quest Converter" app/
+        fi
+        cp converter/gui/README.md app/README.md
+        ls -la app
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: VivifyQuestConverter-app-${{ matrix.name }}
+        path: app/
         if-no-files-found: error
 
   unity-package:

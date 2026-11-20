@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cctype>
 #include <chrono>
 #include <cstdio>
 #include <filesystem>
@@ -16,7 +17,7 @@
 #include <thread>
 #include <vector>
 
-#include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
+#include "VivifyCompat.hpp"
 
 namespace Vivify::LogUpload {
 namespace {
@@ -26,7 +27,10 @@ namespace {
 constexpr std::uintmax_t kMaxFileBytes = 1536 * 1024;
 constexpr std::uintmax_t kAutoUploadBytes = 4 * 1024 * 1024;
 constexpr std::uintmax_t kManualUploadBytes = 2 * kAutoUploadBytes;
-constexpr std::uintmax_t kRequestTextBytes = 3 * 1024 * 1024;
+// 1.5 MB per request (0.15.33, was 3 MB): a smaller request costs the relay
+// less CPU per call, and the two uploads that failed with Cloudflare 503s
+// were the ones that carried a large global-log part.
+constexpr std::uintmax_t kRequestTextBytes = 3 * 512 * 1024;
 constexpr size_t kMaxFilesPerRequest = 12;
 
 struct UploadFile {
@@ -162,6 +166,32 @@ bool PrepareRelay(UploadConfig const& config) {
   return false;
 }
 
+// ", Cloudflare error 1102: Worker exceeded resource limits" from a Cloudflare
+// HTML error page, or "" for anything else.
+std::string CloudflareError(std::string const& page) {
+  if (page.find("<!DOCTYPE") == std::string::npos && page.find("<html") == std::string::npos) return {};
+  auto between = [&](std::string const& open, std::string const& close) {
+    size_t const start = page.find(open);
+    if (start == std::string::npos) return std::string();
+    size_t const from = start + open.size();
+    size_t const end = page.find(close, from);
+    if (end == std::string::npos) return std::string();
+    std::string text = page.substr(from, std::min<size_t>(end - from, 160));
+    for (auto& c : text) if (c == '\n' || c == '\r' || c == '\t') c = ' ';
+    return text;
+  };
+  std::string code;
+  if (size_t const at = page.find("Error code"); at != std::string::npos) {
+    for (size_t i = at + 10; i < page.size() && i < at + 40; ++i) {
+      if (std::isdigit(static_cast<unsigned char>(page[i]))) code += page[i];
+      else if (!code.empty()) break;
+    }
+  }
+  std::string const title = between("<title>", "</title>");
+  if (code.empty() && title.empty()) return ", an HTML error page";
+  return ", Cloudflare" + (code.empty() ? std::string() : " error " + code) + (title.empty() ? "" : ": " + title);
+}
+
 bool PostBatch(UploadConfig const& config, std::vector<UploadFile> const& batch) {
   if (batch.empty()) return true;
   rapidjson::Document body(rapidjson::kObjectType);
@@ -191,11 +221,29 @@ bool PostBatch(UploadConfig const& config, std::vector<UploadFile> const& batch)
                                WebUtils::URLOptions::HeaderMap{{"Content-Type", "application/json"}}, false, "",
                                std::nullopt, 90);
   options.noEscape = true;
+  // Retries (0.15.33): a busy or briefly failing relay answers 5xx (Cloudflare
+  // serves its own HTML error page, e.g. when the Worker runs out of CPU on a
+  // large request), and a dropped connection answers no HTTP status at all.
+  // Those are tried again after a pause; a refusal (4xx) is final. The log
+  // offsets only move after a success, so nothing is lost either way.
+  constexpr int kAttempts = 4;
+  constexpr int kPauseSeconds[kAttempts] = {0, 4, 12, 30};
+  auto transient = [](long code) { return code == 0 || code == 408 || code == 429 || code >= 500; };
   auto response = WebUtils::Post<WebUtils::StringResponse>(options, payload);
+  for (int attempt = 1; attempt < kAttempts && !response.IsSuccessful() && transient(response.get_HttpCode()); ++attempt) {
+    PaperLogger.warn("Vivify Send Logs: upload attempt {}/{} failed (http {}, curl {}{}); retrying in {} s", attempt,
+                     kAttempts, response.get_HttpCode(), response.get_CurlStatus(),
+                     response.responseData ? CloudflareError(*response.responseData) : std::string(),
+                     kPauseSeconds[attempt]);
+    std::this_thread::sleep_for(std::chrono::seconds(kPauseSeconds[attempt]));
+    response = WebUtils::Post<WebUtils::StringResponse>(options, payload);
+  }
   if (!response.IsSuccessful()) {
     // The relay answers a refusal with its reason ("bad file: <name>", "too
-    // much text", ...); without it a 400 in the log says nothing.
+    // much text", ...); without it a 400 in the log says nothing. A Cloudflare
+    // error page is reduced to its error code and title.
     std::string reason = response.responseData ? *response.responseData : std::string();
+    if (std::string const cloudflare = CloudflareError(reason); !cloudflare.empty()) reason = cloudflare.substr(2);
     if (reason.size() > 300) reason.resize(300);
     PaperLogger.warn("Vivify Send Logs: upload failed (http {}, curl {}): {} [files: {}]",
                      response.get_HttpCode(), response.get_CurlStatus(), reason.empty() ? "no reply" : reason,

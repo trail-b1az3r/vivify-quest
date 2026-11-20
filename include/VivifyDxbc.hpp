@@ -354,6 +354,26 @@ struct GlslOptions {
   // Render-texture globals used by a non-layered camera. Only these array
   // resources lose their layer coordinate; authored texture arrays stay arrays.
   std::vector<std::string> singleViewTextures;
+  // The reverse, for multiview programs (0.15.36): screen-grab textures a PC
+  // shader declared as a plain 2D texture (written without Unity's stereo
+  // macros) are sampled as the two-layer array they are on the Quest, at the
+  // layer of the eye being drawn. A plain 2D sampler bound to that array
+  // returned nothing: Get Your Wish's "transparent" window (a world-space
+  // censor quad reading GrabPass {}) drew as a flat grey square.
+  std::vector<std::string> viewLayerTextures;
+  // Screen-copy y convention (0.15.40). Unity's ComputeGrabScreenPos, built
+  // for Direct3D, bakes UNITY_UV_STARTS_AT_TOP into the bytecode as a
+  // constant: the screen position is multiplied by (0.5, -0.5). Direct3D's
+  // grab textures are stored top-down; OpenGL's, the Quest's, bottom-up, so
+  // the converted shader read the screen copy upside down (743 Aether's
+  // shockwaves showed the view flipped inside a square; Get Your Wish's
+  // window). Set for the programs of a pass that reads a GrabPass texture: a
+  // multiply by a constant whose used lanes are all 0.5 but one -0.5 gets
+  // +0.5 there, which is what Unity's own OpenGL build of the shader holds.
+  // Shaders that flip with _ProjectionParams.x (ComputeScreenPos) have no
+  // such constant and are left alone; Unity sets that to the Quest's
+  // convention.
+  bool flipScreenCopyY = false;
   // The program is the STEREO_INSTANCING_ON (single-pass instanced) variant,
   // or a plain variant given that variant's code. Its vertex stage takes the
   // eye from SV_InstanceID even when it does not write

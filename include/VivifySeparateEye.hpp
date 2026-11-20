@@ -3,6 +3,7 @@
 #include <string_view>
 #include <vector>
 namespace UnityEngine { class Camera; class RenderTexture; class Material; class GameObject; class Shader; class Object; }
+namespace UnityEngine::Rendering { class CommandBuffer; }
 namespace GlobalNamespace { class MirrorRendererSO; }
 namespace Vivify { class CameraApplier; }
 namespace Vivify::SeparateEye {
@@ -34,6 +35,8 @@ bool BeginTextureCamera(void const* owner, UnityEngine::Camera* camera);
 void EndTextureCamera(void const* owner);
 UnityEngine::Material* BlitMaterial(UnityEngine::Material* source);
 bool IsRenderingEye();
+// True while the scene is being drawn once per eye (the separate route).
+bool RenderingSeparately();
 // Process slices of an existing multiview image without rendering a scene.
 bool BeginBlitEye(UnityEngine::Camera* camera, int eye);
 void EndBlitEye();
@@ -57,4 +60,15 @@ void ForgetMirrorCopies(GlobalNamespace::MirrorRendererSO* source);
 // Consumes only a completed image from this camera and this frame. No scenes
 // are rendered here. On pre-render rejection/failure the main view renders normally.
 bool TryRender(UnityEngine::Camera* main, UnityEngine::RenderTexture* src, CameraApplier* effects);
+// Beat Saber 1.45.3 (URP), which calls none of the camera callbacks above.
+// The game's post-processing pass ran for the main camera this frame, on this
+// colour texture (learns the image layout; presentation needs that pass).
+void NoteUrpPostPass(UnityEngine::Camera* main, UnityEngine::RenderTexture* color);
+// From LateUpdate, before URP renders: draws both eye images (camera renders
+// are not allowed inside URP's render loop) and, unless Keep Scene Depth is
+// on, takes the main camera's scene draw away.
+void UrpPrepareFrame(UnityEngine::Camera* main);
+// In the game's post-processing pass: records copies of this frame's eye
+// images into the main colour texture's two layers. False when there are none.
+bool UrpPresent(UnityEngine::Rendering::CommandBuffer* commands, UnityEngine::RenderTexture* color);
 }

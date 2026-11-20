@@ -2,9 +2,10 @@ import './style.css';
 
 type LogFile = { name: string; path: string; size: number; sha: string };
 type Upload = { id: string; date: string; path: string; files: LogFile[]; bytes: number };
-type DashboardData = { uploads: Upload[]; days: { date: string; uploads: number; bytes: number }[]; totalBytes: number };
+type DashboardData = { uploads: Upload[]; days: { date: string; uploads: number; bytes: number }[]; totalBytes: number; dedupeSavedBytes: number; dedupeSavedFiles: number };
 const app = document.querySelector<HTMLDivElement>('#app')!;
-let data: DashboardData = { uploads: [], days: [], totalBytes: 0 };
+let data: DashboardData = { uploads: [], days: [], totalBytes: 0, dedupeSavedBytes: 0, dedupeSavedFiles: 0 };
+let sortMode: "newest" | "largest" | "smallest" = "newest";
 let online = false;
 let search = '';
 let selected: string | null = null;
@@ -54,6 +55,7 @@ function chart() {
 
 function render() {
   const visible = data.uploads.filter(u => (u.id + ' ' + u.date + ' ' + u.files.map(f => f.name).join(' ')).toLowerCase().includes(search.toLowerCase()));
+  visible.sort((a, b) => sortMode === "largest" ? b.bytes - a.bytes : sortMode === "smallest" ? a.bytes - b.bytes : b.path.localeCompare(a.path));
   const selectedUpload = data.uploads.find(u => u.path === selected);
   app.innerHTML = `
     <div class="shell">
@@ -71,24 +73,26 @@ function render() {
           <section class="stats-grid" aria-label="Relay statistics">
             <article class="stat-card stat-primary"><div class="stat-top"><span>Total uploads</span><span class="stat-icon">${icon('download')}</span></div><div class="stat-value" id="upload-count">${data.uploads.length.toLocaleString()}</div><div class="stat-foot"><span class="pulse"></span> Updates automatically</div></article>
             <article class="stat-card"><div class="stat-top"><span>Log files received</span><span class="stat-icon muted">${icon('file')}</span></div><div class="stat-value">${data.uploads.reduce((n,u)=>n+u.files.length,0).toLocaleString()}</div><div class="stat-foot">Across all uploads</div></article>
-            <article class="stat-card"><div class="stat-top"><span>Data stored</span><span class="stat-icon muted">${icon('activity')}</span></div><div class="stat-value">${bytes(data.totalBytes)}</div><div class="stat-foot">Total diagnostic text</div></article>
+            <article class="stat-card"><div class="stat-top"><span>Data stored</span><span class="stat-icon muted">${icon('activity')}</span></div><div class="stat-value">${bytes(data.totalBytes)}</div><div class="stat-foot">Unique diagnostic data on LOGS</div></article>
+            <article class="stat-card stat-saved"><div class="stat-top"><span>Storage saved by dedupe</span><span class="stat-icon saved-icon">${icon('activity')}</span></div><div class="stat-value">${bytes(data.dedupeSavedBytes || 0)}</div><div class="stat-foot">${(data.dedupeSavedFiles || 0).toLocaleString()} duplicate files skipped</div></article>
             <article class="stat-card"><div class="stat-top"><span>Latest upload</span><span class="stat-icon muted">${icon('refresh')}</span></div><div class="stat-value stat-date">${data.uploads[0] ? dateLabel(data.uploads[0].date) : '—'}</div><div class="stat-foot">${data.uploads[0] ? data.uploads[0].files.length + ' files in latest upload' : 'Waiting for first upload'}</div></article>
           </section>
           <section class="panel traffic-panel"><div class="panel-heading"><div><h2>Upload traffic</h2><p>Daily uploads received over the last 14 days</p></div><div class="chart-legend"><i></i> Uploads / day</div></div><div class="chart-wrap">${chart()}</div><div class="chart-summary"><strong>${data.days.slice(-14).reduce((n,d)=>n+d.uploads,0)}</strong><span>uploads in this period</span></div></section>
-          <section class="panel uploads-panel" id="uploads"><div class="panel-heading uploads-heading"><div><h2>Uploaded logs</h2><p>Browse diagnostic files, newest first</p></div><label class="search-box">${icon('search')}<input id="search" type="search" placeholder="Search uploads or files…" value="${escapeHtml(search)}" /></label></div>
+          <section class="panel uploads-panel" id="uploads"><div class="panel-heading uploads-heading"><div><h2>Uploaded logs</h2><p>Browse diagnostic files, newest first</p></div><div class="upload-tools"><label class="search-box">${icon('search')}<input id="search" type="search" placeholder="Search uploads or files…" value="${escapeHtml(search)}" /></label><label class="sort-control"><span>Sort by</span><select id="sort-size" aria-label="Sort uploaded logs"><option value="newest" ${sortMode === "newest" ? "selected" : ""}>Newest</option><option value="largest" ${sortMode === "largest" ? "selected" : ""}>Largest files</option><option value="smallest" ${sortMode === "smallest" ? "selected" : ""}>Smallest files</option></select></label></div></div>
             <div class="table-head"><span>UPLOAD</span><span>FILES</span><span>SIZE</span><span>DATE</span><span></span></div>
             <div class="upload-list">${visible.length ? visible.map(u => `<button class="upload-row" data-upload="${escapeHtml(u.path)}"><span class="upload-name"><span class="folder-icon">${icon('logs')}</span><span><strong>${escapeHtml(u.id)}</strong><small>${escapeHtml(u.path)}</small></span></span><span class="file-count">${u.files.length} files</span><span class="size-cell">${bytes(u.bytes)}</span><span class="date-cell">${dateLabel(u.date)}</span><span class="row-arrow">${icon('chevron')}</span></button>`).join('') : `<div class="empty-state"><div class="empty-icon">${icon('logs')}</div><strong>${search ? 'No matching uploads' : 'No logs uploaded yet'}</strong><p>${search ? 'Try a different search term.' : 'When Vivify sends diagnostic logs, each upload will appear here.'}</p></div>`}</div>
-            <div class="list-footer"><span>Showing <strong>${visible.length}</strong> of <strong>${data.uploads.length}</strong> uploads</span><span>Sorted by date <span class="sort-arrow">↓</span></span></div>
+            <div class="list-footer"><span>Showing <strong>${visible.length}</strong> of <strong>${data.uploads.length}</strong> uploads</span><span>Sorted by ${sortMode === "newest" ? "date" : sortMode === "largest" ? "file size · largest first" : "file size · smallest first"}</span></div>
           </section>
           <footer>Vivify Quest <span>·</span> Log Relay <span>·</span> Diagnostic data</footer>
         </div>
       </main>
     </div>
-    ${selectedUpload ? `<div class="overlay" id="overlay"><section class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title"><div class="drawer-head"><div><div class="eyebrow">UPLOAD DETAILS</div><h2 id="drawer-title">${escapeHtml(selectedUpload.id)}</h2><p>${dateLabel(selectedUpload.date)} · ${bytes(selectedUpload.bytes)}</p></div><button class="icon-button" id="close-drawer" aria-label="Close">${icon('close')}</button></div><div class="drawer-files"><h3>FILES IN THIS UPLOAD</h3>${selectedUpload.files.map(f=>`<div class="file-entry"><button class="file-row" data-file="${escapeHtml(f.path)}"><span class="file-icon">${icon('file')}</span><span><strong>${escapeHtml(f.name)}</strong><small>${bytes(f.size)}</small></span><span class="file-open">${icon('chevron')}</span></button><a class="file-download" href="/api/log?path=${encodeURIComponent(f.path)}&download=1" download="${escapeHtml(f.name)}" aria-label="Download ${escapeHtml(f.name)}">${icon('download')}<span>Download</span></a></div>`).join('')}</div><div class="drawer-note">Logs are stored on the repository's LOGS branch and automatically removed after 30 days.</div></section></div>` : ''}
+    ${selectedUpload ? `<div class="overlay" id="overlay"><section class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title"><div class="drawer-head"><div><div class="eyebrow">UPLOAD DETAILS</div><h2 id="drawer-title">${escapeHtml(selectedUpload.id)}</h2><p>${dateLabel(selectedUpload.date)} · ${bytes(selectedUpload.bytes)}</p></div><button class="icon-button" id="close-drawer" aria-label="Close">${icon('close')}</button></div><div class="drawer-files"><h3>FILES IN THIS UPLOAD</h3>${selectedUpload.files.slice().sort((a, b) => sortMode === "largest" ? b.size - a.size : sortMode === "smallest" ? a.size - b.size : 0).map(f=>`<div class="file-entry"><button class="file-row" data-file="${escapeHtml(f.path)}"><span class="file-icon">${icon('file')}</span><span><strong>${escapeHtml(f.name)}</strong><small>${bytes(f.size)}</small></span><span class="file-open">${icon('chevron')}</span></button><a class="file-download" href="/api/log?path=${encodeURIComponent(f.path)}&download=1" download="${escapeHtml(f.name)}" aria-label="Download ${escapeHtml(f.name)}">${icon('download')}<span>Download</span></a></div>`).join('')}</div><div class="drawer-note">Logs are stored on the repository's LOGS branch. Routine retention removes logs older than 30 days; storage-pressure cleanup preserves the most recent two hours.</div></section></div>` : ''}
     <div class="toast" id="toast" role="status"></div>
     <div class="viewer" id="viewer" hidden><div class="viewer-card"><div class="viewer-head"><strong id="viewer-name">Log file</strong><button class="icon-button" id="viewer-close" aria-label="Close">${icon('close')}</button></div><pre id="viewer-content">Loading…</pre></div></div>
   `;
   document.querySelector('#refresh')?.addEventListener('click', () => load(true));
+  document.querySelector<HTMLSelectElement>('#sort-size')?.addEventListener('change', e => { sortMode = (e.target as HTMLSelectElement).value as typeof sortMode; render(); });
   document.querySelector<HTMLInputElement>('#search')?.addEventListener('input', e => { search = (e.target as HTMLInputElement).value; const pos = (e.target as HTMLInputElement).selectionStart ?? 0; render(); const input = document.querySelector<HTMLInputElement>('#search'); input?.focus(); input?.setSelectionRange(pos,pos); });
   document.querySelectorAll<HTMLElement>('[data-upload]').forEach(el => el.addEventListener('click', () => { selected = el.dataset.upload!; render(); }));
   document.querySelector('#close-drawer')?.addEventListener('click', () => { selected = null; render(); });

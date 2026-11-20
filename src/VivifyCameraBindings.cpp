@@ -2,6 +2,7 @@
 #include "GlobalNamespace/BloomPrePass.hpp"
 #include "GlobalNamespace/BloomPrePassRendererSO.hpp"
 #include "GlobalNamespace/ToneMappingExtensions.hpp"
+#include "System/String.hpp"
 #include <stdexcept>
 
 namespace Vivify {
@@ -21,6 +22,9 @@ void CameraBindings::Capture(UnityEngine::Camera* camera) {
   for (size_t i = 0; i != textures.size(); ++i) {
     _textures[i] = UnityEngine::Shader::GetGlobalTexture(StringW(std::string(textures[i]))).unsafePtr(); ++_captured;
   }
+#ifndef VIVIFY_GAME_1_45_3
+  // 1.45.3 renders with URP: its bloom pre-pass and tone-mapping keywords are
+  // driven by render passes, not by these globals, so only 1.40.8 saves them.
   using Bloom = GlobalNamespace::BloomPrePassRendererSO;
   static bool const initialized = [] {
     il2cpp_functions::runtime_class_init(classof(GlobalNamespace::BloomPrePassRendererSO*));
@@ -53,6 +57,7 @@ void CameraBindings::Capture(UnityEngine::Camera* camera) {
       ++_keywordCount;
     }
   }
+#endif
 }
 bool CameraBindings::Restore() noexcept {
   if (_restored) return true;

@@ -1,6 +1,6 @@
 // Tests worker.js against a fake GitHub API: node test.mjs
 import { createHash } from "node:crypto";
-import worker, { sha3_256 } from "./worker.js";
+import worker, { contentHash } from "./worker.js";
 let refSha = null, commits = {}, trees = {}, blobs = {}, n = 0, raceOnce = false, calls = [], authHeaders = [];
 globalThis.fetch = async (url, init) => {
   const path = url.replace("https://api.github.com/repos/trail-b1az3r/vivify-quest", "");
@@ -47,11 +47,11 @@ const env = { GITHUB_TOKEN: "x" };
 const post = (obj) => worker.fetch(new Request("https://relay/api/upload", { method: "POST", body: JSON.stringify(obj) }), env);
 const good = { version: "0.15.20", lite: false, upload: "0123456789abcdef", files: [{ name: "VivifyReport.txt", from: 0, text: "hello" }, { name: "vivify_global-p4.txt", from: 10, text: "log" }] };
 let fails = 0; const check = (what, ok) => { console.log((ok ? "ok   " : "FAIL ") + what); if (!ok) fails++; };
-check("SHA3-256 matches the FIPS 202 abc test vector", Buffer.from(sha3_256(new TextEncoder().encode("abc"))).toString("hex") === "3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532");
+check("content hash is SHA-256 of the UTF-8 text (FIPS 180 abc vector)", (await contentHash("abc")) === "sha256:ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
 let r = await post(good); let t = await r.text();
 check("first upload creates the orphan branch", r.status === 200 && refSha && commits[refSha].parents.length === 0 && calls.includes("POST /git/refs"));
 const firstTree = trees[commits[refSha].tree.sha];
-check("files land in logs/<date>/<time>_<version>_<id>/ and persist the SHA3 index", firstTree.tree.filter(e => e.path.startsWith("logs/")).every(e => /^logs\/\d{4}-\d\d-\d\d\/\d{6}_0\.15\.20_0123456789abcdef\//.test(e.path)) && firstTree.tree.some(e => e.path === ".vivify-sha3-index.json") && !firstTree.base_tree);
+check("files land in logs/<date>/<time>_<version>_<id>/ and persist the dedupe index", firstTree.tree.filter(e => e.path.startsWith("logs/")).every(e => /^logs\/\d{4}-\d\d-\d\d\/\d{6}_0\.15\.20_0123456789abcdef\//.test(e.path)) && firstTree.tree.some(e => e.path === ".vivify-sha3-index.json") && !firstTree.base_tree);
 const first = refSha;
 r = await worker.fetch(new Request("https://relay/api/logs"), env);
 const index = await r.json();
@@ -77,9 +77,12 @@ const filtered = await (await worker.fetch(new Request("https://relay/api/logs?u
 check("log listing can filter to one upload", filtered.uploads.length === 1 && filtered.uploads[0].id === index.uploads[0].id);
 check("log listing rejects malformed date filters", (await worker.fetch(new Request("https://relay/api/logs?date=not-a-date"), env)).status === 400);
 check("dashboard rejects paths outside the log allowlist", (await worker.fetch(new Request("https://relay/api/log?path=" + encodeURIComponent("../secrets.txt")), env)).status === 400);
-const beforeDuplicate = refSha;
+let beforeDuplicate = refSha;
 r = await post({ ...good, upload: "1123456789abcdef" });
-check("identical files are deduplicated without a new commit", r.status === 200 && (await r.text()).includes("deduplicated 2 file(s)") && refSha === beforeDuplicate);
+check("identical files are deduplicated and savings are persisted", r.status === 200 && (await r.text()).includes("deduplicated 2 file(s)") && refSha !== beforeDuplicate);
+beforeDuplicate = refSha;
+const afterDedupe = await (await worker.fetch(new Request("https://relay/api/logs"), env)).json();
+check("dashboard API reports cumulative dedupe storage savings", afterDedupe.dedupeSavedBytes === 8 && afterDedupe.dedupeSavedFiles === 2);
 r = await post({ ...good, upload: "2123456789abcdef", files: [{ name: "VivifyReport.txt", text: "hello" }, { name: "VivifyCrash.txt", text: "new crash detail" }] });
 check("mixed uploads store only files with new content", r.status === 200 && (await r.text()).includes("stored 1, deduplicated 1") && commits[refSha].parents[0] === beforeDuplicate);
 const beforeWithinBatch = refSha;
@@ -109,5 +112,20 @@ check("no token refused", (await worker.fetch(new Request("https://relay/api/upl
   await retentionPromise;
   const afterRetention = await (await worker.fetch(new Request("https://relay/api/logs"), env)).json();
   check("scheduled retention removes logs older than 30 days", !afterRetention.uploads.some(item => item.date === "2000-01-01"));
+}
+{
+  const old = new Date(Date.now() - 3 * 60 * 60 * 1000);
+  const date = old.toISOString().slice(0, 10);
+  const time = old.toISOString().slice(11, 19).replace(/:/g, "");
+  const beforeCleanup = refSha;
+  const tree = trees[commits[refSha].tree.sha];
+  tree.tree.push({ path: `logs/${date}/${time}_old_upload/VivifyReport.txt`, content: "three-hour-old log" });
+  let cleanupPromise;
+  await worker.scheduled({}, { ...env, MAX_LOG_STORAGE_BYTES: "1" }, { waitUntil: promise => { cleanupPromise = promise; } });
+  await cleanupPromise;
+  const afterCleanup = await (await worker.fetch(new Request("https://relay/api/logs"), env)).json();
+  check("storage-pressure cleanup removes logs older than two hours", !afterCleanup.uploads.some(item => item.id.includes("old_upload")));
+  check("storage-pressure cleanup preserves all uploads from the last two hours", afterCleanup.uploads.length > 0 && afterCleanup.uploads.every(item => Date.now() - Date.parse(item.date + "T" + item.id.slice(0,6).replace(/(\d{2})(\d{2})(\d{2})/, "$1:$2:$3") + "Z") <= 2 * 60 * 60 * 1000));
+  check("storage-pressure cleanup preserves LOGS branch history without a forced rewrite", commits[refSha].parents[0] === beforeCleanup);
 }
 console.log(fails + " failure(s)"); process.exit(fails ? 1 : 0);
