@@ -1,0 +1,62 @@
+=== Vivify 0.15.44 native crash at 1795207850 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x28a300002cba
+thread 11478 'UnityMain'
+pc 0x78c13089d8  lr 0x78c13089a8  sp 0x779224d930  fp 0x779224d9d0
+backtrace:
+  #00 pc 0x78c13089d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x78c13089a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x772412ac64  libmetacore.so +0xcdc64
+  #03 fp 0x779c55455c  libsl2.so +0x4fb55c
+  #04 fp 0x779c553e74  libsl2.so +0x4fae74
+  #05 fp 0x779c553d48  libsl2.so +0x4fad48
+  #06 fp 0x779c553ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7520d8bcd4  libhitscorevisualizer.so +0x182cd4
+  #08 fp 0x77079a5fe0  libil2cpp.so +0x26b2fe0
+  #09 fp 0x75392a4dc8  libbl.so +0x699dc8 (_ZN14ReplayRecorder24Hook_ProcessNewSwingData24hook_ProcessNewSwingDataEPN15GlobalNamespace23SaberSwingRatingCounterENS1_24BladeMovementDataElementES4_b +0x7c)
+  #10 fp 0x75392b8788  libbl.so +0x6ad788
+  #11 fp 0x7515527fec  libnoodleextensions.so +0x295fec (_ZN43Hook_SaberSwingRatingCounter_ProcessNewData43hook_SaberSwingRatingCounter_ProcessNewDataEPN15GlobalNamespace23SaberSwingRatingCounterENS0_24BladeMovementDataElementES3_b +0x214)
+  #12 fp 0x75155279a8  libnoodleextensions.so +0x2959a8
+  #13 fp 0x77079a48dc  libil2cpp.so +0x26b18dc
+last Vivify log lines (oldest first):
+  Vivify material: context=bundle-load asset=assets/materials/the big goodbye/trees/treematerial1.mat material='TreeMaterial1' shader='BeatSaber/Unlit Glow Cutout Dithered Wind' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/the big goodbye/trees/treematerial2.mat material='TreeMaterial2' shader='BeatSaber/Unlit Glow Cutout Dithered Wind' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/the big goodbye/trees/treematerial3.mat material='TreeMaterial3' shader='BeatSaber/Unlit Glow Cutout Dithered Wind' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/the big goodbye/trees/treematerialfall.mat material='TreeMaterialFall' shader='BeatSaber/Unlit Glow Cutout Dithered Wind' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/the big goodbye/treetrunkmaterial.mat material='TreeTrunkMaterial' shader='BeatSaber/Unlit Glow Cutout Dithered' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/transitionrunwaymaterial.mat material='TransitionRunwayMaterial' shader='Lekrkoekj/TransparentTextShader (not blocking other objects)' supported=true internalError=false
+  Vivify shader asset: path='assets/shaders/coloredpaintshader.shader' shader='Custom/ColoredPaintShader' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders/flashbackshader.shader' shader='Unlit Flashback Cutout' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders/groundplaneshader.shader' shader='BeatSaber/Lit Glow (Radial Fade Color)' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders/nobloomtext.shader' shader='Lekrkoekj/NoBloomText' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders/skyboxshader.shader' shader='Vivify/SkyboxShader' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders/textuedwithlighting.shader' shader='Vivify/Textured With Lighting' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders/transparentparticleshader.shader' shader='Lekrkoekj/TransparentParticleShader' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders/transparenttextshader.shader' shader='Lekrkoekj/TransparentTextShader' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders/transparenttextureshader - no overlap.shader' shader='Lekrkoekj/TransparentTextureShader - With ZTest' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders/transparenttextureshader - no ztest.shader' shader='Lekrkoekj/TransparentTextureShader - No ZTest' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders/transparenttextureshadernoblock.shader' shader='Lekrkoekj/TransparentTextShader (not blocking other objects)' supported=true subshaders=1
+  Vivify material: context=bundle-load asset=assets/textures/ajrlogomaterial.mat material='AJRLogoMaterial' shader='Lekrkoekj/TransparentTextureShader - No ZTest' supported=true internalError=false
+  Vivify shaders: bundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45f4679ee65972c2f025d3c20316d42742c4d270/bundleAndroid2021.vivify' converted=false total=15 runnable=15 noAndroidProgram=0 deviceRejected=0
+  Vivify: the Replay mod's button is clickable again now that the map is ready
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=292
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3b4ab (Cheerleader - Scorefam, BanditByTheStreet, Lekrkoekj)' isCustom=true hasDetails=true
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45f4679ee65972c2f025d3c20316d42742c4d270/bundleAndroid2021.vivify' -> not needed
+  Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.05,1.65,0.12) fwd=(-0.15,-0.49,0.86)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.70,0.09) fwd=(-0.26,-0.04,0.97)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3b4ab (Cheerleader - Scorefam, BanditByTheStreet, Lekrkoekj)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.01,1.72,0.12) fwd=(0.21,0.14,0.97)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.70,0.08) fwd=(-0.03,-0.04,1.00)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3b4ab (Cheerleader - Scorefam, BanditByTheStreet, Lekrkoekj)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.02,1.72,0.10) fwd=(0.03,0.14,0.99)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+=== end ===
+
