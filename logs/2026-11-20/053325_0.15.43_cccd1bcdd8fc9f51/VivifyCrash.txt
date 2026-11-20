@@ -1,0 +1,58 @@
+=== Vivify 0.15.43 native crash at 1795140761 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27e200001d5d
+thread 7552 'UnityMain'
+pc 0x7ea8f2a9d8  lr 0x7ea8f2a9a8  sp 0x7d88215a70  fp 0x7d88215b10
+backtrace:
+  #00 pc 0x7ea8f2a9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7ea8f2a9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7d27522c64  libmetacore.so +0xcdc64
+  #03 fp 0x7d94fac55c  libsl2.so +0x4fb55c
+  #04 fp 0x7d94fabe74  libsl2.so +0x4fae74
+  #05 fp 0x7d94fabd48  libsl2.so +0x4fad48
+  #06 fp 0x7d94fabce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7b67c31f10  libVivify.so +0x1f7f10
+  #08 fp 0x7d13a33840  libil2cpp.so +0x21ba840
+  #09 fp 0x7d13a3378c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify visual check at 5s: 3 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: a live note has 4 renderer(s):
+  Vivify visual check:   'NoteCube' enabled=true active=true layer=8 material='NoteHD' shader='Custom/NoteHD' supported=true queue=2004 block: _Cutout=0.00 _Color=(0.16,0.56,0.82,1.00)
+  Vivify visual check:   'NoteArrow' enabled=true active=true layer=8 material='NoteArrowHD' shader='Custom/GlowingInstancedHD' supported=true queue=2002 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'NoteArrowGlow' enabled=true active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.16,0.56,0.82,1.00)
+  Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.16,0.56,0.82,1.00)
+  Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=1 intensity=0.00 sun='<none>'
+  Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check at 5s: 66 active renderer(s), 0 with no runnable shader; most drawn: Custom/CustomParticles x18, AreaLit/LightMesh x6, Custom/NoteHD x6, AreaLit/Standard x6, Custom/Parametric3SliceSprite x4, Custom/GlowingInstancedHD x
+  Vivify grab texture '_GrabTexture' at 5s: nothing bound
+  Vivify grab texture '_MPSGrab' at 5s: render texture dimension=5 layers=2 1344x1408 msaa=1
+  Vivify grab texture '_MoonGrabTex' at 5s: nothing bound
+  Vivify grab texture '_SceneColor' at 5s: nothing bound
+  Vivify visual check: main camera cullingMask=0x3d3bff37 depthTextureMode=1 clearFlags=2
+  Vivify custom event: type='SetGlobalProperty' time=19.5 songTime=19.507524
+  Vivify custom event: type='SetRenderingSettings' time=20.25 songTime=20.264196
+  Vivify SetRenderingSettings: time=20.25 durationSeconds=4.6875 immediate=false
+  Vivify visual check at 30s: 8 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check at 30s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check at 30s: 84 active renderer(s), 0 with no runnable shader; most drawn: Custom/CustomParticles x23, Custom/NoteHD x9, AreaLit/Standard x6, AreaLit/LightMesh x6, Custom/GlowingInstancedLW x6, Custom/GlowingInstancedHD x4, 
+  Vivify grab texture '_GrabTexture' at 30s: nothing bound
+  Vivify grab texture '_MPSGrab' at 30s: render texture dimension=5 layers=2 1344x1408 msaa=1
+  Vivify grab texture '_MoonGrabTex' at 30s: nothing bound
+  Vivify grab texture '_SceneColor' at 30s: nothing bound
+  Vivify custom event: type='SetRenderingSettings' time=60 songTime=60.007607
+  Vivify SetRenderingSettings: time=60 durationSeconds=6 immediate=false
+  Vivify custom event: type='SetGlobalProperty' time=60 songTime=60.007607
+  Vivify custom event: type='InstantiatePrefab' time=71.25 songTime=71.25798
+  Vivify InstantiatePrefab: asset='assets/_mawntee/prefabs/tts_scene2.prefab' id='Scene2' alreadyLive=false
+  Vivify InstantiatePrefab: GPU instancing off on 1 particle system(s) of 'assets/_mawntee/prefabs/tts_scene2.prefab'
+  Vivify InstantiatePrefab spawned: id='Scene2' asset='assets/_mawntee/prefabs/tts_scene2.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify custom event: type='SetRenderingSettings' time=72 songTime=72.00681
+  Vivify SetRenderingSettings: time=72 durationSeconds=12.75 immediate=false
+  VRCenterAdjust.OnEnable skipped: missing _settingsManager=true _settingsApplicator=true
+  VRCenterAdjust.Start skipped: missing _settingsManager=true _settingsApplicator=true
+  VRCenterAdjust.Update skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify custom event: type='Blit' time=73.125 songTime=73.12536
+  Vivify material: context=Blit asset=assets/_mawntee/materials/mildacid.mat material='MildAcid' shader='Mawntee/Post Processing/Mild Acid 2D' supported=true internalError=false
+  Vivify Blit event: time=73.125 asset='assets/_mawntee/materials/mildacid.mat' source='_Main' targets=1 priority=1 pass=-1 order=7 durationBeats=32
+  Vivify stereo screen effect processing failed: A SafePtr<T> instance is holding a null handle!
+=== end ===
+
