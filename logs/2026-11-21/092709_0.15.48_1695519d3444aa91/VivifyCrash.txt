@@ -1,0 +1,129 @@
+=== Vivify 0.15.45 native crash at 1795211187 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x283800003e50
+thread 16000 'UnityMain'
+pc 0x7eb4924818  lr 0x7eb49247e8  sp 0x7d8c24b6b0  fp 0x7d8c24b750
+backtrace:
+  #00 pc 0x7eb4924818  libc.so +0xcd818 (abort +0xa8)
+  #01 lr 0x7eb49247e8  libc.so +0xcd7e8 (abort +0x78)
+  #02 fp 0x7d26651820  libmetacore.so +0x1d820
+  #03 fp 0x7d42366fb4  libcustom-types.so +0x4f2fb4
+  #04 fp 0x7d423668cc  libcustom-types.so +0x4f28cc
+  #05 fp 0x7d423667a0  libcustom-types.so +0x4f27a0
+  #06 fp 0x7d423825f4  libcustom-types.so +0x50e5f4 (__cxa_get_exception_ptr +0x0)
+  #07 fp 0x7d423825d0  libcustom-types.so +0x50e5d0
+  #08 fp 0x7bef8a75f0  libBetterHaptics.so +0xa45f0
+  #09 fp 0x7bef8a56d4  libBetterHaptics.so +0xa26d4
+  #10 fp 0x7d19033f78  libil2cpp.so +0x5dc8f78
+  #11 fp 0x7d1673ea68  libil2cpp.so +0x34d3a68
+  #12 fp 0x7d95e9e74c  libgame.so +0x1974c (android_main +0x7c)
+  #13 fp 0x7d95ea6920  libgame.so +0x21920
+  #14 fp 0x7eb498e2b0  libc.so +0x1372b0
+  #15 fp 0x7eb4926174  libc.so +0xcf174
+last Vivify log lines (oldest first):
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify: Reduce Debris player option = true (custom debris disabled)
+  Vivify visual check at 5s: 3 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: a live note has 4 renderer(s):
+  Vivify visual check:   'NoteCube' enabled=true active=true layer=8 material='NoteHD' shader='GraphicsTweaks/NoteHDBloom' supported=true queue=2004 block: _Cutout=0.00 _Color=(0.78,0.08,0.08,1.00)
+  Vivify visual check:   'NoteArrow' enabled=true active=true layer=8 material='NoteArrowHD' shader='GraphicsTweaks/GlowingInstancedHDBloom' supported=true queue=2002 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'NoteArrowGlow' enabled=true active=true layer=8 material='NoteArrowGlow' shader='GraphicsTweaks/CustomParticlesBloom' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.78,0.08,0.08,1.00)
+  Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='GraphicsTweaks/CustomParticlesBloom' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.78,0.08,0.08,1.00)
+  Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+  Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check at 5s: 107 active renderer(s), 0 with no runnable shader; most drawn: BeatSaber/Standard x58, GraphicsTweaks/CustomParticlesBloom x14, Ree/BlurlessSaber x10, Unlit/vs_flatglow x7, GraphicsTweaks/NoteHDBloom x6, Ree/Simp
+  Vivify grab texture '_GrabTexture' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+  Vivify visual check: main camera cullingMask=0x3d3bfdb7 depthTextureMode=1 clearFlags=2
+  Vivify custom event: type='SetMaterialProperty' time=10.3125 songTime=10.318694
+  Vivify custom event: type='SetMaterialProperty' time=10.3125 songTime=10.318694
+  Vivify custom event: type='SetMaterialProperty' time=10.3125 songTime=10.318694
+  Vivify custom event: type='SetMaterialProperty' time=11.25 songTime=11.256927
+  Vivify custom event: type='SetMaterialProperty' time=11.25 songTime=11.256927
+  Vivify custom event: type='SetMaterialProperty' time=11.25 songTime=11.256927
+  Vivify custom event: type='SetMaterialProperty' time=12.1875 songTime=12.193236
+  Vivify custom event: type='SetMaterialProperty' time=12.1875 songTime=12.193236
+  Vivify custom event: type='SetMaterialProperty' time=12.1875 songTime=12.193236
+  Vivify pause menu opened: syncedObjects=0 secondaryCameras=0
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(-0.07,1.78,-0.04) fwd=(-0.08,0.10,0.99)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=2 preloaded=3 synced=0 secondaryCameras=0 declaredTextures=0 assets=17
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+=== end ===
+
+=== Vivify 0.15.45 native crash at 1795219639 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x2838000022b7
+thread 8988 'UnityMain'
+pc 0x73846e6818  lr 0x73846e67e8  sp 0x72682509c0  fp 0x7268250a60
+backtrace:
+  #00 pc 0x73846e6818  libc.so +0xcd818 (abort +0xa8)
+  #01 lr 0x73846e67e8  libc.so +0xcd7e8 (abort +0x78)
+  #02 fp 0x720f45f820  libmetacore.so +0x1d820
+  #03 fp 0x722470bfb4  libcustom-types.so +0x4f2fb4
+  #04 fp 0x722470b8cc  libcustom-types.so +0x4f28cc
+  #05 fp 0x722470b7a0  libcustom-types.so +0x4f27a0
+  #06 fp 0x72247275f4  libcustom-types.so +0x50e5f4 (__cxa_get_exception_ptr +0x0)
+  #07 fp 0x72247275d0  libcustom-types.so +0x50e5d0
+  #08 fp 0x7091b75874  libVivify.so +0x2a6874
+  #09 fp 0x7091b76e7c  libVivify.so +0x2a7e7c (_ZN6Vivify18FollowedSaberTrail10LateUpdateEv +0x98)
+  #10 fp 0x71fc1feaf4  libil2cpp.so +0x34d3af4
+  #11 fp 0x71fc1fea68  libil2cpp.so +0x34d3a68
+  #12 fp 0x72d0f6369c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #13 fp 0x72d0f63748  libgame.so +0x19748 (android_main +0x78)
+  #14 fp 0x72d0f6b920  libgame.so +0x21920
+  #15 fp 0x73847502b0  libc.so +0x1372b0
+  #16 fp 0x73846e8174  libc.so +0xcf174
+last Vivify log lines (oldest first):
+  Vivify preload prefab: asset='assets/libary/portalpeek.prefab' id='portalpeek' instance=true
+  Vivify preload prefab: asset='assets/podium/podium.prefab' id='podiumportal' instance=true
+  Vivify preload prefab: asset='assets/libary/butterfliesportal.prefab' id='butterflyportal' instance=true
+  Vivify preload prefab: asset='assets/cylinder/cylinderscene.prefab' id='cylinderr' instance=true
+  Vivify preload prefab: asset='assets/blackhole/screenscene.prefab' id='screenscene' instance=true
+  Vivify preload prefab: asset='assets/podium/podium.prefab' id='screenpodium' instance=true
+  Vivify preload prefab: asset='assets/blackhole/blackhole.prefab' id='blackhole' instance=true
+  Vivify preload prefab: asset='assets/libary/libraryscene2.prefab' id='library2' instance=true
+  Vivify preload prefab: asset='assets/icosphere/icospherescene.prefab' id='trail' instance=true
+  Vivify preload prefab: asset='assets/monitor/monitorscene2.prefab' id='monitoralt' instance=true
+  Vivify preload prefab: asset='assets/icosphere/rain/icosphererainscene.prefab' id='nebulaskybox' instance=true
+  Vivify preload prefab: asset='assets/podium/podiumfakelitscene.prefab' id='podiumlitscene' instance=true
+  Vivify PreloadInstantiatePrefabs: 21 prefab event(s) preloaded
+  Vivify catch-up event: type='SetRenderingSettings' time=-0.26666668
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_pixelLightCount'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_pixelLightCount'
+  Vivify SetRenderingSettings: time=-0.26666668 durationSeconds=0 immediate=true
+  Vivify catch-up event: type='SetGlobalProperty' time=-0.26666668
+  Vivify catch-up event: type='InstantiatePrefab' time=-0.26666668
+  Vivify InstantiatePrefab: asset='assets/abstract/clockscene.prefab' id='clockscene' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='clockscene' asset='assets/abstract/clockscene.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify catch-up: replayed 3 event(s) up to time=-0.26666668
+  Vivify PrepareBeatmap done: assets=71 livePrefabs=1 preloadedPrefabs=21
+  Vivify custom event: type='AssignObjectPrefab' time=0 songTime=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/sabers/saber.prefab' tracks=0 additive=false saberType=0
+  Vivify AssignObjectPrefab(trail): asset='assets/sabers/sabertrail.mat' saberType=0 additive=false
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/sabers/saber.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/sabers/sabertrail.mat' saberType=1 additive=false
+  Vivify sync: registered 'saber(Clone)' with 0 video / 2 animator / 3 particle component(s), startTime=0
+  Vivify event 'AssignObjectPrefab' (time=0) threw and was skipped: Method: Init failed with an exception: System.NullReferenceException: Object reference not set to an instance of an object.
+  VRCenterAdjust.OnEnable skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify custom event: type='CreateScreenTexture' time=0 songTime=0
+  Vivify custom event: type='Blit' time=0 songTime=0
+  Vivify Blit skipped at time 0: 'assets/shaders/filmgrain.mat' was starting when this map last went down (crash recovery; 'Forget Crash Recovery' in the advanced settings brings it back)
+  VRCenterAdjust.Start skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  VRCenterAdjust.Update skipped: missing _settingsManager=true _settingsApplicator=true
+=== end ===
+
