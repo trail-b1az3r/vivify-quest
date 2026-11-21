@@ -1,0 +1,60 @@
+=== Vivify 0.15.45 native crash at 1795249572 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x28a300001dc0
+thread 7685 'UnityMain'
+pc 0x78c13089d8  lr 0x78c13089a8  sp 0x7730ff7700  fp 0x7730ff77a0
+backtrace:
+  #00 pc 0x78c13089d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x78c13089a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7736154c64  libmetacore.so +0xcdc64
+  #03 fp 0x779c6ff55c  libsl2.so +0x4fb55c
+  #04 fp 0x779c6fee74  libsl2.so +0x4fae74
+  #05 fp 0x779c6fed48  libsl2.so +0x4fad48
+  #06 fp 0x779c6fece8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x75b275bfd4  libBetterHaptics.so +0x10afd4
+  #08 fp 0x770cc12ee0  libil2cpp.so +0x4aeeee0
+  #09 fp 0x770a2de78c  libil2cpp.so +0x21ba78c
+  #10 fp 0x78b4e3c6c3
+  #11 fp 0x7730ff9f70
+last Vivify log lines (oldest first):
+  Vivify custom event: type='InstantiatePrefab' time=137.83783 songTime=137.8439
+  Vivify InstantiatePrefab: asset='assets/prefabs/audiostatic2d.prefab' id='prefab_audiostatic2d_5' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_audiostatic2d_5' asset='assets/prefabs/audiostatic2d.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify pause menu opened: syncedObjects=0 secondaryCameras=0
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.69,0.03) fwd=(-0.37,0.17,0.91)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=2 preloaded=34 synced=0 secondaryCameras=0 declaredTextures=0 assets=31
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify Send Logs: uploaded 3 file part(s), 191 KB (logs/2026-11-21/082124_0.15.45_727fe3bfe1e69fe3 d95a3e7; stored 3, deduplicated 0; 24251993 bytes saved cumulatively
+  )
+  Vivify updater: Looking for the build...
+  Vivify updater: Downloading the latest build of main...
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5577f (It_s TV Time! - CyanIsGooder)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=true geometryEffects=true 
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5577f (It_s TV Time! - CyanIsGooder)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle already preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5577f (It_s TV Time! - CyanIsGooder)/bundleAndroid2021.vivify'
+  Vivify: the Replay mod's button is clickable again now that the map is ready
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/FNF vs Imposter - Defeat' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.02,1.68,0.05) fwd=(0.11,0.13,0.98)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify updater: Installing the latest build of main...
+  Vivify updater: replacing /sdcard/ModData/com.beatgames.beatsaber/Modloader/mods/libVivify.so
+  Vivify updater: Installed Vivify 0.15.48 (the latest build of main). Restart Beat Saber to use it.
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.67,0.06) fwd=(-0.10,0.03,0.99)
+  Vivify main camera cullingMask is now 0x3d3aff37
+=== end ===
+
