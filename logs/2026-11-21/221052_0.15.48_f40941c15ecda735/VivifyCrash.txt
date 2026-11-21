@@ -1,0 +1,56 @@
+=== Vivify 0.15.48 native crash at 1795298885 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x70ccde1320
+thread 7355 'UnityMain'
+pc 0x716e81b32c  lr 0x7166b4daf4  sp 0x71cc510d10  fp 0x71cc510d20
+backtrace:
+  #00 pc 0x716e81b32c  libunity.so +0x11ed32c
+  #01 lr 0x7166b4daf4  libil2cpp.so +0x34d3af4
+  #02 fp 0x7166b4da68  libil2cpp.so +0x34d3a68
+  #03 fp 0x7172f96d08  libgraphicstweaks.so +0x975d08
+  #04 fp 0x7172f83788  libgraphicstweaks.so +0x962788
+  #05 fp 0x7172f82eb0  libgraphicstweaks.so +0x961eb0
+  #06 fp 0x716a35687c  libil2cpp.so +0x6cdc87c
+  #07 fp 0x716a3bdee0  libil2cpp.so +0x6d43ee0
+last Vivify log lines (oldest first):
+  Installing hook: Recorder_SpawnObstacle to offset: 0x7169391098
+  Hook: Recorder_SpawnObstacle installed with flamingo!
+  Installing hook: Recorder_NoteWasCut to offset: 0x71693931a8
+  Hook: Recorder_NoteWasCut installed with flamingo!
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x71694c7b38
+  Hook: Recorder_ScoreLateUpdate installed with flamingo!
+  Installing hook: Recorder_ScoreStart to offset: 0x71694c76b0
+  Hook: Recorder_ScoreStart installed with flamingo!
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7167032b3c
+  Hook: Recorder_ComputeSwingRating installed with flamingo!
+  Installing hook: Recorder_ProcessSwing to offset: 0x7167033460
+  Hook: Recorder_ProcessSwing installed with flamingo!
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7169393e84
+  Hook: Recorder_SpawnControllerStart installed with flamingo!
+  Installing hook: Recorder_ShowPause to offset: 0x716948707c
+  Hook: Recorder_ShowPause installed with flamingo!
+  Installing hook: Recorder_Resume to offset: 0x7169487ddc
+  Hook: Recorder_Resume installed with flamingo!
+  Installing hook: Recorder_Finish to offset: 0x71693e0f1c
+  Hook: Recorder_Finish installed with flamingo!
+  Vivify: loaded mods (41): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libflamingo.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook
+  ore 1.3.5, BetterSongSearch 2.3.2, ModifiersCoreQuest 0.1.0, Play3rdPer 0.14.11, RecentlyPlayed 1.0.0, CustomJSONData 0.24.6, Tracks 2.5.5, Vivify 0.15.48, PlaylistCore 1.7.3, bl 0.9.666, BetterSongList 1.1.0, CameraUtils 1.2.0, Chroma 2.1
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify Send Logs: uploaded 4 file part(s), 23 KB (logs/2026-11-21/220734_0.15.48_91ef0f90eb05459e 513a308; stored 4, deduplicated 0; 25935235 bytes saved cumulatively
+  )
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(0.00,1.46,-0.00) fwd=(0.03,-0.01,1.00)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(0.00,1.46,-0.00) fwd=(0.02,0.01,1.00)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(-0.00,1.46,-0.00) fwd=(-0.03,0.02,1.00)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify: the game uses STEREO_MULTIVIEW_ON (138 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/1e6ff (Somewhere Out There - Swifter, Mawntee, Reddek)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/1e6ff (Somewhere Out There - Swifter, Mawntee, Reddek)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+=== end ===
+
