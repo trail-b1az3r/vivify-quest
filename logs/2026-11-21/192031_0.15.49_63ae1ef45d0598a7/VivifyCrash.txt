@@ -1,0 +1,60 @@
+=== Vivify 0.15.48 native crash at 1795288820 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x28a30000337f
+thread 13223 'UnityMain'
+pc 0x78c13089d8  lr 0x78c13089a8  sp 0x77922662f0  fp 0x7792266390
+backtrace:
+  #00 pc 0x78c13089d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x78c13089a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x77256fdc64  libmetacore.so +0xcdc64
+  #03 fp 0x779cd6455c  libsl2.so +0x4fb55c
+  #04 fp 0x779cd63e74  libsl2.so +0x4fae74
+  #05 fp 0x779cd63d48  libsl2.so +0x4fad48
+  #06 fp 0x779cd63ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x759c79afd4  libBetterHaptics.so +0x10afd4
+  #08 fp 0x770cd7aee0  libil2cpp.so +0x4aeeee0
+  #09 fp 0x770a44678c  libil2cpp.so +0x21ba78c
+  #10 fp 0x78b4e5c6c3
+  #11 fp 0x7792268b60
+last Vivify log lines (oldest first):
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=4 hideOriginal=true hiddenOriginals=8
+  Vivify visual check at 30s: 7 live note(s), 7 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check at 30s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check at 30s: 210 active renderer(s), 0 with no runnable shader; most drawn: TVT/MORESLit x73, Ree/BlurSaber x32, TVT/NoteArrowTV x21, RUYB/Sprite x19, Custom/CustomParticles x14, Ree/SimpleTrail x8, Custom/SliderNoteCrossedS
+  Vivify grab texture '_GrabTexture' at 30s: nothing bound
+  Vivify grab texture '_GrabTexture1' at 30s: nothing bound
+  Vivify pause menu opened: syncedObjects=0 secondaryCameras=0
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.76,-0.06) fwd=(-0.20,0.18,0.96)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=1 preloaded=34 synced=0 secondaryCameras=0 declaredTextures=0 assets=31
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+=== end ===
+
