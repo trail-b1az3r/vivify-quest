@@ -1,0 +1,21 @@
+=== Vivify 0.15.45 native crash at 1795241769 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x76097eca04
+thread 7474 'UnityMain'
+pc 0x7695136714  lr 0x739a17ce58  sp 0x75817f8b10  fp 0x75817f8ed0
+backtrace:
+  #00 pc 0x7695136714  libc.so +0xc7714
+  #01 lr 0x739a17ce58  libBetterSongSearch.so +0x378e58
+  #02 fp 0x739a178f20  libBetterSongSearch.so +0x374f20 (late_load +0x1248)
+  #03 fp 0x75831e0b9c  libsl2.so +0x543b9c
+  #04 fp 0x750cb2dfb4  libunity.so +0xab1fb4
+  #05 fp 0x76984d06c3
+  #06 fp 0x75817f9f40
+last Vivify log lines (oldest first):
+  Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global-p6.txt
+  Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+  Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+  Vivify crash recovery: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743Aether .  111}  , . - Swifter)' did not end: the game crashed or was closed while it played (last sign of life 267 s into the song); it pl
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
