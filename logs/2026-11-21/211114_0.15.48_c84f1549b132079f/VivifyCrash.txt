@@ -1,0 +1,65 @@
+=== Vivify 0.15.48 native crash at 1795253596 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x28380000019b
+thread 453 'UnityMain'
+pc 0x734172f818  lr 0x734172f7e8  sp 0x723266f9c0  fp 0x723266fa60
+backtrace:
+  #00 pc 0x734172f818  libc.so +0xcd818 (abort +0xa8)
+  #01 lr 0x734172f7e8  libc.so +0xcd7e8 (abort +0x78)
+  #02 fp 0x71d735e820  libmetacore.so +0x1d820
+  #03 fp 0x71e54fbfb4  libcustom-types.so +0x4f2fb4
+  #04 fp 0x71e54fb8cc  libcustom-types.so +0x4f28cc
+  #05 fp 0x71e54fb7a0  libcustom-types.so +0x4f27a0
+  #06 fp 0x71e55175f4  libcustom-types.so +0x50e5f4 (__cxa_get_exception_ptr +0x0)
+  #07 fp 0x71e55175d0  libcustom-types.so +0x50e5d0
+  #08 fp 0x705396eda0  libVivify.so +0x2a7da0
+  #09 fp 0x70539703a8  libVivify.so +0x2a93a8 (_ZN6Vivify18FollowedSaberTrail10LateUpdateEv +0x98)
+  #10 fp 0x71c4dcbaf4  libil2cpp.so +0x34d3af4
+  #11 fp 0x71c4dcba68  libil2cpp.so +0x34d3a68
+  #12 fp 0x7299ba269c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #13 fp 0x7299ba2748  libgame.so +0x19748 (android_main +0x78)
+  #14 fp 0x7299baa920  libgame.so +0x21920
+  #15 fp 0x73417992b0  libc.so +0x1372b0
+  #16 fp 0x7341731174  libc.so +0xcf174
+last Vivify log lines (oldest first):
+  Vivify preload prefab: asset='assets/smoke/smoke.prefab' id='smoke' instance=true
+  Vivify preload prefab: asset='assets/wingdings/overlayquad.prefab' id='overlayquad' instance=true
+  Vivify preload prefab: asset='assets/libary/libraryscene.prefab' id='libary' instance=true
+  Vivify preload prefab: asset='assets/libary/portalpeek.prefab' id='portalpeek' instance=true
+  Vivify preload prefab: asset='assets/podium/podium.prefab' id='podiumportal' instance=true
+  Vivify preload prefab: asset='assets/libary/butterfliesportal.prefab' id='butterflyportal' instance=true
+  Vivify preload prefab: asset='assets/cylinder/cylinderscene.prefab' id='cylinderr' instance=true
+  Vivify preload prefab: asset='assets/blackhole/screenscene.prefab' id='screenscene' instance=true
+  Vivify preload prefab: asset='assets/podium/podium.prefab' id='screenpodium' instance=true
+  Vivify preload prefab: asset='assets/blackhole/blackhole.prefab' id='blackhole' instance=true
+  Vivify preload prefab: asset='assets/libary/libraryscene2.prefab' id='library2' instance=true
+  Vivify preload prefab: asset='assets/icosphere/icospherescene.prefab' id='trail' instance=true
+  Vivify preload prefab: asset='assets/monitor/monitorscene2.prefab' id='monitoralt' instance=true
+  Vivify preload prefab: asset='assets/icosphere/rain/icosphererainscene.prefab' id='nebulaskybox' instance=true
+  Vivify preload prefab: asset='assets/podium/podiumfakelitscene.prefab' id='podiumlitscene' instance=true
+  Vivify PreloadInstantiatePrefabs: 21 prefab event(s) preloaded
+  Vivify catch-up event: type='SetRenderingSettings' time=-0.26666668
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_pixelLightCount'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_pixelLightCount'
+  Vivify SetRenderingSettings: time=-0.26666668 durationSeconds=0 immediate=true
+  Vivify catch-up event: type='SetGlobalProperty' time=-0.26666668
+  Vivify catch-up event: type='InstantiatePrefab' time=-0.26666668
+  Vivify InstantiatePrefab: asset='assets/abstract/clockscene.prefab' id='clockscene' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='clockscene' asset='assets/abstract/clockscene.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify catch-up: replayed 3 event(s) up to time=-0.26666668
+  Vivify PrepareBeatmap done: assets=71 livePrefabs=1 preloadedPrefabs=21
+  Vivify custom event: type='AssignObjectPrefab' time=0 songTime=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/sabers/saber.prefab' tracks=0 additive=false saberType=0
+  Vivify AssignObjectPrefab(trail): asset='assets/sabers/sabertrail.mat' saberType=0 additive=false
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/sabers/saber.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/sabers/sabertrail.mat' saberType=1 additive=false
+  Vivify sync: registered 'saber(Clone)' with 0 video / 2 animator / 3 particle component(s), startTime=0
+  Vivify event 'AssignObjectPrefab' (time=0) threw and was skipped: Method: Init failed with an exception: System.NullReferenceException: Object reference not set to an instance of an object.
+  Vivify custom event: type='CreateScreenTexture' time=0 songTime=0
+  Vivify custom event: type='Blit' time=0 songTime=0
+  Vivify Blit skipped at time 0: 'assets/shaders/filmgrain.mat' was starting when this map last went down (crash recovery; 'Forget Crash Recovery' in the advanced settings brings it back)
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+=== end ===
+
