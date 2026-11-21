@@ -1,0 +1,116 @@
+=== Vivify 0.15.48 native crash at 1795254794 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x28a300003136
+thread 12637 'UnityMain'
+pc 0x78c13089d8  lr 0x78c13089a8  sp 0x7725178700  fp 0x77251787a0
+backtrace:
+  #00 pc 0x78c13089d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x78c13089a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7736153c64  libmetacore.so +0xcdc64
+  #03 fp 0x779d19055c  libsl2.so +0x4fb55c
+  #04 fp 0x779d18fe74  libsl2.so +0x4fae74
+  #05 fp 0x779d18fd48  libsl2.so +0x4fad48
+  #06 fp 0x779d18fce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x75b8b2cfd4  libBetterHaptics.so +0x10afd4
+  #08 fp 0x7729c6fee0  libil2cpp.so +0x4aeeee0
+  #09 fp 0x772733b78c  libil2cpp.so +0x21ba78c
+  #10 fp 0x78b4fcc6c3
+  #11 fp 0x772517af70
+last Vivify log lines (oldest first):
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.04,1.73,-0.07) fwd=(-0.01,0.18,0.98)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=1 preloaded=1337 synced=44 secondaryCameras=0 declaredTextures=0 assets=111
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify Send Logs: uploaded 1 file part(s), 966 KB (logs/2026-11-21/095237_0.15.48_59974b3119746e49 9539c1b; stored 1, deduplicated 0; 24252002 bytes saved cumulatively
+  )
+  Vivify Send Logs: uploaded 1 file part(s), 1154 KB (logs/2026-11-21/095246_0.15.48_7d872b092523fd15 1f687bf; stored 1, deduplicated 0; 24252002 bytes saved cumulatively
+  )
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/550ba ([VIVIFY] GIRL HELL 1999 - Error404)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=40% sceneDepth=true prepareShaders=true geometryEffects=true o
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/550ba ([VIVIFY] GIRL HELL 1999 - Error404)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle already preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/550ba ([VIVIFY] GIRL HELL 1999 - Error404)/bundleAndroid2021.vivify'
+  Vivify: the Replay mod's button is clickable again now that the map is ready
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55189 (dog sucker pubches dude in the face - idk x)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=true geometryEffects=true 
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55189 (dog sucker pubches dude in the face - idk x)' androidBundle=no android2021=0 pcBundle='<none>' convertedCache='<none>' cached=false
+  Vivify: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55189 (dog sucker pubches dude in the face - idk x)' has no Android bundle, no PC bundle to convert, and no bundle checksum in Info.dat to download one by
+  Vivify: play button blocked by Vivify ("No Vivify assets found for this map.")
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55189 (dog sucker pubches dude in the face - idk x)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=true geometryEffects=true 
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55189 (dog sucker pubches dude in the face - idk x)' androidBundle=no android2021=0 pcBundle='<none>' convertedCache='<none>' cached=false
+  Vivify: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55189 (dog sucker pubches dude in the face - idk x)' has no Android bundle, no PC bundle to convert, and no bundle checksum in Info.dat to download one by
+=== end ===
+
+=== Vivify 0.15.48 native crash at 1795288655 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x780ad5d4a8
+thread 12673 'UnityMain'
+pc 0x78c13016fc  lr 0x755cf7cf48  sp 0x772361aad0  fp 0x772361ae90
+backtrace:
+  #00 pc 0x78c13016fc  libc.so +0xc76fc
+  #01 lr 0x755cf7cf48  libchroma.so +0x333f48
+  #02 fp 0x755cf3069c  libchroma.so +0x2e769c (_Z26LightSwitchEventEffectHookv +0x118)
+  #03 fp 0x755cf78f50  libchroma.so +0x32ff50 (late_load +0x2b4)
+  #04 fp 0x779cc13b9c  libsl2.so +0x543b9c
+  #05 fp 0x77240d3fb4  libunity.so +0xab1fb4
+  #06 fp 0x78b4e5c6c3
+  #07 fp 0x772361bf40
+last Vivify log lines (oldest first):
+  Installing hook: GameNoteController_Init to offset: 0x770ad8e1d0
+  Installing hook: BombNoteController_Init to offset: 0x770ad8b2d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x770ad8c668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x770ae2ebb8
+  Installing hook: NoteDebris_Init to offset: 0x770ad912e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x770b325968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x770ac83018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x770b328e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x770b3289f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x770b329bb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x770b329f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x770b3297f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x770add837c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x770add858c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x770add8658
+  Installing hook: VRCenterAdjust_Update to offset: 0x770add8560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x770add83e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x770add84a4
+  Installing hook: PauseController_Pause to offset: 0x770ae4a7ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x770ae54c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x770ae55734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x770ae55094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x770ae54d88
+  Installing hook: GamePause_Resume to offset: 0x770ae50178
+  Installing hook: Recorder_InstallBindings to offset: 0x770ae99294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x770ae8d8b8
+  Installing hook: Recorder_SpawnNote to offset: 0x770ad84928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x770ad83dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x770ad85de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x770ae9344c
+  Installing hook: Recorder_ScoreStart to offset: 0x770ae93038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7709956db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7709957690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x770ad86ae0
+  Installing hook: Recorder_ShowPause to offset: 0x770ae54c54
+  Installing hook: Recorder_Resume to offset: 0x770ae5576c
+  Installing hook: Recorder_Finish to offset: 0x770ade41dc
+  Vivify: loaded mods (85): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMapLoader.so 0.0.0, BSML 0.4.55, CongXinJian 0.1.0, DlcSorter 0.1.13, EasyOffsetQuest 0.1.7, FakeId 0.1.9, FasterScroll 1.17.0, anytext 1.0.1, bsdc 0.6.4, bstheater 0.1
+  .0.3, MappingExtensions 0.25.4, morebuttons 1.0.4, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistDownloader 0.3.1, PlaylistManager 1.4.1, practicetwe
+=== end ===
+
