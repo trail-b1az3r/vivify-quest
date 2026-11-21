@@ -1,0 +1,52 @@
+=== Vivify 0.15.45 native crash at 1795250580 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x5c
+thread 2882 'Thread-3'
+pc 0x74224627b4  lr 0x7422462768  sp 0x7334d81480  fp 0x7334d817b0
+backtrace:
+  #00 pc 0x74224627b4  libunity.so +0x13ee7b4
+  #01 lr 0x7422462768  libunity.so +0x13ee768
+  #02 fp 0x74226489f4  libunity.so +0x15d49f4
+  #03 fp 0x758e2f0334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=false bloomPrePass=unset mainEffect=unset
+  Vivify custom event: type='Blit' time=130.66667 songTime=0
+  Vivify material: context=Blit asset=assets/shaders/boxcolorize.mat material='BoxColorize' shader='PostProcessing/BoxColorize' supported=true internalError=false
+  Vivify Blit event: time=130.66667 asset='assets/shaders/boxcolorize.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=6
+  VRCenterAdjust.Start skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify foveated rendering: level 4 for this map (was 4), eye-tracked false, accepted true; device 'Oculus Quest 3S'
+  Vivify Game Bloom: bloom on for this map (the game had 'NoPostProcessMainEffect', post-processing off)
+  VRCenterAdjust.Update skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify CreateScreenTexture: id='_HalfUp' size=840x880 layers=2 dimension=5 graphicsFormat=4 filter=-1
+  Vivify CreateScreenTexture: id='_QuarterUp' size=420x440 layers=2 dimension=5 graphicsFormat=4 filter=-1
+  Vivify CreateScreenTexture: id='_EigthUp' size=210x220 layers=2 dimension=5 graphicsFormat=4 filter=-1
+  Vivify CreateScreenTexture: id='_Sixteenth' size=105x110 layers=2 dimension=5 graphicsFormat=4 filter=-1
+  Vivify CreateScreenTexture: id='_Eigth' size=210x220 layers=2 dimension=5 graphicsFormat=4 filter=-1
+  Vivify CreateScreenTexture: id='_Quarter' size=420x440 layers=2 dimension=5 graphicsFormat=4 filter=-1
+  Vivify CreateScreenTexture: id='_Half' size=840x880 layers=2 dimension=5 graphicsFormat=4 filter=-1
+  Vivify CreateScreenTexture: id='_ScreenTex' size=1680x1760 layers=2 dimension=5 graphicsFormat=4 filter=-1
+  Vivify Blit: 'PostProcessing/OverlayTexture' leaves a texture out of its two-eye program in this map's Quest bundle; running its one-eye program once per eye
+  Vivify Blit: material 'Overlay' draws into single-screen textures with the single-view build of 'PostProcessing/OverlayTexture'
+  Vivify visual check at 131s: 26 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: a live note has 4 renderer(s):
+  Vivify visual check:   'NoteCube' enabled=true active=true layer=8 material='NoteHD' shader='Custom/NoteHD' supported=true queue=2004 block: _Cutout=0.00 _Color=(0.54,0.00,1.00,1.00)
+  Vivify visual check:   'NoteArrow' enabled=true active=true layer=8 material='NoteArrowHD' shader='Custom/GlowingInstancedHD' supported=true queue=2002 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'NoteArrowGlow' enabled=true active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.54,0.00,1.00,1.00)
+  Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.54,0.00,1.00,1.00)
+  Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+  Vivify visual check at 131s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout
+  Vivify visual check: cameras that may render the mirror: 'MainCamera' stereo=true eye=3 target=screen mask=0x3819fd37
+  Vivify visual check at 131s: 180 active renderer(s), 2 with no runnable shader; most drawn: Custom/CustomParticles x46, Bookshelf/CoverReflective x28, Custom/NoteHD x27, Custom/GlowingInstancedHD x26, Library/Particle Fog x13, Library/Refl
+  Vivify grab texture '_Base' at 131s: render texture dimension=5 layers=2 1680x1760 msaa=1
+  Vivify grab texture '_BlackHoleGrabTex' at 131s: nothing bound
+  Vivify grab texture '_EclipseGrabTex' at 131s: nothing bound
+  Vivify grab texture '_GrabTexture' at 131s: nothing bound
+  Vivify grab texture '_PPNoteGrab' at 131s: nothing bound
+  Vivify visual check: main camera cullingMask=0x3819fd37 depthTextureMode=1 clearFlags=2
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify multiplayer check: inMultiplayerGameplay=false multiplayerModLoaded=false
+  Vivify scene route: native multiview; no separate-eye scene renders needed for this frame
+=== end ===
+
