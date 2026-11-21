@@ -1,0 +1,120 @@
+=== Vivify 0.15.44 native crash at 1795289206 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7bc83122a8
+thread 7017 'UnityMain'
+pc 0x7c64f1e714  lr 0x791cf43f48  sp 0x7b2e251ad0  fp 0x7b2e251e90
+backtrace:
+  #00 pc 0x7c64f1e714  libc.so +0xc7714
+  #01 lr 0x791cf43f48  libchroma.so +0x333f48
+  #02 fp 0x791cef769c  libchroma.so +0x2e769c (_Z26LightSwitchEventEffectHookv +0x118)
+  #03 fp 0x791cf3ff50  libchroma.so +0x32ff50 (late_load +0x2b4)
+  #04 fp 0x7b2e9a2b9c  libsl2.so +0x543b9c
+  #05 fp 0x7acceb5fb4  libunity.so +0xab1fb4
+  #06 fp 0x7c491ec6c3
+  #07 fp 0x7b2e252f40
+last Vivify log lines (oldest first):
+  Installing hook: SaberModelController_Init to offset: 0x7ac844c928
+  Installing hook: GameNoteController_Init to offset: 0x7ac834a1d0
+  Installing hook: BombNoteController_Init to offset: 0x7ac83472d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x7ac8348668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7ac83eabb8
+  Installing hook: NoteDebris_Init to offset: 0x7ac834d2e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7ac88e1968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x7ac823f018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7ac88e4e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7ac88e49f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x7ac88e5bb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7ac88e5f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7ac88e57f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x7ac839437c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x7ac839458c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7ac8394658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7ac8394560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7ac83943e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7ac83944a4
+  Installing hook: PauseController_Pause to offset: 0x7ac84067ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7ac8410c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7ac8411734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7ac8411094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7ac8410d88
+  Installing hook: GamePause_Resume to offset: 0x7ac840c178
+  Installing hook: Recorder_InstallBindings to offset: 0x7ac8455294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x7ac84498b8
+  Installing hook: Recorder_SpawnNote to offset: 0x7ac8340928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x7ac833fdec
+  Installing hook: Recorder_NoteWasCut to offset: 0x7ac8341de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7ac844f44c
+  Installing hook: Recorder_ScoreStart to offset: 0x7ac844f038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7ac6f12db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7ac6f13690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7ac8342ae0
+  Installing hook: Recorder_ShowPause to offset: 0x7ac8410c54
+  Installing hook: Recorder_Resume to offset: 0x7ac841176c
+  Installing hook: Recorder_Finish to offset: 0x7ac83a01dc
+  Vivify: loaded mods (33): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0
+  0.1.3, SongDownloader 0.8.8, spotify-search 1.2.1, unicode 0.1.7
+=== end ===
+
+=== Vivify 0.15.44 native crash at 1795289881 (seconds since 1970) ===
+SIGBUS (bad memory access), code 1, fault address 0x9
+thread 7344 'UnityMain'
+pc 0x790fdac5d0  lr 0x790fe40324  sp 0x7b2c44a360  fp 0x7b2c44a3e0
+backtrace:
+  #00 pc 0x790fdac5d0  libchroma.so +0x18b5d0
+  #01 lr 0x790fe40324  libchroma.so +0x21f324 (_Z19CustomEventCallbackPN15GlobalNamespace26BeatmapCallbacksControllerEPN14CustomJSONData15CustomEventDataE +0x174)
+  #02 fp 0x795b4f8b54  libcustom-json-data.so +0x191b54 (_ZN14CustomJSONData32CustomBeatmapDataCallbackWrapper12CallCallbackEPN15GlobalNamespace15BeatmapDataItemE +0x194)
+  #03 fp 0x7acb213bbc  libil2cpp.so +0x3adcbbc
+  #04 fp 0x7ac98f178c  libil2cpp.so +0x21ba78c
+  #05 fp 0x795b50d2f0  libcustom-json-data.so +0x1a62f0
+  #06 fp 0x795b50bff0  libcustom-json-data.so +0x1a4ff0 (_ZN53Hook_BeatmapCallbacksController_ManualUpdateTranspile53hook_BeatmapCallbacksController_ManualUpdateTranspileEPN15GlobalNamespace26BeatmapCallbacksControllerEf +0x238)
+  #07 fp 0x795b515f38  libcustom-json-data.so +0x1aef38
+  #08 fp 0x7957b82bc8  libtracks.so +0x14cbc8 (_ZN42Hook_BeatmapObjectCallbackController_Start42hook_BeatmapObjectCallbackController_StartEPN15GlobalNamespace26BeatmapCallbacksControllerEf +0x40)
+  #09 fp 0x7957b82758  libtracks.so +0x14c758
+  #10 fp 0x790fec5098  libchroma.so +0x2a4098 (_ZN42Hook_BeatmapObjectCallbackController_Start42hook_BeatmapObjectCallbackController_StartEPN15GlobalNamespace26BeatmapCallbacksControllerEf +0x38)
+  #11 fp 0x790fec4c30  libchroma.so +0x2a3c30
+  #12 fp 0x790ff09f9c  libchroma.so +0x2e8f9c (_ZN44Hook_BeatmapCallbacksController_ManualUpdate44hook_BeatmapCallbacksController_ManualUpdateEPN15GlobalNamespace26BeatmapCallbacksControllerEf +0x2bc)
+  #13 fp 0x790ff098b0  libchroma.so +0x2e88b0
+  #14 fp 0x7acb2dcdd4  libil2cpp.so +0x3ba5dd4
+  #15 fp 0x7ac98f178c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify main camera: name='MainCamera' cullingMask=0x3819fd37 stereoMode=3 multipassSetting=false pos=(0.09,1.57,-0.13) fwd=(0.27,0.16,0.95)
+  Vivify main camera cullingMask is now 0x3819fd37
+  Vivify texture decode: scanned 29 material(s), replaced 0 unsupported texture reference(s) in 1ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+  Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify Blit check: effect(s) 'Custom/kickwow', 'Custom/GaussianBlur', 'Custom/ChromaticAberration_VR', 'Custom/Vignette' -- 1 colour(s) among 16 blocks going in, 1 coming out (first rgb=(27,10,27)); screen 2352x2464 slices=2; _ScreenParams
+  Vivify visual check at 5s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+  Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check at 5s: 30 active renderer(s), 0 with no runnable shader; most drawn: Custom/CustomParticles x11, Swifter/VFX/StarFlare x5, Custom/GlowingInstancedHD x2, Custom/SaberBlade x2, Custom/SimpleLit x2, Custom/GrabPassTexture1
+  Vivify grab texture '_GrabTexture' at 5s: render texture dimension=5 layers=2 2352x2464 msaa=1
+  Vivify grab texture '_GrabTexture1' at 5s: render texture dimension=5 layers=2 2352x2464 msaa=1
+  Vivify visual check: main camera cullingMask=0x3819fd37 depthTextureMode=1 clearFlags=2
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.54,-0.05) fwd=(-0.06,-0.12,0.99)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify level end: level ended (quit or finished)
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/2d5d7 (Searching - Swifter)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3819fd37 stereoMode=3 multipassSetting=false pos=(0.13,1.54,-0.08) fwd=(0.18,-0.17,0.97)
+  Vivify main camera cullingMask is now 0x3819fd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.05,1.53,-0.12) fwd=(0.09,-0.26,0.96)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/27ade (Heliov - Swifter)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3819fd37 stereoMode=3 multipassSetting=false pos=(0.06,1.51,-0.10) fwd=(-0.27,-0.25,0.93)
+  Vivify main camera cullingMask is now 0x3819fd37
+=== end ===
+
