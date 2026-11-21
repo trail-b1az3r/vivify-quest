@@ -1,0 +1,64 @@
+=== Vivify 0.15.48 native crash at 1795295792 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x2010
+thread 15678 'games.beatsaber'
+pc 0x715fc35b10  lr 0x7039d3f2e0  sp 0x7fd3e49be0  fp 0x7fd3e49c10
+backtrace:
+  #00 pc 0x715fc35b10  libil2cpp.so +0x34e6b10
+  #01 lr 0x7039d3f2e0  libBSNightcoreQuest.so +0xcb2e0
+  #02 fp 0x72d6373bb4  libc.so +0x13abb4 (__cxa_finalize +0x94)
+  #03 fp 0x72f01bf96c
+  #04 fp 0x72f01a7e58
+  #05 fp 0x72f01a9bd8
+  #06 fp 0x72f01a4064
+  #07 fp 0x72d3d340cc  libdl.so +0x10cc (dlclose +0xc)
+  #08 fp 0x71d6970a80  libsl2.so +0x521a80
+  #09 fp 0x71d6997ffc  libsl2.so +0x548ffc
+  #10 fp 0x71d6993c24  libsl2.so +0x544c24 (modloader_unload +0xa4)
+  #11 fp 0x71d79eb0a4  libmain.so +0xe80a4
+  #12 fp 0x71d79e9804  libmain.so +0xe6804
+  #13 fp 0x724ecfd444  libart.so +0x227444
+  #14 fp 0x71d9979a38
+  #15 fp 0x6462
+last Vivify log lines (oldest first):
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51058 (WHY_S THIS DEALER_ - lestershire)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/Cus
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51058__WHY_S_THIS_DEALER__-_lestershire_/51058__WHY_S_THIS_DEALER__-_lestershire__ee042876b52c9bf0.vivify'
+  Vivify material: context=bundle-load asset=assets/postprocess.mat material='PostProcess' shader='Custom/PostProcess' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/postprocesscrunch.mat material='PostProcessCrunch' shader='Custom/Crunch' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/sabertrail.mat material='SaberTrail' shader='Custom/Unlit Saber Trail' supported=true internalError=false
+  Vivify: play button blocked by Vivify ("Preparing shaders 0/43...")
+  Vivify: preparing the shaders of 43 material(s) before play ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51058__WHY_S_THIS_DEALER__-_lestershire_/51058__WHY_S_THIS_DEALER__-_lestershire__ee042876b52c9bf0.vivify')
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51058__WHY_S_THIS_DEALER__-_lestershire_/51058__WHY_S_THIS_DEALER__-_lestershire__ee042876b52c9bf0.vivify' -> not needed
+  Vivify: shaders of 43 material(s) prepared in 0.5s
+  Vivify shader preparation: 96 pass bind attempt(s), 0 non-binding/exception result(s), including non-draw passes; compilation is not pixel validation
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify settings: Windows bundle for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51058 (WHY_S THIS DEALER_ - lestershire)' turned off
+  Vivify: choosing the bundle for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51058 (WHY_S THIS DEALER_ - lestershire)' again (Windows bundle for this map: false)
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=true geometryEffects=true 
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51058 (WHY_S THIS DEALER_ - lestershire)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/Cus
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51058__WHY_S_THIS_DEALER__-_lestershire_/51058__WHY_S_THIS_DEALER__-_lestershire__ee042876b52c9bf0.vivify'
+  Vivify material: context=bundle-load asset=assets/postprocess.mat material='PostProcess' shader='Custom/PostProcess' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/postprocesscrunch.mat material='PostProcessCrunch' shader='Custom/Crunch' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/sabertrail.mat material='SaberTrail' shader='Custom/Unlit Saber Trail' supported=true internalError=false
+  Vivify: play button blocked by Vivify ("Preparing shaders 0/43...")
+  Vivify: preparing the shaders of 43 material(s) before play ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51058__WHY_S_THIS_DEALER__-_lestershire_/51058__WHY_S_THIS_DEALER__-_lestershire__ee042876b52c9bf0.vivify')
+  Vivify: shaders of 43 material(s) prepared in 0.3s
+  Vivify shader preparation: 96 pass bind attempt(s), 0 non-binding/exception result(s), including non-draw passes; compilation is not pixel validation
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=31
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51058 (WHY_S THIS DEALER_ - lestershire)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=true geometryEffects=true 
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51058 (WHY_S THIS DEALER_ - lestershire)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/Cus
+  Vivify bundle already preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51058__WHY_S_THIS_DEALER__-_lestershire_/51058__WHY_S_THIS_DEALER__-_lestershire__ee042876b52c9bf0.vivify'
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/33232 (IX_s Shadow - Pleast)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/33232 (IX_s Shadow - Pleast)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(-0.01,1.34,-0.05) fwd=(0.07,0.03,1.00)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(0.08,1.58,-0.02) fwd=(0.08,-0.28,0.96)
+  Vivify main camera cullingMask is now 0x3d3affb7
+=== end ===
+
