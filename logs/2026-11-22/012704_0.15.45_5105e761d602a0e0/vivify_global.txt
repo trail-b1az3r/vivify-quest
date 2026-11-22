@@ -1,0 +1,861 @@
+=== Vivify 0.15.45 session started 2026-11-21 18:54:13 ===
+2026-11-21 18:54:13 [INFO] Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-21 18:54:13 [INFO] Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global.txt
+2026-11-21 18:54:13 [INFO] Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+2026-11-21 18:54:13 [INFO] Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+2026-11-21 18:54:13 [INFO] Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-21 18:54:14 [INFO] Installing hook: SaberModelController_Init to offset: 0x73eb7fd928
+2026-11-21 18:54:14 [INFO] Installing hook: GameNoteController_Init to offset: 0x73eb6fb1d0
+2026-11-21 18:54:14 [INFO] Installing hook: BombNoteController_Init to offset: 0x73eb6f82d4
+2026-11-21 18:54:14 [INFO] Installing hook: BurstSliderGameNoteController_Init to offset: 0x73eb6f9668
+2026-11-21 18:54:14 [INFO] Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x73eb79bbb8
+2026-11-21 18:54:14 [INFO] Installing hook: NoteDebris_Init to offset: 0x73eb6fe2e8
+2026-11-21 18:54:14 [INFO] Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x73ebc92968
+2026-11-21 18:54:14 [INFO] Installing hook: ImageEffectController_OnRenderImage to offset: 0x73eb5f0018
+2026-11-21 18:54:14 [INFO] Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x73ebc95e78
+2026-11-21 18:54:14 [INFO] Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x73ebc959f0
+2026-11-21 18:54:14 [INFO] Installing hook: MirrorRendererSO_RenderMirror to offset: 0x73ebc96bb8
+2026-11-21 18:54:14 [INFO] Installing hook: MirrorRendererSO_OnDisable to offset: 0x73ebc96f2c
+2026-11-21 18:54:14 [INFO] Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x73ebc967f4
+2026-11-21 18:54:14 [INFO] Installing hook: VRCenterAdjust_Start to offset: 0x73eb74537c
+2026-11-21 18:54:14 [INFO] Installing hook: VRCenterAdjust_OnEnable to offset: 0x73eb74558c
+2026-11-21 18:54:14 [INFO] Installing hook: VRCenterAdjust_OnDisable to offset: 0x73eb745658
+2026-11-21 18:54:14 [INFO] Installing hook: VRCenterAdjust_Update to offset: 0x73eb745560
+2026-11-21 18:54:14 [INFO] Installing hook: VRCenterAdjust_ResetRoom to offset: 0x73eb7453e0
+2026-11-21 18:54:14 [INFO] Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x73eb7454a4
+2026-11-21 18:54:14 [INFO] Installing hook: PauseController_Pause to offset: 0x73eb7b77ec
+2026-11-21 18:54:14 [INFO] Installing hook: PauseMenuManager_ShowMenu to offset: 0x73eb7c1c54
+2026-11-21 18:54:14 [INFO] Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x73eb7c2734
+2026-11-21 18:54:14 [INFO] Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x73eb7c2094
+2026-11-21 18:54:14 [INFO] Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x73eb7c1d88
+2026-11-21 18:54:14 [INFO] Installing hook: GamePause_Resume to offset: 0x73eb7bd178
+2026-11-21 18:54:14 [INFO] Installing hook: Recorder_InstallBindings to offset: 0x73eb806294
+2026-11-21 18:54:14 [INFO] Installing hook: Recorder_HeightLateUpdate to offset: 0x73eb7fa8b8
+2026-11-21 18:54:14 [INFO] Installing hook: Recorder_SpawnNote to offset: 0x73eb6f1928
+2026-11-21 18:54:14 [INFO] Installing hook: Recorder_SpawnObstacle to offset: 0x73eb6f0dec
+2026-11-21 18:54:14 [INFO] Installing hook: Recorder_NoteWasCut to offset: 0x73eb6f2de4
+2026-11-21 18:54:14 [INFO] Installing hook: Recorder_ScoreLateUpdate to offset: 0x73eb80044c
+2026-11-21 18:54:14 [INFO] Installing hook: Recorder_ScoreStart to offset: 0x73eb800038
+2026-11-21 18:54:14 [INFO] Installing hook: Recorder_ComputeSwingRating to offset: 0x73ea2c3db4
+2026-11-21 18:54:14 [INFO] Installing hook: Recorder_ProcessSwing to offset: 0x73ea2c4690
+2026-11-21 18:54:14 [INFO] Installing hook: Recorder_SpawnControllerStart to offset: 0x73eb6f3ae0
+2026-11-21 18:54:14 [INFO] Installing hook: Recorder_ShowPause to offset: 0x73eb7c1c54
+2026-11-21 18:54:14 [INFO] Installing hook: Recorder_Resume to offset: 0x73eb7c276c
+2026-11-21 18:54:14 [INFO] Installing hook: Recorder_Finish to offset: 0x73eb7511dc
+2026-11-21 18:54:14 [INFO] Vivify: loaded mods (63): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavcodec.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavformat.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libweb-utils.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaverplusplus.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libcustom-types.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libflamingo.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libreflectcpp.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libsongdetails
+2026-11-21 18:54:14 [INFO] .so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libtinyxml2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMapLoader.so 0.0.0, DlcSorter 0.1.13, FakeId 0.1.9, bsdc 0.6.4, BSML 0.4.55, bts-yeeter 0.3.8, datakeeper 0.2.5, graphicstweaks 0.1.13, halloween 1.0.1, MetaCore 1.6.3, Hollywood 1.2.2, Lapiz 0.2.23, too-many-fireworks 1.2.5, BSNightcoreQuest 0.3.0, SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether 2.2.5, BetterHaptics 0.2.2, BetterSongSearch 2.2.13, CategoryTabs 0.1.2, ModifiersCoreQuest 0.1.0, Play3rdPer 0.14.8, RecentlyPlayed 1.0.0, CustomJSONData 0.24.5, Tracks 2.5.4, Vivify 0.15.45, PlaylistCore 1.5.5, BeatSync 0.1.2, bl 0.9.666, CameraUtils 1.1.11, ChatPlexSDK-BS 6.4.5, Chroma 2.10.3, cyrillic-fix 1.0.0, DiscordRichPresence 0.3.5, HitScoreVisualizer 3.0.1, MappingExtensions 0.25.4, morebuttons 1.0.4, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistManager 1.4.1, QBeatSaberPlus-GameTweaker 6.4.5, QBeatSabe
+2026-11-21 18:54:14 [INFO] rPlus-MenuMusic 6.4.5, QBeatSaberPlus-Multiplayer 6.4.5, ReeSabers 0.3.19, Replay 0.5.2, SongDownloader 0.8.8, Transitions 1.2.3, unicode 0.1.7
+2026-11-21 18:54:14 [INFO] Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+2026-11-21 18:54:20 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.24,0.00) fwd=(-0.22,-0.11,0.97)
+2026-11-21 18:54:20 [INFO] Vivify main camera cullingMask is now 0x3818ff37
+2026-11-21 18:54:21 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 18:54:23 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.22,0.02) fwd=(-0.11,-0.22,0.97)
+2026-11-21 18:54:23 [INFO] Vivify main camera cullingMask is now 0x3818ff37
+2026-11-21 18:54:24 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 18:54:48 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.24,0.09) fwd=(0.00,-0.13,0.99)
+2026-11-21 18:54:48 [INFO] Vivify main camera cullingMask is now 0x3818ff37
+2026-11-21 18:54:48 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 18:54:49 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.01,1.82,0.07) fwd=(-0.01,-0.15,0.99)
+=== Vivify 0.15.45 session started 2026-11-21 18:57:43 ===
+=== Vivify 0.15.45 session started 2026-11-21 18:57:50 ===
+2026-11-21 18:57:50 [INFO] Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-21 18:57:50 [INFO] Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global.txt
+2026-11-21 18:57:50 [INFO] Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+2026-11-21 18:57:50 [INFO] Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+2026-11-21 18:57:50 [WARN] Vivify: the game crashed last time; the report (also in VivifyCrash.txt) follows
+2026-11-21 18:57:50 [WARN] Vivify crash report: === Vivify 0.15.45 native crash at 1795309063 (seconds since 1970) ===
+2026-11-21 18:57:50 [WARN] Vivify crash report: SIGSEGV (bad memory access), code 2, fault address 0x7502f76984
+2026-11-21 18:57:50 [WARN] Vivify crash report: thread 2285 'UnityMain'
+2026-11-21 18:57:50 [WARN] Vivify crash report: pc 0x75a02e66e4  lr 0x729cf400ec  sp 0x747443ea10  fp 0x747443edd0
+2026-11-21 18:57:50 [WARN] Vivify crash report: backtrace:
+2026-11-21 18:57:50 [WARN] Vivify crash report:   #00 pc 0x75a02e66e4  libc.so +0xc76e4
+2026-11-21 18:57:50 [WARN] Vivify crash report:   #01 lr 0x729cf400ec  libMultiplayerCore.so +0x41d0ec
+2026-11-21 18:57:50 [WARN] Vivify crash report:   #02 fp 0x729ce193b8  libMultiplayerCore.so +0x2f63b8
+2026-11-21 18:57:50 [WARN] Vivify crash report:   #03 fp 0x729cf3f5f4  libMultiplayerCore.so +0x41c5f4 (late_load +0xce8)
+2026-11-21 18:57:50 [WARN] Vivify crash report:   #04 fp 0x747cc05b9c  libsl2.so +0x543b9c
+2026-11-21 18:57:50 [WARN] Vivify crash report:   #05 fp 0x740a728fb4  libunity.so +0xab1fb4
+2026-11-21 18:57:50 [WARN] Vivify crash report:   #06 fp 0x75923ec6c3
+2026-11-21 18:57:50 [WARN] Vivify crash report:   #07 fp 0x747443ff40
+2026-11-21 18:57:50 [WARN] Vivify crash report: last Vivify log lines (oldest first):
+2026-11-21 18:57:50 [WARN] Vivify crash report:   Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-21 18:57:50 [WARN] Vivify crash report:   Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global.txt
+2026-11-21 18:57:50 [WARN] Vivify crash report:   Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+2026-11-21 18:57:50 [WARN] Vivify crash report:   Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+2026-11-21 18:57:50 [WARN] Vivify crash report:   Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-21 18:57:50 [WARN] Vivify crash report: === end ===
+=== Vivify 0.15.45 session started 2026-11-21 18:58:17 ===
+2026-11-21 18:58:17 [INFO] Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-21 18:58:17 [INFO] Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global.txt
+2026-11-21 18:58:17 [INFO] Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+2026-11-21 18:58:17 [INFO] Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+2026-11-21 18:58:17 [WARN] Vivify: the game crashed last time; the report (also in VivifyCrash.txt) follows
+2026-11-21 18:58:17 [WARN] Vivify crash report: === Vivify 0.15.45 native crash at 1795309070 (seconds since 1970) ===
+2026-11-21 18:58:17 [WARN] Vivify crash report: SIGSEGV (bad memory access), code 2, fault address 0x7506ae3708
+2026-11-21 18:58:17 [WARN] Vivify crash report: thread 2955 'UnityMain'
+2026-11-21 18:58:17 [WARN] Vivify crash report: pc 0x75a02e66e4  lr 0x729984b0ec  sp 0x747425ba10  fp 0x747425bdd0
+2026-11-21 18:58:17 [WARN] Vivify crash report: backtrace:
+2026-11-21 18:58:17 [WARN] Vivify crash report:   #00 pc 0x75a02e66e4  libc.so +0xc76e4
+2026-11-21 18:58:17 [WARN] Vivify crash report:   #01 lr 0x729984b0ec  libMultiplayerCore.so +0x41d0ec
+2026-11-21 18:58:17 [WARN] Vivify crash report:   #02 fp 0x7299755f54  libMultiplayerCore.so +0x327f54
+2026-11-21 18:58:17 [WARN] Vivify crash report:   #03 fp 0x729984a5f4  libMultiplayerCore.so +0x41c5f4 (late_load +0xce8)
+2026-11-21 18:58:17 [WARN] Vivify crash report:   #04 fp 0x747e58bb9c  libsl2.so +0x543b9c
+2026-11-21 18:58:17 [WARN] Vivify crash report:   #05 fp 0x740aabefb4  libunity.so +0xab1fb4
+2026-11-21 18:58:17 [WARN] Vivify crash report:   #06 fp 0x759240c6c3
+2026-11-21 18:58:17 [WARN] Vivify crash report:   #07 fp 0x747425cf40
+2026-11-21 18:58:17 [WARN] Vivify crash report: last Vivify log lines (oldest first):
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global.txt
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify: the game crashed last time; the report (also in VivifyCrash.txt) follows
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report: === Vivify 0.15.45 native crash at 1795309063 (seconds since 1970) ===
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report: SIGSEGV (bad memory access), code 2, fault address 0x7502f76984
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report: thread 2285 'UnityMain'
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report: pc 0x75a02e66e4  lr 0x729cf400ec  sp 0x747443ea10  fp 0x747443edd0
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report: backtrace:
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report:   #00 pc 0x75a02e66e4  libc.so +0xc76e4
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report:   #01 lr 0x729cf400ec  libMultiplayerCore.so +0x41d0ec
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report:   #02 fp 0x729ce193b8  libMultiplayerCore.so +0x2f63b8
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report:   #03 fp 0x729cf3f5f4  libMultiplayerCore.so +0x41c5f4 (late_load +0xce8)
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report:   #04 fp 0x747cc05b9c  libsl2.so +0x543b9c
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report:   #05 fp 0x740a728fb4  libunity.so +0xab1fb4
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report:   #06 fp 0x75923ec6c3
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report:   #07 fp 0x747443ff40
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report: last Vivify log lines (oldest first):
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report:   Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report:   Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global.txt
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report:   Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report:   Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report:   Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify crash report: === end ===
+2026-11-21 18:58:17 [WARN] Vivify crash report:   Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-21 18:58:17 [WARN] Vivify crash report: === end ===
+2026-11-21 18:58:17 [INFO] Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-21 18:58:18 [INFO] Installing hook: SaberModelController_Init to offset: 0x740b861928
+2026-11-21 18:58:18 [INFO] Installing hook: GameNoteController_Init to offset: 0x740b75f1d0
+2026-11-21 18:58:18 [INFO] Installing hook: BombNoteController_Init to offset: 0x740b75c2d4
+2026-11-21 18:58:18 [INFO] Installing hook: BurstSliderGameNoteController_Init to offset: 0x740b75d668
+2026-11-21 18:58:18 [INFO] Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x740b7ffbb8
+2026-11-21 18:58:18 [INFO] Installing hook: NoteDebris_Init to offset: 0x740b7622e8
+2026-11-21 18:58:18 [INFO] Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x740bcf6968
+2026-11-21 18:58:18 [INFO] Installing hook: ImageEffectController_OnRenderImage to offset: 0x740b654018
+2026-11-21 18:58:18 [INFO] Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x740bcf9e78
+2026-11-21 18:58:18 [INFO] Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x740bcf99f0
+2026-11-21 18:58:18 [INFO] Installing hook: MirrorRendererSO_RenderMirror to offset: 0x740bcfabb8
+2026-11-21 18:58:18 [INFO] Installing hook: MirrorRendererSO_OnDisable to offset: 0x740bcfaf2c
+2026-11-21 18:58:18 [INFO] Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x740bcfa7f4
+2026-11-21 18:58:18 [INFO] Installing hook: VRCenterAdjust_Start to offset: 0x740b7a937c
+2026-11-21 18:58:18 [INFO] Installing hook: VRCenterAdjust_OnEnable to offset: 0x740b7a958c
+2026-11-21 18:58:18 [INFO] Installing hook: VRCenterAdjust_OnDisable to offset: 0x740b7a9658
+2026-11-21 18:58:18 [INFO] Installing hook: VRCenterAdjust_Update to offset: 0x740b7a9560
+2026-11-21 18:58:18 [INFO] Installing hook: VRCenterAdjust_ResetRoom to offset: 0x740b7a93e0
+2026-11-21 18:58:18 [INFO] Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x740b7a94a4
+2026-11-21 18:58:18 [INFO] Installing hook: PauseController_Pause to offset: 0x740b81b7ec
+2026-11-21 18:58:18 [INFO] Installing hook: PauseMenuManager_ShowMenu to offset: 0x740b825c54
+2026-11-21 18:58:18 [INFO] Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x740b826734
+2026-11-21 18:58:18 [INFO] Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x740b826094
+2026-11-21 18:58:18 [INFO] Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x740b825d88
+2026-11-21 18:58:18 [INFO] Installing hook: GamePause_Resume to offset: 0x740b821178
+2026-11-21 18:58:18 [INFO] Installing hook: Recorder_InstallBindings to offset: 0x740b86a294
+2026-11-21 18:58:18 [INFO] Installing hook: Recorder_HeightLateUpdate to offset: 0x740b85e8b8
+2026-11-21 18:58:18 [INFO] Installing hook: Recorder_SpawnNote to offset: 0x740b755928
+2026-11-21 18:58:18 [INFO] Installing hook: Recorder_SpawnObstacle to offset: 0x740b754dec
+2026-11-21 18:58:18 [INFO] Installing hook: Recorder_NoteWasCut to offset: 0x740b756de4
+2026-11-21 18:58:18 [INFO] Installing hook: Recorder_ScoreLateUpdate to offset: 0x740b86444c
+2026-11-21 18:58:18 [INFO] Installing hook: Recorder_ScoreStart to offset: 0x740b864038
+2026-11-21 18:58:18 [INFO] Installing hook: Recorder_ComputeSwingRating to offset: 0x740a327db4
+2026-11-21 18:58:18 [INFO] Installing hook: Recorder_ProcessSwing to offset: 0x740a328690
+2026-11-21 18:58:18 [INFO] Installing hook: Recorder_SpawnControllerStart to offset: 0x740b757ae0
+2026-11-21 18:58:18 [INFO] Installing hook: Recorder_ShowPause to offset: 0x740b825c54
+2026-11-21 18:58:18 [INFO] Installing hook: Recorder_Resume to offset: 0x740b82676c
+2026-11-21 18:58:18 [INFO] Installing hook: Recorder_Finish to offset: 0x740b7b51dc
+2026-11-21 18:58:18 [INFO] Vivify: loaded mods (63): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavcodec.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavformat.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libweb-utils.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaverplusplus.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libcustom-types.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libflamingo.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libreflectcpp.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libsongdetails
+2026-11-21 18:58:18 [INFO] .so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libtinyxml2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMapLoader.so 0.0.0, DlcSorter 0.1.13, FakeId 0.1.9, bsdc 0.6.4, BSML 0.4.55, bts-yeeter 0.3.8, datakeeper 0.2.5, graphicstweaks 0.1.13, halloween 1.0.1, MetaCore 1.6.3, Hollywood 1.2.2, Lapiz 0.2.23, too-many-fireworks 1.2.5, BSNightcoreQuest 0.3.0, SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether 2.2.5, BetterHaptics 0.2.2, BetterSongSearch 2.2.13, CategoryTabs 0.1.2, ModifiersCoreQuest 0.1.0, Play3rdPer 0.14.8, RecentlyPlayed 1.0.0, CustomJSONData 0.24.5, Tracks 2.5.4, Vivify 0.15.45, PlaylistCore 1.5.5, BeatSync 0.1.2, bl 0.9.666, CameraUtils 1.1.11, ChatPlexSDK-BS 6.4.5, Chroma 2.10.3, cyrillic-fix 1.0.0, DiscordRichPresence 0.3.5, HitScoreVisualizer 3.0.1, MappingExtensions 0.25.4, morebuttons 1.0.4, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistManager 1.4.1, QBeatSaberPlus-GameTweaker 6.4.5, QBeatSabe
+2026-11-21 18:58:18 [INFO] rPlus-MenuMusic 6.4.5, QBeatSaberPlus-Multiplayer 6.4.5, ReeSabers 0.3.19, Replay 0.5.2, SongDownloader 0.8.8, Transitions 1.2.3, unicode 0.1.7
+2026-11-21 18:58:18 [INFO] Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+2026-11-21 18:58:23 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.00,1.22,-0.01) fwd=(-0.04,-0.02,1.00)
+2026-11-21 18:58:23 [INFO] Vivify main camera cullingMask is now 0x3818ff37
+2026-11-21 18:58:23 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 18:58:25 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.82,-0.01) fwd=(-0.07,-0.01,1.00)
+2026-11-21 18:58:25 [INFO] Vivify main camera cullingMask is now 0x3818ff37
+2026-11-21 18:58:25 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 19:04:18 [INFO] Vivify: the game uses STEREO_MULTIVIEW_ON (61 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+2026-11-21 19:04:18 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/44794 (EN__MA___ELI__ - Dark as _Ex Nihilo_)' isCustom=true hasDetails=true
+2026-11-21 19:04:39 [INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify'
+2026-11-21 19:04:40 [INFO] Vivify shader conversion: 35 of 35 shader(s) linked for multiview GLES, 97 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 387 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+2026-11-21 19:04:40 [INFO] Vivify conversion marked 3 of 3 block-compressed texture(s) readable (3 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+2026-11-21 19:04:40 [INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__6af5f61bdf27e079.vivify' (translated 35 of 35 shader(s) (200 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 3 of 3 block-compressed texture(s) marked readable (3 streamed))
+2026-11-21 19:04:40 [INFO] Vivify bulk convert finished: scanned=2 converted=1 alreadyDone=0 failed=0
+2026-11-21 19:04:41 [INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__6af5f61bdf27e079.vivify'
+2026-11-21 19:04:41 [INFO] Vivify bulk convert finished: scanned=2 converted=0 alreadyDone=1 failed=0
+2026-11-21 19:04:44 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' isCustom=true hasDetails=true
+2026-11-21 19:04:44 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:04:44 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:04:44 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__6af5f61bdf27e079.vivify' cached=true
+2026-11-21 19:04:44 [INFO] Vivify depth copy: PC 2D material=true PC array-slice material=true native slice binding=true
+2026-11-21 19:04:45 [INFO] Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__6af5f61bdf27e079.vivify' grabs _GrabTexture1
+2026-11-21 19:04:45 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__6af5f61bdf27e079.vivify' -> needed by Swifter/VFX/StarFlare, Swifter/VFX/RingArtifact, Swifter/Blit/Bokeh
+2026-11-21 19:04:45 [INFO] Vivify replay render: preparing the single-view conversion of '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__6af5f61bdf27e079_replay.vivify'
+2026-11-21 19:04:45 [INFO] Vivify shader conversion: 35 of 35 shader(s) linked for multiview GLES, 97 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 0 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+2026-11-21 19:04:45 [INFO] Vivify conversion marked 3 of 3 block-compressed texture(s) readable (3 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+2026-11-21 19:04:45 [INFO] Vivify replay render: single-view conversion ready: translated 35 of 35 shader(s) (200 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 3 of 3 block-compressed texture(s) marked readable (3 streamed)
+2026-11-21 19:04:46 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' isCustom=true hasDetails=true
+2026-11-21 19:04:46 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:04:46 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:04:46 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__6af5f61bdf27e079.vivify' cached=true
+2026-11-21 19:04:48 [INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+2026-11-21 19:04:49 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.00,1.83,0.00) fwd=(-0.01,-0.13,0.99)
+2026-11-21 19:04:49 [INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+2026-11-21 19:05:19 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.06,1.84,-0.04) fwd=(-0.39,-0.14,0.91)
+2026-11-21 19:05:19 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 19:05:35 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)' isCustom=true hasDetails=true
+2026-11-21 19:05:35 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:05:35 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:05:35 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)' androidBundle=no android2021=2158164444 pcBundle='<none>' convertedCache='<none>' cached=false
+2026-11-21 19:05:35 [INFO] Vivify: play button blocked by Vivify ("Downloading assets...")
+2026-11-21 19:05:35 [INFO] Vivify bundle download: checksum=2158164444 metadataUrl='https://repo.totalbs.dev/api/v1/bundles/2158164444' saving to '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleAndroid2021.vivify'
+2026-11-21 19:05:35 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)' isCustom=true hasDetails=true
+2026-11-21 19:05:35 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:05:35 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:05:35 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)' androidBundle=no android2021=2158164444 pcBundle='<none>' convertedCache='<none>' cached=false
+2026-11-21 19:05:35 [INFO] Vivify bundle download: checksum=2158164444 metadataUrl='https://repo.totalbs.dev/api/v1/bundles/2158164444' saving to '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleAndroid2021.vivify'
+2026-11-21 19:05:35 [INFO] Vivify bundle download URL resolved: 'https://cdn.repo.totalbs.dev/2158164444.vivify'
+2026-11-21 19:05:35 [INFO] Vivify bundle download URL resolved: 'https://cdn.repo.totalbs.dev/2158164444.vivify'
+2026-11-21 19:05:35 [INFO] Vivify bundle download complete: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleAndroid2021.vivify' bytes=6846652 written=true
+2026-11-21 19:05:35 [INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleAndroid2021.vivify'
+2026-11-21 19:05:35 [INFO] Vivify bundle download complete: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleAndroid2021.vivify' bytes=6846652 written=true
+2026-11-21 19:05:36 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)' isCustom=true hasDetails=true
+2026-11-21 19:05:36 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:05:36 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:05:36 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)' isCustom=true hasDetails=true
+2026-11-21 19:05:36 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:05:36 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:05:37 [INFO] Vivify: 2 shader(s) in this map's Quest bundle have no two-eye program; a screen effect using one runs once per eye
+2026-11-21 19:05:37 [WARN] Vivify: this map's Quest bundle ships 1 shader(s) with no programs ('WACOMalt/WACOWater4'); looking for the map's PC build to stand in for them
+2026-11-21 19:05:37 [INFO] Vivify: downloading the map's windows2021 PC bundle for its shaders
+2026-11-21 19:05:37 [INFO] Vivify bundle download: checksum=1446668609 metadataUrl='https://repo.totalbs.dev/api/v1/bundles/1446668609' saving to '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleWindows2021.vivify'
+2026-11-21 19:05:37 [INFO] Vivify bundle download URL resolved: 'https://cdn.repo.totalbs.dev/1446668609.vivify'
+2026-11-21 19:05:37 [INFO] Vivify bundle download complete: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleWindows2021.vivify' bytes=5994906 written=true
+2026-11-21 19:05:37 [INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleWindows2021.vivify'
+2026-11-21 19:05:39 [INFO] Vivify: the PC shaders are stood in at load instead of merged: no shader could be merged; WACOMalt/WACOWater4: the PC build was converted with the stereo split; merging needs one without
+2026-11-21 19:05:39 [INFO] Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43999__42-flux_-_Aeroluna_/43999__42-flux_-_Aeroluna__f8fc135d9b1d4ff8_donor.vivify' grabs _BlackHoleGrabTex, _GrabTexture, _EclipseGrabTex, _Base
+2026-11-21 19:05:39 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43999__42-flux_-_Aeroluna_/43999__42-flux_-_Aeroluna__f8fc135d9b1d4ff8_donor.vivify' -> needed by BlackHole/BlackHole, PostProcessing/VolumetricFog, Library/Particle Fog, PostProcessing/DistortNotes, Sun/ShadedEclipse, Smoke/SmokeParticle, PostProcessing/Outline, PostProcessing/Scram, WACOMalt/WACOWater4, IcoSphere/RainParticle, BeatSaber/Particle Alpha Blended
+2026-11-21 19:05:40 [INFO] Vivify Projector interface: managedType=false nativeGetMaterial=true nativeSetMaterial=true
+2026-11-21 19:05:40 [INFO] Vivify: 1 of 1 empty shader(s) have a working PC build standing in (1 found in the PC bundle, 76 shader(s) seen there)
+2026-11-21 19:05:40 [INFO] Vivify: play button is enabled (no mod is blocking it)
+2026-11-21 19:05:41 [INFO] Vivify: the Replay mod's button is clickable again now that the map is ready
+2026-11-21 19:05:42 [INFO] Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleAndroid2021.vivify' grabs _BlackHoleGrabTex, _GrabTexture, _EclipseGrabTex, _Base
+2026-11-21 19:05:42 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleAndroid2021.vivify' -> needed by BlackHole/BlackHole, PostProcessing/VolumetricFog, Library/Particle Fog, PostProcessing/DistortNotes, Sun/ShadedEclipse, Smoke/SmokeParticle, PostProcessing/Outline, PostProcessing/Scram, IcoSphere/RainParticle, BeatSaber/Particle Alpha Blended
+2026-11-21 19:05:45 [INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+2026-11-21 19:05:46 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.00,1.83,-0.01) fwd=(0.02,-0.11,0.99)
+2026-11-21 19:05:46 [INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+2026-11-21 19:06:02 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.00,1.84,-0.03) fwd=(-0.39,-0.11,0.91)
+2026-11-21 19:06:02 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 19:06:50 [INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+2026-11-21 19:06:51 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.02,1.82,0.00) fwd=(-0.00,-0.08,1.00)
+2026-11-21 19:06:51 [INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+2026-11-21 19:06:51 [INFO] Vivify graphics: api=OpenGLES3 (11) shaderLevel=50 (SM5.0) geometryShaderStagePossible=true gpu='Adreno (TM) 740'
+2026-11-21 19:06:51 [INFO] Vivify texture decode: scanned 105 material(s), replaced 0 unsupported texture reference(s) in 5ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+2026-11-21 19:06:51 [INFO] Vivify material 'BoxColorize': '_BoxCount' is an int in shader 'PostProcessing/BoxColorize'; set as integer 0
+2026-11-21 19:06:51 [INFO] Vivify material 'VilarGeometryDissolve': '_Debris' is an int in shader 'Vilar/GeometryDissolve'; set as integer 0
+2026-11-21 19:06:51 [INFO] Vivify material 'VilarGeometryDissolveDebris': '_Debris' is an int in shader 'Vilar/GeometryDissolve'; set as integer 1
+2026-11-21 19:06:51 [INFO] Vivify material 'VidScreen': '_Columns' is an int in shader 'Monitor/SpriteSheetScreen'; set as integer 10
+2026-11-21 19:06:51 [INFO] Vivify material 'VidScreen': '_FrameNumber' is an int in shader 'Monitor/SpriteSheetScreen'; set as integer 0
+2026-11-21 19:06:51 [INFO] Vivify material 'VidScreen': '_Rows' is an int in shader 'Monitor/SpriteSheetScreen'; set as integer 5
+2026-11-21 19:06:51 [INFO] Vivify material 'VidScreen': '_TotalFrames' is an int in shader 'Monitor/SpriteSheetScreen'; set as integer 50
+2026-11-21 19:06:51 [INFO] Vivify: material 'WACOWater4' now uses the PC build of 'WACOMalt/WACOWater4'
+2026-11-21 19:06:51 [INFO] Vivify: maps may turn realtime reflection probes on (full quality)
+2026-11-21 19:06:51 [INFO] Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+2026-11-21 19:06:51 [INFO] Vivify saber: the map's model was not being drawn (another saber mod hid or switched off the game's model); re-enabled 0 renderer(s), moved 1 object(s) onto the saber, visible now: true
+2026-11-21 19:06:51 [INFO] Vivify saber trail: 1 map trail(s) created (following the game's trail)
+2026-11-21 19:06:51 [INFO] Vivify saber: the map's model was not being drawn (another saber mod hid or switched off the game's model); re-enabled 0 renderer(s), moved 1 object(s) onto the saber, visible now: true
+2026-11-21 19:06:51 [INFO] Vivify saber trail: 1 map trail(s) created (following the game's trail)
+2026-11-21 19:06:51 [WARN] VRCenterAdjust.OnEnable skipped: missing _settingsManager=true _settingsApplicator=true
+2026-11-21 19:06:51 [WARN] VRCenterAdjust.Start skipped: missing _settingsManager=true _settingsApplicator=true
+2026-11-21 19:06:51 [INFO] Vivify main camera: scene depth texture enabled for this map
+2026-11-21 19:06:51 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-21 19:06:51 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-21 19:06:51 [INFO] Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+2026-11-21 19:06:51 [INFO] Vivify Game Bloom: bloom on for this map (the game had 'PyramidBloomMainEffect', post-processing on)
+2026-11-21 19:06:51 [WARN] VRCenterAdjust.Update skipped: missing _settingsManager=true _settingsApplicator=true
+2026-11-21 19:06:52 [INFO] Vivify Blit check: effect(s) 'PostProcessing/FilmGrain' -- 2 colour(s) among 16 blocks going in, 2 coming out (first rgb=(3,3,3)); screen 1680x1760 slices=2; _ScreenParams before the effects=(1680,1760)
+2026-11-21 19:06:55 [WARN] VRCenterAdjust.OnDisable skipped: missing _settingsManager=true _settingsApplicator=true
+2026-11-21 19:06:55 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.01,1.83,-0.01) fwd=(-0.07,-0.19,0.98)
+2026-11-21 19:06:55 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 19:06:55 [INFO] Vivify main camera: scene depth texture enabled for this map
+2026-11-21 19:06:55 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-21 19:06:55 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-21 19:06:55 [INFO] Vivify level end: level ended (quit or finished)
+2026-11-21 19:06:55 [INFO] Vivify level end: camera effects removed
+2026-11-21 19:06:55 [INFO] Vivify level end: note and saber visuals restored
+2026-11-21 19:06:55 [INFO] Vivify level end: camera restored
+2026-11-21 19:06:55 [INFO] Vivify level end: map prefabs destroyed
+2026-11-21 19:06:55 [INFO] Vivify level end: render textures released
+2026-11-21 19:06:55 [INFO] Vivify level end: render settings restored
+2026-11-21 19:06:55 [INFO] Vivify level end: done
+2026-11-21 19:06:56 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' isCustom=true hasDetails=true
+2026-11-21 19:06:56 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:06:56 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:06:56 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__6af5f61bdf27e079.vivify' cached=true
+2026-11-21 19:06:58 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' isCustom=true hasDetails=true
+2026-11-21 19:06:58 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:06:58 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:06:58 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__6af5f61bdf27e079.vivify' cached=true
+2026-11-21 19:06:59 [INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+2026-11-21 19:06:59 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.02,1.84,-0.03) fwd=(-0.04,-0.09,0.99)
+2026-11-21 19:06:59 [INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+2026-11-21 19:07:00 [INFO] Vivify texture decode: scanned 222 material(s), replaced 0 unsupported texture reference(s) in 5ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+2026-11-21 19:07:00 [INFO] Vivify: GPU instancing turned off on 64 material(s) of this converted bundle, so notes drawn together (chords, chains) each get their own transform
+2026-11-21 19:07:00 [INFO] Vivify: maps may turn realtime reflection probes on (full quality)
+2026-11-21 19:07:00 [INFO] Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+2026-11-21 19:07:00 [INFO] Vivify saber: the map's model was not being drawn (another saber mod hid or switched off the game's model); re-enabled 0 renderer(s), moved 1 object(s) onto the saber, visible now: true
+2026-11-21 19:07:00 [INFO] Vivify saber trail: 1 map trail(s) created (following the game's trail)
+2026-11-21 19:07:00 [INFO] Vivify saber: the map's model was not being drawn (another saber mod hid or switched off the game's model); re-enabled 0 renderer(s), moved 1 object(s) onto the saber, visible now: true
+2026-11-21 19:07:00 [INFO] Vivify saber trail: 1 map trail(s) created (following the game's trail)
+2026-11-21 19:07:00 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-21 19:07:00 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-21 19:07:00 [INFO] Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+2026-11-21 19:07:00 [INFO] Vivify Game Bloom: bloom on for this map (the game had 'PyramidBloomMainEffect', post-processing on)
+2026-11-21 19:07:03 [INFO] Vivify Blit check: effect(s) 'Swifter/Blit/Bokeh' -- 3+ colour(s) among 16 blocks going in, 3+ coming out (first rgb=(194,221,230)); screen 1680x1760 slices=2; _ScreenParams before the effects=(1680,1760)
+2026-11-21 19:07:05 [INFO] Vivify visual check at 5s: 10 live note(s), 10 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:07:05 [INFO] Vivify visual check: a live note has 6 renderer(s) (map prefab):
+2026-11-21 19:07:05 [INFO] Vivify visual check:   'NoteCube' enabled=false active=true layer=8 material='NoteHD' shader='Custom/NoteHD' supported=true queue=2004 block: _Cutout=1.00 _Color=(0.00,0.80,1.00,1.00)
+2026-11-21 19:07:05 [INFO] Vivify visual check:   'NoteArrow' enabled=false active=true layer=8 material='NoteArrowHD' shader='Custom/GlowingInstancedHD' supported=true queue=2002 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+2026-11-21 19:07:05 [INFO] Vivify visual check:   'NoteArrowGlow' enabled=false active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.00,0.80,1.00,1.00)
+2026-11-21 19:07:05 [INFO] Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.00,0.80,1.00,1.00)
+2026-11-21 19:07:05 [INFO] Vivify visual check:   'Base' enabled=true active=true layer=8 material='Terrain Note' shader='Swifter/SimpleTerrainFog' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.80,1.00,1.00)
+2026-11-21 19:07:05 [INFO] Vivify visual check:   'Arrow' enabled=true active=true layer=8 material='White Arrow' shader='Swifter/CustomNoteArrow' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.80,1.00,1.00)
+2026-11-21 19:07:05 [INFO] Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+2026-11-21 19:07:05 [INFO] Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+2026-11-21 19:07:05 [INFO] Vivify visual check at 5s: 422 active renderer(s), 0 with no runnable shader; most drawn: Swifter/SimpleTerrainFog x376, Custom/CustomParticles x10, Swifter/CustomNoteArrow x10, Swifter/Gemstone x8, Swifter/VFX/StarFlare x3, Swifter/SimpleColor x2, Swifter/VFX/RingArtifact x2, Ree/SimpleTrail x2; screen effects: 0 before, 1 after the main effect
+2026-11-21 19:07:05 [INFO] Vivify grab texture '_Base' at 5s: nothing bound
+2026-11-21 19:07:05 [INFO] Vivify grab texture '_BlackHoleGrabTex' at 5s: nothing bound
+2026-11-21 19:07:05 [INFO] Vivify grab texture '_EclipseGrabTex' at 5s: nothing bound
+2026-11-21 19:07:05 [INFO] Vivify grab texture '_GrabTexture' at 5s: nothing bound
+2026-11-21 19:07:05 [INFO] Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+2026-11-21 19:07:05 [INFO] Vivify visual check: main camera cullingMask=0x3d3bfd37 depthTextureMode=1 clearFlags=2
+2026-11-21 19:07:24 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.84,-0.02) fwd=(-0.47,0.01,0.88)
+2026-11-21 19:07:24 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 19:07:24 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-21 19:07:24 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-21 19:07:24 [INFO] Vivify level end: level ended (quit or finished)
+2026-11-21 19:07:24 [INFO] Vivify level end: camera effects removed
+2026-11-21 19:07:24 [INFO] Vivify level end: note and saber visuals restored
+2026-11-21 19:07:24 [INFO] Vivify level end: camera restored
+2026-11-21 19:07:24 [INFO] Vivify level end: map prefabs destroyed
+2026-11-21 19:07:24 [INFO] Vivify level end: render textures released
+2026-11-21 19:07:24 [INFO] Vivify level end: render settings restored
+2026-11-21 19:07:24 [INFO] Vivify level end: done
+2026-11-21 19:08:16 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' isCustom=true hasDetails=true
+2026-11-21 19:08:16 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:08:16 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:08:16 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__6af5f61bdf27e079.vivify' cached=true
+2026-11-21 19:08:18 [INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+2026-11-21 19:08:18 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.02,1.82,-0.02) fwd=(0.08,-0.09,0.99)
+2026-11-21 19:08:18 [INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+2026-11-21 19:08:19 [INFO] Vivify texture decode: scanned 222 material(s), replaced 0 unsupported texture reference(s) in 6ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+2026-11-21 19:08:19 [INFO] Vivify: GPU instancing turned off on 64 material(s) of this converted bundle, so notes drawn together (chords, chains) each get their own transform
+2026-11-21 19:08:19 [INFO] Vivify: maps may turn realtime reflection probes on (full quality)
+2026-11-21 19:08:19 [INFO] Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+2026-11-21 19:08:19 [INFO] Vivify saber: the map's model was not being drawn (another saber mod hid or switched off the game's model); re-enabled 0 renderer(s), moved 1 object(s) onto the saber, visible now: true
+2026-11-21 19:08:19 [INFO] Vivify saber trail: 1 map trail(s) created (following the game's trail)
+2026-11-21 19:08:19 [INFO] Vivify saber: the map's model was not being drawn (another saber mod hid or switched off the game's model); re-enabled 0 renderer(s), moved 1 object(s) onto the saber, visible now: true
+2026-11-21 19:08:19 [INFO] Vivify saber trail: 1 map trail(s) created (following the game's trail)
+2026-11-21 19:08:19 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-21 19:08:19 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-21 19:08:19 [INFO] Vivify Game Bloom: bloom on for this map (the game had 'NoPostProcessMainEffect', post-processing off)
+2026-11-21 19:08:19 [INFO] Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+2026-11-21 19:08:32 [INFO] Vivify Blit check: effect(s) 'Swifter/Blit/Bokeh' -- 3+ colour(s) among 16 blocks going in, 3+ coming out (first rgb=(166,187,198)); screen 1344x1408 slices=2; _ScreenParams before the effects=(1344,1408)
+2026-11-21 19:08:36 [INFO] Vivify visual check at 5s: 10 live note(s), 10 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:08:36 [INFO] Vivify visual check: a live note has 6 renderer(s) (map prefab):
+2026-11-21 19:08:36 [INFO] Vivify visual check:   'NoteCube' enabled=false active=true layer=8 material='NoteHD' shader='Custom/NoteHD' supported=true queue=2004 block: _Cutout=1.00 _Color=(0.00,0.80,1.00,1.00)
+2026-11-21 19:08:36 [INFO] Vivify visual check:   'NoteArrow' enabled=false active=true layer=8 material='NoteArrowHD' shader='Custom/GlowingInstancedHD' supported=true queue=2002 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+2026-11-21 19:08:36 [INFO] Vivify visual check:   'NoteArrowGlow' enabled=false active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.00,0.80,1.00,1.00)
+2026-11-21 19:08:36 [INFO] Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.00,0.80,1.00,1.00)
+2026-11-21 19:08:36 [INFO] Vivify visual check:   'Base' enabled=true active=true layer=8 material='Terrain Note' shader='Swifter/SimpleTerrainFog' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.80,1.00,1.00)
+2026-11-21 19:08:36 [INFO] Vivify visual check:   'Arrow' enabled=true active=true layer=8 material='White Arrow' shader='Swifter/CustomNoteArrow' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.80,1.00,1.00)
+2026-11-21 19:08:36 [INFO] Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+2026-11-21 19:08:36 [INFO] Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+2026-11-21 19:08:36 [INFO] Vivify visual check at 5s: 420 active renderer(s), 0 with no runnable shader; most drawn: Swifter/SimpleTerrainFog x376, Custom/CustomParticles x10, Swifter/CustomNoteArrow x10, Swifter/Gemstone x8, Swifter/VFX/StarFlare x3, Swifter/SimpleColor x2, Swifter/VFX/RingArtifact x2, Ree/SimpleTrail x2; screen effects: 0 before, 1 after the main effect
+2026-11-21 19:08:36 [INFO] Vivify grab texture '_Base' at 5s: nothing bound
+2026-11-21 19:08:36 [INFO] Vivify grab texture '_BlackHoleGrabTex' at 5s: nothing bound
+2026-11-21 19:08:36 [INFO] Vivify grab texture '_EclipseGrabTex' at 5s: nothing bound
+2026-11-21 19:08:36 [INFO] Vivify grab texture '_GrabTexture' at 5s: nothing bound
+2026-11-21 19:08:36 [INFO] Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+2026-11-21 19:08:36 [INFO] Vivify visual check: main camera cullingMask=0x3d3bfd37 depthTextureMode=1 clearFlags=2
+2026-11-21 19:09:01 [INFO] Vivify visual check at 30s: 8 live note(s), 8 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:09:01 [INFO] Vivify visual check at 30s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+2026-11-21 19:09:01 [INFO] Vivify visual check at 30s: 373 active renderer(s), 0 with no runnable shader; most drawn: Swifter/SimpleTerrainFog x320, Custom/CustomParticles x9, Swifter/CustomNoteArrow x8, Swifter/Gemstone x8, Swifter/Ribbon x4, Swifter/VFX/StarFlare x4, Swifter/VFX/RingArtifact x4, Custom/NoteHD x3; screen effects: 0 before, 0 after the main effect
+2026-11-21 19:09:01 [INFO] Vivify grab texture '_Base' at 30s: nothing bound
+2026-11-21 19:09:01 [INFO] Vivify grab texture '_BlackHoleGrabTex' at 30s: nothing bound
+2026-11-21 19:09:01 [INFO] Vivify grab texture '_EclipseGrabTex' at 30s: nothing bound
+2026-11-21 19:09:01 [INFO] Vivify grab texture '_GrabTexture' at 30s: nothing bound
+2026-11-21 19:09:01 [INFO] Vivify grab texture '_GrabTexture1' at 30s: nothing bound
+2026-11-21 19:09:04 [INFO] Vivify text check +1s: prefab='assets/aether/prefabs/sections/drop.prefab' text='Aether' active=false enabled=true chars=10 shown=10 lossyScale=(1,1,1) font='times SDF' dynamic=true sourceFont=true mesh vertices=36 uv2[0]=(0,0.04) bounds=(19.8,2.52,0) renderer=on material='times Graphic' shader='Swifter/GraphicText' subMeshes=0
+2026-11-21 19:09:09 [INFO] Vivify text check +6s: prefab='assets/aether/prefabs/sections/drop.prefab' text='Aether' active=false enabled=true chars=10 shown=10 lossyScale=(1,1,1) font='times SDF' dynamic=true sourceFont=true mesh vertices=36 uv2[0]=(0,0.04) bounds=(19.8,2.52,0) renderer=on material='times Graphic' shader='Swifter/GraphicText' subMeshes=0
+2026-11-21 19:10:01 [INFO] Vivify visual check at 90s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:10:01 [INFO] Vivify grab texture '_Base' at 90s: nothing bound
+2026-11-21 19:10:01 [INFO] Vivify grab texture '_BlackHoleGrabTex' at 90s: nothing bound
+2026-11-21 19:10:01 [INFO] Vivify grab texture '_EclipseGrabTex' at 90s: nothing bound
+2026-11-21 19:10:01 [INFO] Vivify grab texture '_GrabTexture' at 90s: nothing bound
+2026-11-21 19:10:01 [INFO] Vivify grab texture '_GrabTexture1' at 90s: render texture dimension=5 layers=2 1344x1408 msaa=1
+2026-11-21 19:10:20 [INFO] Vivify text check +1s: prefab='assets/aether/prefabs/sections/ambient.prefab' text='Text' active=false enabled=true chars=14 shown=-1 lossyScale=(0.2679,0.2679,0.2679) font='times SDF' dynamic=true sourceFont=true mesh vertices=0 uv2[0]=- bounds=(0,0,0) renderer=on material='times Graphic' shader='Swifter/GraphicText' subMeshes=0
+2026-11-21 19:10:21 [INFO] Vivify Auto Effect Resolution: frames at 36.4 ms against a best of 16.1 ms; map effects down to 90%
+2026-11-21 19:10:24 [INFO] Vivify Auto Effect Resolution: frames at 38.5 ms against a best of 16.1 ms; map effects down to 80%
+2026-11-21 19:10:27 [INFO] Vivify text check +6s: prefab='assets/aether/prefabs/sections/ambient.prefab' text='Text' active=false enabled=true chars=14 shown=-1 lossyScale=(0.2679,0.2679,0.2679) font='times SDF' dynamic=true sourceFont=true mesh vertices=0 uv2[0]=- bounds=(0,0,0) renderer=on material='times Graphic' shader='Swifter/GraphicText' subMeshes=0
+2026-11-21 19:11:10 [WARN] Vivify frame took 150.7ms, over the 50ms budget
+2026-11-21 19:11:11 [WARN] Vivify frame stall: the game did not draw for 0.6s (songTime 155.11, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__6af5f61bdf27e079.vivify')
+2026-11-21 19:11:17 [WARN] Vivify frame took 1663.4ms, over the 50ms budget
+2026-11-21 19:11:24 [WARN] Vivify frame took 3157.1ms, over the 50ms budget
+2026-11-21 19:11:27 [WARN] Vivify frame took 565.0ms, over the 50ms budget
+=== Vivify 0.15.45 session started 2026-11-21 19:13:02 ===
+2026-11-21 19:13:02 [INFO] Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-21 19:13:02 [INFO] Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global.txt
+2026-11-21 19:13:02 [INFO] Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+2026-11-21 19:13:02 [INFO] Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+2026-11-21 19:13:02 [WARN] Vivify crash recovery: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' did not end: the game crashed or was closed while it played (last sign of life 158 s into the song); it plays in recovery mode next time
+2026-11-21 19:13:02 [INFO] Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-21 19:13:02 [INFO] Installing hook: SaberModelController_Init to offset: 0x6f0b375928
+2026-11-21 19:13:02 [INFO] Installing hook: GameNoteController_Init to offset: 0x6f0b2731d0
+2026-11-21 19:13:02 [INFO] Installing hook: BombNoteController_Init to offset: 0x6f0b2702d4
+2026-11-21 19:13:02 [INFO] Installing hook: BurstSliderGameNoteController_Init to offset: 0x6f0b271668
+2026-11-21 19:13:02 [INFO] Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x6f0b313bb8
+2026-11-21 19:13:02 [INFO] Installing hook: NoteDebris_Init to offset: 0x6f0b2762e8
+2026-11-21 19:13:02 [INFO] Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x6f0b80a968
+2026-11-21 19:13:02 [INFO] Installing hook: ImageEffectController_OnRenderImage to offset: 0x6f0b168018
+2026-11-21 19:13:02 [INFO] Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x6f0b80de78
+2026-11-21 19:13:02 [INFO] Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x6f0b80d9f0
+2026-11-21 19:13:02 [INFO] Installing hook: MirrorRendererSO_RenderMirror to offset: 0x6f0b80ebb8
+2026-11-21 19:13:02 [INFO] Installing hook: MirrorRendererSO_OnDisable to offset: 0x6f0b80ef2c
+2026-11-21 19:13:02 [INFO] Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x6f0b80e7f4
+2026-11-21 19:13:02 [INFO] Installing hook: VRCenterAdjust_Start to offset: 0x6f0b2bd37c
+2026-11-21 19:13:02 [INFO] Installing hook: VRCenterAdjust_OnEnable to offset: 0x6f0b2bd58c
+2026-11-21 19:13:02 [INFO] Installing hook: VRCenterAdjust_OnDisable to offset: 0x6f0b2bd658
+2026-11-21 19:13:02 [INFO] Installing hook: VRCenterAdjust_Update to offset: 0x6f0b2bd560
+2026-11-21 19:13:02 [INFO] Installing hook: VRCenterAdjust_ResetRoom to offset: 0x6f0b2bd3e0
+2026-11-21 19:13:02 [INFO] Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x6f0b2bd4a4
+2026-11-21 19:13:02 [INFO] Installing hook: PauseController_Pause to offset: 0x6f0b32f7ec
+2026-11-21 19:13:02 [INFO] Installing hook: PauseMenuManager_ShowMenu to offset: 0x6f0b339c54
+2026-11-21 19:13:02 [INFO] Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x6f0b33a734
+2026-11-21 19:13:02 [INFO] Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x6f0b33a094
+2026-11-21 19:13:02 [INFO] Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x6f0b339d88
+2026-11-21 19:13:02 [INFO] Installing hook: GamePause_Resume to offset: 0x6f0b335178
+2026-11-21 19:13:02 [INFO] Installing hook: Recorder_InstallBindings to offset: 0x6f0b37e294
+2026-11-21 19:13:02 [INFO] Installing hook: Recorder_HeightLateUpdate to offset: 0x6f0b3728b8
+2026-11-21 19:13:02 [INFO] Installing hook: Recorder_SpawnNote to offset: 0x6f0b269928
+2026-11-21 19:13:02 [INFO] Installing hook: Recorder_SpawnObstacle to offset: 0x6f0b268dec
+2026-11-21 19:13:02 [INFO] Installing hook: Recorder_NoteWasCut to offset: 0x6f0b26ade4
+2026-11-21 19:13:02 [INFO] Installing hook: Recorder_ScoreLateUpdate to offset: 0x6f0b37844c
+2026-11-21 19:13:02 [INFO] Installing hook: Recorder_ScoreStart to offset: 0x6f0b378038
+2026-11-21 19:13:02 [INFO] Installing hook: Recorder_ComputeSwingRating to offset: 0x6f09e3bdb4
+2026-11-21 19:13:02 [INFO] Installing hook: Recorder_ProcessSwing to offset: 0x6f09e3c690
+2026-11-21 19:13:02 [INFO] Installing hook: Recorder_SpawnControllerStart to offset: 0x6f0b26bae0
+2026-11-21 19:13:02 [INFO] Installing hook: Recorder_ShowPause to offset: 0x6f0b339c54
+2026-11-21 19:13:02 [INFO] Installing hook: Recorder_Resume to offset: 0x6f0b33a76c
+2026-11-21 19:13:02 [INFO] Installing hook: Recorder_Finish to offset: 0x6f0b2c91dc
+2026-11-21 19:13:02 [INFO] Vivify: loaded mods (63): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavcodec.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavformat.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libweb-utils.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaverplusplus.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libcustom-types.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libflamingo.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libreflectcpp.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libsongdetails
+2026-11-21 19:13:02 [INFO] .so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libtinyxml2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMapLoader.so 0.0.0, DlcSorter 0.1.13, FakeId 0.1.9, bsdc 0.6.4, BSML 0.4.55, bts-yeeter 0.3.8, datakeeper 0.2.5, graphicstweaks 0.1.13, halloween 1.0.1, MetaCore 1.6.3, Hollywood 1.2.2, Lapiz 0.2.23, too-many-fireworks 1.2.5, BSNightcoreQuest 0.3.0, SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether 2.2.5, BetterHaptics 0.2.2, BetterSongSearch 2.2.13, CategoryTabs 0.1.2, ModifiersCoreQuest 0.1.0, Play3rdPer 0.14.8, RecentlyPlayed 1.0.0, CustomJSONData 0.24.5, Tracks 2.5.4, Vivify 0.15.45, PlaylistCore 1.5.5, BeatSync 0.1.2, bl 0.9.666, CameraUtils 1.1.11, ChatPlexSDK-BS 6.4.5, Chroma 2.10.3, cyrillic-fix 1.0.0, DiscordRichPresence 0.3.5, HitScoreVisualizer 3.0.1, MappingExtensions 0.25.4, morebuttons 1.0.4, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistManager 1.4.1, QBeatSaberPlus-GameTweaker 6.4.5, QBeatSabe
+2026-11-21 19:13:02 [INFO] rPlus-MenuMusic 6.4.5, QBeatSaberPlus-Multiplayer 6.4.5, ReeSabers 0.3.19, Replay 0.5.2, SongDownloader 0.8.8, Transitions 1.2.3, unicode 0.1.7
+2026-11-21 19:13:02 [INFO] Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+2026-11-21 19:13:07 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.22,-0.02) fwd=(-0.15,0.32,0.93)
+2026-11-21 19:13:07 [INFO] Vivify main camera cullingMask is now 0x3818ff37
+2026-11-21 19:13:07 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 19:13:09 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.81,-0.00) fwd=(-0.18,0.08,0.98)
+2026-11-21 19:13:09 [INFO] Vivify main camera cullingMask is now 0x3818ff37
+2026-11-21 19:13:09 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 19:13:28 [INFO] Vivify: the game uses STEREO_MULTIVIEW_ON (60 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+2026-11-21 19:13:28 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/555d3 (Tutorial - isaknboom)' isCustom=true hasDetails=true
+2026-11-21 19:13:28 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:13:28 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:13:28 [INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/555d3 (Tutorial - isaknboom)/bundleWindows2021.vivify'
+2026-11-21 19:13:28 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/555d3 (Tutorial - isaknboom)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/555d3 (Tutorial - isaknboom)/bundleWindows2021.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/555d3__Tutorial_-_isaknboom_/555d3__Tutorial_-_isaknboom__010dc7b808ace143.vivify' cached=false
+2026-11-21 19:13:28 [INFO] Vivify: play button blocked by Vivify ("Converting PC assets...")
+2026-11-21 19:13:28 [INFO] Vivify converting PC asset bundle on device: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/555d3 (Tutorial - isaknboom)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/555d3__Tutorial_-_isaknboom_/555d3__Tutorial_-_isaknboom__010dc7b808ace143.vivify'
+2026-11-21 19:13:28 [INFO] Vivify shader conversion: 2 of 2 shader(s) linked for multiview GLES, 40 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 0 variant(s) given their single-pass stereo twin's per-eye code, 40 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+2026-11-21 19:13:28 [INFO] Vivify conversion marked 2 of 2 block-compressed texture(s) readable (2 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+2026-11-21 19:13:28 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/555d3 (Tutorial - isaknboom)' isCustom=true hasDetails=true
+2026-11-21 19:13:28 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:13:28 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:13:28 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/555d3 (Tutorial - isaknboom)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/555d3 (Tutorial - isaknboom)/bundleWindows2021.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/555d3__Tutorial_-_isaknboom_/555d3__Tutorial_-_isaknboom__010dc7b808ace143.vivify' cached=true
+2026-11-21 19:13:28 [INFO] Vivify: play button is enabled (no mod is blocking it)
+2026-11-21 19:13:28 [INFO] Vivify depth copy: PC 2D material=true PC array-slice material=true native slice binding=true
+2026-11-21 19:13:28 [INFO] Vivify source bundle shaders: unity=2022.3.33f1 serializedFiles=1 shaders=2 runnableOnQuest=0 platforms=[Direct3D 11(4)] programs=92 glslSource=0 binary=92 shadersWithTessellation=0 programTypes=[unknown, D3D11 vertex sm4.0, D3D11 pixel sm4.0]
+2026-11-21 19:13:28 [INFO] Vivify bundle conversion succeeded: translated 2 of 2 shader(s) (80 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 2 of 2 block-compressed texture(s) marked readable (2 streamed)
+2026-11-21 19:13:28 [INFO] Vivify replay render: preparing the single-view conversion of '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/555d3 (Tutorial - isaknboom)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/555d3__Tutorial_-_isaknboom_/555d3__Tutorial_-_isaknboom__010dc7b808ace143_replay.vivify'
+2026-11-21 19:13:28 [INFO] Vivify replay render: preparing the single-view conversion of '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/555d3 (Tutorial - isaknboom)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/555d3__Tutorial_-_isaknboom_/555d3__Tutorial_-_isaknboom__010dc7b808ace143_replay.vivify'
+2026-11-21 19:13:28 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/555d3__Tutorial_-_isaknboom_/555d3__Tutorial_-_isaknboom__010dc7b808ace143.vivify' -> not needed
+2026-11-21 19:13:28 [INFO] Vivify shader conversion: 2 of 2 shader(s) linked for multiview GLES, 20 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 0 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+2026-11-21 19:13:28 [INFO] Vivify conversion marked 2 of 2 block-compressed texture(s) readable (2 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+2026-11-21 19:13:28 [INFO] Vivify replay render: single-view conversion ready: translated 2 of 2 shader(s) (40 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 2 of 2 block-compressed texture(s) marked readable (2 streamed)
+2026-11-21 19:13:28 [INFO] Vivify replay render: single-view conversion ready: converted by another pass moments ago
+2026-11-21 19:13:30 [INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+2026-11-21 19:13:30 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.01,1.80,0.04) fwd=(0.07,-0.16,0.98)
+2026-11-21 19:13:30 [INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+2026-11-21 19:13:30 [INFO] Vivify graphics: api=OpenGLES3 (11) shaderLevel=50 (SM5.0) geometryShaderStagePossible=true gpu='Adreno (TM) 740'
+2026-11-21 19:13:30 [INFO] Vivify Projector interface: managedType=false nativeGetMaterial=true nativeSetMaterial=true
+2026-11-21 19:13:30 [INFO] Vivify texture decode: scanned 21 material(s), replaced 0 unsupported texture reference(s) in 1ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+2026-11-21 19:13:30 [INFO] Vivify: GPU instancing turned off on 7 material(s) of this converted bundle, so notes drawn together (chords, chains) each get their own transform
+2026-11-21 19:13:31 [INFO] Vivify: maps may turn realtime reflection probes on (full quality)
+2026-11-21 19:13:31 [INFO] Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+2026-11-21 19:13:31 [INFO] Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+2026-11-21 19:13:31 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-21 19:13:31 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-21 19:13:31 [INFO] Vivify Game Bloom: bloom on for this map (the game had 'NoPostProcessMainEffect', post-processing off)
+2026-11-21 19:13:31 [INFO] Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+2026-11-21 19:13:32 [INFO] Vivify text check +1s: prefab='assets/tutorial/intro.prefab' text='Text' active=false enabled=true chars=192 shown=-1 lossyScale=(0.01,0.01,1) font='Teko-Medium SDF' dynamic=false sourceFont=false mesh vertices=-1 uv2[0]=- bounds=- renderer=none material='Teko-Medium SDF Curved Softer' shader='TextMeshPro/Mobile/Distance Field Zero Alpha Write' subMeshes=0
+2026-11-21 19:13:32 [INFO] Vivify text check +1s: prefab='assets/tutorial/text_rings.prefab' text='Text' active=true enabled=true chars=33 shown=33 lossyScale=(0.01,0.07,1) font='Teko-Medium SDF' dynamic=false sourceFont=false mesh vertices=116 uv2[0]=(0,0.03933) bounds=(420,92.7,0) renderer=none material='Teko-Medium SDF Curved Tutorial' shader='TextMeshPro/Mobile/Distance Field Zero Alpha Write' subMeshes=0
+2026-11-21 19:13:36 [INFO] Vivify visual check at 5s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:13:36 [INFO] Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+2026-11-21 19:13:36 [INFO] Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+2026-11-21 19:13:36 [INFO] Vivify visual check at 5s: 157 active renderer(s), 0 with no runnable shader; most drawn: Custom/SimpleLit x39, Custom/Parametric3SliceSprite x36, Custom/TransparentNeonLight x20, Custom/OpaqueNeonLight x16, Custom/CustomParticles x15, Ree/BlurlessSaber x8, Ree/BlurSaber x6, Ree/CustomModelOpaque x6; screen effects: 0 before, 0 after the main effect
+2026-11-21 19:13:36 [INFO] Vivify visual check: main camera cullingMask=0x3d3bfd37 depthTextureMode=0 clearFlags=2
+2026-11-21 19:13:37 [INFO] Vivify text check +6s: prefab='assets/tutorial/intro.prefab' text='Text' active=false enabled=true chars=192 shown=-1 lossyScale=(0.01,0.01,1) font='Teko-Medium SDF' dynamic=false sourceFont=false mesh vertices=-1 uv2[0]=- bounds=- renderer=none material='Teko-Medium SDF Curved Softer' shader='TextMeshPro/Mobile/Distance Field Zero Alpha Write' subMeshes=0
+2026-11-21 19:13:37 [INFO] Vivify text check +6s: prefab='assets/tutorial/text_rings.prefab' text='Text' active=true enabled=true chars=33 shown=33 lossyScale=(0.01,0.07,1) font='Teko-Medium SDF' dynamic=false sourceFont=false mesh vertices=116 uv2[0]=(0,0.03933) bounds=(420,92.7,0) renderer=none material='Teko-Medium SDF Curved Tutorial' shader='TextMeshPro/Mobile/Distance Field Zero Alpha Write' subMeshes=0
+2026-11-21 19:13:43 [INFO] Vivify text check +1s: prefab='assets/tutorial/text_arrows.prefab' text='Text' active=true enabled=true chars=47 shown=47 lossyScale=(0.01,0.07,1) font='Teko-Medium SDF' dynamic=false sourceFont=false mesh vertices=160 uv2[0]=(0,0.03933) bounds=(408,85.9,0) renderer=none material='Teko-Medium SDF Curved Tutorial' shader='TextMeshPro/Mobile/Distance Field Zero Alpha Write' subMeshes=0
+2026-11-21 19:13:48 [INFO] Vivify text check +6s: prefab='assets/tutorial/text_arrows.prefab' text='Text' active=true enabled=true chars=47 shown=47 lossyScale=(0.01,0.07,1) font='Teko-Medium SDF' dynamic=false sourceFont=false mesh vertices=160 uv2[0]=(0,0.03933) bounds=(408,85.9,0) renderer=none material='Teko-Medium SDF Curved Tutorial' shader='TextMeshPro/Mobile/Distance Field Zero Alpha Write' subMeshes=0
+2026-11-21 19:14:01 [INFO] Vivify visual check at 30s: 1 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:14:01 [INFO] Vivify visual check at 30s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+2026-11-21 19:14:01 [INFO] Vivify visual check at 30s: 160 active renderer(s), 0 with no runnable shader; most drawn: Custom/SimpleLit x39, Custom/Parametric3SliceSprite x36, Custom/TransparentNeonLight x20, Custom/OpaqueNeonLight x16, Ree/BlurlessSaber x14, Custom/CustomParticles x14, Ree/CustomModelOpaque x6, Custom/Spectrogram x4; screen effects: 0 before, 0 after the main effect
+2026-11-21 19:14:10 [INFO] Vivify text check +1s: prefab='assets/tutorial/text_dots.prefab' text='Text' active=true enabled=true chars=21 shown=21 lossyScale=(0.01,0.07,1) font='Teko-Medium SDF' dynamic=false sourceFont=false mesh vertices=76 uv2[0]=(0,0.03933) bounds=(321,86.4,0) renderer=none material='Teko-Medium SDF Curved Tutorial' shader='TextMeshPro/Mobile/Distance Field Zero Alpha Write' subMeshes=0
+2026-11-21 19:14:15 [INFO] Vivify text check +6s: prefab='assets/tutorial/text_dots.prefab' text='Text' active=true enabled=true chars=21 shown=21 lossyScale=(0.01,0.07,1) font='Teko-Medium SDF' dynamic=false sourceFont=false mesh vertices=76 uv2[0]=(0,0.03933) bounds=(321,86.4,0) renderer=none material='Teko-Medium SDF Curved Tutorial' shader='TextMeshPro/Mobile/Distance Field Zero Alpha Write' subMeshes=0
+2026-11-21 19:14:17 [INFO] Vivify text check +1s: prefab='assets/tutorial/text_bombs.prefab' text='Text' active=true enabled=true chars=32 shown=32 lossyScale=(0.01,0.07,1) font='Teko-Medium SDF' dynamic=false sourceFont=false mesh vertices=108 uv2[0]=(0,0.03933) bounds=(384,85.9,0) renderer=none material='Teko-Medium SDF Curved Tutorial' shader='TextMeshPro/Mobile/Distance Field Zero Alpha Write' subMeshes=0
+2026-11-21 19:14:22 [INFO] Vivify text check +6s: prefab='assets/tutorial/text_bombs.prefab' text='Text' active=true enabled=true chars=32 shown=32 lossyScale=(0.01,0.07,1) font='Teko-Medium SDF' dynamic=false sourceFont=false mesh vertices=108 uv2[0]=(0,0.03933) bounds=(384,85.9,0) renderer=none material='Teko-Medium SDF Curved Tutorial' shader='TextMeshPro/Mobile/Distance Field Zero Alpha Write' subMeshes=0
+2026-11-21 19:14:29 [INFO] Vivify text check +1s: prefab='assets/tutorial/text_lean_left.prefab' text='Text' active=true enabled=true chars=28 shown=12 lossyScale=(0.01,0.07,1) font='Teko-Medium SDF' dynamic=false sourceFont=false mesh vertices=40 uv2[0]=(0,0.03933) bounds=(152,79.6,0) renderer=none material='Teko-Medium SDF Curved Tutorial' shader='TextMeshPro/Mobile/Distance Field Zero Alpha Write' subMeshes=0
+2026-11-21 19:14:33 [INFO] Vivify text check +1s: prefab='assets/tutorial/text_lean_right.prefab' text='Text' active=true enabled=true chars=29 shown=13 lossyScale=(0.01,0.07,1) font='Teko-Medium SDF' dynamic=false sourceFont=false mesh vertices=44 uv2[0]=(0,0.03933) bounds=(173,86.4,0) renderer=none material='Teko-Medium SDF Curved Tutorial' shader='TextMeshPro/Mobile/Distance Field Zero Alpha Write' subMeshes=0
+2026-11-21 19:14:37 [INFO] Vivify text check +1s: prefab='assets/tutorial/text_crouch.prefab' text='Text' active=true enabled=true chars=7 shown=7 lossyScale=(0.01,0.07,1) font='Teko-Medium SDF' dynamic=false sourceFont=false mesh vertices=32 uv2[0]=(0,0.03933) bounds=(127,79.7,0) renderer=none material='Teko-Medium SDF Curved Tutorial' shader='TextMeshPro/Mobile/Distance Field Zero Alpha Write' subMeshes=0
+2026-11-21 19:14:41 [INFO] Vivify text check +1s: prefab='assets/tutorial/text_finished.prefab' text='Text' active=true enabled=true chars=35 shown=35 lossyScale=(0.01,0.07,1) font='Teko-Medium SDF' dynamic=false sourceFont=false mesh vertices=128 uv2[0]=(0,0.03933) bounds=(312,92.7,0) renderer=none material='Teko-Medium SDF Curved Tutorial' shader='TextMeshPro/Mobile/Distance Field Zero Alpha Write' subMeshes=0
+2026-11-21 19:14:44 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.00,1.17,0.22) fwd=(-0.07,-0.16,0.98)
+2026-11-21 19:14:44 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 19:14:44 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-21 19:14:44 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-21 19:14:44 [INFO] Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+2026-11-21 19:14:44 [INFO] Vivify level end: level ended (quit or finished)
+2026-11-21 19:14:44 [INFO] Vivify level end: camera effects removed
+2026-11-21 19:14:44 [INFO] Vivify level end: note and saber visuals restored
+2026-11-21 19:14:44 [INFO] Vivify level end: camera restored
+2026-11-21 19:14:44 [INFO] Vivify level end: map prefabs destroyed
+2026-11-21 19:14:44 [INFO] Vivify level end: render textures released
+2026-11-21 19:14:44 [INFO] Vivify level end: render settings restored
+2026-11-21 19:14:44 [INFO] Vivify level end: done
+2026-11-21 19:14:56 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55544 (Intimidator 305 - Vainstains)' isCustom=true hasDetails=true
+2026-11-21 19:14:56 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:14:56 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:14:56 [INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55544 (Intimidator 305 - Vainstains)/bundleWindows2019.vivify'
+2026-11-21 19:14:56 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55544 (Intimidator 305 - Vainstains)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55544 (Intimidator 305 - Vainstains)/bundleWindows2019.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55544__Intimidator_305_-_Vainstains_/55544__Intimidator_305_-_Vainstains__ed949823b66c90f9.vivify' cached=false
+2026-11-21 19:14:56 [INFO] Vivify: play button blocked by Vivify ("Converting PC assets...")
+2026-11-21 19:14:56 [INFO] Vivify converting PC asset bundle on device: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55544 (Intimidator 305 - Vainstains)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55544__Intimidator_305_-_Vainstains_/55544__Intimidator_305_-_Vainstains__ed949823b66c90f9.vivify'
+2026-11-21 19:14:56 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55544 (Intimidator 305 - Vainstains)' isCustom=true hasDetails=true
+2026-11-21 19:14:56 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:14:56 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:14:57 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55544 (Intimidator 305 - Vainstains)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55544 (Intimidator 305 - Vainstains)/bundleWindows2019.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55544__Intimidator_305_-_Vainstains_/55544__Intimidator_305_-_Vainstains__ed949823b66c90f9.vivify' cached=false
+2026-11-21 19:14:57 [INFO] Vivify shader conversion: 11 of 11 shader(s) linked for multiview GLES, 48 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 102 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+2026-11-21 19:14:57 [INFO] Vivify conversion marked 4 of 4 block-compressed texture(s) readable (4 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+2026-11-21 19:14:58 [INFO] Vivify source bundle shaders: unity=2019.4.28f1 serializedFiles=1 shaders=11 runnableOnQuest=0 platforms=[Direct3D 11(4)] programs=204 glslSource=0 binary=204 shadersWithTessellation=0 programTypes=[D3D11 vertex sm4.0, D3D11 pixel sm4.0]
+2026-11-21 19:14:58 [INFO] Vivify bundle conversion succeeded: translated 11 of 11 shader(s) (84 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 4 of 4 block-compressed texture(s) marked readable (4 streamed)
+2026-11-21 19:14:58 [INFO] Vivify: play button is enabled (no mod is blocking it)
+2026-11-21 19:14:58 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55544__Intimidator_305_-_Vainstains_/55544__Intimidator_305_-_Vainstains__ed949823b66c90f9.vivify' -> not needed
+2026-11-21 19:14:58 [INFO] Vivify: the Replay mod's button is clickable again now that the map is ready
+2026-11-21 19:14:58 [INFO] Vivify replay render: preparing the single-view conversion of '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55544 (Intimidator 305 - Vainstains)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55544__Intimidator_305_-_Vainstains_/55544__Intimidator_305_-_Vainstains__ed949823b66c90f9_replay.vivify'
+2026-11-21 19:14:58 [INFO] Vivify shader conversion: 11 of 11 shader(s) linked for multiview GLES, 48 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 0 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+2026-11-21 19:14:58 [INFO] Vivify conversion marked 4 of 4 block-compressed texture(s) readable (4 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+2026-11-21 19:14:58 [INFO] Vivify replay render: single-view conversion ready: translated 11 of 11 shader(s) (84 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 4 of 4 block-compressed texture(s) marked readable (4 streamed)
+2026-11-21 19:15:01 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55544 (Intimidator 305 - Vainstains)' isCustom=true hasDetails=true
+2026-11-21 19:15:01 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:15:01 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:15:01 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55544 (Intimidator 305 - Vainstains)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55544 (Intimidator 305 - Vainstains)/bundleWindows2019.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55544__Intimidator_305_-_Vainstains_/55544__Intimidator_305_-_Vainstains__ed949823b66c90f9.vivify' cached=true
+2026-11-21 19:15:03 [INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+2026-11-21 19:15:03 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.01,1.80,0.04) fwd=(0.07,-0.08,0.99)
+2026-11-21 19:15:03 [INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+2026-11-21 19:15:04 [INFO] Vivify texture decode: scanned 63 material(s), replaced 0 unsupported texture reference(s) in 3ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+2026-11-21 19:15:04 [INFO] Vivify: GPU instancing turned off on 4 material(s) of this converted bundle, so notes drawn together (chords, chains) each get their own transform
+2026-11-21 19:15:04 [INFO] Vivify: maps may turn realtime reflection probes on (full quality)
+2026-11-21 19:15:04 [INFO] Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+2026-11-21 19:15:04 [INFO] Vivify SetRenderingSettings: ignoring the map's realtime shadow settings ('shadowDistance' and the rest); turn on 'Map Realtime Shadows' to let maps enable them
+2026-11-21 19:15:04 [INFO] Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+2026-11-21 19:15:04 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-21 19:15:04 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-21 19:15:04 [INFO] Vivify Game Bloom: bloom on for this map (the game had 'NoPostProcessMainEffect', post-processing off)
+2026-11-21 19:15:04 [INFO] Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+2026-11-21 19:15:09 [INFO] Vivify visual check at 5s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:15:09 [INFO] Vivify visual check: 1 light(s) on, 1 with shadows: 'Directional Light' type=1 intensity=1.00 shadows=1; ambient mode=3 intensity=1.00 sun='Directional Light'
+2026-11-21 19:15:09 [INFO] Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+2026-11-21 19:15:09 [INFO] Vivify visual check at 5s: 1402 active renderer(s), 0 with no runnable shader; most drawn: Vainstains/Track x507, Custom/FakeStandard x489, Custom/Foliage x365, Ree/BlurlessSaber x14, Custom/CustomParticles x9, Ree/CustomModelOpaque x6, Custom/Terrain x5, Ree/SimpleTrail x2; screen effects: 0 before, 0 after the main effect
+2026-11-21 19:15:09 [INFO] Vivify visual check: main camera cullingMask=0x3d3bfd37 depthTextureMode=0 clearFlags=2
+2026-11-21 19:15:10 [INFO] Vivify Blit check: effect(s) 'Vivify/Post Processing/BlendToColor' -- 1 colour(s) among 16 blocks going in, 2 coming out (first rgb=(13,13,13)); screen 1344x1408 slices=2; _ScreenParams before the effects=(1344,1408)
+2026-11-21 19:15:34 [INFO] Vivify visual check at 30s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:15:34 [INFO] Vivify visual check at 30s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+2026-11-21 19:15:34 [INFO] Vivify visual check at 30s: 1402 active renderer(s), 0 with no runnable shader; most drawn: Vainstains/Track x507, Custom/FakeStandard x489, Custom/Foliage x365, Ree/BlurlessSaber x14, Custom/CustomParticles x9, Ree/CustomModelOpaque x6, Custom/Terrain x5, Ree/SimpleTrail x2; screen effects: 0 before, 0 after the main effect
+2026-11-21 19:16:34 [INFO] Vivify visual check at 90s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:17:21 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.05,1.81,0.04) fwd=(-0.40,-0.06,0.92)
+2026-11-21 19:17:21 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 19:17:21 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-21 19:17:21 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-21 19:17:21 [INFO] Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+2026-11-21 19:17:21 [INFO] Vivify level end: level ended (quit or finished)
+2026-11-21 19:17:21 [INFO] Vivify level end: camera effects removed
+2026-11-21 19:17:21 [INFO] Vivify level end: note and saber visuals restored
+2026-11-21 19:17:21 [INFO] Vivify level end: camera restored
+2026-11-21 19:17:21 [INFO] Vivify level end: map prefabs destroyed
+2026-11-21 19:17:21 [INFO] Vivify level end: render textures released
+2026-11-21 19:17:21 [INFO] Vivify level end: render settings restored
+2026-11-21 19:17:21 [INFO] Vivify level end: done
+2026-11-21 19:17:42 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/550ba ([VIVIFY] GIRL HELL 1999 - Error404)' isCustom=true hasDetails=true
+2026-11-21 19:17:42 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:17:42 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:17:42 [INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/550ba ([VIVIFY] GIRL HELL 1999 - Error404)/bundleAndroid2021.vivify'
+2026-11-21 19:17:42 [INFO] Vivify: play button blocked by Vivify ("Checking shaders...")
+2026-11-21 19:17:42 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/550ba ([VIVIFY] GIRL HELL 1999 - Error404)' isCustom=true hasDetails=true
+2026-11-21 19:17:42 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:17:42 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:17:42 [INFO] Vivify: play button is enabled (no mod is blocking it)
+2026-11-21 19:17:43 [INFO] Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/550ba ([VIVIFY] GIRL HELL 1999 - Error404)/bundleAndroid2021.vivify' grabs _BloodGrab
+2026-11-21 19:17:43 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/550ba ([VIVIFY] GIRL HELL 1999 - Error404)/bundleAndroid2021.vivify' -> needed by GirlHell/SizeText, GirlHell/VHS, GirlHell/TVOn, GirlHell/BrainDamage
+2026-11-21 19:17:43 [INFO] Vivify: the Replay mod's button is clickable again now that the map is ready
+2026-11-21 19:17:44 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/550ba ([VIVIFY] GIRL HELL 1999 - Error404)' isCustom=true hasDetails=true
+2026-11-21 19:17:44 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/550ba ([VIVIFY] GIRL HELL 1999 - Error404)' isCustom=true hasDetails=true
+2026-11-21 19:17:44 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:17:44 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:17:44 [INFO] Vivify: play button blocked by Vivify ("Checking shaders...")
+2026-11-21 19:17:44 [INFO] Vivify: play button is enabled (no mod is blocking it)
+2026-11-21 19:17:44 [INFO] Vivify: the Replay mod's button is clickable again now that the map is ready
+2026-11-21 19:17:46 [INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+2026-11-21 19:17:47 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.00,1.78,0.08) fwd=(0.00,-0.19,0.98)
+2026-11-21 19:17:47 [INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+2026-11-21 19:17:48 [INFO] Vivify texture decode: scanned 39 material(s), replaced 0 unsupported texture reference(s) in 0ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+2026-11-21 19:17:48 [INFO] Vivify: maps may turn realtime reflection probes on (full quality)
+2026-11-21 19:17:48 [INFO] Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+2026-11-21 19:17:48 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-21 19:17:48 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-21 19:17:48 [INFO] Vivify Game Bloom: bloom on for this map (the game had 'NoPostProcessMainEffect', post-processing off)
+2026-11-21 19:17:48 [INFO] Vivify Blit check: effect(s) 'GirlHell/VHS' -- 1 colour(s) among 16 blocks going in, 2 coming out (first rgb=(0,0,0)); screen 1344x1408 slices=2; _ScreenParams before the effects=(1344,1408)
+2026-11-21 19:17:48 [INFO] Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+2026-11-21 19:17:53 [INFO] Vivify visual check at 5s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:17:53 [INFO] Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+2026-11-21 19:17:53 [INFO] Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+2026-11-21 19:17:53 [INFO] Vivify visual check at 5s: 3098 active renderer(s), 0 with no runnable shader; most drawn: Custom/Glowing x3064, Custom/CustomParticles x9, Ree/BlurlessSaber x8, Ree/CustomModelOpaque x6, Ree/BlurSaber x6, Ree/SimpleTrail x2, Custom/BloomSkyboxQuad x1, Custom/NoteHD x1; screen effects: 0 before, 0 after the main effect
+2026-11-21 19:17:53 [INFO] Vivify grab texture '_BloodGrab' at 5s: nothing bound
+2026-11-21 19:17:53 [INFO] Vivify visual check: main camera cullingMask=0x3d3bfd37 depthTextureMode=1 clearFlags=2
+2026-11-21 19:18:18 [INFO] Vivify Auto Effect Resolution: frames at 16.0 ms against a best of 11.2 ms; map effects down to 90%
+2026-11-21 19:18:18 [INFO] Vivify visual check at 30s: 21 live note(s), 21 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:18:18 [INFO] Vivify visual check at 30s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+2026-11-21 19:18:18 [INFO] Vivify visual check at 30s: 3453 active renderer(s), 0 with no runnable shader; most drawn: Custom/Glowing x3064, GirlHell/Glitch x297, GirlHell/Pixel x15, GirlHell/NoteFlesh x12, Ree/BlurSaber x12, GirlHell/BloodDrop x12, Custom/CustomParticles x10, GirlHell/NoteGlitch x9; screen effects: 0 before, 1 after the main effect
+2026-11-21 19:18:18 [INFO] Vivify grab texture '_BloodGrab' at 30s: nothing bound
+2026-11-21 19:18:19 [INFO] Vivify Auto Effect Resolution: frames at 16.4 ms against a best of 11.2 ms; map effects down to 80%
+2026-11-21 19:18:22 [INFO] Vivify Auto Effect Resolution: frames at 15.4 ms against a best of 11.2 ms; map effects down to 70%
+2026-11-21 19:18:32 [INFO] Vivify Auto Effect Resolution: frames at 18.2 ms against a best of 11.2 ms; map effects down to 60%
+2026-11-21 19:18:34 [INFO] Vivify Auto Effect Resolution: frames at 16.2 ms against a best of 11.2 ms; map effects down to 50%
+2026-11-21 19:18:35 [INFO] Vivify Auto Effect Resolution: frames at 17.0 ms against a best of 11.2 ms; map effects down to 40%
+2026-11-21 19:19:18 [INFO] Vivify visual check at 90s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:19:18 [INFO] Vivify grab texture '_BloodGrab' at 90s: render texture dimension=5 layers=2 1344x1408 msaa=1
+2026-11-21 19:19:23 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.00,1.83,-0.04) fwd=(-0.07,-0.09,0.99)
+2026-11-21 19:19:23 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 19:19:23 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-21 19:19:23 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-21 19:19:23 [INFO] Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+2026-11-21 19:19:23 [INFO] Vivify level end: level ended (quit or finished)
+2026-11-21 19:19:23 [INFO] Vivify level end: camera effects removed
+2026-11-21 19:19:23 [INFO] Vivify level end: note and saber visuals restored
+2026-11-21 19:19:23 [INFO] Vivify level end: camera restored
+2026-11-21 19:19:23 [INFO] Vivify level end: map prefabs destroyed
+2026-11-21 19:19:23 [INFO] Vivify level end: render textures released
+2026-11-21 19:19:23 [INFO] Vivify level end: render settings restored
+2026-11-21 19:19:23 [INFO] Vivify level end: done
+2026-11-21 19:22:31 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' isCustom=true hasDetails=true
+2026-11-21 19:22:31 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:22:31 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=40% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:22:31 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' androidBundle=no android2021=0 pcBundle='<none>' convertedCache='<none>' cached=false
+2026-11-21 19:22:31 [WARN] Vivify: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' has no Android bundle, no PC bundle to convert, and no bundle checksum in Info.dat to download one by
+2026-11-21 19:22:31 [INFO] Vivify: play button blocked by Vivify ("No Vivify assets found for this map.")
+2026-11-21 19:22:31 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' isCustom=true hasDetails=true
+2026-11-21 19:22:31 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:22:31 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=40% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:22:31 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' androidBundle=no android2021=0 pcBundle='<none>' convertedCache='<none>' cached=false
+2026-11-21 19:22:31 [WARN] Vivify: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' has no Android bundle, no PC bundle to convert, and no bundle checksum in Info.dat to download one by
+2026-11-21 19:22:43 [INFO] Vivify settings: Windows bundle for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' turned on
+2026-11-21 19:22:43 [INFO] Vivify: choosing the bundle for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' again (Windows bundle for this map: true)
+2026-11-21 19:22:43 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:22:43 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=40% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=true mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:22:43 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' androidBundle=no android2021=0 pcBundle='<none>' convertedCache='<none>' cached=false
+2026-11-21 19:22:43 [WARN] Vivify: Windows bundle chosen for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)', but it has none in its folder or Info.dat; using its Quest bundle
+2026-11-21 19:22:43 [WARN] Vivify: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' has no Android bundle, no PC bundle to convert, and no bundle checksum in Info.dat to download one by
+2026-11-21 19:22:47 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' isCustom=true hasDetails=true
+2026-11-21 19:22:47 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:22:47 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=40% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=true mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:22:47 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' androidBundle=no android2021=0 pcBundle='<none>' convertedCache='<none>' cached=false
+2026-11-21 19:22:47 [WARN] Vivify: Windows bundle chosen for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)', but it has none in its folder or Info.dat; using its Quest bundle
+2026-11-21 19:22:47 [WARN] Vivify: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' has no Android bundle, no PC bundle to convert, and no bundle checksum in Info.dat to download one by
+2026-11-21 19:23:03 [INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/555d3 (Tutorial - isaknboom)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/555d3__Tutorial_-_isaknboom_/555d3__Tutorial_-_isaknboom__010dc7b808ace143.vivify'
+2026-11-21 19:23:03 [INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify'
+2026-11-21 19:23:03 [INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__6af5f61bdf27e079.vivify'
+2026-11-21 19:23:03 [INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55544 (Intimidator 305 - Vainstains)/bundleWindows2019.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55544__Intimidator_305_-_Vainstains_/55544__Intimidator_305_-_Vainstains__ed949823b66c90f9.vivify'
+2026-11-21 19:23:03 [INFO] Vivify bulk convert finished: scanned=7 converted=0 alreadyDone=3 failed=0
+2026-11-21 19:23:07 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' isCustom=true hasDetails=true
+2026-11-21 19:23:07 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:23:07 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=40% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=true mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:23:07 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' androidBundle=no android2021=0 pcBundle='<none>' convertedCache='<none>' cached=false
+2026-11-21 19:23:07 [WARN] Vivify: Windows bundle chosen for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)', but it has none in its folder or Info.dat; using its Quest bundle
+2026-11-21 19:23:07 [WARN] Vivify: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54508 (Youtube Shorts Humor - GRFN)' has no Android bundle, no PC bundle to convert, and no bundle checksum in Info.dat to download one by
+2026-11-21 19:23:12 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' isCustom=true hasDetails=true
+2026-11-21 19:23:12 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:23:12 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=40% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:23:13 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__6af5f61bdf27e079.vivify' cached=true
+2026-11-21 19:23:13 [INFO] Vivify: play button is enabled (no mod is blocking it)
+2026-11-21 19:23:13 [INFO] Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__6af5f61bdf27e079.vivify' grabs _GrabTexture1
+2026-11-21 19:23:13 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__6af5f61bdf27e079.vivify' -> needed by Swifter/VFX/StarFlare, Swifter/VFX/RingArtifact, Swifter/Blit/Bokeh
+2026-11-21 19:23:15 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/44794 (EN__MA___ELI__ - Dark as _Ex Nihilo_)' isCustom=true hasDetails=true
+2026-11-21 19:23:34 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/53e9a (__________________ - Yaomin & zeon)' isCustom=true hasDetails=true
+2026-11-21 19:23:34 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:23:34 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=40% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:23:34 [INFO] Vivify fixed material: chart eligibility=true for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/53e9a (__________________ - Yaomin & zeon)/bundleAndroid2021.vivify'
+2026-11-21 19:23:34 [INFO] Vivify: play button blocked by Vivify ("Checking shaders...")
+2026-11-21 19:23:34 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/53e9a (__________________ - Yaomin & zeon)' isCustom=true hasDetails=true
+2026-11-21 19:23:34 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:23:34 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=40% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:23:34 [WARN] Vivify: this map's Quest bundle ships 1 shader(s) with no programs ('Sunao Shader/Cutout'); looking for the map's PC build to stand in for them
+2026-11-21 19:23:35 [INFO] Vivify fixed material: chart eligibility=true for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/53e9a (__________________ - Yaomin & zeon)/bundleWindows2021.vivify'
+2026-11-21 19:23:35 [INFO] Vivify: the PC shaders are stood in at load instead of merged: no shader could be merged; Sunao Shader/Cutout: not in the PC bundle
+2026-11-21 19:23:35 [INFO] Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/53e9a_____________________-_Yaomin___zeon_/53e9a_____________________-_Yaomin___zeon__96c14286eee6061f_donor.vivify' grabs _GrabTexture
+2026-11-21 19:23:35 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/53e9a_____________________-_Yaomin___zeon_/53e9a_____________________-_Yaomin___zeon__96c14286eee6061f_donor.vivify' -> not needed
+2026-11-21 19:23:35 [INFO] Vivify: 1 of 1 empty shader(s) have a working PC build standing in (1 found in the PC bundle, 5 shader(s) seen there)
+2026-11-21 19:23:35 [INFO] Vivify: play button is enabled (no mod is blocking it)
+2026-11-21 19:23:35 [INFO] Vivify: the Replay mod's button is clickable again now that the map is ready
+2026-11-21 19:23:35 [INFO] Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/53e9a (__________________ - Yaomin & zeon)/bundleAndroid2021.vivify' grabs _GrabTexture
+2026-11-21 19:23:35 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/53e9a (__________________ - Yaomin & zeon)/bundleAndroid2021.vivify' -> not needed
+2026-11-21 19:23:36 [INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+2026-11-21 19:23:37 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.13,1.82,-0.00) fwd=(0.27,-0.09,0.96)
+2026-11-21 19:23:37 [INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+2026-11-21 19:23:37 [INFO] Vivify texture decode: scanned 33 material(s), replaced 0 unsupported texture reference(s) in 1ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+2026-11-21 19:23:37 [INFO] Vivify: material '21' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '20' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '19' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '18' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '17' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '16' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '15' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '14' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '13' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '12' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '11' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '08' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '07' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '06' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '05' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '04' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '10' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '03' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '02' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material '01' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material 'gothic_gear_ring' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material 't_metal' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: material 'light' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify fixed material: chart eligibility=true for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/53e9a (__________________ - Yaomin & zeon)/bundle.vivify'
+2026-11-21 19:23:37 [INFO] Vivify: material '09' now uses the PC build of 'Sunao Shader/Cutout'
+2026-11-21 19:23:37 [INFO] Vivify: maps may turn realtime reflection probes on (full quality)
+2026-11-21 19:23:37 [INFO] Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+2026-11-21 19:23:37 [INFO] Vivify fixed material: native renderer override check available=true
+2026-11-21 19:23:37 [INFO] Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+2026-11-21 19:23:37 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-21 19:23:37 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-21 19:23:37 [INFO] Vivify Game Bloom: bloom on for this map (the game had 'NoPostProcessMainEffect', post-processing off)
+2026-11-21 19:23:37 [INFO] Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+2026-11-21 19:23:42 [INFO] Vivify visual check at 5s: 7 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:23:42 [INFO] Vivify visual check: a live note has 4 renderer(s):
+2026-11-21 19:23:42 [INFO] Vivify visual check:   'NoteCube' enabled=true active=true layer=8 material='NoteLW' shader='Custom/NoteLW' supported=true queue=2004 block: _Cutout=0.00 _Color=(0.21,1.00,1.00,1.00)
+2026-11-21 19:23:42 [INFO] Vivify visual check:   'NoteArrow' enabled=true active=true layer=8 material='NoteArrowLW' shader='Custom/GlowingInstancedLW' supported=true queue=2002 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+2026-11-21 19:23:42 [INFO] Vivify visual check:   'NoteArrowGlow' enabled=true active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.21,1.00,1.00,1.00)
+2026-11-21 19:23:42 [INFO] Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.21,1.00,1.00,1.00)
+2026-11-21 19:23:42 [INFO] Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+2026-11-21 19:23:42 [INFO] Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+2026-11-21 19:23:42 [INFO] Vivify visual check at 5s: 155 active renderer(s), 1 with no runnable shader; most drawn: Custom/Parametric3SliceSprite x28, Custom/TransparentNeonLight x28, Custom/CustomParticles x20, Ree/BlurSaber x12, Custom/NoteHD x9, __VivifyFixedMaterialV1__/Sunao Shader/Cutout x8, Custom/GlowingInstancedLW x7, Custom/NoteLW x7; screen effects: 0 before, 0 after the main effect
+2026-11-21 19:23:42 [INFO] Vivify grab texture '_BloodGrab' at 5s: nothing bound
+2026-11-21 19:23:42 [INFO] Vivify grab texture '_GrabTexture' at 5s: nothing bound
+2026-11-21 19:23:42 [INFO] Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+2026-11-21 19:23:42 [INFO] Vivify visual check: main camera cullingMask=0x3d3bfd37 depthTextureMode=0 clearFlags=2
+2026-11-21 19:24:07 [INFO] Vivify visual check at 30s: 11 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:24:07 [INFO] Vivify visual check at 30s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+2026-11-21 19:24:07 [INFO] Vivify visual check at 30s: 167 active renderer(s), 0 with no runnable shader; most drawn: Custom/Parametric3SliceSprite x28, Custom/TransparentNeonLight x28, Custom/CustomParticles x24, Ree/BlurSaber x12, Custom/NoteLW x11, Custom/ParametricBoxFakeGlow x7, Custom/ParametricBoxFrameHD x7, Custom/GlowingInstancedLW x7; screen effects: 0 before, 0 after the main effect
+2026-11-21 19:24:07 [INFO] Vivify grab texture '_BloodGrab' at 30s: nothing bound
+2026-11-21 19:24:07 [INFO] Vivify grab texture '_GrabTexture' at 30s: nothing bound
+2026-11-21 19:24:07 [INFO] Vivify grab texture '_GrabTexture1' at 30s: nothing bound
+2026-11-21 19:25:07 [INFO] Vivify visual check at 90s: 14 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:25:07 [INFO] Vivify grab texture '_BloodGrab' at 90s: nothing bound
+2026-11-21 19:25:07 [INFO] Vivify grab texture '_GrabTexture' at 90s: nothing bound
+2026-11-21 19:25:07 [INFO] Vivify grab texture '_GrabTexture1' at 90s: nothing bound
+2026-11-21 19:25:40 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.12,1.83,-0.04) fwd=(0.12,-0.19,0.97)
+2026-11-21 19:25:40 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 19:25:40 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-21 19:25:40 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-21 19:25:40 [INFO] Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+2026-11-21 19:25:40 [INFO] Vivify level end: level ended (quit or finished)
+2026-11-21 19:25:40 [INFO] Vivify level end: camera effects removed
+2026-11-21 19:25:40 [INFO] Vivify level end: note and saber visuals restored
+2026-11-21 19:25:40 [INFO] Vivify level end: camera restored
+2026-11-21 19:25:40 [INFO] Vivify level end: map prefabs destroyed
+2026-11-21 19:25:40 [INFO] Vivify level end: render textures released
+2026-11-21 19:25:40 [INFO] Vivify level end: render settings restored
+2026-11-21 19:25:40 [INFO] Vivify level end: done
+2026-11-21 19:26:01 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e1ae (Burning Sands - slabs37)' isCustom=true hasDetails=true
+2026-11-21 19:26:01 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:26:01 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:26:01 [INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e1ae (Burning Sands - slabs37)/bundleAndroid2021.vivify'
+2026-11-21 19:26:01 [INFO] Vivify: play button blocked by Vivify ("Checking shaders...")
+2026-11-21 19:26:01 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e1ae (Burning Sands - slabs37)' isCustom=true hasDetails=true
+2026-11-21 19:26:01 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-21 19:26:01 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-21 19:26:01 [INFO] Vivify: play button is enabled (no mod is blocking it)
+2026-11-21 19:26:03 [INFO] Vivify: the Replay mod's button is clickable again now that the map is ready
+2026-11-21 19:26:03 [INFO] Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e1ae (Burning Sands - slabs37)/bundleAndroid2021.vivify' grabs _GrabTexture
+2026-11-21 19:26:03 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e1ae (Burning Sands - slabs37)/bundleAndroid2021.vivify' -> needed by Custom/FogMB, Legacy Shaders/Particles/Alpha Blended Premultiply
+2026-11-21 19:26:05 [INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+2026-11-21 19:26:05 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.11,1.83,-0.01) fwd=(0.03,-0.12,0.99)
+2026-11-21 19:26:05 [INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+2026-11-21 19:26:05 [INFO] Vivify texture decode: scanned 61 material(s), replaced 0 unsupported texture reference(s) in 2ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+2026-11-21 19:26:05 [INFO] Vivify material 'PanaSun': '_ImageType' is an int in shader 'Skybox/Panoramic With Sun'; set as integer 0
+2026-11-21 19:26:05 [INFO] Vivify material 'PanaSun': '_Layout' is an int in shader 'Skybox/Panoramic With Sun'; set as integer 0
+2026-11-21 19:26:05 [INFO] Vivify material 'PanaSun': '_MirrorOnBack' is an int in shader 'Skybox/Panoramic With Sun'; set as integer 0
+2026-11-21 19:26:05 [INFO] Vivify: maps may turn realtime reflection probes on (full quality)
+2026-11-21 19:26:05 [INFO] Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+2026-11-21 19:26:05 [INFO] Vivify: watching cameras (reflection probes, the map's HUD)
+2026-11-21 19:26:05 [INFO] Vivify saber: the map's model was not being drawn (another saber mod hid or switched off the game's model); re-enabled 0 renderer(s), moved 1 object(s) onto the saber, visible now: true
+2026-11-21 19:26:05 [INFO] Vivify saber: the map's model was not being drawn (another saber mod hid or switched off the game's model); re-enabled 0 renderer(s), moved 1 object(s) onto the saber, visible now: true
+2026-11-21 19:26:06 [INFO] Vivify main camera: scene depth texture enabled for this map
+2026-11-21 19:26:06 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-21 19:26:06 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-21 19:26:06 [INFO] Vivify Game Bloom: bloom on for this map (the game had 'NoPostProcessMainEffect', post-processing off)
+2026-11-21 19:26:07 [INFO] Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+2026-11-21 19:26:12 [INFO] Vivify visual check at 5s: 4 live note(s), 4 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:26:12 [INFO] Vivify visual check: a live note has 6 renderer(s) (map prefab):
+2026-11-21 19:26:12 [INFO] Vivify visual check:   'NoteCube' enabled=false active=true layer=8 material='NoteHD' shader='Custom/NoteHD' supported=true queue=2004 block: _Cutout=1.00 _Color=(0.21,1.00,1.00,1.00)
+2026-11-21 19:26:12 [INFO] Vivify visual check:   'NoteArrow' enabled=false active=true layer=8 material='NoteArrowHD' shader='Custom/GlowingInstancedHD' supported=true queue=2002 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+2026-11-21 19:26:12 [INFO] Vivify visual check:   'NoteArrowGlow' enabled=false active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.21,1.00,1.00,1.00)
+2026-11-21 19:26:12 [INFO] Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.21,1.00,1.00,1.00)
+2026-11-21 19:26:12 [INFO] Vivify visual check:   'Base' enabled=true active=true layer=8 material='CustomNoteBase' shader='Vivify/CustomObjects/CustomNote' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.21,1.00,1.00,1.00)
+2026-11-21 19:26:12 [INFO] Vivify visual check:   'Arrow' enabled=true active=true layer=8 material='CustomNoteArrow' shader='Vivify/CustomObjects/CustomNoteArrow' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.21,1.00,1.00,1.00)
+2026-11-21 19:26:12 [INFO] Vivify visual check: 3 light(s) on, 2 with shadows: 'Directional Light' type=1 intensity=1.00 shadows=1; 'TorchLight1' type=2 intensity=1.00 shadows=1; 'TorchLight' type=2 intensity=1.00 shadows=0; ambient mode=3 intensity=1.00 sun='Directional Light'
+2026-11-21 19:26:12 [INFO] Vivify visual check at 5s: 1 reflection probe(s) on: 'Reflection Probe' mode=1 refresh=0 resolution=128 importance=1 box=false pos=(0.0,-0.7,65.3) texture='Reflection Probe'; environment reflection mode=0 custom='<none>' intensity=1.00
+2026-11-21 19:26:12 [INFO] Vivify visual check at 5s: 141 active renderer(s), 0 with no runnable shader; most drawn: Hidden/Locked/.poiyomi/Poiyomi Toon/7323052abbe3546479eccf2e7944732e x84, Custom/CustomParticles x9, Hidden/Locked/.poiyomi/Poiyomi Toon/ce17c19dfa86ea84c834c50b46f90403 x7, Particles/Standard Unlit x7, Hidden/Locked/.poiyomi/Poiyomi Toon/4e09b09e47603da48a174a2272cf3236 x7, Vivify/CustomObjects/CustomNote x4, Vivify/CustomObjects/CustomNoteArrow x4, Custom/NoteHD x3; screen effects: 0 before, 0 after the main effect
+2026-11-21 19:26:12 [INFO] Vivify grab texture '_BloodGrab' at 5s: nothing bound
+2026-11-21 19:26:12 [INFO] Vivify grab texture '_GrabTexture' at 5s: nothing bound
+2026-11-21 19:26:12 [INFO] Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+2026-11-21 19:26:12 [INFO] Vivify visual check: main camera cullingMask=0x3d3bfd37 depthTextureMode=1 clearFlags=2
+2026-11-21 19:26:36 [WARN] Vivify frame took 183.6ms, over the 50ms budget
+2026-11-21 19:26:37 [INFO] Vivify visual check at 30s: 4 live note(s), 4 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-21 19:26:37 [INFO] Vivify visual check at 30s: 1 reflection probe(s) on: 'Reflection Probe' mode=1 refresh=0 resolution=128 importance=1 box=false pos=(-0.9,-0.8,14.6) texture='Reflection Probe'; environment reflection mode=0 custom='<none>' intensity=1.00
+2026-11-21 19:26:37 [INFO] Vivify visual check at 30s: 150 active renderer(s), 0 with no runnable shader; most drawn: Hidden/Locked/.poiyomi/Poiyomi Toon/7323052abbe3546479eccf2e7944732e x84, Custom/CustomParticles x9, Particles/Standard Unlit x8, Custom/NoteHD x7, Hidden/Locked/.poiyomi/Poiyomi Toon/ce17c19dfa86ea84c834c50b46f90403 x7, Hidden/Locked/.poiyomi/Poiyomi Toon/4e09b09e47603da48a174a2272cf3236 x7, Vivify/CustomObjects/CustomNote x4, Vivify/CustomObjects/CustomNoteArrow x4; screen effects: 0 before, 0 after the main effect
+2026-11-21 19:26:37 [INFO] Vivify grab texture '_BloodGrab' at 30s: nothing bound
+2026-11-21 19:26:37 [INFO] Vivify grab texture '_GrabTexture' at 30s: nothing bound
+2026-11-21 19:26:37 [INFO] Vivify grab texture '_GrabTexture1' at 30s: nothing bound
+2026-11-21 19:26:52 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.84,-0.07) fwd=(-0.10,-0.09,0.99)
+2026-11-21 19:26:52 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-21 19:26:52 [INFO] Vivify main camera: scene depth texture enabled for this map
+2026-11-21 19:26:52 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-21 19:26:52 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-21 19:26:52 [INFO] Vivify level end: level ended (quit or finished)
+2026-11-21 19:26:52 [INFO] Vivify level end: camera effects removed
+2026-11-21 19:26:52 [INFO] Vivify level end: note and saber visuals restored
+2026-11-21 19:26:52 [INFO] Vivify level end: camera restored
+2026-11-21 19:26:52 [INFO] Vivify level end: map prefabs destroyed
+2026-11-21 19:26:52 [INFO] Vivify level end: render textures released
+2026-11-21 19:26:52 [INFO] Vivify level end: render settings restored
+2026-11-21 19:26:52 [INFO] Vivify level end: done
+2026-11-21 19:27:04 [INFO] Vivify Send Logs: relay health check succeeded
