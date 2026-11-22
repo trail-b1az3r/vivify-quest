@@ -1,0 +1,64 @@
+=== Vivify 0.15.48 native crash at 1795323542 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x2010
+thread 17196 'games.beatsaber'
+pc 0x7e00ba8b10  lr 0x7cd7b3a2e0  sp 0x7fdb22b150  fp 0x7fdb22b180
+backtrace:
+  #00 pc 0x7e00ba8b10  libil2cpp.so +0x34e6b10
+  #01 lr 0x7cd7b3a2e0  libBSNightcoreQuest.so +0xcb2e0
+  #02 fp 0x7f5cd5cbb4  libc.so +0x13abb4 (__cxa_finalize +0x94)
+  #03 fp 0x7f7b2b096c
+  #04 fp 0x7f7b298e58
+  #05 fp 0x7f7b29abd8
+  #06 fp 0x7f7b295064
+  #07 fp 0x7f682610cc  libdl.so +0x10cc (dlclose +0xc)
+  #08 fp 0x7e5bbd1a80  libsl2.so +0x521a80
+  #09 fp 0x7e5bbf8ffc  libsl2.so +0x548ffc
+  #10 fp 0x7e5bbf4c24  libsl2.so +0x544c24 (modloader_unload +0xa4)
+  #11 fp 0x7e5ebe80a4  libmain.so +0xe80a4
+  #12 fp 0x7e5ebe6804  libmain.so +0xe6804
+  #13 fp 0x7ed55d7444  libart.so +0x227444
+  #14 fp 0x7e60672a38
+  #15 fp 0x6462
+last Vivify log lines (oldest first):
+  Hook: Recorder_ProcessSwing installed with flamingo!
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7e033dbe84
+  Hook: Recorder_SpawnControllerStart installed with flamingo!
+  Installing hook: Recorder_ShowPause to offset: 0x7e034cf07c
+  Hook: Recorder_ShowPause installed with flamingo!
+  Installing hook: Recorder_Resume to offset: 0x7e034cfddc
+  Hook: Recorder_Resume installed with flamingo!
+  Installing hook: Recorder_Finish to offset: 0x7e03428f1c
+  Hook: Recorder_Finish installed with flamingo!
+  Vivify: loaded mods (41): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libflamingo.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook
+  ore 1.3.5, BetterSongSearch 2.3.2, ModifiersCoreQuest 0.1.0, Play3rdPer 0.14.11, RecentlyPlayed 1.0.0, CustomJSONData 0.24.6, Tracks 2.5.5, Vivify 0.15.48, PlaylistCore 1.7.3, bl 0.9.666, BetterSongList 1.1.0, CameraUtils 1.2.0, Chroma 2.1
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(0.67,1.02,0.24) fwd=(-0.87,0.26,0.41)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify Send Logs: uploaded 2 file part(s), 8 KB (logs/2026-11-22/045432_0.15.48_72c40234650ca44c 3d2212c; stored 2, deduplicated 0; 25976687 bytes saved cumulatively
+  )
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(0.04,1.87,-0.02) fwd=(-0.10,0.03,0.99)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(-0.00,1.87,-0.03) fwd=(-0.24,0.08,0.97)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify: the game uses STEREO_MULTIVIEW_ON (138 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/1e6ff (Somewhere Out There - Swifter, Mawntee, Reddek)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/1e6ff (Somewhere Out There - Swifter, Mawntee, Reddek)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(0.01,1.87,0.04) fwd=(0.02,0.08,1.00)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(-0.03,1.89,-0.01) fwd=(-0.12,0.23,0.97)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/33232 (IX_s Shadow - Pleast)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(0.01,1.87,0.03) fwd=(0.05,0.05,1.00)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(-0.01,1.87,-0.00) fwd=(-0.09,0.05,0.99)
+  Vivify main camera cullingMask is now 0x3d3affb7
+=== end ===
+
