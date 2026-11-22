@@ -1,0 +1,56 @@
+=== Vivify 0.15.48 native crash at 1795325759 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x80
+thread 8517 'UnityMain'
+pc 0x7103d2a518  lr 0x7103d2a518  sp 0x724bd14f00  fp 0x724bd14fa0
+backtrace:
+  #00 pc 0x7103d2a518  libBetterSongSearch.so +0x2d0518 (_ZN16BetterSongSearch2UI15ViewControllers18SongListController9OnDestroyEv +0x2e8)
+  #01 lr 0x7103d2a518  libBetterSongSearch.so +0x2d0518 (_ZN16BetterSongSearch2UI15ViewControllers18SongListController9OnDestroyEv +0x2e8)
+  #02 fp 0x722e39aaf4  libil2cpp.so +0x34d3af4
+  #03 fp 0x722e39aa68  libil2cpp.so +0x34d3a68
+  #04 fp 0x72f39df74c  libgame.so +0x1974c (android_main +0x7c)
+  #05 fp 0x72f39e7920  libgame.so +0x21920
+  #06 fp 0x739e7c22b0  libc.so +0x1372b0
+  #07 fp 0x739e75a174  libc.so +0xcf174
+last Vivify log lines (oldest first):
+  Installing hook: Recorder_ScoreStart to offset: 0x7230d146b0
+  Hook: Recorder_ScoreStart installed with flamingo!
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x722e87fb3c
+  Hook: Recorder_ComputeSwingRating installed with flamingo!
+  Installing hook: Recorder_ProcessSwing to offset: 0x722e880460
+  Hook: Recorder_ProcessSwing installed with flamingo!
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7230be0e84
+  Hook: Recorder_SpawnControllerStart installed with flamingo!
+  Installing hook: Recorder_ShowPause to offset: 0x7230cd407c
+  Hook: Recorder_ShowPause installed with flamingo!
+  Installing hook: Recorder_Resume to offset: 0x7230cd4ddc
+  Hook: Recorder_Resume installed with flamingo!
+  Installing hook: Recorder_Finish to offset: 0x7230c2df1c
+  Hook: Recorder_Finish installed with flamingo!
+  Vivify: loaded mods (41): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libflamingo.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook
+  ore 1.3.5, BetterSongSearch 2.3.2, ModifiersCoreQuest 0.1.0, Play3rdPer 0.14.11, RecentlyPlayed 1.0.0, CustomJSONData 0.24.6, Tracks 2.5.5, Vivify 0.15.48, PlaylistCore 1.7.3, bl 0.9.666, BetterSongList 1.1.0, CameraUtils 1.2.0, Chroma 2.1
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.88,0.00) fwd=(-0.43,0.09,0.90)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify Send Logs: uploaded 4 file part(s), 27 KB (logs/2026-11-22/053031_0.15.48_381c4207eac692b2 75aa153; stored 4, deduplicated 0; 25976687 bytes saved cumulatively
+  )
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(0.08,1.88,-0.03) fwd=(-0.07,0.05,1.00)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(0.08,1.88,-0.03) fwd=(-0.10,0.06,0.99)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify: the game uses STEREO_MULTIVIEW_ON (138 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/33232 (IX_s Shadow - Pleast)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/39736 (BEAT SABER SUPER HYPER ULTIMATE YESTERYEAR RECOLLECTiVE MEGAMIX 2023 - Cube Community Team)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/39736 (BEAT SABER SUPER HYPER ULTIMATE YESTERYEAR RECOLLECTiVE MEGAMIX 2023 - Cube Community Team)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(0.04,1.88,-0.00) fwd=(0.26,0.02,0.97)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(-0.01,1.89,-0.22) fwd=(-0.11,0.16,0.98)
+  Vivify main camera cullingMask is now 0x3d3affb7
+=== end ===
+
