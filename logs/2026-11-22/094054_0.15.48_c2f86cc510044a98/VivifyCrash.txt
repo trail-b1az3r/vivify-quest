@@ -1,0 +1,64 @@
+=== Vivify 0.15.48 native crash at 1795339098 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x2010
+thread 7913 'games.beatsaber'
+pc 0x6ef901cb10  lr 0x6dd33272e0  sp 0x7ffc4017a0  fp 0x7ffc4017d0
+backtrace:
+  #00 pc 0x6ef901cb10  libil2cpp.so +0x34e6b10
+  #01 lr 0x6dd33272e0  libBSNightcoreQuest.so +0xcb2e0
+  #02 fp 0x7060b65bb4  libc.so +0x13abb4 (__cxa_finalize +0x94)
+  #03 fp 0x708497196c
+  #04 fp 0x7084959e58
+  #05 fp 0x708495bbd8
+  #06 fp 0x7084956064
+  #07 fp 0x706cc320cc  libdl.so +0x10cc (dlclose +0xc)
+  #08 fp 0x6f5d3c0a80  libsl2.so +0x521a80
+  #09 fp 0x6f5d3e7ffc  libsl2.so +0x548ffc
+  #10 fp 0x6f5d3e3c24  libsl2.so +0x544c24 (modloader_unload +0xa4)
+  #11 fp 0x6f60beb0a4  libmain.so +0xe80a4
+  #12 fp 0x6f60be9804  libmain.so +0xe6804
+  #13 fp 0x6fdaea9444  libart.so +0x227444
+  #14 fp 0x6f63e24a38
+  #15 fp 0x6462
+last Vivify log lines (oldest first):
+  Vivify InstantiatePrefab: asset='assets/scenes/thewholeassscene 1.prefab' id='prefab_thewholeassscene 1_2' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_thewholeassscene 1_2' asset='assets/scenes/thewholeassscene 1.prefab' tracks=1 animators=3 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/objects/3-d/flower/flower.prefab' id='prefab_flower_2' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_flower_2' asset='assets/objects/3-d/flower/flower.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up: replayed 9 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=18 livePrefabs=2 preloadedPrefabs=100
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify visual check at 5s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+  Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check at 5s: 38 active renderer(s), 0 with no runnable shader; most drawn: GraphicsTweaks/CustomParticlesBloom x11, Ree/BlurlessSaber x10, Swifter/VFX/StarFlare x5, Ree/SimpleTrail x4, Custom/GrabPassTexture1 x1, Custom/Bloom
+  Vivify grab texture '_GrabTexture' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+  Vivify visual check: main camera cullingMask=0x3d3bfdb7 depthTextureMode=1 clearFlags=2
+  Vivify pause menu opened: syncedObjects=0 secondaryCameras=0
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(-0.03,1.87,-0.07) fwd=(-0.12,0.24,0.96)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=2 preloaded=100 synced=0 secondaryCameras=0 declaredTextures=0 assets=18
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify Send Logs: uploaded 3 file part(s), 70 KB (logs/2026-11-22/091437_0.15.48_92a476825c197be6 c9b2810; stored 3, deduplicated 0; 25976688 bytes saved cumulatively
+  )
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/27ade (Heliov - Swifter)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(-0.08,1.87,-0.06) fwd=(0.02,0.17,0.99)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(-0.01,1.88,-0.12) fwd=(0.09,0.24,0.97)
+  Vivify main camera cullingMask is now 0x3d3affb7
+=== end ===
+
