@@ -1,0 +1,116 @@
+=== Vivify 0.15.45 native crash at 1795376424 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x40
+thread 23097 'UnityMain'
+pc 0x7ab27ec994  lr 0x7ab27ec98c  sp 0x7c46bfaca0  fp 0x7c46bfb010
+backtrace:
+  #00 pc 0x7ab27ec994  libnoodleextensions.so +0x16a994 (_Z16SortAndOrderListPN14CustomJSONData17CustomBeatmapDataE +0x1a4)
+  #01 lr 0x7ab27ec98c  libnoodleextensions.so +0x16a98c (_Z16SortAndOrderListPN14CustomJSONData17CustomBeatmapDataE +0x19c)
+  #02 fp 0x7ab27ec620  libnoodleextensions.so +0x16a620
+  #03 fp 0x7be0b99af4  libil2cpp.so +0x34d3af4
+  #04 fp 0x7be0b99a68  libil2cpp.so +0x34d3a68
+  #05 fp 0x7cdef1d69c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #06 fp 0x7cdef1d748  libgame.so +0x19748 (android_main +0x78)
+  #07 fp 0x7cdef25920  libgame.so +0x21920
+  #08 fp 0x7da4fa1470  libc.so +0x138470
+  #09 fp 0x7da4f39334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Hook: Recorder_NoteWasCut installed with flamingo!
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7be3513b38
+  Hook: Recorder_ScoreLateUpdate installed with flamingo!
+  Installing hook: Recorder_ScoreStart to offset: 0x7be35136b0
+  Hook: Recorder_ScoreStart installed with flamingo!
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7be107eb3c
+  Hook: Recorder_ComputeSwingRating installed with flamingo!
+  Installing hook: Recorder_ProcessSwing to offset: 0x7be107f460
+  Hook: Recorder_ProcessSwing installed with flamingo!
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7be33dfe84
+  Hook: Recorder_SpawnControllerStart installed with flamingo!
+  Installing hook: Recorder_ShowPause to offset: 0x7be34d307c
+  Hook: Recorder_ShowPause installed with flamingo!
+  Installing hook: Recorder_Resume to offset: 0x7be34d3ddc
+  Hook: Recorder_Resume installed with flamingo!
+  Installing hook: Recorder_Finish to offset: 0x7be342cf1c
+  Hook: Recorder_Finish installed with flamingo!
+  Vivify: loaded mods (31): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libflamingo.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook
+  0.2, SongCore 1.3.5, BetterSongSearch 2.3.2, ClockMod 1.15.1-Dev, Vivify 0.15.45, Chroma 2.10.2, CustomJSONData 0.24.6, NoodleExtensions 1.6.2, PlaylistCore 1.7.3, SongDownloader 0.9.1, Tracks 2.5.5, Unicode 0.1.8
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(0.18,1.19,-0.50) fwd=(-0.18,0.55,0.82)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(0.15,1.17,-0.52) fwd=(-0.32,0.14,0.94)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.19,0.03) fwd=(-0.07,-0.08,0.99)
+  Vivify Send Logs: relay health check succeeded
+  Vivify Send Logs: uploaded 3 file part(s), 16 KB (logs/2026-11-22/193947_0.15.45_09c165bab68b7a65 a0c853e; stored 3, deduplicated 0; 31401304 bytes saved cumulatively
+  )
+  Vivify: the game uses STEREO_MULTIVIEW_ON (137 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5569c (Final Slaughter - Err0r_x4o4)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5569c (Final Slaughter - Err0r_x4o4)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5569c (Final Slaughter - Err0r_x4o4)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify depth copy: PC 2D material=true PC array-slice material=true native slice binding=false
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5569c (Final Slaughter - Err0r_x4o4)/bundleAndroid2021.vivify' -> needed by Vivify/Post Processing/Cinema, FinalSlaughter/Divine, FinalSlaughter/D
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+=== end ===
+
+=== Vivify 0.15.45 native crash at 1795376481 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x40
+thread 23922 'UnityMain'
+pc 0x7ab93ff994  lr 0x7ab93ff98c  sp 0x7c42f28ca0  fp 0x7c42f29010
+backtrace:
+  #00 pc 0x7ab93ff994  libnoodleextensions.so +0x16a994 (_Z16SortAndOrderListPN14CustomJSONData17CustomBeatmapDataE +0x1a4)
+  #01 lr 0x7ab93ff98c  libnoodleextensions.so +0x16a98c (_Z16SortAndOrderListPN14CustomJSONData17CustomBeatmapDataE +0x19c)
+  #02 fp 0x7ab93ff620  libnoodleextensions.so +0x16a620
+  #03 fp 0x7bd7d0faf4  libil2cpp.so +0x34d3af4
+  #04 fp 0x7bd7d0fa68  libil2cpp.so +0x34d3a68
+  #05 fp 0x7cdef2069c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #06 fp 0x7cdef20748  libgame.so +0x19748 (android_main +0x78)
+  #07 fp 0x7cdef28920  libgame.so +0x21920
+  #08 fp 0x7da4fa1470  libc.so +0x138470
+  #09 fp 0x7da4f39334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Hook: Recorder_ProcessSwing installed with flamingo!
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7bda555e84
+  Hook: Recorder_SpawnControllerStart installed with flamingo!
+  Installing hook: Recorder_ShowPause to offset: 0x7bda64907c
+  Hook: Recorder_ShowPause installed with flamingo!
+  Installing hook: Recorder_Resume to offset: 0x7bda649ddc
+  Hook: Recorder_Resume installed with flamingo!
+  Installing hook: Recorder_Finish to offset: 0x7bda5a2f1c
+  Hook: Recorder_Finish installed with flamingo!
+  Vivify: loaded mods (31): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libflamingo.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook
+  0.2, SongCore 1.3.5, BetterSongSearch 2.3.2, ClockMod 1.15.1-Dev, Vivify 0.15.45, Chroma 2.10.2, CustomJSONData 0.24.6, NoodleExtensions 1.6.2, PlaylistCore 1.7.3, SongDownloader 0.9.1, Tracks 2.5.5, Unicode 0.1.8
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(0.20,1.22,0.48) fwd=(0.48,0.27,0.84)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(0.09,1.26,0.30) fwd=(0.06,-0.01,1.00)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.22,-0.03) fwd=(-0.08,0.02,1.00)
+  Vivify: the game uses STEREO_MULTIVIEW_ON (137 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55e07 (_Perfect Pair__ - Error404)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55e07 (_Perfect Pair__ - Error404)/bundleWindows2021.vivify'
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55e07 (_Perfect Pair__ - Error404)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLev
+  Vivify: play button blocked by Vivify ("Converting PC assets...")
+  Vivify converting PC asset bundle on device: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55e07 (_Perfect Pair__ - Error404)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/Converted
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55e07 (_Perfect Pair__ - Error404)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55e07 (_Perfect Pair__ - Error404)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLev
+  Vivify shader conversion: 51 of 51 shader(s) linked for multiview GLES, 51 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 184 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo
+  Vivify conversion marked 2 of 2 block-compressed texture(s) readable (2 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+  Vivify source bundle shaders: unity=2019.4.28f1 serializedFiles=1 shaders=51 runnableOnQuest=0 platforms=[Direct3D 11(4)] programs=368 glslSource=0 binary=368 shadersWithTessellation=0 programTypes=[D3D11 vertex sm4.0, D3D11 pixel sm4.0]
+  Vivify bundle conversion succeeded: translated 51 of 51 shader(s) (102 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 2 of 2 block-compressed texture(s) marked readable (2 streamed)
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify depth copy: PC 2D material=true PC array-slice material=true native slice binding=false
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55e07___Perfect_Pair___-_Error404_/55e07___Perfect_Pair___-_Error404__95bd331ee17fbda7.vivify' grabs _PPNoteGrab
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55e07___Perfect_Pair___-_Error404_/55e07___Perfect_Pair___-_Error404__95bd331ee17fbda7.vivify' -> not needed
+  Vivify Projector interface: managedType=false nativeGetMaterial=false nativeSetMaterial=false
+  Vivify Blit: 51 single-view shader(s) ready for blits into screen textures and the map's texture cameras ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55e07___Perfect_Pair___-_Error404_/55e07___Perfect_Pair___-_Err
+  Vivify texture cameras: 43 more single-view shader(s) from the map's prefabs
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+=== end ===
+
