@@ -1,0 +1,114 @@
+=== Vivify 0.15.45 native crash at 1795375386 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27b100002099
+thread 8378 'UnityMain'
+pc 0x79fc96b9d8  lr 0x79fc96b9a8  sp 0x78fa2ab8c0  fp 0x78fa2ab960
+backtrace:
+  #00 pc 0x79fc96b9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x79fc96b9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x789f8df234  libmetacore.so +0xce234
+  #03 fp 0x78fbd6755c  libsl2.so +0x4fb55c
+  #04 fp 0x78fbd66e74  libsl2.so +0x4fae74
+  #05 fp 0x78fbd66d48  libsl2.so +0x4fad48
+  #06 fp 0x78fbd66ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x772ef80e54  libModifiersCoreQuest.so +0xefe54
+  #08 fp 0x789828e144  libil2cpp.so +0x29a1144
+last Vivify log lines (oldest first):
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.SetRoomTransformOffset skipped: isolation toggle enabled
+  VRCenterAdjust.OnEnable skipped: isolation toggle enabled
+  VRCenterAdjust.OnDisable skipped: isolation toggle enabled
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.15,1.12,-0.27) fwd=(-0.45,-0.10,0.89)
+  Vivify field of view: 115% for this map
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: far culling at 1000m
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=3 preloaded=3 synced=0 secondaryCameras=0 declaredTextures=0 assets=8
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify Send Logs: uploaded 2 file part(s), 462 KB (logs/2026-11-22/192246_0.15.45_fda4160eafd7f740 95416ee; stored 2, deduplicated 0; 31401304 bytes saved cumulatively
+  )
+  Vivify Send Logs: relay health check succeeded
+=== end ===
+
+=== Vivify 0.15.29 native crash at 1795376364 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x798c3e68a8
+thread 16512 'UnityMain'
+pc 0x79fc9646fc  lr 0x76dc0ea614  sp 0x78fc1f89e0  fp 0x78fc1f8da0
+backtrace:
+  #00 pc 0x79fc9646fc  libc.so +0xc76fc
+  #01 lr 0x76dc0ea614  libnoodleextensions.so +0x2a5614
+  #02 fp 0x76dc09bd88  libnoodleextensions.so +0x256d88 (_Z26InstallNoteControllerHooksv +0xfc)
+  #03 fp 0x76dc0e41ec  libnoodleextensions.so +0x29f1ec (_Z21InstallAndRegisterAllv +0x1b8)
+  #04 fp 0x76dc0e9e34  libnoodleextensions.so +0x2a4e34 (late_load +0x98)
+  #05 fp 0x78fcf7ab9c  libsl2.so +0x543b9c
+  #06 fp 0x78a52e6fb4  libunity.so +0xab1fb4
+  #07 fp 0x7a00bf96c3
+  #08 fp 0x78fc1f9f40
+last Vivify log lines (oldest first):
+  Installing hook: SaberModelController_Init to offset: 0x788c558928
+  Installing hook: GameNoteController_Init to offset: 0x788c4561d0
+  Installing hook: BombNoteController_Init to offset: 0x788c4532d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x788c454668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x788c4f6bb8
+  Installing hook: NoteDebris_Init to offset: 0x788c4592e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x788c9ed968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x788c34b018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x788c9f0e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x788c9f09f0
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x788c9f1f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x788c9f17f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x788c4a037c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x788c4a058c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x788c4a0658
+  Installing hook: VRCenterAdjust_Update to offset: 0x788c4a0560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x788c4a03e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x788c4a04a4
+  Installing hook: PauseController_Pause to offset: 0x788c5127ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x788c51cc54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x788c51d734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x788c51d094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x788c51cd88
+  Installing hook: GamePause_Resume to offset: 0x788c518178
+  Installing hook: Recorder_InstallBindings to offset: 0x788c561294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x788c5558b8
+  Installing hook: Recorder_SpawnNote to offset: 0x788c44c928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x788c44bdec
+  Installing hook: Recorder_NoteWasCut to offset: 0x788c44dde4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x788c55b44c
+  Installing hook: Recorder_ScoreStart to offset: 0x788c55b038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x788b01edb4
+  Installing hook: Recorder_ProcessSwing to offset: 0x788b01f690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x788c44eae0
+  Installing hook: Recorder_ShowPause to offset: 0x788c51cc54
+  Installing hook: Recorder_Resume to offset: 0x788c51d76c
+  Installing hook: Recorder_Finish to offset: 0x788c4ac1dc
+  Vivify: loaded mods (35): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0
+  anager 1.4.1, QBeatSaberPlus-Multiplayer 6.4.5, ReeSabers 0.3.20, SongDownloader 0.8.8, unicode 0.1.7
+  Vivify Send Logs: this build has no log relay address
+=== end ===
+
