@@ -1,0 +1,117 @@
+=== Vivify 0.15.51 native crash at 1795379215 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x28a300001ac3
+thread 6900 'UnityMain'
+pc 0x78c13089d8  lr 0x78c13089a8  sp 0x772f7f7700  fp 0x772f7f77a0
+backtrace:
+  #00 pc 0x78c13089d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x78c13089a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7730556c64  libmetacore.so +0xcdc64
+  #03 fp 0x77a030555c  libsl2.so +0x4fb55c
+  #04 fp 0x77a0304e74  libsl2.so +0x4fae74
+  #05 fp 0x77a0304d48  libsl2.so +0x4fad48
+  #06 fp 0x77a0304ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x75afd65fd4  libBetterHaptics.so +0x10afd4
+  #08 fp 0x770d27fee0  libil2cpp.so +0x4aeeee0
+  #09 fp 0x770a94b78c  libil2cpp.so +0x21ba78c
+  #10 fp 0x78b4e5c6c3
+  #11 fp 0x772f7f9f70
+last Vivify log lines (oldest first):
+  Vivify: this map has its own saber, so 'EditorScreenManager' (ReeSabers::EditorScreenManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'PreviewScreenManager' (ReeSabers::PreviewScreenManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'KekManager' (ReeSabers::KekManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=11 preloaded=11 synced=0 secondaryCameras=0 declaredTextures=0 assets=92
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify Send Logs: uploaded 3 file part(s), 160 KB (logs/2026-11-22/182918_0.15.51_6f329712daf600bf 3a21872; stored 3, deduplicated 0; 29326034 bytes saved cumulatively
+  )
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/40033 (In The Night feat. Sullivan King - Crashplay64)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/40033 (In The Night feat. Sullivan King - Crashplay64)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.10,1.69,0.05) fwd=(0.21,0.11,0.97)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.05,1.69,-0.03) fwd=(-0.12,0.03,0.99)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify updater: Looking for the build...
+  Vivify updater: Downloading the latest build of main...
+  Vivify updater: Installing the latest build of main...
+  Vivify updater: replacing /sdcard/ModData/com.beatgames.beatsaber/Modloader/mods/libVivify.so
+  Vivify updater: Installed Vivify 0.15.51 (the latest build of main). Restart Beat Saber to use it.
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/40033 (In The Night feat. Sullivan King - Crashplay64)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.07,1.71,-0.04) fwd=(0.08,0.21,0.98)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.01,1.69,-0.03) fwd=(-0.05,0.00,1.00)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.01,1.69,-0.01) fwd=(0.23,0.06,0.97)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.00,1.70,0.00) fwd=(-0.01,0.09,1.00)
+  Vivify main camera cullingMask is now 0x3d3aff37
+=== end ===
+
+=== Vivify 0.15.51 native crash at 1795379300 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x780d256b98
+thread 23235 'UnityMain'
+pc 0x78c1301714  lr 0x75ab362c10  sp 0x7802c45a20  fp 0x7802c45de0
+backtrace:
+  #00 pc 0x78c1301714  libc.so +0xc7714
+  #01 lr 0x75ab362c10  libBSNightcoreQuest.so +0x11bc10
+  #02 fp 0x75ab363014  libBSNightcoreQuest.so +0x11c014
+  #03 fp 0x75ab35faa0  libBSNightcoreQuest.so +0x118aa0
+  #04 fp 0x75ab304508  libBSNightcoreQuest.so +0xbd508 (late_load +0x230)
+  #05 fp 0x779b961b9c  libsl2.so +0x543b9c
+  #06 fp 0x77108e2fb4  libunity.so +0xab1fb4
+  #07 fp 0x78b4fcc6c3
+  #08 fp 0x7802c46f40
+last Vivify log lines (oldest first):
+  Vivify crash report:   Vivify: this map has its own saber, so 'KekManager' (ReeSabers::KekManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify crash report:   Vivify level end: level ended (quit or finished)
+  Vivify crash report:   Vivify ResetRuntime: livePrefabs=11 preloaded=11 synced=0 secondaryCameras=0 declaredTextures=0 assets=92
+  Vivify crash report:   Vivify level end: camera effects removed
+  Vivify crash report:   Vivify level end: note and saber visuals restored
+  Vivify crash report:   Vivify level end: camera restored
+  Vivify crash report:   Vivify level end: map prefabs destroyed
+  Vivify crash report:   Vivify level end: render textures released
+  Vivify crash report:   Vivify level end: render settings restored
+  Vivify crash report:   Vivify level end: done
+  Vivify crash report:   Vivify Send Logs: uploaded 3 file part(s), 160 KB (logs/2026-11-22/182918_0.15.51_6f329712daf600bf 3a21872; stored 3, deduplicated 0; 29326034 bytes saved cumulatively
+  Vivify crash report:   )
+  Vivify crash report:   Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify crash report:   Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/40033 (In The Night feat. Sullivan King - Crashplay64)' isCustom=true hasDetails=true
+  Vivify crash report:   Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify crash report:   Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/40033 (In The Night feat. Sullivan King - Crashplay64)' isCustom=true hasDetails=true
+  Vivify crash report:   Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify crash report:   Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.10,1.69,0.05) fwd=(0.21,0.11,0.97)
+  Vivify crash report:   Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify crash report:   Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.05,1.69,-0.03) fwd=(-0.12,0.03,0.99)
+  Vivify crash report:   Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify crash report:   Vivify updater: Looking for the build...
+  Vivify crash report:   Vivify updater: Downloading the latest build of main...
+  Vivify crash report:   Vivify updater: Installing the latest build of main...
+  Vivify crash report:   Vivify updater: replacing /sdcard/ModData/com.beatgames.beatsaber/Modloader/mods/libVivify.so
+  Vivify crash report:   Vivify updater: Installed Vivify 0.15.51 (the latest build of main). Restart Beat Saber to use it.
+  Vivify crash report:   Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify crash report:   Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/40033 (In The Night feat. Sullivan King - Crashplay64)' isCustom=true hasDetails=true
+  Vivify crash report:   Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify crash report:   Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.07,1.71,-0.04) fwd=(0.08,0.21,0.98)
+  Vivify crash report:   Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify crash report:   Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.01,1.69,-0.03) fwd=(-0.05,0.00,1.00)
+  Vivify crash report:   Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify crash report:   Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify crash report:   Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.01,1.69,-0.01) fwd=(0.23,0.06,0.97)
+  Vivify crash report:   Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify crash report:   Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.00,1.70,0.00) fwd=(-0.01,0.09,1.00)
+  Vivify crash report:   Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
