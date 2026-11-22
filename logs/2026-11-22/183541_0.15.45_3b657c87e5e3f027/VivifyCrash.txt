@@ -1,0 +1,58 @@
+=== Vivify 0.15.45 native crash at 1795372534 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x40
+thread 15916 'UnityMain'
+pc 0x735fcfc994  lr 0x735fcfc98c  sp 0x7493b2cca0  fp 0x7493b2d010
+backtrace:
+  #00 pc 0x735fcfc994  libnoodleextensions.so +0x16a994 (_Z16SortAndOrderListPN14CustomJSONData17CustomBeatmapDataE +0x1a4)
+  #01 lr 0x735fcfc98c  libnoodleextensions.so +0x16a98c (_Z16SortAndOrderListPN14CustomJSONData17CustomBeatmapDataE +0x19c)
+  #02 fp 0x735fcfc620  libnoodleextensions.so +0x16a620
+  #03 fp 0x7497005af4  libil2cpp.so +0x34d3af4
+  #04 fp 0x7497005a68  libil2cpp.so +0x34d3a68
+  #05 fp 0x75a392369c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #06 fp 0x75a3923748  libgame.so +0x19748 (android_main +0x78)
+  #07 fp 0x75a392b920  libgame.so +0x21920
+  #08 fp 0x764f74e470  libc.so +0x138470
+  #09 fp 0x764f6e6334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify material: context=bundle-load asset=assets/finalslaughter/hyper/warpoverlay.mat material='WarpOverlay' shader='FinalSlaughter/Warp' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/memory/memory.mat material='Memory' shader='Vivify/Post Processing/Memory' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/mirrorvoid/mirrorvoid.mat material='MirrorVoid' shader='FinalSlaughter/MirrorVoid' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/notes/fsnote.mat material='FSNote' shader='FinalSlaughter/Note' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/notes/fsnotedebris.mat material='FSNoteDebris' shader='FinalSlaughter/Note' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/particles/ash.mat material='Ash' shader='FinalSlaughter/Particle' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/particles/glints.mat material='Glints' shader='FinalSlaughter/Particle' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/particles/motes.mat material='Motes' shader='FinalSlaughter/Particle' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/pizzeria/pizzeria.mat material='Pizzeria' shader='FinalSlaughter/Pizzeria' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/redruins/ruinmasks.mat material='RuinMasks' shader='FinalSlaughter/Drowned' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/sixam/digitalclock.mat material='DigitalClock' shader='FinalSlaughter/DigitalClock' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/sunset/beachgrass.mat material='BeachGrass' shader='FinalSlaughter/BeachGrass' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/sunset/beachlantern.mat material='BeachLantern' shader='FinalSlaughter/BeachLantern' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/sunset/beachmote.mat material='BeachMote' shader='FinalSlaughter/BeachMote' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/sunset/ocean.mat material='Ocean' shader='FinalSlaughter/Ocean' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/sunset/sand.mat material='Sand' shader='FinalSlaughter/Sand' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/sunset/sunsetsky.mat material='SunsetSky' shader='FinalSlaughter/SunsetSky' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/vcr/vcr.mat material='VCR' shader='Vivify/Post Processing/VCR' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/wreckage/sky.mat material='Sky' shader='FinalSlaughter/Sky' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/finalslaughter/wreckage/wreck.mat material='Wreck' shader='FinalSlaughter/Wreck' supported=true internalError=false
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5569c (Final Slaughter - Err0r_x4o4)/bundleAndroid2021.vivify' -> needed by Vivify/Post Processing/Cinema, FinalSlaughter/Divine, FinalSlaughter/D
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=125
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5569c (Final Slaughter - Err0r_x4o4)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=true geometryEffects=true 
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5569c (Final Slaughter - Err0r_x4o4)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify separate-eye prototype: keeping normal frame: the game's post-processing pass is not running (bloom/post-processing off)
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle already preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5569c (Final Slaughter - Err0r_x4o4)/bundleAndroid2021.vivify'
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5569c (Final Slaughter - Err0r_x4o4)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=true geometryEffects=true 
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5569c (Final Slaughter - Err0r_x4o4)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify separate-eye prototype: keeping normal frame: the game's post-processing pass is not running (bloom/post-processing off)
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle already preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5569c (Final Slaughter - Err0r_x4o4)/bundleAndroid2021.vivify'
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+=== end ===
+
