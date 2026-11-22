@@ -1,0 +1,52 @@
+=== Vivify 0.15.45 native crash at 1795340752 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x68093c
+thread 28741 'Thread-5'
+pc 0x76fd15b1f4  lr 0x76fd15b1a4  sp 0x764088c520  fp 0x764088c850
+backtrace:
+  #00 pc 0x76fd15b1f4  libunity.so +0x13401f4
+  #01 lr 0x76fd15b1a4  libunity.so +0x13401a4
+  #02 fp 0x76fd30d9f8  libunity.so +0x14f29f8
+  #03 fp 0x785f106334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify Send Logs: uploaded 2 file part(s), 41 KB (logs/2026-11-22/094540_0.15.45_9af6f32b0a876a29 a47752b; stored 2, deduplicated 0; 25976688 bytes saved cumulatively
+  )
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify text check +1s: prefab='assets/outrocover.prefab' text='LongText' active=false enabled=true chars=185 shown=0 lossyScale=(1,1,1) font='OPTITimes-Roman SDF' dynamic=true sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0) render
+  Vivify text check +1s: prefab='assets/outrocover.prefab' text='GYWText' active=false enabled=true chars=13 shown=0 lossyScale=(1,1,1) font='OPTITimes-Roman SDF' dynamic=true sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0) renderer
+  Vivify text check +1s: prefab='assets/lyrics.prefab' text='ALyric (28)' active=false enabled=true chars=11 shown=0 lossyScale=(3,3,1) font='OPTITimes-Roman SDF' dynamic=true sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0) renderer
+  Vivify text check +1s: prefab='assets/lyrics.prefab' text='ALyric (29)' active=false enabled=true chars=24 shown=0 lossyScale=(3,3,1) font='OPTITimes-Roman SDF' dynamic=true sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0) renderer
+  Vivify text check +1s: prefab='assets/lyrics.prefab' text='ALyric (30)' active=false enabled=true chars=22 shown=0 lossyScale=(3,3,1) font='OPTITimes-Roman SDF' dynamic=true sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0) renderer
+  Vivify text check +1s: prefab='assets/lyrics.prefab' text='ALyric (31)' active=false enabled=true chars=23 shown=0 lossyScale=(3,3,1) font='OPTITimes-Roman SDF' dynamic=true sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0) renderer
+  Vivify text check +1s: prefab='assets/lyrics.prefab' text='ALyric (32)' active=false enabled=true chars=21 shown=0 lossyScale=(3,3,1) font='OPTITimes-Roman SDF' dynamic=true sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0) renderer
+  Vivify text check +1s: prefab='assets/lyrics.prefab' text='ALyric (33)' active=false enabled=true chars=10 shown=0 lossyScale=(3,3,1) font='OPTITimes-Roman SDF' dynamic=true sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0) renderer
+  Vivify text check +1s: prefab='assets/lyrics.prefab' text='Lyric' active=false enabled=true chars=24 shown=0 lossyScale=(1,1,1) font='OPTITimes-Roman SDF' dynamic=true sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0) renderer=on ma
+  Vivify text check +1s: prefab='assets/lyrics.prefab' text='Lyric (01)' active=false enabled=true chars=27 shown=0 lossyScale=(1,1,1) font='OPTITimes-Roman SDF' dynamic=true sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0) renderer=
+  Vivify text check +1s: prefab='assets/animations2.prefab' text='g' active=false enabled=true chars=1 shown=0 lossyScale=(1,1,1) font='OPTITimes-Roman SDF' dynamic=true sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0) renderer=on ma
+  Vivify text check +1s: prefab='assets/animations2.prefab' text='y' active=false enabled=true chars=1 shown=0 lossyScale=(1,1,1) font='OPTITimes-Roman SDF' dynamic=true sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0) renderer=on ma
+  Vivify text check +1s: prefab='assets/animations2.prefab' text='w' active=false enabled=true chars=1 shown=0 lossyScale=(1,1,1) font='OPTITimes-Roman SDF' dynamic=true sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0) renderer=on ma
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify visual check at 5s: 4 live note(s), 4 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: a live note has 6 renderer(s) (map prefab):
+  Vivify visual check:   'NoteCube' enabled=false active=true layer=8 material='NoteHD' shader='GraphicsTweaks/NoteHDBloom' supported=true queue=2004 block: _Cutout=1.00 _Color=(0.00,0.00,0.00,1.00)
+  Vivify visual check:   'NoteArrow' enabled=false active=true layer=8 material='NoteArrowHD' shader='GraphicsTweaks/GlowingInstancedHDBloom' supported=true queue=2002 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'NoteArrowGlow' enabled=false active=true layer=8 material='NoteArrowGlow' shader='GraphicsTweaks/CustomParticlesBloom' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,1.00)
+  Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='GraphicsTweaks/CustomParticlesBloom' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,1.00)
+  Vivify visual check:   'Cube' enabled=true active=true layer=8 material='Note Color Outline Black' shader='nasafrasa/Unlit Outline Black' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,1.00)
+  Vivify visual check:   'Arrow' enabled=true active=true layer=8 material='NoteColorInvert' shader='nasafrasa/Unlit White' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,1.00)
+  Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+  Vivify visual check at 5s: 1 reflection probe(s) on: 'Reflection Probe(Clone)' mode=1 refresh=2 resolution=128 importance=1 box=false pos=(-0.0,-1.7,-0.1) texture='Reflection Probe(Clone)'; environment reflection mode=0 custom='<none>' int
+  Vivify visual check at 5s: 63 active renderer(s), 0 with no runnable shader; most drawn: GraphicsTweaks/CustomParticlesBloom x11, QuestCompat/PlayerPlatformCompass x9, Ree/BlurlessSaber x8, Ree/BlurSaber x6, Custom/NoteLW x4, nasafrasa/Unl
+  Vivify grab texture '_GYWCensorGrab' at 5s: nothing bound
+  Vivify visual check: main camera cullingMask=0x3d3bfdb7 depthTextureMode=1 clearFlags=2
+  Vivify: Reduce Debris player option = true (custom debris disabled)
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+  Vivify custom event: type='InstantiatePrefab' time=5.052632 songTime=5.0528255
+  Vivify InstantiatePrefab: asset='assets/sky1.prefab' id='Sky1' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='Sky1' asset='assets/sky1.prefab' tracks=0 animators=0 offscreenCulled=0
+=== end ===
+
