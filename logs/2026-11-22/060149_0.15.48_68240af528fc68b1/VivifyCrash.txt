@@ -1,0 +1,64 @@
+=== Vivify 0.15.48 native crash at 1795326455 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x2010
+thread 18464 'games.beatsaber'
+pc 0x722d51eb10  lr 0x712170e2e0  sp 0x7fe1ea43d0  fp 0x7fe1ea4400
+backtrace:
+  #00 pc 0x722d51eb10  libil2cpp.so +0x34e6b10
+  #01 lr 0x712170e2e0  libBSNightcoreQuest.so +0xcb2e0
+  #02 fp 0x739e7c5bb4  libc.so +0x13abb4 (__cxa_finalize +0x94)
+  #03 fp 0x73c557f96c
+  #04 fp 0x73c5567e58
+  #05 fp 0x73c5569bd8
+  #06 fp 0x73c5564064
+  #07 fp 0x73c16310cc  libdl.so +0x10cc (dlclose +0xc)
+  #08 fp 0x728ebaea80  libsl2.so +0x521a80
+  #09 fp 0x728ebd5ffc  libsl2.so +0x548ffc
+  #10 fp 0x728ebd1c24  libsl2.so +0x544c24 (modloader_unload +0xa4)
+  #11 fp 0x728f5a90a4  libmain.so +0xe80a4
+  #12 fp 0x728f5a7804  libmain.so +0xe6804
+  #13 fp 0x730fe49444  libart.so +0x227444
+  #14 fp 0x7295238a38
+  #15 fp 0x6462
+last Vivify log lines (oldest first):
+  Vivify Send Logs: uploaded 4 file part(s), 36 KB (logs/2026-11-22/054433_0.15.48_cf1b14c3553380ce 523a95d; stored 4, deduplicated 0; 25976687 bytes saved cumulatively
+  )
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(0.00,1.46,-0.00) fwd=(-0.05,0.09,0.99)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(0.00,1.46,0.00) fwd=(-0.00,0.06,1.00)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify: the game uses STEREO_MULTIVIEW_ON (138 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/1e6ff (Somewhere Out There - Swifter, Mawntee, Reddek)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/1e6ff (Somewhere Out There - Swifter, Mawntee, Reddek)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/453f8 (GOODRAGE - Removable DIsk C_Amo)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b3c9 (Unwelcome School - Salty)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/39736 (BEAT SABER SUPER HYPER ULTIMATE YESTERYEAR RECOLLECTiVE MEGAMIX 2023 - Cube Community Team)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/EasyOffset Calibration 1' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/EasyOffset Calibration 3' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/EasyOffset Calibration 2' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/39736 (BEAT SABER SUPER HYPER ULTIMATE YESTERYEAR RECOLLECTiVE MEGAMIX 2023 - Cube Community Team)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/EasyOffset Calibration 2' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/EasyOffset Calibration 1' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/EasyOffset Calibration 3' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/39736 (BEAT SABER SUPER HYPER ULTIMATE YESTERYEAR RECOLLECTiVE MEGAMIX 2023 - Cube Community Team)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(0.00,1.45,0.01) fwd=(0.03,0.03,1.00)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(-0.00,1.45,0.04) fwd=(-0.08,0.13,0.99)
+  Vivify main camera cullingMask is now 0x3d3affb7
+=== end ===
+
