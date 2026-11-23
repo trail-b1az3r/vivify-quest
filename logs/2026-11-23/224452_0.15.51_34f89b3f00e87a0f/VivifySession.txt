@@ -1,0 +1,99 @@
+=== Vivify 0.15.51 session log, started 2026-11-23 17:44:52 ===
+[INFO] Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+[INFO] Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global.txt
+[INFO] Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+[INFO] Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+[WARN] Vivify crash recovery: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/500eb (By The Wind - slabs37)' did not end: the game crashed or was closed while it played (last sign of life 0 s into the song); it plays in recovery mode next time
+[WARN] Vivify: the game crashed last time; the report (also in VivifyCrash.txt) follows
+[WARN] Vivify crash report: === Vivify 0.15.51 native crash at 1795452550 (seconds since 1970) ===
+[WARN] Vivify crash report: SIGSEGV (bad memory access), code 1, fault address 0x99df0cf23c
+[WARN] Vivify crash report: thread 20863 'Thread-3'
+[WARN] Vivify crash report: pc 0x7c892067b4  lr 0x7c89206768  sp 0x7b97c83480  fp 0x7b97c837b0
+[WARN] Vivify crash report: backtrace:
+[WARN] Vivify crash report:   #00 pc 0x7c892067b4  libunity.so +0x13ee7b4
+[WARN] Vivify crash report:   #01 lr 0x7c89206768  libunity.so +0x13ee768
+[WARN] Vivify crash report:   #02 fp 0x7c893ec9f4  libunity.so +0x15d49f4
+[WARN] Vivify crash report:   #03 fp 0x7e11b00334  libc.so +0xd0334
+[WARN] Vivify crash report: last Vivify log lines (oldest first):
+[WARN] Vivify crash report:   Vivify material 'Sea': '_ITER_FRAGMENT' is an int in shader 'Custom/Seascape'; set as integer 5
+[WARN] Vivify crash report:   Vivify material 'Sea': '_ITER_GEOMETRY' is an int in shader 'Custom/Seascape'; set as integer 3
+[WARN] Vivify crash report:   Vivify material 'SeaFar': '_ITER_FRAGMENT' is an int in shader 'Custom/Seascape'; set as integer 4
+[WARN] Vivify crash report:   Vivify material 'SeaFar': '_ITER_GEOMETRY' is an int in shader 'Custom/Seascape'; set as integer 3
+[WARN] Vivify crash report:   Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+[WARN] Vivify crash report:   Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+[WARN] Vivify crash report:   Vivify preload prefab: asset='assets/wind/prefabs/ocean.prefab' id='prefab_ocean_1' instance=true
+[WARN] Vivify crash report:   Vivify preload prefab: asset='assets/wind/prefabs/island.prefab' id='prefab_island_1' instance=true
+[WARN] Vivify crash report:   Vivify PreloadInstantiatePrefabs: 2 prefab event(s) preloaded
+[WARN] Vivify crash report:   Vivify catch-up event: type='SetMaterialProperty' time=0
+[WARN] Vivify crash report:   Vivify catch-up event: type='InstantiatePrefab' time=0
+[WARN] Vivify crash report:   Vivify InstantiatePrefab: asset='assets/wind/prefabs/ocean.prefab' id='prefab_ocean_1' alreadyLive=false
+[WARN] Vivify crash report:   Vivify InstantiatePrefab spawned: id='prefab_ocean_1' asset='assets/wind/prefabs/ocean.prefab' tracks=1 animators=1 offscreenCulled=0
+[WARN] Vivify crash report:   Vivify catch-up event: type='InstantiatePrefab' time=0
+[WARN] Vivify crash report:   Vivify InstantiatePrefab: asset='assets/wind/prefabs/island.prefab' id='prefab_island_1' alreadyLive=false
+[WARN] Vivify crash report:   Vivify InstantiatePrefab spawned: id='prefab_island_1' asset='assets/wind/prefabs/island.prefab' tracks=1 animators=1 offscreenCulled=0
+[WARN] Vivify crash report:   Vivify catch-up event: type='AssignObjectPrefab' time=0
+[WARN] Vivify crash report:   Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/wind/prefabs/handl.prefab' tracks=0 additive=false saberType=0
+[WARN] Vivify crash report:   Vivify AssignObjectPrefab(trail): asset='assets/wind/mat/sabernotrail.mat' saberType=0 additive=false
+[WARN] Vivify crash report:   Vivify multiplayer check: inMultiplayerGameplay=false multiplayerModLoaded=true
+[WARN] Vivify crash report:   Vivify: this map has its own saber, so 'BasicSaberModel(Clone)' (ReeSabers::InteropSaberController) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+[WARN] Vivify crash report:   Vivify: this map has its own saber, so 'ReeSaber' (ReeSabers::ReeSaberController) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+[WARN] Vivify crash report:   Vivify saber: the map's model was not being drawn (another saber mod hid or switched off the game's model); re-enabled 0 renderer(s), moved 1 object(s) onto the saber, visible now: true
+[WARN] Vivify crash report:   Vivify saber trail: 1 map trail(s) created (following the game's trail)
+[WARN] Vivify crash report:   Vivify saber replaced (type 0): models=1 trails=1 spawned=2 renderers=2 hiddenOriginals=5
+[WARN] Vivify crash report:   Vivify catch-up event: type='AssignObjectPrefab' time=0
+[WARN] Vivify crash report:   Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/wind/prefabs/handr.prefab' tracks=0 additive=false saberType=1
+[WARN] Vivify crash report:   Vivify AssignObjectPrefab(trail): asset='assets/wind/mat/sabernotrail.mat' saberType=1 additive=false
+[WARN] Vivify crash report:   Vivify saber: the map's model was not being drawn (another saber mod hid or switched off the game's model); re-enabled 0 renderer(s), moved 1 object(s) onto the saber, visible now: true
+[WARN] Vivify crash report:   Vivify saber trail: 1 map trail(s) created (following the game's trail)
+[WARN] Vivify crash report:   Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=2 hiddenOriginals=5
+[WARN] Vivify crash report:   Vivify catch-up event: type='AssignObjectPrefab' time=0
+[WARN] Vivify crash report:   Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/wind/prefabs/custom note.prefab' tracks=1 additive=false saberType=-
+[WARN] Vivify crash report:   Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/wind/prefabs/custom note dot.prefab' tracks=1 additive=false saberType=-
+[WARN] Vivify crash report:   Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/wind/prefabs/custom note debris.prefab' tracks=1 additive=false saberType=-
+[WARN] Vivify crash report:   Vivify catch-up event: type='SetRenderingSettings' time=0
+[WARN] Vivify crash report:   Vivify SetRenderingSettings: ignoring the map's realtime shadow settings ('shadows' and the rest); turn on 'Map Realtime Shadows' to let maps enable them
+[WARN] Vivify crash report:   Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+[WARN] Vivify crash report:   Vivify catch-up: replayed 7 event(s) up to time=0
+[WARN] Vivify crash report:   Vivify PrepareBeatmap done: assets=12 livePrefabs=2 preloadedPrefabs=2
+[WARN] Vivify crash report: === end ===
+[INFO] Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+[INFO] Installing hook: SaberModelController_Init to offset: 0x7c8d73d928
+[INFO] Installing hook: GameNoteController_Init to offset: 0x7c8d63b1d0
+[INFO] Installing hook: BombNoteController_Init to offset: 0x7c8d6382d4
+[INFO] Installing hook: BurstSliderGameNoteController_Init to offset: 0x7c8d639668
+[INFO] Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7c8d6dbbb8
+[INFO] Installing hook: NoteDebris_Init to offset: 0x7c8d63e2e8
+[INFO] Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7c8dbd2968
+[INFO] Installing hook: ImageEffectController_OnRenderImage to offset: 0x7c8d530018
+[INFO] Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7c8dbd5e78
+[INFO] Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7c8dbd59f0
+[INFO] Installing hook: MirrorRendererSO_RenderMirror to offset: 0x7c8dbd6bb8
+[INFO] Installing hook: MirrorRendererSO_OnDisable to offset: 0x7c8dbd6f2c
+[INFO] Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7c8dbd67f4
+[INFO] Installing hook: VRCenterAdjust_Start to offset: 0x7c8d68537c
+[INFO] Installing hook: VRCenterAdjust_OnEnable to offset: 0x7c8d68558c
+[INFO] Installing hook: VRCenterAdjust_OnDisable to offset: 0x7c8d685658
+[INFO] Installing hook: VRCenterAdjust_Update to offset: 0x7c8d685560
+[INFO] Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7c8d6853e0
+[INFO] Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7c8d6854a4
+[INFO] Installing hook: PauseController_Pause to offset: 0x7c8d6f77ec
+[INFO] Installing hook: PauseMenuManager_ShowMenu to offset: 0x7c8d701c54
+[INFO] Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7c8d702734
+[INFO] Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7c8d702094
+[INFO] Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7c8d701d88
+[INFO] Installing hook: GamePause_Resume to offset: 0x7c8d6fd178
+[INFO] Installing hook: Recorder_InstallBindings to offset: 0x7c8d746294
+[INFO] Installing hook: Recorder_HeightLateUpdate to offset: 0x7c8d73a8b8
+[INFO] Installing hook: Recorder_SpawnNote to offset: 0x7c8d631928
+[INFO] Installing hook: Recorder_SpawnObstacle to offset: 0x7c8d630dec
+[INFO] Installing hook: Recorder_NoteWasCut to offset: 0x7c8d632de4
+[INFO] Installing hook: Recorder_ScoreLateUpdate to offset: 0x7c8d74044c
+[INFO] Installing hook: Recorder_ScoreStart to offset: 0x7c8d740038
+[INFO] Installing hook: Recorder_ComputeSwingRating to offset: 0x7c8c203db4
+[INFO] Installing hook: Recorder_ProcessSwing to offset: 0x7c8c204690
+[INFO] Installing hook: Recorder_SpawnControllerStart to offset: 0x7c8d633ae0
+[INFO] Installing hook: Recorder_ShowPause to offset: 0x7c8d701c54
+[INFO] Installing hook: Recorder_Resume to offset: 0x7c8d70276c
+[INFO] Installing hook: Recorder_Finish to offset: 0x7c8d6911dc
+[INFO] Vivify: loaded mods (46): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libweb-utils.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaverplusplus.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libcustom-types.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libsongdetails.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libtinyxml2.so 0.0.0, BSML 0.4.55, EasyOffsetQuest 0.1.7, FakeId 0.1.9, FasterScroll 1.17.0, Lapiz 0.2.23, AudioLink 0.0.2, datakeeper 0.2.5, graphicstweaks 0.1.13, imagecoverexpander 0.2.4, MetaCore 1.6.3, JDFixer 3.4.0, mod-list 0.2.7,  , SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether 2.2.5, BetterSongSearch 2.2.13, ClockMod 1.15.0-Dev, ModifiersCoreQuest 0.1.0, CustomJSONData 0.24.5, Tracks 2.5.4, Vivify 0.15.51, Playlist
+[INFO] Core 1.5.5, bl 0.9.666, BetterSongList 1.0.8, CameraUtils 1.1.11, ChatPlexSDK-BS 6.4.5, Chroma 2.10.3, HitScoreVisualizer 3.0.1, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, Qounters++ 1.1.5, QustomMenu 1.0.3, ReeSabers 0.4.0, scorepercentage 3.3.4, SongDownloader 0.8.8, unicode 0.1.7
