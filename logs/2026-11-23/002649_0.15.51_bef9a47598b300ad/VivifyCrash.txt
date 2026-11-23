@@ -1,0 +1,231 @@
+=== Vivify 0.15.51 native crash at 1795327310 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x1d0
+thread 20603 'Thread-75'
+pc 0x751e00c740  lr 0x751e00c6f8  sp 0x742cbbd480  fp 0x742cbbd7b0
+backtrace:
+  #00 pc 0x751e00c740  libunity.so +0x13ee740
+  #01 lr 0x751e00c6f8  libunity.so +0x13ee6f8
+  #02 fp 0x751e1f29f4  libunity.so +0x15d49f4
+  #03 fp 0x769513f334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify main camera cullingMask is now 0x3819fd37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=3
+  Vivify PrepareBeatmap: v2=false customEvents=14 triggerTime=0 beatmapAD=true
+  Vivify bundle preloaded, rebuilding asset caches: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4dd71 (Bleeding Out - RateGyro & MadChase)/bundleAndroid2021.vivify'
+  Vivify material: context=bundle-load asset=assets/imagine dragons/up3/blitshader.mat material='blitshader' shader='Hidden/notextPainterlyKuwahara_NoGrayTint_FixVR_NoScript_Seamless' supported=true internalError=false
+  Vivify texture decode: scanned 6 material(s), replaced 0 unsupported texture reference(s) in 1ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify material 'water3 - Copy': '_BlendNoiseSource' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3 - Copy': '_FlowMapUV' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3 - Copy': '_InvertNormals' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3 - Copy': '_TexCoordSpace' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3 - Copy': '_TexCoordSpaceSwizzle' is an int in shader 'Mochie/Water'; set as integer 1
+  Vivify material 'water3 - Copy': '_VisualizeFlowmap' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3': '_BlendNoiseSource' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3': '_FlowMapUV' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3': '_InvertNormals' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3': '_TexCoordSpace' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3': '_TexCoordSpaceSwizzle' is an int in shader 'Mochie/Water'; set as integer 1
+  Vivify material 'water3': '_VisualizeFlowmap' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'blitshader': '_ColorCount' is an int in shader 'Hidden/notextPainterlyKuwahara_NoGrayTint_FixVR_NoScript_Seamless'; set as integer 231
+  Vivify: maps may turn realtime reflection probes on (full quality)
+  Vivify: 'Map Realtime Shadows' is on; the game's shadow quality is left as it is
+  Vivify preload prefab: asset='assets/imagine dragons/up3/env.prefab' id='dance' instance=true
+  Vivify preload prefab: asset='assets/imagine dragons/up3/rocks.prefab' id='rocks' instance=true
+  Vivify PreloadInstantiatePrefabs: 2 prefab event(s) preloaded
+  Vivify catch-up event: type='Blit' time=0
+  Vivify material: context=Blit asset=assets/imagine dragons/up3/blitshader.mat material='blitshader' shader='Hidden/notextPainterlyKuwahara_NoGrayTint_FixVR_NoScript_Seamless' supported=true internalError=false
+  Vivify Blit event: time=0 asset='assets/imagine dragons/up3/blitshader.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=9999999
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/imagine dragons/up3/env.prefab' id='dance' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='dance' asset='assets/imagine dragons/up3/env.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/imagine dragons/up3/rocks.prefab' id='rocks' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='rocks' asset='assets/imagine dragons/up3/rocks.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up: replayed 4 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=3 livePrefabs=2 preloadedPrefabs=2
+  Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify foveated rendering: level 2 for this map (was 4), eye-tracked false, accepted true; device 'Oculus Quest 3S'
+=== end ===
+
+=== Vivify 0.15.48 native crash at 1795383628 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27c800002970
+thread 10682 'UnityMain'
+pc 0x769513d9d8  lr 0x769513d9a8  sp 0x75189f70f0  fp 0x75189f7190
+backtrace:
+  #00 pc 0x769513d9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x769513d9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7525757c64  libmetacore.so +0xcdc64
+  #03 fp 0x758311855c  libsl2.so +0x4fb55c
+  #04 fp 0x7583117e74  libsl2.so +0x4fae74
+  #05 fp 0x7583117d48  libsl2.so +0x4fad48
+  #06 fp 0x7583117ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x734f6cc774  libchroma.so +0x2a4774
+  #08 fp 0x753539f9c4  libcustom-types.so +0x2d49c4
+  #09 fp 0x7517d034a8  libil2cpp.so +0x48aa4a8
+  #10 fp 0x751561378c  libil2cpp.so +0x21ba78c
+  #11 fp 0x751561378c  libil2cpp.so +0x21ba78c
+  #12 fp 0x734f6cc23c  libchroma.so +0x2a423c (_ZN42Hook_BeatmapObjectCallbackController_Start42hook_BeatmapObjectCallbackController_StartEPN15GlobalNamespace26BeatmapCallbacksControllerEf +0x1dc)
+  #13 fp 0x734f6cbc30  libchroma.so +0x2a3c30
+  #14 fp 0x734f710f9c  libchroma.so +0x2e8f9c (_ZN44Hook_BeatmapCallbacksController_ManualUpdate44hook_BeatmapCallbacksController_ManualUpdateEPN15GlobalNamespace26BeatmapCallbacksControllerEf +0x2bc)
+  #15 fp 0x734f7108b0  libchroma.so +0x2e88b0
+  #16 fp 0x7516ffedd4  libil2cpp.so +0x3ba5dd4
+  #17 fp 0x751561378c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f0a9__Credits_-_Sonoluminn__Fatalution_/4f0a9__Credits_-_Sonoluminn__Fatalution__47e8422528415433.vivify'
+  Vivify material: context=bundle-load asset=assets/arrow material.mat material='Arrow Material' shader='Hidden/Locked/.poiyomi/Poiyomi Toon/0712f467dba7852459c2469c4c37ec71' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/chromatic abberation.mat material='Chromatic Abberation' shader='Custom/Chromatic Aberation' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/outline material.mat material='Outline Material' shader='Hidden/Locked/.poiyomi/Poiyomi Toon/633fa613484300848ab5ef2b3d2eed8c' supported=true internalError=false
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f0a9__Credits_-_Sonoluminn__Fatalution_/4f0a9__Credits_-_Sonoluminn__Fatalution__47e8422528415433.vivify' grabs _MPSGrab
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f0a9__Credits_-_Sonoluminn__Fatalution_/4f0a9__Credits_-_Sonoluminn__Fatalution__47e8422528415433.vivify' -> not needed
+  Vivify: the Replay mod's button is clickable again now that the map is ready
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.
+  Vivify saber chain saberNode: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Lo
+  Vivify saber chain initParent: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- L
+  Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(-0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=
+  Vivify saber chain saberNode: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+  Vivify saber chain initParent: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <-
+  Vivify main camera: name='MainCamera' cullingMask=0x3819fd37 stereoMode=3 multipassSetting=false pos=(-0.00,1.46,0.25) fwd=(-0.15,-0.16,0.98)
+  Vivify main camera cullingMask is now 0x3819fd37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=6
+  Vivify PrepareBeatmap: v2=false customEvents=3 triggerTime=0 beatmapAD=true
+  Vivify bundle preloaded, rebuilding asset caches: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f0a9__Credits_-_Sonoluminn__Fatalution_/4f0a9__Credits_-_Sonoluminn__Fatalution__47e8422528415433.vivify'
+  Vivify material: context=bundle-load asset=assets/arrow material.mat material='Arrow Material' shader='Hidden/Locked/.poiyomi/Poiyomi Toon/0712f467dba7852459c2469c4c37ec71' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/chromatic abberation.mat material='Chromatic Abberation' shader='Custom/Chromatic Aberation' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/outline material.mat material='Outline Material' shader='Hidden/Locked/.poiyomi/Poiyomi Toon/633fa613484300848ab5ef2b3d2eed8c' supported=true internalError=false
+  Vivify texture decode: scanned 7 material(s), replaced 0 unsupported texture reference(s) in 0ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify: maps may turn realtime reflection probes on (full quality)
+  Vivify: 'Map Realtime Shadows' is on; the game's shadow quality is left as it is
+  Vivify preload prefab: asset='assets/credits_tmp.prefab' id='Credits' instance=true
+  Vivify PreloadInstantiatePrefabs: 1 prefab event(s) preloaded
+  Vivify catch-up event: type='Blit' time=0
+  Vivify material: context=Blit asset=assets/chromatic abberation.mat material='Chromatic Abberation' shader='Custom/Chromatic Aberation' supported=true internalError=false
+  Vivify Blit event: time=0 asset='assets/chromatic abberation.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=1000000000
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/credits_tmp.prefab' id='Credits' alreadyLive=false
+  Vivify InstantiatePrefab: GPU instancing off on 1 particle system(s) of 'assets/credits_tmp.prefab'
+  Vivify InstantiatePrefab spawned: id='Credits' asset='assets/credits_tmp.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/creditsnote.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/creditsnotecut.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up: replayed 3 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=6 livePrefabs=1 preloadedPrefabs=1
+=== end ===
+
+=== Vivify 0.15.48 native crash at 1795393541 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x760940c908
+thread 4015 'UnityMain'
+pc 0x76951366fc  lr 0x739679299c  sp 0x757a655b20  fp 0x757a655ee0
+backtrace:
+  #00 pc 0x76951366fc  libc.so +0xc76fc
+  #01 lr 0x739679299c  libtracks.so +0x15799c
+  #02 fp 0x73967867ac  libtracks.so +0x14b7ac (_Z43InstallBeatmapObjectCallbackControllerHooksv +0x140)
+  #03 fp 0x7396790514  libtracks.so +0x155514 (late_load +0x134)
+  #04 fp 0x7585fefb9c  libsl2.so +0x543b9c
+  #05 fp 0x750c131fb4  libunity.so +0xab1fb4
+  #06 fp 0x76984d06c3
+  #07 fp 0x757a656f40
+last Vivify log lines (oldest first):
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/arrow material.mat material='Arrow Material' shader='Hidden/Locked/.poiyomi/Poiyomi Toon/0712f467dba7852459c2469c4c37ec71' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/chromatic abberation.mat material='Chromatic Abberation' shader='Custom/Chromatic Aberation' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/outline material.mat material='Outline Material' shader='Hidden/Locked/.poiyomi/Poiyomi Toon/633fa613484300848ab5ef2b3d2eed8c' supported=true internalError=false
+  Vivify crash report:   Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f0a9__Credits_-_Sonoluminn__Fatalution_/4f0a9__Credits_-_Sonoluminn__Fatalution__47e8422528415433.vivify' grabs _MPSGrab
+  Vivify crash report:   Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f0a9__Credits_-_Sonoluminn__Fatalution_/4f0a9__Credits_-_Sonoluminn__Fatalution__47e8422528415433.vivify' -> not needed
+  Vivify crash report:   Vivify: the Replay mod's button is clickable again now that the map is ready
+  Vivify crash report:   Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify crash report:   Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w
+  Vivify crash report:   Vivify saber chain saberNode: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=
+  Vivify crash report:   Vivify saber chain initParent: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l
+  Vivify crash report:   Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(-0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCor
+  Vivify crash report:   Vivify saber chain saberNode: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) 
+  Vivify crash report:   Vivify saber chain initParent: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00)
+  Vivify crash report:   Vivify main camera: name='MainCamera' cullingMask=0x3819fd37 stereoMode=3 multipassSetting=false pos=(-0.00,1.46,0.25) fwd=(-0.15,-0.16,0.98)
+  Vivify crash report:   Vivify main camera cullingMask is now 0x3819fd37
+  Vivify crash report:   Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=6
+  Vivify crash report:   Vivify PrepareBeatmap: v2=false customEvents=3 triggerTime=0 beatmapAD=true
+  Vivify crash report:   Vivify bundle preloaded, rebuilding asset caches: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f0a9__Credits_-_Sonoluminn__Fatalution_/4f0a9__Credits_-_Sonoluminn__Fatalution__47e84225284154
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/arrow material.mat material='Arrow Material' shader='Hidden/Locked/.poiyomi/Poiyomi Toon/0712f467dba7852459c2469c4c37ec71' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/chromatic abberation.mat material='Chromatic Abberation' shader='Custom/Chromatic Aberation' supported=true internalError=false
+  Vivify crash report:   Vivify material: context=bundle-load asset=assets/outline material.mat material='Outline Material' shader='Hidden/Locked/.poiyomi/Poiyomi Toon/633fa613484300848ab5ef2b3d2eed8c' supported=true internalError=false
+  Vivify crash report:   Vivify texture decode: scanned 7 material(s), replaced 0 unsupported texture reference(s) in 0ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify crash report:   Vivify: maps may turn realtime reflection probes on (full quality)
+  Vivify crash report:   Vivify: 'Map Realtime Shadows' is on; the game's shadow quality is left as it is
+  Vivify crash report:   Vivify preload prefab: asset='assets/credits_tmp.prefab' id='Credits' instance=true
+  Vivify crash report:   Vivify PreloadInstantiatePrefabs: 1 prefab event(s) preloaded
+  Vivify crash report:   Vivify catch-up event: type='Blit' time=0
+  Vivify crash report:   Vivify material: context=Blit asset=assets/chromatic abberation.mat material='Chromatic Abberation' shader='Custom/Chromatic Aberation' supported=true internalError=false
+  Vivify crash report:   Vivify Blit event: time=0 asset='assets/chromatic abberation.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=1000000000
+  Vivify crash report:   Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify crash report:   Vivify InstantiatePrefab: asset='assets/credits_tmp.prefab' id='Credits' alreadyLive=false
+  Vivify crash report:   Vivify InstantiatePrefab: GPU instancing off on 1 particle system(s) of 'assets/credits_tmp.prefab'
+  Vivify crash report:   Vivify InstantiatePrefab spawned: id='Credits' asset='assets/credits_tmp.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify crash report:   Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify crash report:   Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/creditsnote.prefab' tracks=1 additive=false saberType=-
+  Vivify crash report:   Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/creditsnotecut.prefab' tracks=1 additive=false saberType=-
+  Vivify crash report:   Vivify catch-up: replayed 3 event(s) up to time=0
+  Vivify crash report:   Vivify PrepareBeatmap done: assets=6 livePrefabs=1 preloadedPrefabs=1
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
+=== Vivify 0.15.48 native crash at 1795393551 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x76141d0fa0
+thread 4275 'UnityMain'
+pc 0x7695136714  lr 0x7330650230  sp 0x7515bf8750  fp 0x7515bf8b10
+backtrace:
+  #00 pc 0x7695136714  libc.so +0xc7714
+  #01 lr 0x7330650230  libreplay.so +0x39a230
+  #02 fp 0x7330650630  libreplay.so +0x39a630
+  #03 fp 0x73305e89bc  libreplay.so +0x3329bc (_ZN7Hooking13__InstallHookI33Hook_GameEnergyCounter_LateUpdateKN5Paper18ConstLoggerContextILm7EEELb1EEEvRT0_Pv +0xfc)
+  #04 fp 0x73305f9994  libreplay.so +0x343994 (late_load +0xf4)
+  #05 fp 0x758420cb9c  libsl2.so +0x543b9c
+  #06 fp 0x75194bffb4  libunity.so +0xab1fb4
+  #07 fp 0x76984d06c3
+  #08 fp 0x7515bf9f40
+last Vivify log lines (oldest first):
+  Installing hook: GameNoteController_Init to offset: 0x75141a81d0
+  Installing hook: BombNoteController_Init to offset: 0x75141a52d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x75141a6668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7514248bb8
+  Installing hook: NoteDebris_Init to offset: 0x75141ab2e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x751473f968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x751409d018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7514742e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x75147429f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x7514743bb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7514743f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x75147437f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x75141f237c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x75141f258c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x75141f2658
+  Installing hook: VRCenterAdjust_Update to offset: 0x75141f2560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x75141f23e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x75141f24a4
+  Installing hook: PauseController_Pause to offset: 0x75142647ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x751426ec54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x751426f734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x751426f094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x751426ed88
+  Installing hook: GamePause_Resume to offset: 0x751426a178
+  Installing hook: Recorder_InstallBindings to offset: 0x75142b3294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x75142a78b8
+  Installing hook: Recorder_SpawnNote to offset: 0x751419e928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x751419ddec
+  Installing hook: Recorder_NoteWasCut to offset: 0x751419fde4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x75142ad44c
+  Installing hook: Recorder_ScoreStart to offset: 0x75142ad038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7512d70db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7512d71690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x75141a0ae0
+  Installing hook: Recorder_ShowPause to offset: 0x751426ec54
+  Installing hook: Recorder_Resume to offset: 0x751426f76c
+  Installing hook: Recorder_Finish to offset: 0x75141fe1dc
+  Vivify: loaded mods (57): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMapLoader.so 0.0.0, FakeId 0.1.9, BSML 0.4.55, FasterScroll 1.17.0, NoPromo 0.1.13, anytext 1.0.1, bstheater 0.1.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.
+  Vivify Send Logs: this build has no log relay address
+=== end ===
+
