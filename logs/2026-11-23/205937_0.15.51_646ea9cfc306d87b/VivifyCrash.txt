@@ -1,0 +1,57 @@
+=== Vivify 0.15.51 native crash at 1795467566 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x65006e004f0032
+thread 9955 'UnityMain'
+pc 0x73337133dc  lr 0x73337960f8  sp 0x757aa474a0  fp 0x757aa48580
+backtrace:
+  #00 pc 0x73337133dc  libhitscorevisualizer.so +0xef3dc (_Z5JudgePN15GlobalNamespace14CutScoreBufferEPNS_17FlyingScoreEffectERKNS_11NoteCutInfoE +0x50)
+  #01 lr 0x73337960f8  libhitscorevisualizer.so +0x1720f8 (_ZN58Hook_CutScoreBuffer_HandleSaberSwingRatingCounterDidChange58hook_CutScoreBuffer_HandleSaberSwingRatingCounterDidChangeEPN15GlobalNamespace14CutScoreBufferEPNS0_24ISaberSwingRatingCounterEf +0xb8)
+  #02 fp 0x73337a6ac8  libhitscorevisualizer.so +0x182ac8
+  #03 fp 0x74fab33fe0  libil2cpp.so +0x26b2fe0
+  #04 fp 0x73460cedc8  libbl.so +0x699dc8 (_ZN14ReplayRecorder24Hook_ProcessNewSwingData24hook_ProcessNewSwingDataEPN15GlobalNamespace23SaberSwingRatingCounterENS1_24BladeMovementDataElementES4_b +0x7c)
+  #05 fp 0x73460e2788  libbl.so +0x6ad788
+  #06 fp 0x732ef15fec  libnoodleextensions.so +0x295fec (_ZN43Hook_SaberSwingRatingCounter_ProcessNewData43hook_SaberSwingRatingCounter_ProcessNewDataEPN15GlobalNamespace23SaberSwingRatingCounterENS0_24BladeMovementDataElementES3_b +0x214)
+  #07 fp 0x732ef159a8  libnoodleextensions.so +0x2959a8
+  #08 fp 0x74fab328dc  libil2cpp.so +0x26b18dc
+last Vivify log lines (oldest first):
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/32693 (The Phoenix - Bytrius)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3ba6a (Friendly Fire - lemin)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3e706 (Don_t Stop - Spinvvy)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3e706 (Don_t Stop - Spinvvy)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=true
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)/bundleAndroid2021.vivify'
+  Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)/ExpertPlusLawless.dat' at condition 691
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)/bundleAndroid2021.vivify'
+  Vivify material: context=bundle-load asset=assets/mats/gimmicblue.mat material='GimmicBLUE' shader='Hidden/Locked/.poiyomi/Poiyomi Pro/a2d2fef539d7c784eb105f289e944e54' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/mats/gimmicred.mat material='GimmicRED' shader='Hidden/Locked/.poiyomi/Poiyomi Pro/a2d2fef539d7c784eb105f289e944e54' supported=true internalError=false
+  Vivify: the Replay mod's button is clickable again now that the map is ready
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)/bundleAndroid2021.vivify' -> not needed
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=25
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=true
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle already preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)/bundleAndroid2021.vivify'
+  Vivify: the Replay mod's button is clickable again now that the map is ready
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/32693 (The Phoenix - Bytrius)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/32693 (The Phoenix - Bytrius)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51827 (DAMIDAMI - Cush & Madchase)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3819fd37 stereoMode=3 multipassSetting=false pos=(0.03,1.47,0.01) fwd=(0.37,-0.03,0.93)
+  Vivify main camera cullingMask is now 0x3819fd37
+=== end ===
+
