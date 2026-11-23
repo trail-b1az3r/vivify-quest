@@ -1,0 +1,58 @@
+=== Vivify 0.15.45 native crash at 1795469664 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x40
+thread 19683 'UnityMain'
+pc 0x78b06ea994  lr 0x78b06ea98c  sp 0x7a58f06ca0  fp 0x7a58f07010
+backtrace:
+  #00 pc 0x78b06ea994  libnoodleextensions.so +0x16a994 (_Z16SortAndOrderListPN14CustomJSONData17CustomBeatmapDataE +0x1a4)
+  #01 lr 0x78b06ea98c  libnoodleextensions.so +0x16a98c (_Z16SortAndOrderListPN14CustomJSONData17CustomBeatmapDataE +0x19c)
+  #02 fp 0x78b06ea620  libnoodleextensions.so +0x16a620
+  #03 fp 0x79fa223af4  libil2cpp.so +0x34d3af4
+  #04 fp 0x79fa223a68  libil2cpp.so +0x34d3a68
+  #05 fp 0x7aaa2a069c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #06 fp 0x7aaa2a0748  libgame.so +0x19748 (android_main +0x78)
+  #07 fp 0x7aaa2a8920  libgame.so +0x21920
+  #08 fp 0x7ba6196470  libc.so +0x138470
+  #09 fp 0x7ba612e334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify: loaded mods (40): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libflamingo.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook
+  aCore 2.0.6, MetaCoreBS 1.0.2, BSNightcoreQuest 0.3.0, SongCore 1.3.5, BetterSongSearch 2.3.2, ModifiersCoreQuest 0.1.0, Nya 1.2.0, RandomSongPicker 0.4.0, RecentlyPlayed 1.0.0, Vivify 0.15.45, PlaylistCore 1.7.3, BeatSync 0.1.6, bl 0.9.66
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify Send Logs: uploaded 3 file part(s), 8 KB (logs/2026-11-23/213041_0.15.45-lite_c17d3a58bd04cdc7 2efedc0; stored 3, deduplicated 0; 40091608 bytes saved cumulatively
+  )
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(-0.38,0.97,0.12) fwd=(-0.38,-0.23,0.90)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(-0.56,0.91,0.16) fwd=(-0.92,-0.26,0.30)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(-0.42,0.98,0.14) fwd=(-0.92,0.03,0.38)
+  Vivify: the game uses STEREO_MULTIVIEW_ON (138 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/153a2 (Again - labcraft59)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/37d1 (Lucky Star Opening - luckychance)' isCustom=true hasDetails=true
+  Vivify main camera: name='MainCamera' cullingMask=0x381bff37 stereoMode=3 multipassSetting=false pos=(0.08,1.61,-0.69) fwd=(0.39,0.13,-0.91)
+  Vivify main camera cullingMask is now 0x381bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.60,-0.23) fwd=(-0.30,0.12,0.95)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/40e10 (Medicine - The Pharmacists)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/40e10 (Medicine - The Pharmacists)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/40e10 (Medicine - The Pharmacists)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/40e10 (Medicine - The Pharmacists)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/40e10 (Medicine - The Pharmacists)' isCustom=true hasDetails=true
+  Vivify main camera: name='MainCamera' cullingMask=0x381bff37 stereoMode=3 multipassSetting=false pos=(0.05,1.64,0.03) fwd=(-0.01,0.07,1.00)
+  Vivify main camera cullingMask is now 0x381bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(-0.10,1.61,-0.04) fwd=(-0.29,0.11,0.95)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/2d79b (Wasurete Yaranai - Ken_Monogatari)' isCustom=true hasDetails=true
+  Vivify main camera: name='MainCamera' cullingMask=0x381bff37 stereoMode=3 multipassSetting=false pos=(-0.06,1.65,0.02) fwd=(0.03,0.16,0.99)
+  Vivify main camera cullingMask is now 0x381bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(0.05,1.61,0.02) fwd=(-0.14,0.05,0.99)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4630b (The Rumbling - JustSomeGuyOnline)' isCustom=true hasDetails=true
+=== end ===
+
