@@ -1,0 +1,60 @@
+=== Vivify 0.15.51 native crash at 1795393632 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27c80000248e
+thread 9383 'UnityMain'
+pc 0x769513d9d8  lr 0x769513d9a8  sp 0x757e262fe0  fp 0x757e263080
+backtrace:
+  #00 pc 0x769513d9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x769513d9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7524d51c64  libmetacore.so +0xcdc64
+  #03 fp 0x7513571114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x7513571264  libil2cpp.so +0x2226264
+  #05 fp 0x7584b33d48  libsl2.so +0x4fad48
+  #06 fp 0x7584b33ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x73514e221c  libbsl.so +0x13a21c
+  #08 fp 0x75135d00c8  libil2cpp.so +0x22850c8
+  #09 fp 0x75135d00c8  libil2cpp.so +0x22850c8
+  #10 fp 0x751350578c  libil2cpp.so +0x21ba78c
+  #11 fp 0x7514eb62a0  libil2cpp.so +0x3b6b2a0
+last Vivify log lines (oldest first):
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x75153cb968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x7514d29018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x75153cee78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x75153ce9f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x75153cfbb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x75153cff2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x75153cf7f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x7514e7e37c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x7514e7e58c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7514e7e658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7514e7e560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7514e7e3e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7514e7e4a4
+  Installing hook: PauseController_Pause to offset: 0x7514ef07ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7514efac54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7514efb734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7514efb094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7514efad88
+  Installing hook: GamePause_Resume to offset: 0x7514ef6178
+  Installing hook: Recorder_InstallBindings to offset: 0x7514f3f294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x7514f338b8
+  Installing hook: Recorder_SpawnNote to offset: 0x7514e2a928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x7514e29dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x7514e2bde4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7514f3944c
+  Installing hook: Recorder_ScoreStart to offset: 0x7514f39038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x75139fcdb4
+  Installing hook: Recorder_ProcessSwing to offset: 0x75139fd690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7514e2cae0
+  Installing hook: Recorder_ShowPause to offset: 0x7514efac54
+  Installing hook: Recorder_Resume to offset: 0x7514efb76c
+  Installing hook: Recorder_Finish to offset: 0x7514e8a1dc
+  Vivify: loaded mods (57): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMapLoader.so 0.0.0, FakeId 0.1.9, BSML 0.4.55, FasterScroll 1.17.0, NoPromo 0.1.13, anytext 1.0.1, bstheater 0.1.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.07,1.44,-0.34) fwd=(-0.36,-0.43,0.83)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.11,1.47,-0.32) fwd=(-0.30,-0.13,0.94)
+  Vivify Send Logs: uploaded 6 file part(s), 1441 KB (logs/2026-11-23/002649_0.15.51_bef9a47598b300ad 7aad415; stored 6, deduplicated 0; 31401304 bytes saved cumulatively
+  )
+=== end ===
+
