@@ -1,0 +1,52 @@
+=== Vivify 0.15.51 native crash at 1795474278 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x30e48
+thread 5611 'Thread-3'
+pc 0x7c80ff5740  lr 0x7c80ff56f8  sp 0x7b8ea40480  fp 0x7b8ea407b0
+backtrace:
+  #00 pc 0x7c80ff5740  libunity.so +0x13ee740
+  #01 lr 0x7c80ff56f8  libunity.so +0x13ee6f8
+  #02 fp 0x7c811db9f4  libunity.so +0x15d49f4
+  #03 fp 0x7e11b00334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/545b4 (The Storm - slabs37)/bundleAndroid2021.vivify' -> needed by Custom/ConeFog, Custom/Fog
+  Vivify: '545b4 (The Storm - slabs37)' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+  Vivify Send Logs: uploaded 3 file part(s), 65 KB (logs/2026-11-23/225106_0.15.51_20a080d33d4055f6 1095ea8; stored 3, deduplicated 0; 40091610 bytes saved cumulatively
+  )
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify saber chain modelNode(smc): BasicSaberModel(Clone)[w=(0.22,0.18,0.02) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.22,0.18,0.02) l=(0.02,-0.02,0.02)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(
+  Vivify saber chain saberNode: RightSaber[w=(0.22,0.18,0.02) l=(0.02,-0.02,0.02)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- L
+  Vivify saber chain initParent: RightSaber[w=(0.22,0.18,0.02) l=(0.02,-0.02,0.02)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+  Vivify saber chain modelNode(smc): BasicSaberModel(Clone)[w=(-0.22,0.18,0.02) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.22,0.18,0.02) l=(-0.02,-0.02,0.02)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) 
+  Vivify saber chain saberNode: LeftSaber[w=(-0.22,0.18,0.02) l=(-0.02,-0.02,0.02)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <-
+  Vivify saber chain initParent: LeftSaber[w=(-0.22,0.18,0.02) l=(-0.02,-0.02,0.02)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.01,1.63,0.02) fwd=(0.09,-0.23,0.97)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=4
+  Vivify PrepareBeatmap: v2=false customEvents=5 triggerTime=0 beatmapAD=true
+  Vivify bundle preloaded, rebuilding asset caches: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/545b4 (The Storm - slabs37)/bundleAndroid2021.vivify'
+  Vivify material: context=bundle-load asset=assets/storm/prefabs/acc.mat material='Acc' shader='Custom/RelativeScore' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/storm/prefabs/combo.mat material='Combo' shader='Custom/Combo' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/storm/prefabs/health.mat material='Health' shader='Custom/HealthBar' supported=true internalError=false
+  Vivify texture decode: scanned 35 material(s), replaced 0 unsupported texture reference(s) in 1ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify material 'Combo': '_Length' is an int in shader 'Custom/Combo'; set as integer 4
+  Vivify material 'Combo': '_Number' is an int in shader 'Custom/Combo'; set as integer 1234
+  Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+  Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+  Vivify preload prefab: asset='assets/storm/prefabs/orchestra.prefab' id='prefab_orchestra_1' instance=true
+  Vivify PreloadInstantiatePrefabs: 1 prefab event(s) preloaded
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/storm/prefabs/orchestra.prefab' id='prefab_orchestra_1' alreadyLive=false
+  Vivify reflection probe 'Reflection Probe' reduced: 128 px -> 128 px, no HDR, refreshed once a second
+  Vivify: watching cameras (reflection probes, the map's HUD)
+  Vivify InstantiatePrefab spawned: id='prefab_orchestra_1' asset='assets/storm/prefabs/orchestra.prefab' tracks=1 animators=11 offscreenCulled=0
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_softParticles'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_softParticles'
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 5 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=4 livePrefabs=1 preloadedPrefabs=1
+=== end ===
+
