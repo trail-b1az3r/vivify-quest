@@ -1,0 +1,65 @@
+=== Vivify 0.15.45 native crash at 1795341511 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x2010
+thread 6294 'games.beatsaber'
+pc 0x76e6df4b10  lr 0x757bc74cf8  sp 0x7ff79a4bd0  fp 0x7ff79a4c00
+backtrace:
+  #00 pc 0x76e6df4b10  libil2cpp.so +0x34e6b10
+  #01 lr 0x757bc74cf8  libVivify.so +0x264cf8
+  #02 fp 0x757bc6a288  libVivify.so +0x25a288
+  #03 fp 0x785f171d74  libc.so +0x13bd74 (__cxa_finalize +0x94)
+  #04 fp 0x7880a7d90c
+  #05 fp 0x7880a65df8
+  #06 fp 0x7880a67b78
+  #07 fp 0x7880a61ff4
+  #08 fp 0x787804c0cc  libdl.so +0x10cc (dlclose +0xc)
+  #09 fp 0x7756df7a80  libsl2.so +0x521a80
+  #10 fp 0x7756e1effc  libsl2.so +0x548ffc
+  #11 fp 0x7756e1ac24  libsl2.so +0x544c24 (modloader_unload +0xa4)
+  #12 fp 0x7759b910a4  libmain.so +0xe80a4
+  #13 fp 0x7759b8f804  libmain.so +0xe6804
+  #14 fp 0x77d6bb3444  libart.so +0x227444
+  #15 fp 0x775d526a38
+  #16 fp 0x6462
+last Vivify log lines (oldest first):
+  Vivify material: context=bundle-load asset=assets/shaders & materials/[7] finale/[7] terrain 1.mat material='[7] Terrain 1' shader='Custom/DissolveVRReady' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders & materials/[7] finale/[7] terrain 2.mat material='[7] Terrain 2' shader='Custom/DissolveVRReady' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders & materials/[7] finale/[7] wireframe.mat material='[7] Wireframe' shader='SPR/QuadFrame' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders & materials/a.mat material='a' shader='N5KK7/Grabpass :3' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders & materials/black skybox.mat material='Black Skybox' shader='Vivify/ExampleSkybox' supported=true internalError=false
+  Vivify shader asset: path='assets/shaders & materials/customcolor.shader' shader='Custom/CustomColor' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders & materials/dissolve.shader' shader='Custom/DissolveVRReady' supported=true subshaders=3
+  Vivify material: context=bundle-load asset=assets/shaders & materials/google chrome.mat material='Google Chrome' shader='Custom/GlitchEffect' supported=true internalError=false
+  Vivify shader asset: path='assets/shaders & materials/matrix-glitch-shader.shader' shader='Custom/MatrixRainShader' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders & materials/noise.shader' shader='Custom/Noise' supported=true subshaders=3
+  Vivify material: context=bundle-load asset=assets/shaders & materials/pixel esser.mat material='pixel esser' shader='Custom/PixelEater' supported=true internalError=false
+  Vivify shader asset: path='assets/shaders & materials/wireframe.shader' shader='SPR/QuadFrame' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders/n5kk7/firetrailvb/firetrailb.shader' shader='N5KK7/✨FireTrail B' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders/n5kk7/n5kk7 grabpass/n5_grabpassv3 ;3.shader' shader='N5KK7/Grabpass :3' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders/n5kk7/paralax hight map/paralax.shader' shader='N5KK7/Paralax/HightMap' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders/standard/bs_uber.shader' shader='BeatSaber/Uber' supported=true subshaders=2
+  Vivify shader asset: path='assets/vivifytemplate/examples/shaders/skybox/exampleskybox.shader' shader='Vivify/ExampleSkybox' supported=true subshaders=1
+  Vivify shaders: bundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/45051__Nhelv_-_Remec_/45051__Nhelv_-_Remec__f9d5eb8adee62516.vivify' converted=true total=12 runnable=12 noAndroidProgram=0 deviceRejected=0
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/45051__Nhelv_-_Remec_/45051__Nhelv_-_Remec__f9d5eb8adee62516.vivify' grabs _SceneColor, _Refraction
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/45051__Nhelv_-_Remec_/45051__Nhelv_-_Remec__f9d5eb8adee62516.vivify' -> needed by N5KK7/ParticleUltimate/Soft Particle Additive Ultimate, N5KK7/
+  Vivify Send Logs: uploaded 3 file part(s), 75 KB (logs/2026-11-22/095809_0.15.45_cf839fb96fe8b3ab ea16d04; stored 3, deduplicated 0; 25976688 bytes saved cumulatively
+  )
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=100
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45ade (_______Small Fish - Pixy)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45ade (_______Small Fish - Pixy)/bundleAndroid2021.vivify'
+  Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45ade (_______Small Fish - Pixy)/ExpertLawless.dat' at condition 691
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45ade (_______Small Fish - Pixy)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45ade (_______Small Fish - Pixy)/bundleAndroid2021.vivify'
+  Vivify material: context=bundle-load asset=assets/materials/kickwow.mat material='KickWow' shader='Custom/kickwow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/video_left.mat material='Video_Left' shader='Custom/VideoPlayer' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/video_mid.mat material='Video_Mid' shader='Custom/VideoPlayer' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/video_right.mat material='Video_Right' shader='Custom/VideoPlayer' supported=true internalError=false
+  Vivify shader asset: path='assets/shaders/kickwow.shader' shader='Custom/kickwow' supported=true subshaders=1
+  Vivify shader asset: path='assets/shaders/video player.shader' shader='Custom/VideoPlayer' supported=true subshaders=1
+  Vivify shaders: bundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45ade (_______Small Fish - Pixy)/bundleAndroid2021.vivify' converted=false total=2 runnable=2 noAndroidProgram=0 deviceRejected=0
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45ade (_______Small Fish - Pixy)/bundleAndroid2021.vivify' -> not needed
+=== end ===
+
