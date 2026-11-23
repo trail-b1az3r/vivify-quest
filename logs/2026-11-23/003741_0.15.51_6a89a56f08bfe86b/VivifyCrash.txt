@@ -1,0 +1,70 @@
+=== Vivify 0.15.51 native crash at 1795394225 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x28
+thread 21018 'UnityMain'
+pc 0x6cccfcfd90  lr 0x6cccfd3794  sp 0x6f058fbe90  fp 0x6f058fbeb0
+backtrace:
+  #00 pc 0x6cccfcfd90  libnoodleextensions.so +0x13dd90
+  #01 lr 0x6cccfd3794  libnoodleextensions.so +0x141794
+  #02 fp 0x6cccfd2744  libnoodleextensions.so +0x140744 (_ZN16NoodleExtensions26NoodleMovementDataProvider10InitObjectEPN15GlobalNamespace17BeatmapObjectDataE +0x140)
+  #03 fp 0x6ccd084f7c  libnoodleextensions.so +0x1f2f7c
+  #04 fp 0x6ccd085584  libnoodleextensions.so +0x1f3584
+  #05 fp 0x6e00da0b10  libil2cpp.so +0x5d21b10
+  #06 fp 0x6e00d90398  libil2cpp.so +0x5d11398
+  #07 fp 0x6dfe552a68  libil2cpp.so +0x34d3a68
+  #08 fp 0x6cce38811c  libcustom-json-data.so +0x17911c
+  #09 fp 0x6cce3871b4  libcustom-json-data.so +0x1781b4
+  #10 fp 0x6cce396444  libcustom-json-data.so +0x187444
+  #11 fp 0x6cc7fb032c  libtracks.so +0x15f32c
+  #12 fp 0x6ccf104b30  libchroma.so +0x227b30
+  #13 fp 0x6ccf13dafc  libchroma.so +0x260afc
+  #14 fp 0x6cccffc6e0  libnoodleextensions.so +0x16a6e0
+  #15 fp 0x6dfe552af4  libil2cpp.so +0x34d3af4
+  #16 fp 0x6dfe552a68  libil2cpp.so +0x34d3a68
+  #17 fp 0x6ea5f9969c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #18 fp 0x6ea5f99748  libgame.so +0x19748 (android_main +0x78)
+  #19 fp 0x6ea5fa1920  libgame.so +0x21920
+  #20 fp 0x6fbf958470  libc.so +0x138470
+  #21 fp 0x6fbf8f0334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=true
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bd60 (The Snail - Vainstains)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bd60 (The Snail - Vainstains)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=true
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bd60 (The Snail - Vainstains)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bd60 (The Snail - Vainstains)' isCustom=true hasDetails=true
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bd60 (The Snail - Vainstains)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=true
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bd60 (The Snail - Vainstains)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x381bfd37 stereoMode=3 multipassSetting=false pos=(-0.01,1.41,-0.03) fwd=(0.09,0.18,0.98)
+  Vivify main camera cullingMask is now 0x381bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(-0.04,1.42,-0.03) fwd=(-0.56,0.17,0.81)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bb17 (Huntress - slabs37)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=true
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bb17 (Huntress - slabs37)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bb17 (Huntress - slabs37)/bundleAndroid2021.vivify' grabs _GrabTexture
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bb17 (Huntress - slabs37)/bundleAndroid2021.vivify' -> needed by Custom/FogMB, Particles/Standard Surface
+  Vivify: '4bb17 (Huntress - slabs37)' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b981 (115 - RateGyro, Bytrius, Zarok)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=true
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b981 (115 - RateGyro, Bytrius, Zarok)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b981 (115 - RateGyro, Bytrius, Zarok)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=true
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b981 (115 - RateGyro, Bytrius, Zarok)/bundleAndroid2021.vivify' -> needed by BeatSaber/newParticle Alpha Blended
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x381bfd37 stereoMode=3 multipassSetting=false pos=(-0.01,1.42,-0.03) fwd=(0.10,0.23,0.97)
+  Vivify main camera cullingMask is now 0x381bfd37
+=== end ===
+
