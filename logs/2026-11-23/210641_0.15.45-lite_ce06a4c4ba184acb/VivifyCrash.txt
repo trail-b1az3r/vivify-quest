@@ -1,0 +1,58 @@
+=== Vivify 0.15.45 native crash at 1795385106 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x40
+thread 23479 'UnityMain'
+pc 0x79cc9ba994  lr 0x79cc9ba98c  sp 0x7b65738ca0  fp 0x7b65739010
+backtrace:
+  #00 pc 0x79cc9ba994  libnoodleextensions.so +0x16a994 (_Z16SortAndOrderListPN14CustomJSONData17CustomBeatmapDataE +0x1a4)
+  #01 lr 0x79cc9ba98c  libnoodleextensions.so +0x16a98c (_Z16SortAndOrderListPN14CustomJSONData17CustomBeatmapDataE +0x19c)
+  #02 fp 0x79cc9ba620  libnoodleextensions.so +0x16a620
+  #03 fp 0x7b0d00baf4  libil2cpp.so +0x34d3af4
+  #04 fp 0x7b0d00ba68  libil2cpp.so +0x34d3a68
+  #05 fp 0x7c0ea9a69c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #06 fp 0x7c0ea9a748  libgame.so +0x19748 (android_main +0x78)
+  #07 fp 0x7c0eaa2920  libgame.so +0x21920
+  #08 fp 0x7ccf379470  libc.so +0x138470
+  #09 fp 0x7ccf311334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ce54 (Comet Observatory - MadChase)/bundleAndroid2021.vivify'
+  Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ce54 (Comet Observatory - MadChase)/ExpertLawless.dat' at condition 691
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ce54 (Comet Observatory - MadChase)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ce54 (Comet Observatory - MadChase)/bundleAndroid2021.vivify'
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=2
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/475ea (The Devourer of Gods (Non-stop Mix) - SkilljoyJr, Rashed, Meme Doggo)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/475ea (The Devourer of Gods (Non-stop Mix) - SkilljoyJr, Rashed, Meme Doggo)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/475ea (The Devourer of Gods (Non-stop Mix) - SkilljoyJr, Rashed, Meme Doggo)/bundleAndroid2021.vivify'
+  Vivify material: context=bundle-load asset=assets/exports/chromatic abberation.mat material='Chromatic Abberation' shader='Custom/Chromatic Aberation' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/exports/pixelate.mat material='Pixelate' shader='Custom/Pixelate' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/exports/vignette.mat material='Vignette' shader='Custom/EnhancedVignetteShader' supported=true internalError=false
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=6
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/500c (Help me, ERINNNNNN!! (Flowering Night 2007 Ver.) - Kival Evan)' isCustom=true hasDetails=true
+  Vivify main camera: name='MainCamera' cullingMask=0x381bff37 stereoMode=3 multipassSetting=false pos=(-0.18,1.21,-0.22) fwd=(-0.07,-0.07,1.00)
+  Vivify main camera cullingMask is now 0x381bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(-0.13,1.21,-0.30) fwd=(0.00,-0.08,1.00)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/2d575 (Rockn Roll, Morning Light Falls on You - Comyute)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/2d575 (Rockn Roll, Morning Light Falls on You - Comyute)' isCustom=true hasDetails=true
+  Vivify main camera: name='MainCamera' cullingMask=0x381bff37 stereoMode=3 multipassSetting=false pos=(-0.12,1.17,-0.20) fwd=(-0.04,-0.23,0.97)
+  Vivify main camera cullingMask is now 0x381bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(-0.15,1.20,-0.30) fwd=(-0.15,0.20,0.97)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/2553a (H A L L S - Pigeondrivesbus)' isCustom=true hasDetails=true
+  Vivify main camera: name='MainCamera' cullingMask=0x381bff37 stereoMode=3 multipassSetting=false pos=(-0.11,1.22,-0.21) fwd=(-0.03,0.00,1.00)
+  Vivify main camera cullingMask is now 0x381bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x381aff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.23,-0.26) fwd=(-0.15,0.08,0.98)
+  Vivify main camera cullingMask is now 0x381aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/53fa7 (Pick It Up - Corbino5021)' isCustom=true hasDetails=true
+=== end ===
+
