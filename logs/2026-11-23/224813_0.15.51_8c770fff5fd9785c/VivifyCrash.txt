@@ -1,0 +1,108 @@
+=== Vivify 0.15.51 native crash at 1795474081 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x98e110b26c
+thread 31104 'Thread-3'
+pc 0x7c9080f7b4  lr 0x7c9080f7d8  sp 0x7b9f35b480  fp 0x7b9f35b7b0
+backtrace:
+  #00 pc 0x7c9080f7b4  libunity.so +0x13ee7b4
+  #01 lr 0x7c9080f7d8  libunity.so +0x13ee7d8
+  #02 fp 0x7c909f59f4  libunity.so +0x15d49f4
+  #03 fp 0x7e11b00334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify saber: the map's model was not being drawn (another saber mod hid or switched off the game's model); re-enabled 0 renderer(s), moved 1 object(s) onto the saber, visible now: true
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber replaced (type 0): models=1 trails=1 spawned=2 renderers=2 hiddenOriginals=5
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/wind/prefabs/handr.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/wind/mat/sabernotrail.mat' saberType=1 additive=false
+  Vivify saber: the map's model was not being drawn (another saber mod hid or switched off the game's model); re-enabled 0 renderer(s), moved 1 object(s) onto the saber, visible now: true
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=2 hiddenOriginals=5
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/wind/prefabs/custom note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/wind/prefabs/custom note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/wind/prefabs/custom note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: ignoring the map's realtimeReflectionProbes; turn on 'Map Reflection Probes' to let maps enable them
+  Vivify SetRenderingSettings: ignoring the map's realtime shadow settings ('shadows' and the rest); turn on 'Map Realtime Shadows' to let maps enable them
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 7 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=12 livePrefabs=2 preloadedPrefabs=2
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify: this map has its own saber, so 'GameplayTricksManager' (ReeSabers::TricksEnvironmentManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'NoteHostPool' (ReeSabers::NoteHostPool) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'ReplayModDetector' (ReeSabers::ReplayModDetector) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'PauseHandlesManager' (ReeSabers::PauseHandlesManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'PauseLaserManager' (ReeSabers::PauseLaserManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'VanillaGameplaySceneManager' (ReeSabers::VanillaGameplaySceneManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'VanillaEffectsManager' (ReeSabers::VanillaEffectsManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'VanillaNotesManager' (ReeSabers::VanillaNotesManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'GameplayNotesManager' (ReeSabers::GameplayNotesManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'GameplaySabersManager' (ReeSabers::GameplaySabersManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'GameplayDriversManager' (ReeSabers::GameplayDriversManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'SecondCheckManager' (ReeSabers::SecondCheckManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'EnvironmentModsGate' (ReeSabers::EnvironmentModsGate) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'EnvironmentMapManager' (ReeSabers::EnvironmentMapManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'VersionCheckManager' (ReeSabers::VersionCheckManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'ReeInputManager' (ReeSabers::ReeInputManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'FramerateManager' (ReeSabers::FramerateManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'GCStorage' (ReeSabers::GCStorageBehavior) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+=== end ===
+
+=== Vivify 0.15.51 native crash at 1795474088 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7d7b2652b8
+thread 3031 'UnityMain'
+pc 0x7e11af76fc  lr 0x7ac2ec75f8  sp 0x7c77786aa0  fp 0x7c77786e60
+backtrace:
+  #00 pc 0x7e11af76fc  libc.so +0xc76fc
+  #01 lr 0x7ac2ec75f8  libscorepercentage.so +0x2065f8
+  #02 fp 0x7ac2ec79fc  libscorepercentage.so +0x2069fc
+  #03 fp 0x7ac2ec3c3c  libscorepercentage.so +0x202c3c
+  #04 fp 0x7ac2eb3c70  libscorepercentage.so +0x1f2c70 (late_load +0x230)
+  #05 fp 0x7ceeddbb9c  libsl2.so +0x543b9c
+  #06 fp 0x7c90adefb4  libunity.so +0xab1fb4
+  #07 fp 0x7e07a1c6c3
+last Vivify log lines (oldest first):
+  Installing hook: SaberModelController_Init to offset: 0x7c7b379928
+  Installing hook: GameNoteController_Init to offset: 0x7c7b2771d0
+  Installing hook: BombNoteController_Init to offset: 0x7c7b2742d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x7c7b275668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7c7b317bb8
+  Installing hook: NoteDebris_Init to offset: 0x7c7b27a2e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7c7b80e968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x7c7b16c018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7c7b811e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7c7b8119f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x7c7b812bb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7c7b812f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7c7b8127f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x7c7b2c137c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x7c7b2c158c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7c7b2c1658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7c7b2c1560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7c7b2c13e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7c7b2c14a4
+  Installing hook: PauseController_Pause to offset: 0x7c7b3337ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7c7b33dc54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7c7b33e734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7c7b33e094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7c7b33dd88
+  Installing hook: GamePause_Resume to offset: 0x7c7b339178
+  Installing hook: Recorder_InstallBindings to offset: 0x7c7b382294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x7c7b3768b8
+  Installing hook: Recorder_SpawnNote to offset: 0x7c7b26d928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x7c7b26cdec
+  Installing hook: Recorder_NoteWasCut to offset: 0x7c7b26ede4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7c7b37c44c
+  Installing hook: Recorder_ScoreStart to offset: 0x7c7b37c038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7c79e3fdb4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7c79e40690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7c7b26fae0
+  Installing hook: Recorder_ShowPause to offset: 0x7c7b33dc54
+  Installing hook: Recorder_Resume to offset: 0x7c7b33e76c
+  Installing hook: Recorder_Finish to offset: 0x7c7b2cd1dc
+  Vivify: loaded mods (46): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0
+  Core 1.5.5, bl 0.9.666, BetterSongList 1.0.8, CameraUtils 1.1.11, ChatPlexSDK-BS 6.4.5, Chroma 2.10.3, HitScoreVisualizer 3.0.1, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libpartic
+=== end ===
+
