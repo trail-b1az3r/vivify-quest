@@ -1,0 +1,62 @@
+=== Vivify 0.15.44 native crash at 1795394200 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27da00001ab1
+thread 6931 'UnityMain'
+pc 0x72807519d8  lr 0x72807519a8  sp 0x7156243210  fp 0x71562432b0
+backtrace:
+  #00 pc 0x72807519d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x72807519a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7105d31c64  libmetacore.so +0xcdc64
+  #03 fp 0x715f2fc55c  libsl2.so +0x4fb55c
+  #04 fp 0x715f2fbe74  libsl2.so +0x4fae74
+  #05 fp 0x715f2fbd48  libsl2.so +0x4fad48
+  #06 fp 0x715f2fbce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x6f23f8dcd4  libhitscorevisualizer.so +0x182cd4
+  #08 fp 0x70ea7fdfe0  libil2cpp.so +0x26b2fe0
+  #09 fp 0x6f2f29ddc8  libbl.so +0x699dc8 (_ZN14ReplayRecorder24Hook_ProcessNewSwingData24hook_ProcessNewSwingDataEPN15GlobalNamespace23SaberSwingRatingCounterENS1_24BladeMovementDataElementES4_b +0x7c)
+  #10 fp 0x6f2f2b1788  libbl.so +0x6ad788
+  #11 fp 0x6f21f31fec  libnoodleextensions.so +0x295fec (_ZN43Hook_SaberSwingRatingCounter_ProcessNewData43hook_SaberSwingRatingCounter_ProcessNewDataEPN15GlobalNamespace23SaberSwingRatingCounterENS0_24BladeMovementDataElementES3_b +0x214)
+  #12 fp 0x6f21f319a8  libnoodleextensions.so +0x2959a8
+  #13 fp 0x70ea7fc8dc  libil2cpp.so +0x26b18dc
+last Vivify log lines (oldest first):
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.04,1.14,0.21) fwd=(-0.08,-0.00,1.00)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify Send Logs: uploaded 3 file part(s), 40 KB (logs/2026-11-23/003524_0.15.44_3c17e6de00437a4a 0fd01ad; stored 3, deduplicated 0; 31401304 bytes saved cumulatively
+  )
+  Vivify Send Logs: relay health check succeeded
+  Vivify: the game uses STEREO_MULTIVIEW_ON (61 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ed84 (RUDE! - Jonas)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5051d (Execution Clap - Najoko)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4640065298e79dc3d61a15695aeb7fed95b42b30' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/37a8c (anybody can find love (except you.) - PogU)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4d1f6 (BAKENOKAWA - LISA REBECCA)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/1a209 (Fallen Symphony - abcbadq & Alice)' isCustom=true hasDetails=true
+  Vivify Send Logs: uploaded 5 file part(s), 1343 KB (logs/2026-11-23/003547_0.15.44_f7c4d7a731c66f0b 6938945; stored 5, deduplicated 0; 31402978 bytes saved cumulatively
+  )
+  Vivify Send Logs: uploaded 1 file part(s), 1536 KB (logs/2026-11-23/003557_0.15.44_3386d41d25d2712f b284fc9; stored 1, deduplicated 0; 31402978 bytes saved cumulatively
+  )
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.07,1.49,0.00) fwd=(-0.01,-0.07,1.00)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify Send Logs: uploaded 1 file part(s), 1536 KB (logs/2026-11-23/003605_0.15.44_de2f0301eff278a8 91bfd25; stored 1, deduplicated 0; 31402978 bytes saved cumulatively
+  )
+  Vivify Send Logs: uploaded 1 file part(s), 1536 KB (logs/2026-11-23/003612_0.15.44_b65ec85b6705dbde 645fd42; stored 1, deduplicated 0; 31402978 bytes saved cumulatively
+  )
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.01,1.50,-0.00) fwd=(-0.00,0.06,1.00)
+  Vivify Send Logs: uploaded 1 file part(s), 1536 KB (logs/2026-11-23/003618_0.15.44_029de5c0bfac79b2 d7aa51f; stored 1, deduplicated 0; 31402978 bytes saved cumulatively
+  )
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.20,1.49,-0.04) fwd=(-0.12,-0.17,0.98)
+  Vivify Send Logs: uploaded 1 file part(s), 704 KB (logs/2026-11-23/003630_0.15.44_7a79e7797a28f4b3 d997d33; stored 1, deduplicated 0; 31402978 bytes saved cumulatively
+  )
+  Vivify Send Logs: reached the 8 MB upload limit; use the menu button for the larger manual upload
+=== end ===
+
