@@ -1,0 +1,372 @@
+=== Vivify 0.15.45 native crash at 1795231834 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0xa4
+thread 28693 'Thread-386'
+pc 0x763f82d740  lr 0x763f82d6f8  sp 0x7551363480  fp 0x75513637b0
+backtrace:
+  #00 pc 0x763f82d740  libunity.so +0x13ee740
+  #01 lr 0x763f82d6f8  libunity.so +0x13ee6f8
+  #02 fp 0x763fa139f4  libunity.so +0x15d49f4
+  #03 fp 0x77b44f8334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4d66f (Can You Hear The Music - OozVR)/bundleAndroid2021.vivify' grabs _BackgroundTex
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4d66f (Can You Hear The Music - OozVR)/bundleAndroid2021.vivify' -> not needed
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4d66f (Can You Hear The Music - OozVR)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3819ff37 stereoMode=3 multipassSetting=false pos=(-0.09,1.45,-0.13) fwd=(0.02,-0.09,1.00)
+  Vivify main camera cullingMask is now 0x3819ff37
+  Vivify texture decode: scanned 17 material(s), replaced 0 unsupported texture reference(s) in 0ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify material 'Dusty Void': '_MaxSteps' is an int in shader 'Custom/DustyVoid'; set as integer 110
+  Vivify material 'Hole2': '_AccretionDiskDoppler' is an int in shader 'Unlit/BlackHole'; set as integer 0
+  Vivify material 'Hole2': '_HasAccretionDisk' is an int in shader 'Unlit/BlackHole'; set as integer 1
+  Vivify material 'Hole2': '_MarchingSteps' is an int in shader 'Unlit/BlackHole'; set as integer 12
+  Vivify material 'Hole2': '_RenderBlackHole' is an int in shader 'Unlit/BlackHole'; set as integer 1
+  Vivify material 'Hole': '_AccretionDiskDoppler' is an int in shader 'Unlit/BlackHole'; set as integer 0
+  Vivify material 'Hole': '_HasAccretionDisk' is an int in shader 'Unlit/BlackHole'; set as integer 1
+  Vivify material 'Hole': '_MarchingSteps' is an int in shader 'Unlit/BlackHole'; set as integer 12
+  Vivify material 'Hole': '_RenderBlackHole' is an int in shader 'Unlit/BlackHole'; set as integer 1
+  Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+  Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+  Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify visual check at 5s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: 1 light(s) on, 1 with shadows: 'Sun(Clone)' type=1 intensity=2.00 shadows=2; ambient mode=3 intensity=1.00 sun='Sun(Clone)'
+  Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check at 5s: 42 active renderer(s), 0 with no runnable shader; most drawn: BeatSaber/AlyngsFiretrail x14, Custom/CustomParticles x13, BeatSaber/AlyngsUnlit x8, BeatSaber/Unlit Glow x4, Custom/BloomSkyboxQuad x1, Custom/NoteHD
+  Vivify grab texture '_BackgroundTex' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+  Vivify grab texture '_SceneColor' at 5s: nothing bound
+  Vivify visual check: main camera cullingMask=0x3819ff37 depthTextureMode=0 clearFlags=2
+  Vivify visual check at 30s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check at 30s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check at 30s: 43 active renderer(s), 0 with no runnable shader; most drawn: BeatSaber/AlyngsFiretrail x14, Custom/CustomParticles x13, BeatSaber/AlyngsUnlit x8, BeatSaber/Unlit Glow x4, Custom/BloomSkyboxQuad x1, Custom/NoteH
+  Vivify grab texture '_BackgroundTex' at 30s: nothing bound
+  Vivify grab texture '_GrabTexture1' at 30s: nothing bound
+  Vivify grab texture '_SceneColor' at 30s: nothing bound
+=== end ===
+
+=== Vivify 0.15.45 native crash at 1795231847 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x773ae63308
+thread 4256 'UnityMain'
+pc 0x77b44ef6fc  lr 0x74d5f4f0ec  sp 0x769c24fa10  fp 0x769c24fdd0
+backtrace:
+  #00 pc 0x77b44ef6fc  libc.so +0xc76fc
+  #01 lr 0x74d5f4f0ec  libMultiplayerCore.so +0x41d0ec
+  #02 fp 0x74d5e59f54  libMultiplayerCore.so +0x327f54
+  #03 fp 0x74d5f4e5f4  libMultiplayerCore.so +0x41c5f4 (late_load +0xce8)
+  #04 fp 0x769c9a0b9c  libsl2.so +0x543b9c
+  #05 fp 0x763ed18fb4  libunity.so +0xab1fb4
+  #06 fp 0x77b02bc6c3
+  #07 fp 0x769c250f40
+last Vivify log lines (oldest first):
+  Vivify crash report:   Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4d66f (Can You Hear The Music - OozVR)/bundleAndroid2021.vivify' -> not needed
+  Vivify crash report:   Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4d66f (Can You Hear The Music - OozVR)' isCustom=true hasDetails=true
+  Vivify crash report:   Vivify score submission: enabled for this Vivify map
+  Vivify crash report:   Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=fal
+  Vivify crash report:   Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify crash report:   Vivify: play button is enabled (no mod is blocking it)
+  Vivify crash report:   Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify crash report:   Vivify main camera: name='MainCamera' cullingMask=0x3819ff37 stereoMode=3 multipassSetting=false pos=(-0.09,1.45,-0.13) fwd=(0.02,-0.09,1.00)
+  Vivify crash report:   Vivify main camera cullingMask is now 0x3819ff37
+  Vivify crash report:   Vivify texture decode: scanned 17 material(s), replaced 0 unsupported texture reference(s) in 0ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify crash report:   Vivify material 'Dusty Void': '_MaxSteps' is an int in shader 'Custom/DustyVoid'; set as integer 110
+  Vivify crash report:   Vivify material 'Hole2': '_AccretionDiskDoppler' is an int in shader 'Unlit/BlackHole'; set as integer 0
+  Vivify crash report:   Vivify material 'Hole2': '_HasAccretionDisk' is an int in shader 'Unlit/BlackHole'; set as integer 1
+  Vivify crash report:   Vivify material 'Hole2': '_MarchingSteps' is an int in shader 'Unlit/BlackHole'; set as integer 12
+  Vivify crash report:   Vivify material 'Hole2': '_RenderBlackHole' is an int in shader 'Unlit/BlackHole'; set as integer 1
+  Vivify crash report:   Vivify material 'Hole': '_AccretionDiskDoppler' is an int in shader 'Unlit/BlackHole'; set as integer 0
+  Vivify crash report:   Vivify material 'Hole': '_HasAccretionDisk' is an int in shader 'Unlit/BlackHole'; set as integer 1
+  Vivify crash report:   Vivify material 'Hole': '_MarchingSteps' is an int in shader 'Unlit/BlackHole'; set as integer 12
+  Vivify crash report:   Vivify material 'Hole': '_RenderBlackHole' is an int in shader 'Unlit/BlackHole'; set as integer 1
+  Vivify crash report:   Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+  Vivify crash report:   Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+  Vivify crash report:   Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+  Vivify crash report:   Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify crash report:   Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify crash report:   Vivify visual check at 5s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify crash report:   Vivify visual check: 1 light(s) on, 1 with shadows: 'Sun(Clone)' type=1 intensity=2.00 shadows=2; ambient mode=3 intensity=1.00 sun='Sun(Clone)'
+  Vivify crash report:   Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify crash report:   Vivify visual check at 5s: 42 active renderer(s), 0 with no runnable shader; most drawn: BeatSaber/AlyngsFiretrail x14, Custom/CustomParticles x13, BeatSaber/AlyngsUnlit x8, BeatSaber/Unlit Glow x4, Custom/BloomSkybo
+  Vivify crash report:   Vivify grab texture '_BackgroundTex' at 5s: nothing bound
+  Vivify crash report:   Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+  Vivify crash report:   Vivify grab texture '_SceneColor' at 5s: nothing bound
+  Vivify crash report:   Vivify visual check: main camera cullingMask=0x3819ff37 depthTextureMode=0 clearFlags=2
+  Vivify crash report:   Vivify visual check at 30s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify crash report:   Vivify visual check at 30s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify crash report:   Vivify visual check at 30s: 43 active renderer(s), 0 with no runnable shader; most drawn: BeatSaber/AlyngsFiretrail x14, Custom/CustomParticles x13, BeatSaber/AlyngsUnlit x8, BeatSaber/Unlit Glow x4, Custom/BloomSkyb
+  Vivify crash report:   Vivify grab texture '_BackgroundTex' at 30s: nothing bound
+  Vivify crash report:   Vivify grab texture '_GrabTexture1' at 30s: nothing bound
+  Vivify crash report:   Vivify grab texture '_SceneColor' at 30s: nothing bound
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
+=== Vivify 0.15.45 native crash at 1795232193 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x5c
+thread 4607 'Thread-3'
+pc 0x76330077b4  lr 0x7633007768  sp 0x7540622480  fp 0x75406227b0
+backtrace:
+  #00 pc 0x76330077b4  libunity.so +0x13ee7b4
+  #01 lr 0x7633007768  libunity.so +0x13ee768
+  #02 fp 0x76331ed9f4  libunity.so +0x15d49f4
+  #03 fp 0x77b44f8334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify visual check: main camera cullingMask=0x381bff37 depthTextureMode=0 clearFlags=2
+  VRCenterAdjust.OnDisable skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify level end: level ended (quit or finished)
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3819ff37 stereoMode=3 multipassSetting=false pos=(0.09,0.93,-0.04) fwd=(-0.02,-0.08,1.00)
+  Vivify main camera cullingMask is now 0x3819ff37
+  Vivify texture decode: scanned 122 material(s), replaced 0 unsupported texture reference(s) in 2ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+  Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+  Vivify HUD: 18 object(s) of 'assets/player/ui/outerwildsui.prefab' on layer 17 drawn at 70% of their distance
+  Vivify prefab 'assets/player/ui/outerwildsui.prefab' has objects on headset-only layer(s) 0x00020000; the main camera will draw them, as the PC headset camera does
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify main camera: now draws layer(s) 0x00020000 for this map's headset-only objects
+  Vivify main camera cullingMask is now 0x381bff37
+  Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify Blit check: effect(s) 'Aeroluna/OverlayUITex', 'Chaim/Blink' -- 3+ colour(s) among 16 blocks going in, 3+ coming out (first rgb=(12,127,127)); screen 3360x3520 slices=2; _ScreenParams before the effects=(3360,3520)
+  Vivify Blit check: effect(s) 'Aeroluna/OverlayUITex' -- 3+ colour(s) among 16 blocks going in, 2 coming out (first rgb=(127,127,127)); screen 3360x3520 slices=2; _ScreenParams before the effects=(3360,3520)
+  Vivify Blit: the screen came out as 2 colour(s) across all 16 blocks; every screen effect is off for the rest of this level (Flat-Screen Effect Guard in settings)
+  Vivify visual check at 5s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+  Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check: mirror 'TrackMirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'TrackMirror' enabled=true active=true layer=4 material='GridFakeMirror' shader='Custom/SimpleLit' supported=true queue=1970 block: _Cutout=0.00 _Co
+  Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout
+  Vivify visual check: cameras that may render the mirror: 'CameraRight' stereo=false eye=0 target=texture mask=0xfffffb37; 'Camera' stereo=false eye=0 target=texture mask=0xfffffb37; 'Camera' stereo=false eye=0 target=texture mask=0x20000; 
+  Vivify visual check at 5s: 363 active renderer(s), 0 with no runnable shader; most drawn: Custom/Parametric3SliceSprite x106, Custom/OpaqueNeonLight x78, Custom/SimpleLit x54, Custom/TransparentNeonLight x28, Swifter/SimpleMaterialPointLig
+  Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture2' at 5s: render texture dimension=5 layers=2 3360x3520 msaa=1
+  Vivify grab texture '_GrabTextureWater' at 5s: nothing bound
+  Vivify grab texture '_SceneColor' at 5s: nothing bound
+  Vivify visual check: main camera cullingMask=0x381bff37 depthTextureMode=0 clearFlags=2
+=== end ===
+
+=== Vivify 0.15.45 native crash at 1795232253 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x1e008a4c94
+thread 11098 'Thread-3'
+pc 0x763da667b4  lr 0x763da66768  sp 0x754d8ab480  fp 0x754d8ab7b0
+backtrace:
+  #00 pc 0x763da667b4  libunity.so +0x13ee7b4
+  #01 lr 0x763da66768  libunity.so +0x13ee768
+  #02 fp 0x763dc4c9f4  libunity.so +0x15d49f4
+  #03 fp 0x77b44f8334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify depth copy: PC 2D material=true PC array-slice material=true native slice binding=true
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a24 (End Times - Chaimzy)/bundleAndroid2021.vivify' grabs _GrabTexture2
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a24 (End Times - Chaimzy)/bundleAndroid2021.vivify' -> not needed
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3819ff37 stereoMode=3 multipassSetting=false pos=(0.02,0.95,-0.02) fwd=(-0.08,0.02,1.00)
+  Vivify main camera cullingMask is now 0x3819ff37
+  Vivify graphics: api=OpenGLES3 (11) shaderLevel=50 (SM5.0) geometryShaderStagePossible=true gpu='Adreno (TM) 740'
+  Vivify Projector interface: managedType=false nativeGetMaterial=true nativeSetMaterial=true
+  Vivify texture decode: scanned 122 material(s), replaced 0 unsupported texture reference(s) in 2ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify material 'StarNova': '_GridSize' is an int in shader 'Swifter/AftershockParticle'; set as integer 4
+  Vivify crash recovery: this map did not end cleanly last time, so it plays in recovery mode: unused assets unloaded, textures at half resolution, effects at 50% or less. 'Forget Crash Recovery' in the advanced settings turns it off for eve
+  Vivify visual check: Crash recovery mode: textures at half resolution
+  Vivify: realtime reflection probes off for this level (crash recovery mode; the game had them off)
+  Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+  VRCenterAdjust.OnEnable skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify: watching cameras (reflection probes, the map's HUD)
+  Vivify HUD: 18 object(s) of 'assets/player/ui/outerwildsui.prefab' on layer 17 drawn at 70% of their distance
+  Vivify prefab 'assets/player/ui/outerwildsui.prefab' has objects on headset-only layer(s) 0x00020000; the main camera will draw them, as the PC headset camera does
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  VRCenterAdjust.Start skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify main camera: now draws layer(s) 0x00020000 for this map's headset-only objects
+  Vivify main camera cullingMask is now 0x381bff37
+  Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  VRCenterAdjust.Update skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify Blit: 'Aeroluna/OverlayUITex' leaves a texture out of its two-eye program in this map's Quest bundle; running its one-eye program once per eye
+  Vivify Blit check: effect(s) 'Aeroluna/OverlayUITex', 'Chaim/Blink' -- 3+ colour(s) among 16 blocks going in, 3+ coming out (first rgb=(0,0,0)); screen 3360x3520 slices=2; _ScreenParams before the effects=(3360,3520)
+  Vivify visual check at 5s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+  Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check: mirror 'TrackMirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'TrackMirror' enabled=true active=true layer=4 material='GridFakeMirror' shader='Custom/SimpleLit' supported=true queue=1970 block: _Cutout=0.00 _Co
+  Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout
+  Vivify visual check: cameras that may render the mirror: 'CameraRight' stereo=false eye=0 target=texture mask=0xfffffb37; 'Camera' stereo=false eye=0 target=texture mask=0xfffffb37; 'Camera' stereo=false eye=0 target=texture mask=0x20000; 
+  Vivify visual check at 5s: 362 active renderer(s), 0 with no runnable shader; most drawn: Custom/Parametric3SliceSprite x106, Custom/OpaqueNeonLight x78, Custom/SimpleLit x54, Custom/TransparentNeonLight x28, Swifter/SimpleMaterialPointLig
+  Vivify grab texture '_GrabTexture2' at 5s: render texture dimension=5 layers=2 3360x3520 msaa=1
+  Vivify visual check: main camera cullingMask=0x381bff37 depthTextureMode=0 clearFlags=2
+=== end ===
+
+=== Vivify 0.15.45 native crash at 1795402477 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x30e48
+thread 12307 'Thread-3'
+pc 0x763fe3c740  lr 0x763fe3c6f8  sp 0x7552e3f480  fp 0x7552e3f7b0
+backtrace:
+  #00 pc 0x763fe3c740  libunity.so +0x13ee740
+  #01 lr 0x763fe3c6f8  libunity.so +0x13ee6f8
+  #02 fp 0x76400229f4  libunity.so +0x15d49f4
+  #03 fp 0x77b44f8334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify material 'VidScreen': '_TotalFrames' is an int in shader 'Monitor/SpriteSheetScreen'; set as integer 50
+  Vivify: material 'WACOWater4' now uses the PC build of 'WACOMalt/WACOWater4'
+  Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+  Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify Blit check: effect(s) 'PostProcessing/FilmGrain' -- 3+ colour(s) among 16 blocks going in, 3+ coming out (first rgb=(127,127,127)); screen 3360x3520 slices=2; _ScreenParams before the effects=(3360,3520)
+  Vivify visual check at 5s: 2 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: a live note has 36 renderer(s):
+  Vivify visual check:   'NoteCube' enabled=true active=true layer=8 material='NoteHD' shader='Custom/NoteHD' supported=true queue=2004 block: _Cutout=0.42 _Color=(0.40,0.40,0.40,1.00)
+  Vivify visual check:   'NoteArrow' enabled=true active=false layer=8 material='NoteArrowHD' shader='Custom/GlowingInstancedHD' supported=true queue=2002 block: _Cutout=0.42 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'NoteArrowGlow' enabled=true active=false layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.40,0.40,0.40,0.58)
+  Vivify visual check:   'NoteCircleGlow' enabled=false active=false layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.40,0.40,0.40,0.58)
+  Vivify visual check:   'Arrow' enabled=true active=true layer=8 material='ArrowMat (Instance) (Instance)' shader='BeatSaber P/Complete (Fog)' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'Bomb' enabled=true active=false layer=8 material='Material.001 (Instance) (Instance)' shader='Standard' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'Cube' enabled=true active=true layer=8 material='BlockMat (Instance) (Instance)' shader='BeatSaber P/Complete (Fog)' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'Dot' enabled=true active=false layer=8 material='ArrowMat (Instance) (Instance)' shader='BeatSaber P/Complete (Fog)' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'HalfArrow' enabled=true active=false layer=8 material='No Name (Instance) (Instance)' shader='Standard' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'HalfCube' enabled=true active=false layer=8 material='Material (Instance) (Instance)' shader='Standard' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'SliceCube' enabled=true active=false layer=8 material='No Name (Instance) (Instance)' shader='Standard' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'SliceDot' enabled=true active=false layer=8 material='No Name (Instance) (Instance)' shader='Standard' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'Arrow' enabled=true active=false layer=8 material='ArrowMat (Instance) (Instance)' shader='BeatSaber P/Complete (Fog)' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'Bomb' enabled=true active=false layer=8 material='Material.001 (Instance) (Instance)' shader='Standard' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'Cube' enabled=true active=false layer=8 material='BlockMat (Instance) (Instance)' shader='BeatSaber P/Complete (Fog)' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'Dot' enabled=true active=false layer=8 material='ArrowMat (Instance) (Instance)' shader='BeatSaber P/Complete (Fog)' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check: 4 light(s) on, 0 with shadows: 'LightRight' type=2 intensity=1.00 shadows=0; 'LightLeft' type=2 intensity=1.00 shadows=0; 'LightFront' type=2 intensity=2.00 shadows=0; 'LightBottom' type=2 intensity=8.00 shadows=0; amb
+  Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout
+  Vivify visual check: cameras that may render the mirror: 'BurnMarksCamera' stereo=false eye=3 target=texture mask=0x80000000; 'MainCamera' stereo=true eye=3 target=screen mask=0x3819ff37
+  Vivify visual check at 5s: 93 active renderer(s), 2 with no runnable shader; most drawn: Custom/CustomParticles x21, BeatSaber/Unlit Glow x16, Abstract/Debris2 x16, Saber/SaberReflective x6, BeatSaber P/Complete (Fog) x4, Custom/NoteHD x3,
+  Vivify grab texture '_Base' at 5s: nothing bound
+  Vivify grab texture '_BlackHoleGrabTex' at 5s: nothing bound
+  Vivify grab texture '_EclipseGrabTex' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture' at 5s: nothing bound
+  Vivify visual check: main camera cullingMask=0x3819ff37 depthTextureMode=1 clearFlags=2
+  Vivify Blit check: effect(s) 'PostProcessing/BlackOut', 'PostProcessing/FilmGrain' -- 3+ colour(s) among 16 blocks going in, 2 coming out (first rgb=(127,127,127)); screen 3360x3520 slices=2; _ScreenParams before the effects=(3360,3520)
+  Vivify Blit: the screen came out as 2 colour(s) across all 16 blocks; every screen effect is off for the rest of this level (Flat-Screen Effect Guard in settings)
+=== end ===
+
+=== Vivify 0.15.45 native crash at 1795402488 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x772bef1d08
+thread 14985 'UnityMain'
+pc 0x77b44ef6fc  lr 0x74d66fc0ec  sp 0x765da92a10  fp 0x765da92dd0
+backtrace:
+  #00 pc 0x77b44ef6fc  libc.so +0xc76fc
+  #01 lr 0x74d66fc0ec  libMultiplayerCore.so +0x41d0ec
+  #02 fp 0x74d6606f54  libMultiplayerCore.so +0x327f54
+  #03 fp 0x74d66fb5f4  libMultiplayerCore.so +0x41c5f4 (late_load +0xce8)
+  #04 fp 0x769e5fcb9c  libsl2.so +0x543b9c
+  #05 fp 0x76420d2fb4  libunity.so +0xab1fb4
+  #06 fp 0x77b02bc6c3
+  #07 fp 0x765da93f40
+last Vivify log lines (oldest first):
+  Vivify crash report:   Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+  Vivify crash report:   Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+  Vivify crash report:   Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify crash report:   Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify crash report:   Vivify main camera: scene depth texture enabled for this map
+  Vivify crash report:   Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify crash report:   Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify crash report:   Vivify Blit check: effect(s) 'PostProcessing/FilmGrain' -- 3+ colour(s) among 16 blocks going in, 3+ coming out (first rgb=(127,127,127)); screen 3360x3520 slices=2; _ScreenParams before the effects=(3360,3520)
+  Vivify crash report:   Vivify visual check at 5s: 2 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify crash report:   Vivify visual check: a live note has 36 renderer(s):
+  Vivify crash report:   Vivify visual check:   'NoteCube' enabled=true active=true layer=8 material='NoteHD' shader='Custom/NoteHD' supported=true queue=2004 block: _Cutout=0.42 _Color=(0.40,0.40,0.40,1.00)
+  Vivify crash report:   Vivify visual check:   'NoteArrow' enabled=true active=false layer=8 material='NoteArrowHD' shader='Custom/GlowingInstancedHD' supported=true queue=2002 block: _Cutout=0.42 _Color=(0.00,0.00,0.00,0.00)
+  Vivify crash report:   Vivify visual check:   'NoteArrowGlow' enabled=true active=false layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.40,0.40,0.40,0.58)
+  Vivify crash report:   Vivify visual check:   'NoteCircleGlow' enabled=false active=false layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.40,0.40,0.40,0.58)
+  Vivify crash report:   Vivify visual check:   'Arrow' enabled=true active=true layer=8 material='ArrowMat (Instance) (Instance)' shader='BeatSaber P/Complete (Fog)' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify crash report:   Vivify visual check:   'Bomb' enabled=true active=false layer=8 material='Material.001 (Instance) (Instance)' shader='Standard' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify crash report:   Vivify visual check:   'Cube' enabled=true active=true layer=8 material='BlockMat (Instance) (Instance)' shader='BeatSaber P/Complete (Fog)' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify crash report:   Vivify visual check:   'Dot' enabled=true active=false layer=8 material='ArrowMat (Instance) (Instance)' shader='BeatSaber P/Complete (Fog)' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify crash report:   Vivify visual check:   'HalfArrow' enabled=true active=false layer=8 material='No Name (Instance) (Instance)' shader='Standard' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify crash report:   Vivify visual check:   'HalfCube' enabled=true active=false layer=8 material='Material (Instance) (Instance)' shader='Standard' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify crash report:   Vivify visual check:   'SliceCube' enabled=true active=false layer=8 material='No Name (Instance) (Instance)' shader='Standard' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify crash report:   Vivify visual check:   'SliceDot' enabled=true active=false layer=8 material='No Name (Instance) (Instance)' shader='Standard' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify crash report:   Vivify visual check:   'Arrow' enabled=true active=false layer=8 material='ArrowMat (Instance) (Instance)' shader='BeatSaber P/Complete (Fog)' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00
+  Vivify crash report:   Vivify visual check:   'Bomb' enabled=true active=false layer=8 material='Material.001 (Instance) (Instance)' shader='Standard' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify crash report:   Vivify visual check:   'Cube' enabled=true active=false layer=8 material='BlockMat (Instance) (Instance)' shader='BeatSaber P/Complete (Fog)' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify crash report:   Vivify visual check:   'Dot' enabled=true active=false layer=8 material='ArrowMat (Instance) (Instance)' shader='BeatSaber P/Complete (Fog)' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+  Vivify crash report:   Vivify visual check: 4 light(s) on, 0 with shadows: 'LightRight' type=2 intensity=1.00 shadows=0; 'LightLeft' type=2 intensity=1.00 shadows=0; 'LightFront' type=2 intensity=2.00 shadows=0; 'LightBottom' type=2 intens
+  Vivify crash report:   Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify crash report:   Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true qu
+  Vivify crash report:   Vivify visual check: cameras that may render the mirror: 'BurnMarksCamera' stereo=false eye=3 target=texture mask=0x80000000; 'MainCamera' stereo=true eye=3 target=screen mask=0x3819ff37
+  Vivify crash report:   Vivify visual check at 5s: 93 active renderer(s), 2 with no runnable shader; most drawn: Custom/CustomParticles x21, BeatSaber/Unlit Glow x16, Abstract/Debris2 x16, Saber/SaberReflective x6, BeatSaber P/Complete (Fog
+  Vivify crash report:   Vivify grab texture '_Base' at 5s: nothing bound
+  Vivify crash report:   Vivify grab texture '_BlackHoleGrabTex' at 5s: nothing bound
+  Vivify crash report:   Vivify grab texture '_EclipseGrabTex' at 5s: nothing bound
+  Vivify crash report:   Vivify grab texture '_GrabTexture' at 5s: nothing bound
+  Vivify crash report:   Vivify visual check: main camera cullingMask=0x3819ff37 depthTextureMode=1 clearFlags=2
+  Vivify crash report:   Vivify Blit check: effect(s) 'PostProcessing/BlackOut', 'PostProcessing/FilmGrain' -- 3+ colour(s) among 16 blocks going in, 2 coming out (first rgb=(127,127,127)); screen 3360x3520 slices=2; _ScreenParams before the
+  Vivify crash report:   Vivify Blit: the screen came out as 2 colour(s) across all 16 blocks; every screen effect is off for the rest of this level (Flat-Screen Effect Guard in settings)
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
+=== Vivify 0.15.45 native crash at 1795402995 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x1d0
+thread 15231 'Thread-3'
+pc 0x7642c34740  lr 0x7642c346f8  sp 0x7550f24480  fp 0x7550f247b0
+backtrace:
+  #00 pc 0x7642c34740  libunity.so +0x13ee740
+  #01 lr 0x7642c346f8  libunity.so +0x13ee6f8
+  #02 fp 0x7642e1a9f4  libunity.so +0x15d49f4
+  #03 fp 0x77b44f8334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify source bundle shaders: unity=2019.4.28f1 serializedFiles=1 shaders=2 runnableOnQuest=0 platforms=[Direct3D 11(4)] programs=176 glslSource=0 binary=176 shadersWithTessellation=0 programTypes=[D3D11 vertex sm5.0, D3D11 pixel sm5.0]
+  Vivify bundle conversion succeeded: translated 2 of 2 shader(s) (88 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 1 of 1 block-compressed texture(s) marked readable (1 streamed)
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/47aa6__Obama_Prism_-_5Green_/47aa6__Obama_Prism_-_5Green__cf32ae21b15fd5c1.vivify' -> not needed
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ed8f (Radioactive - MadChase)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ed8f (Radioactive - MadChase)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ed8f (Radioactive - MadChase)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ed8f (Radioactive - MadChase)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ed8f (Radioactive - MadChase)/bundleAndroid2021.vivify' grabs _GrabTexture, _MWGrab
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ed8f (Radioactive - MadChase)/bundleAndroid2021.vivify' -> needed by KriptoFX/ME/Particle_2Pass_BeatSaber_StereoSafe
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ed8f (Radioactive - MadChase)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ed8f (Radioactive - MadChase)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3819ff37 stereoMode=3 multipassSetting=false pos=(-0.13,1.55,-0.04) fwd=(-0.00,0.19,0.98)
+  Vivify main camera cullingMask is now 0x3819ff37
+  Vivify texture decode: scanned 10 material(s), replaced 0 unsupported texture reference(s) in 1ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify material 'water6': '_BlendNoiseSource' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water6': '_FlowMapUV' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water6': '_InvertNormals' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water6': '_TexCoordSpace' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water6': '_TexCoordSpaceSwizzle' is an int in shader 'Mochie/Water'; set as integer 1
+  Vivify material 'water6': '_VisualizeFlowmap' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+  Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+=== end ===
+
