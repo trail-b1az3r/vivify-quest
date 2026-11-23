@@ -1,0 +1,52 @@
+=== Vivify 0.15.51 native crash at 1795403715 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x1d0
+thread 14692 'Thread-566'
+pc 0x7515258740  lr 0x75152586f8  sp 0x74261c5480  fp 0x74261c57b0
+backtrace:
+  #00 pc 0x7515258740  libunity.so +0x13ee740
+  #01 lr 0x75152586f8  libunity.so +0x13ee6f8
+  #02 fp 0x751543e9f4  libunity.so +0x15d49f4
+  #03 fp 0x769513f334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify main camera cullingMask is now 0x3819fd37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify PrepareBeatmap: v2=false customEvents=14 triggerTime=0 beatmapAD=true
+  Vivify bundle preloaded, rebuilding asset caches: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4dd71 (Bleeding Out - RateGyro & MadChase)/bundleAndroid2021.vivify'
+  Vivify material: context=bundle-load asset=assets/imagine dragons/up3/blitshader.mat material='blitshader' shader='Hidden/notextPainterlyKuwahara_NoGrayTint_FixVR_NoScript_Seamless' supported=true internalError=false
+  Vivify texture decode: scanned 6 material(s), replaced 0 unsupported texture reference(s) in 0ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify material 'water3 - Copy': '_BlendNoiseSource' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3 - Copy': '_FlowMapUV' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3 - Copy': '_InvertNormals' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3 - Copy': '_TexCoordSpace' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3 - Copy': '_TexCoordSpaceSwizzle' is an int in shader 'Mochie/Water'; set as integer 1
+  Vivify material 'water3 - Copy': '_VisualizeFlowmap' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3': '_BlendNoiseSource' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3': '_FlowMapUV' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3': '_InvertNormals' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3': '_TexCoordSpace' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water3': '_TexCoordSpaceSwizzle' is an int in shader 'Mochie/Water'; set as integer 1
+  Vivify material 'water3': '_VisualizeFlowmap' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'blitshader': '_ColorCount' is an int in shader 'Hidden/notextPainterlyKuwahara_NoGrayTint_FixVR_NoScript_Seamless'; set as integer 231
+  Vivify: maps may turn realtime reflection probes on (full quality)
+  Vivify: 'Map Realtime Shadows' is on; the game's shadow quality is left as it is
+  Vivify preload prefab: asset='assets/imagine dragons/up3/env.prefab' id='dance' instance=true
+  Vivify preload prefab: asset='assets/imagine dragons/up3/rocks.prefab' id='rocks' instance=true
+  Vivify PreloadInstantiatePrefabs: 2 prefab event(s) preloaded
+  Vivify catch-up event: type='Blit' time=0
+  Vivify material: context=Blit asset=assets/imagine dragons/up3/blitshader.mat material='blitshader' shader='Hidden/notextPainterlyKuwahara_NoGrayTint_FixVR_NoScript_Seamless' supported=true internalError=false
+  Vivify Blit event: time=0 asset='assets/imagine dragons/up3/blitshader.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=9999999
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/imagine dragons/up3/env.prefab' id='dance' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='dance' asset='assets/imagine dragons/up3/env.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/imagine dragons/up3/rocks.prefab' id='rocks' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='rocks' asset='assets/imagine dragons/up3/rocks.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up: replayed 4 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=3 livePrefabs=2 preloadedPrefabs=2
+  Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify foveated rendering: level 1 for this map (was 4), eye-tracked false, accepted true; device 'Oculus Quest 3S'
+=== end ===
+
