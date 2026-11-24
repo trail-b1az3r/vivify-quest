@@ -1,0 +1,54 @@
+=== Vivify 0.15.45 native crash at 1795547528 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x8
+thread 24611 'UnityMain'
+pc 0x79db226560  lr 0x79db226344  sp 0x7a4629b190  fp 0x7a4629b250
+backtrace:
+  #00 pc 0x79db226560  libil2cpp.so +0x2154560
+  #01 lr 0x79db226344  libil2cpp.so +0x2154344
+  #02 fp 0x79db226148  libil2cpp.so +0x2154148
+  #03 fp 0x79db226148  libil2cpp.so +0x2154148
+  #04 fp 0x7b562fc6c3
+  #05 fp 0x7a4629c120
+last Vivify log lines (oldest first):
+  Vivify material: context=bundle-load asset=assets/memorysequence/material/memorypanelblocker.mat material='MemoryPanelBlocker' shader='Swifter/MemoryPanelBlocker' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/memorysequence/material/props_nom_mask_trim_mat.mat material='Props_NOM_Mask_Trim_mat' shader='Swifter/SimpleMaterialPointLight' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/player/blit/death.mat material='Death' shader='Chaim/Burn' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/player/blit/eyes.mat material='Eyes' shader='Chaim/Blink' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/player/sabers/dreamtrail/dreamtrail.mat material='DreamTrail' shader='Aeroluna/DreamTrail' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/player/sabers/nomaitrail/nomaitrail.mat material='NomaiTrail' shader='Chaim/NomaiTrail' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/player/ui/boostarrow.mat material='BoostArrow' shader='Aeroluna/OuterWildsUIArrow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/player/ui/boostgauge.mat material='BoostGauge' shader='Aeroluna/OuterWildsUIFuel' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/player/ui/boosttext.mat material='BoostText' shader='Aeroluna/OuterWildsUIBoostText' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/player/ui/desktop/overlayuitex.mat material='OverlayUITex' shader='Aeroluna/OverlayUITex' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/player/ui/fuelarrow.mat material='FuelArrow' shader='Aeroluna/OuterWildsUIArrow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/player/ui/fuelgauge.mat material='FuelGauge' shader='Aeroluna/OuterWildsUIFuel' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/player/ui/healthvignette.mat material='HealthVignette' shader='Aeroluna/OuterWildsUIHealthVignette' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/player/ui/multipliertext.mat material='MultiplierText' shader='Aeroluna/OuterWildsUIComboText' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/player/ui/o2arrow.mat material='O2Arrow' shader='Aeroluna/OuterWildsUIArrow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/player/ui/o2gauge.mat material='O2Gauge' shader='Aeroluna/OuterWildsUIFuel' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/bloom/bloom.mat material='Bloom' shader='Aeroluna/Bloom' supported=true internalError=false
+  Vivify: the Replay mod's button is clickable again now that the map is ready
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a24 (End Times - Chaimzy)/bundleAndroid2021.vivify' grabs _GrabTexture2
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a24 (End Times - Chaimzy)/bundleAndroid2021.vivify' -> not needed
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=520
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a5d (Through The Screen - Mawntee)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a5d (Through The Screen - Mawntee)/NormalStandard.dat' at condition 691
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a5d (Through The Screen - Mawntee)/bundleWindows2021.vivify'
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a5d (Through The Screen - Mawntee)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomL
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43a5d__Through_The_Screen_-_Mawntee_/43a5d__Through_The_Screen_-_Mawntee__0231c9f3687b0ebd.vivify'
+  Vivify material: context=bundle-load asset=assets/_mawntee/materials/lcd pix grid/lcdparticle1.mat material='LCDParticle1' shader='Mawntee/Droste2D' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/_mawntee/materials/mildacid.mat material='MildAcid' shader='Mawntee/Post Processing/Mild Acid 2D' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/_mawntee/materials/mildacid2.mat material='MildAcid2' shader='Mawntee/Post Processing/Mild Acid 2D' supported=true internalError=false
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43a5d__Through_The_Screen_-_Mawntee_/43a5d__Through_The_Screen_-_Mawntee__0231c9f3687b0ebd.vivify' grabs _MPSGrab, _SceneColor
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43a5d__Through_The_Screen_-_Mawntee_/43a5d__Through_The_Screen_-_Mawntee__0231c9f3687b0ebd.vivify' -> needed by Mawntee/Post Processing/Mild Aci
+  Vivify Blit: 'Standard' samples a texture only in its single-view code; as a screen effect it will run once per eye
+  Vivify Send Logs: uploaded 4 file part(s), 81 KB (logs/2026-11-24/191144_0.15.45_f1f3e9f46c3c28b9 f3bcc01; stored 3, deduplicated 1; 44115961 bytes saved cumulatively
+  )
+  Vivify Projector interface: managedType=false nativeGetMaterial=true nativeSetMaterial=true
+  Vivify Projector bridge: validated native component 'TvProjector' through Unity's Behaviour wrapper
+  Vivify Blit: 19 single-view shader(s) ready for blits into screen textures and the map's texture cameras ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43a5d__Through_The_Screen_-_Mawntee_/43a5d__Through_The_Screen_
+  Vivify texture cameras: 17 more single-view shader(s) from the map's prefabs
+=== end ===
+
