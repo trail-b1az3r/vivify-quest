@@ -1,0 +1,62 @@
+=== Vivify 0.15.45 native crash at 1795549174 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x28240000713c
+thread 29035 'UnityMain'
+pc 0x7f421259d8  lr 0x7f421259a8  sp 0x7e1ab37930  fp 0x7e1ab379d0
+backtrace:
+  #00 pc 0x7f421259d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7f421259a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7dbfd27c64  libmetacore.so +0xcdc64
+  #03 fp 0x7e27b2755c  libsl2.so +0x4fb55c
+  #04 fp 0x7e27b26e74  libsl2.so +0x4fae74
+  #05 fp 0x7e27b26d48  libsl2.so +0x4fad48
+  #06 fp 0x7e27b26ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7bd2983cd4  libhitscorevisualizer.so +0x182cd4
+  #08 fp 0x7d99415fe0  libil2cpp.so +0x26b2fe0
+  #09 fp 0x7be28bddc8  libbl.so +0x699dc8 (_ZN14ReplayRecorder24Hook_ProcessNewSwingData24hook_ProcessNewSwingDataEPN15GlobalNamespace23SaberSwingRatingCounterENS1_24BladeMovementDataElementES4_b +0x7c)
+  #10 fp 0x7be28d1788  libbl.so +0x6ad788
+  #11 fp 0x7bcfec4fec  libnoodleextensions.so +0x295fec (_ZN43Hook_SaberSwingRatingCounter_ProcessNewData43hook_SaberSwingRatingCounter_ProcessNewDataEPN15GlobalNamespace23SaberSwingRatingCounterENS0_24BladeMovementDataElementES3_b +0x214)
+  #12 fp 0x7bcfec49a8  libnoodleextensions.so +0x2959a8
+  #13 fp 0x7d994148dc  libil2cpp.so +0x26b18dc
+last Vivify log lines (oldest first):
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5090f (hot n cold hardtekk - Namestuffs)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5090f (hot n cold hardtekk - Namestuffs)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5090f (hot n cold hardtekk - Namestuffs)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5090f (hot n cold hardtekk - Namestuffs)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(0.03,1.54,-0.00) fwd=(0.30,-0.18,0.94)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(0.07,1.61,-0.02) fwd=(0.15,0.16,0.98)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.06,1.58,-0.02) fwd=(0.06,-0.12,0.99)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5090f (hot n cold hardtekk - Namestuffs)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(-0.08,1.58,-0.04) fwd=(0.20,-0.08,0.98)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.59,0.02) fwd=(-0.20,-0.08,0.98)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5090f (hot n cold hardtekk - Namestuffs)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5090f (hot n cold hardtekk - Namestuffs)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(-0.05,1.57,-0.01) fwd=(0.31,-0.12,0.94)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.09,1.58,0.02) fwd=(0.04,-0.11,0.99)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5090f (hot n cold hardtekk - Namestuffs)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(0.03,1.58,0.03) fwd=(0.22,-0.13,0.97)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.05,1.54,-0.06) fwd=(-0.02,-0.24,0.97)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(0.16,1.59,-0.04) fwd=(0.89,0.00,0.45)
+  Vivify main camera cullingMask is now 0x3d3bff37
+=== end ===
+
