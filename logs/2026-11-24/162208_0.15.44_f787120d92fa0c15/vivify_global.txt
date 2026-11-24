@@ -1,0 +1,464 @@
+=== Vivify 0.15.44 session started 2026-11-20 11:26:35 ===
+2026-11-20 11:26:35 [INFO] Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-20 11:26:35 [INFO] Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global.txt
+2026-11-20 11:26:35 [INFO] Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+2026-11-20 11:26:35 [INFO] Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+2026-11-20 11:26:35 [INFO] Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-20 11:26:35 [INFO] Installing hook: SaberModelController_Init to offset: 0x799e4db928
+2026-11-20 11:26:35 [INFO] Installing hook: GameNoteController_Init to offset: 0x799e3d91d0
+2026-11-20 11:26:35 [INFO] Installing hook: BombNoteController_Init to offset: 0x799e3d62d4
+2026-11-20 11:26:35 [INFO] Installing hook: BurstSliderGameNoteController_Init to offset: 0x799e3d7668
+2026-11-20 11:26:35 [INFO] Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x799e479bb8
+2026-11-20 11:26:35 [INFO] Installing hook: NoteDebris_Init to offset: 0x799e3dc2e8
+2026-11-20 11:26:35 [INFO] Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x799e970968
+2026-11-20 11:26:35 [INFO] Installing hook: ImageEffectController_OnRenderImage to offset: 0x799e2ce018
+2026-11-20 11:26:35 [INFO] Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x799e973e78
+2026-11-20 11:26:35 [INFO] Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x799e9739f0
+2026-11-20 11:26:35 [INFO] Installing hook: MirrorRendererSO_RenderMirror to offset: 0x799e974bb8
+2026-11-20 11:26:35 [INFO] Installing hook: MirrorRendererSO_OnDisable to offset: 0x799e974f2c
+2026-11-20 11:26:35 [INFO] Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x799e9747f4
+2026-11-20 11:26:35 [INFO] Installing hook: VRCenterAdjust_Start to offset: 0x799e42337c
+2026-11-20 11:26:35 [INFO] Installing hook: VRCenterAdjust_OnEnable to offset: 0x799e42358c
+2026-11-20 11:26:35 [INFO] Installing hook: VRCenterAdjust_OnDisable to offset: 0x799e423658
+2026-11-20 11:26:35 [INFO] Installing hook: VRCenterAdjust_Update to offset: 0x799e423560
+2026-11-20 11:26:35 [INFO] Installing hook: VRCenterAdjust_ResetRoom to offset: 0x799e4233e0
+2026-11-20 11:26:35 [INFO] Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x799e4234a4
+2026-11-20 11:26:35 [INFO] Installing hook: PauseController_Pause to offset: 0x799e4957ec
+2026-11-20 11:26:35 [INFO] Installing hook: PauseMenuManager_ShowMenu to offset: 0x799e49fc54
+2026-11-20 11:26:35 [INFO] Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x799e4a0734
+2026-11-20 11:26:35 [INFO] Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x799e4a0094
+2026-11-20 11:26:35 [INFO] Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x799e49fd88
+2026-11-20 11:26:35 [INFO] Installing hook: GamePause_Resume to offset: 0x799e49b178
+2026-11-20 11:26:35 [INFO] Installing hook: Recorder_InstallBindings to offset: 0x799e4e4294
+2026-11-20 11:26:35 [INFO] Installing hook: Recorder_HeightLateUpdate to offset: 0x799e4d88b8
+2026-11-20 11:26:35 [INFO] Installing hook: Recorder_SpawnNote to offset: 0x799e3cf928
+2026-11-20 11:26:35 [INFO] Installing hook: Recorder_SpawnObstacle to offset: 0x799e3cedec
+2026-11-20 11:26:35 [INFO] Installing hook: Recorder_NoteWasCut to offset: 0x799e3d0de4
+2026-11-20 11:26:35 [INFO] Installing hook: Recorder_ScoreLateUpdate to offset: 0x799e4de44c
+2026-11-20 11:26:35 [INFO] Installing hook: Recorder_ScoreStart to offset: 0x799e4de038
+2026-11-20 11:26:35 [INFO] Installing hook: Recorder_ComputeSwingRating to offset: 0x799cfa1db4
+2026-11-20 11:26:35 [INFO] Installing hook: Recorder_ProcessSwing to offset: 0x799cfa2690
+2026-11-20 11:26:35 [INFO] Installing hook: Recorder_SpawnControllerStart to offset: 0x799e3d1ae0
+2026-11-20 11:26:35 [INFO] Installing hook: Recorder_ShowPause to offset: 0x799e49fc54
+2026-11-20 11:26:35 [INFO] Installing hook: Recorder_Resume to offset: 0x799e4a076c
+2026-11-20 11:26:35 [INFO] Installing hook: Recorder_Finish to offset: 0x799e42f1dc
+2026-11-20 11:26:35 [INFO] Vivify: loaded mods (46): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libweb-utils.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaverplusplus.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libcustom-types.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libsongdetails.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libtinyxml2.so 0.0.0, FakeId 0.1.9, BSML 0.4.55,  , christmas 1.0.1, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, Lapiz 0.2.23, MetaCore 1.6.3, too-many-fireworks 1.2.5, tricksaberlite 0.1.1, SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether 2.2.5, BetterSongSearch 2.2.13, ClockMod 1.15.0-Dev, ModifiersCoreQuest 0.1.0, CustomJSONData 0.24.5, Tracks 2.5.4, Vivify 0.15.44, PlaylistCore 1.5.5, bl 0.9.666, bomb-qol
+2026-11-20 11:26:35 [INFO] orer 0.2.1, BetterSongList 1.0.8, ChatPlexSDK-BS 6.4.5, Chroma 2.10.3, CustomModels 1.2.1, Qounters++ 1.1.5, expcounter 0.2.0, MappingExtensions 0.25.4, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistManager 1.4.1, SimpleSabers 0.1.3, SnipeFeed 3.4.0, SongDownloader 0.8.8, unicode 0.1.7
+2026-11-20 11:26:37 [INFO] Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+2026-11-20 11:26:41 [INFO] Vivify Send Logs: uploaded 3 file part(s), 9 KB (logs/2026-11-20/162636_0.15.44_6d53f1d9cae02bc9 173f74b; stored 3, deduplicated 0; 14385686 bytes saved cumulatively
+2026-11-20 11:26:41 [INFO] )
+2026-11-20 11:26:49 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.07,1.17,0.22) fwd=(-0.05,-0.17,0.98)
+2026-11-20 11:26:49 [INFO] Vivify main camera cullingMask is now 0x3818ff37
+2026-11-20 11:26:53 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.10,1.23,0.21) fwd=(0.26,0.12,0.96)
+2026-11-20 11:26:54 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.08,1.22,0.22) fwd=(0.18,0.00,0.98)
+2026-11-20 11:27:02 [INFO] Vivify: the game uses STEREO_MULTIVIEW_ON (60 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+2026-11-20 11:27:02 [INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+2026-11-20 11:27:36 [INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+2026-11-20 11:27:36 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/605abd658b47e9293e78f002812c612a74a9a1b3' isCustom=true hasDetails=true
+2026-11-20 11:27:38 [INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+2026-11-20 11:27:38 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/b715 (GAS GAS GAS - KyleT)' isCustom=true hasDetails=true
+2026-11-20 11:27:40 [INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+2026-11-20 11:27:40 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/976d96b1c5b0d134bf82b0f40195068466e25b39' isCustom=true hasDetails=true
+2026-11-20 11:27:51 [INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+2026-11-20 11:27:51 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)' isCustom=true hasDetails=true
+2026-11-20 11:27:51 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-20 11:27:51 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=true mapReflectionProbes=reduced crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-20 11:27:51 [INFO] Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)/bundleAndroid2021.vivify'
+2026-11-20 11:27:51 [INFO] Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)/HardStandard.dat' at condition 690
+2026-11-20 11:27:51 [INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)/bundleAndroid2021.vivify'
+2026-11-20 11:27:51 [INFO] Vivify: moved 37 converted file(s) into one folder per map
+2026-11-20 11:27:51 [INFO] Vivify: play button blocked by Vivify ("Checking shaders...")
+2026-11-20 11:27:51 [INFO] Vivify: play button is enabled (no mod is blocking it)
+2026-11-20 11:27:52 [INFO] Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)/bundleAndroid2021.vivify'
+2026-11-20 11:27:52 [INFO] Vivify depth copy: PC 2D material=true PC array-slice material=true native slice binding=true
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/fonts/pala sdf - outro text.mat material='pala SDF - Outro Text' shader='You/OutroText' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/dropveins.mat material='DropVeins' shader='You/DropVeins' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/ambientflare.mat material='AmbientFlare' shader='You/AmbientFlare' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/ambientparticles.mat material='AmbientParticles' shader='You/AmbientParticles' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/builduppanel.mat material='BuildupPanel' shader='You/BuildupPanel' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/buildupwisps.mat material='BuildupWisps' shader='You/BuildupWisp' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/dropwisps.mat material='DropWisps' shader='You/DropWisp' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/explosion.mat material='Explosion' shader='You/Explosion' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/implosion.mat material='Implosion' shader='You/Implosion' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/outline.mat material='Outline' shader='You/CircleOutline' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/shaft.mat material='Shaft' shader='You/Shaft' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/veinbacklight.mat material='VeinBacklight' shader='You/VeinBacklight' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/endingveins.mat material='EndingVeins' shader='You/EndingVeins' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/flowertiddle.mat material='FlowerTiddle' shader='You/SimpleColor' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/dropnote.mat material='DropNote' shader='You/PortalNote' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/dropnote_debris.mat material='DropNote_Debris' shader='You/PortalNote' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/dropnotearrow.mat material='DropNoteArrow' shader='You/FlickeringArrow' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/glassarrow.mat material='GlassArrow' shader='You/GlassNote' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/glassnote.mat material='GlassNote' shader='You/GlassNote' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/glassnote_debris.mat material='GlassNote_Debris' shader='You/GlassNote' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/reflectivearrow.mat material='ReflectiveArrow' shader='You/ReflectiveNote' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/reflectivenote.mat material='ReflectiveNote' shader='You/ReflectiveNote' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/reflectivenote_debris.mat material='ReflectiveNote_Debris' shader='You/ReflectiveNote' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/pedal.mat material='Pedal' shader='You/Leaf' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/post processing/buildupeffects.mat material='BuildupEffects' shader='You/EdgeHighlights' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/post processing/dropeffects.mat material='DropEffects' shader='You/DropEffects' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/ribbon.mat material='Ribbon' shader='You/Ribbon' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/saber/saberguide.mat material='SaberGuide' shader='You/SaberGuide' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/saber/sabertrail.mat material='SaberTrail' shader='You/SaberTrail' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/skybox/ambientskybox.mat material='AmbientSkybox' shader='You/AmbientSkybox' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/skybox/dropskybox.mat material='DropSkybox' shader='You/DropSkybox' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/skybox/endingskybox.mat material='EndingSkybox' shader='You/EndingSkybox' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify material: context=bundle-load asset=assets/materials/skybox/introskybox.mat material='IntroSkybox' shader='You/IntroSkybox' supported=true internalError=false
+2026-11-20 11:27:52 [INFO] Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)/bundleAndroid2021.vivify' grabs _GrabTexture1
+2026-11-20 11:27:52 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)/bundleAndroid2021.vivify' -> needed by You/AmbientFlare, You/DropWisp
+2026-11-20 11:28:01 [INFO] Vivify replay recorder: not recording this level (the Replay mod is not installed)
+2026-11-20 11:28:02 [INFO] Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+2026-11-20 11:28:02 [INFO] Vivify saber chain saberNode: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+2026-11-20 11:28:02 [INFO] Vivify saber chain initParent: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+2026-11-20 11:28:02 [INFO] Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(-0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+2026-11-20 11:28:02 [INFO] Vivify saber chain saberNode: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+2026-11-20 11:28:02 [INFO] Vivify saber chain initParent: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+2026-11-20 11:28:02 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3819ff37 stereoMode=3 multipassSetting=false pos=(0.02,1.18,0.01) fwd=(0.12,-0.07,0.99)
+2026-11-20 11:28:02 [INFO] Vivify main camera cullingMask is now 0x3819ff37
+2026-11-20 11:28:02 [INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=63
+2026-11-20 11:28:02 [INFO] Vivify PrepareBeatmap: v2=false customEvents=1247 triggerTime=0 beatmapAD=true
+2026-11-20 11:28:02 [INFO] Vivify graphics: api=OpenGLES3 (11) shaderLevel=50 (SM5.0) geometryShaderStagePossible=true gpu='Adreno (TM) 740'
+2026-11-20 11:28:02 [INFO] Vivify platform: os='Android OS 14 / API-34 (UP1A.231005.007.A1/53145330026600520)' device='Oculus Quest 3' gpu='Adreno (TM) 740' vendor='Qualcomm' api=11 stereoMode=3 xrOcclusionMesh=true supportsInstancing=true supportsR8=true supportsDepthRT=true
+2026-11-20 11:28:02 [INFO] Vivify bundle preloaded, rebuilding asset caches: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)/bundleAndroid2021.vivify'
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/fonts/pala sdf - outro text.mat material='pala SDF - Outro Text' shader='You/OutroText' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/dropveins.mat material='DropVeins' shader='You/DropVeins' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/ambientflare.mat material='AmbientFlare' shader='You/AmbientFlare' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/ambientparticles.mat material='AmbientParticles' shader='You/AmbientParticles' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/builduppanel.mat material='BuildupPanel' shader='You/BuildupPanel' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/buildupwisps.mat material='BuildupWisps' shader='You/BuildupWisp' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/dropwisps.mat material='DropWisps' shader='You/DropWisp' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/explosion.mat material='Explosion' shader='You/Explosion' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/implosion.mat material='Implosion' shader='You/Implosion' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/outline.mat material='Outline' shader='You/CircleOutline' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/shaft.mat material='Shaft' shader='You/Shaft' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/veinbacklight.mat material='VeinBacklight' shader='You/VeinBacklight' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/endingveins.mat material='EndingVeins' shader='You/EndingVeins' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/flowertiddle.mat material='FlowerTiddle' shader='You/SimpleColor' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/dropnote.mat material='DropNote' shader='You/PortalNote' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/dropnote_debris.mat material='DropNote_Debris' shader='You/PortalNote' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/dropnotearrow.mat material='DropNoteArrow' shader='You/FlickeringArrow' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/glassarrow.mat material='GlassArrow' shader='You/GlassNote' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/glassnote.mat material='GlassNote' shader='You/GlassNote' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/glassnote_debris.mat material='GlassNote_Debris' shader='You/GlassNote' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/reflectivearrow.mat material='ReflectiveArrow' shader='You/ReflectiveNote' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/reflectivenote.mat material='ReflectiveNote' shader='You/ReflectiveNote' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/reflectivenote_debris.mat material='ReflectiveNote_Debris' shader='You/ReflectiveNote' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/pedal.mat material='Pedal' shader='You/Leaf' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/post processing/buildupeffects.mat material='BuildupEffects' shader='You/EdgeHighlights' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/post processing/dropeffects.mat material='DropEffects' shader='You/DropEffects' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/ribbon.mat material='Ribbon' shader='You/Ribbon' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/saber/saberguide.mat material='SaberGuide' shader='You/SaberGuide' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/saber/sabertrail.mat material='SaberTrail' shader='You/SaberTrail' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/skybox/ambientskybox.mat material='AmbientSkybox' shader='You/AmbientSkybox' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/skybox/dropskybox.mat material='DropSkybox' shader='You/DropSkybox' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/skybox/endingskybox.mat material='EndingSkybox' shader='You/EndingSkybox' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify material: context=bundle-load asset=assets/materials/skybox/introskybox.mat material='IntroSkybox' shader='You/IntroSkybox' supported=true internalError=false
+2026-11-20 11:28:02 [INFO] Vivify Projector interface: managedType=false nativeGetMaterial=true nativeSetMaterial=true
+2026-11-20 11:28:02 [INFO] Vivify texture decode: scanned 50 material(s), replaced 0 unsupported texture reference(s) in 1ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+2026-11-20 11:28:02 [INFO] Vivify material 'DropSkybox': '_Mirrors' is an int in shader 'You/DropSkybox'; set as integer 5
+2026-11-20 11:28:02 [INFO] Vivify material 'ReflectiveNote_Debris': '_BlurSteps' is an int in shader 'You/ReflectiveNote'; set as integer 2
+2026-11-20 11:28:02 [INFO] Vivify material 'ReflectiveNote': '_BlurSteps' is an int in shader 'You/ReflectiveNote'; set as integer 2
+2026-11-20 11:28:02 [INFO] Vivify material 'ReflectiveArrow': '_BlurSteps' is an int in shader 'You/ReflectiveNote'; set as integer 4
+2026-11-20 11:28:02 [INFO] Vivify material 'DropEffects': '_BlurSteps' is an int in shader 'You/DropEffects'; set as integer 3
+2026-11-20 11:28:02 [INFO] Vivify material 'BuildupEffects': '_BlurSteps' is an int in shader 'You/EdgeHighlights'; set as integer 2
+2026-11-20 11:28:02 [INFO] Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+2026-11-20 11:28:02 [INFO] Vivify: 'Map Realtime Shadows' is on; the game's shadow quality is left as it is
+2026-11-20 11:28:02 [INFO] Vivify preload prefab: asset='assets/prefabs/technical/reflection probe.prefab' id='prefab_reflection probe_1' instance=true
+2026-11-20 11:28:02 [INFO] Vivify preload prefab: asset='assets/prefabs/objects/darkness.prefab' id='prefab_darkness_1' instance=true
+2026-11-20 11:28:02 [INFO] Vivify preload prefab: asset='assets/prefabs/scene/introscene.prefab' id='prefab_introscene_1' instance=true
+2026-11-20 11:28:02 [INFO] Vivify preload prefab: asset='assets/prefabs/scene/ambientscene.prefab' id='prefab_ambientscene_1' instance=true
+2026-11-20 11:28:02 [INFO] Vivify preload prefab: asset='assets/prefabs/effects/ambientflare.prefab' id='prefab_ambientflare_1' instance=true
+2026-11-20 11:28:02 [INFO] Vivify preload prefab: asset='assets/prefabs/objects/flower.prefab' id='prefab_flower_1' instance=true
+2026-11-20 11:28:02 [INFO] Vivify preload prefab: asset='assets/prefabs/effects/explosions.prefab' id='prefab_explosions_1' instance=true
+2026-11-20 11:28:02 [INFO] Vivify preload prefab: asset='assets/prefabs/effects/builduppanel.prefab' id='prefab_builduppanel_1' instance=true
+2026-11-20 11:28:02 [INFO] Vivify preload prefab: asset='assets/prefabs/effects/buildupparticles.prefab' id='prefab_buildupparticles_1' instance=true
+2026-11-20 11:28:02 [INFO] Vivify preload prefab: asset='assets/prefabs/effects/buildupsphere.prefab' id='prefab_buildupsphere_1' instance=true
+2026-11-20 11:28:02 [INFO] Vivify preload prefab: asset='assets/prefabs/objects/veinbacklight.prefab' id='prefab_veinbacklight_1' instance=true
+2026-11-20 11:28:02 [INFO] Vivify preload prefab: asset='assets/prefabs/scene/dropscene.prefab' id='prefab_dropscene_1' instance=true
+2026-11-20 11:28:02 [INFO] Vivify preload prefab: asset='assets/prefabs/technical/reflection probe.prefab' id='prefab_reflection probe_2' instance=true
+2026-11-20 11:28:02 [INFO] Vivify preload prefab: asset='assets/prefabs/scene/endingscene.prefab' id='prefab_endingscene_1' instance=true
+2026-11-20 11:28:02 [INFO] Vivify preload prefab: asset='assets/prefabs/scene/outrotext.prefab' id='prefab_outrotext_1' instance=true
+2026-11-20 11:28:02 [INFO] Vivify PreloadInstantiatePrefabs: 15 prefab event(s) preloaded
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetMaterialProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='InstantiatePrefab' time=0
+2026-11-20 11:28:02 [INFO] Vivify InstantiatePrefab: asset='assets/prefabs/technical/reflection probe.prefab' id='prefab_reflection probe_1' alreadyLive=false
+2026-11-20 11:28:02 [INFO] Vivify reflection probe 'Reflection Probe(Clone)' reduced: 256 px -> 128 px, no HDR, refreshed once a second
+2026-11-20 11:28:02 [INFO] Vivify: watching cameras (reflection probes, the map's HUD)
+2026-11-20 11:28:02 [INFO] Vivify InstantiatePrefab spawned: id='prefab_reflection probe_1' asset='assets/prefabs/technical/reflection probe.prefab' tracks=1 animators=0 offscreenCulled=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='InstantiatePrefab' time=0
+2026-11-20 11:28:02 [INFO] Vivify InstantiatePrefab: asset='assets/prefabs/objects/darkness.prefab' id='prefab_darkness_1' alreadyLive=false
+2026-11-20 11:28:02 [INFO] Vivify InstantiatePrefab spawned: id='prefab_darkness_1' asset='assets/prefabs/objects/darkness.prefab' tracks=1 animators=0 offscreenCulled=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='InstantiatePrefab' time=0
+2026-11-20 11:28:02 [INFO] Vivify InstantiatePrefab: asset='assets/prefabs/scene/introscene.prefab' id='prefab_introscene_1' alreadyLive=false
+2026-11-20 11:28:02 [INFO] Vivify InstantiatePrefab spawned: id='prefab_introscene_1' asset='assets/prefabs/scene/introscene.prefab' tracks=1 animators=0 offscreenCulled=0
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetCameraProperty' time=0
+2026-11-20 11:28:02 [INFO] Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=false bloomPrePass=unset mainEffect=unset
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='AssignObjectPrefab' time=0
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/notes/reflectivenote.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/notes/reflectivenote_debris.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='AssignObjectPrefab' time=0
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/notes/glassnote.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/notes/glassnote_debris.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='burstSliders' kind=0 asset='assets/prefabs/notes/glassnotechain.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='burstSliders' kind=2 asset='assets/prefabs/notes/glassnotechain_debris.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=0 asset='assets/prefabs/notes/glassnotechainlink.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=2 asset='assets/prefabs/notes/glassnotechainlink_debris.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='AssignObjectPrefab' time=0
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/notes/portalnote.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/notes/portalnote_debris.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='AssignObjectPrefab' time=0
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/notes/glassnote.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/notes/glassnote_debris.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='burstSliders' kind=0 asset='assets/prefabs/notes/glassnotechain.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='burstSliders' kind=2 asset='assets/prefabs/notes/glassnotechain_debris.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=0 asset='assets/prefabs/notes/glassnotechainlink.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=2 asset='assets/prefabs/notes/glassnotechainlink_debris.prefab' tracks=1 additive=false saberType=-
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='AssignObjectPrefab' time=0
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/trailer cameras/trailercamera_1.prefab' tracks=1 additive=true saberType=-
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='AssignObjectPrefab' time=0
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/trailer cameras/trailercamera_2.prefab' tracks=1 additive=true saberType=-
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='AssignObjectPrefab' time=0
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/trailer cameras/trailercamera_3.prefab' tracks=1 additive=true saberType=-
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='AssignObjectPrefab' time=0
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/trailer cameras/trailercamera_4.prefab' tracks=1 additive=true saberType=-
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='AssignObjectPrefab' time=0
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/trailer cameras/trailercamera_5.prefab' tracks=1 additive=true saberType=-
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='AssignObjectPrefab' time=0
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/prefabs/objects/saberbase.prefab' tracks=0 additive=false saberType=0
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab(trail): asset='assets/materials/saber/sabertrail.mat' saberType=0 additive=false
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/prefabs/objects/saberbase.prefab' tracks=0 additive=false saberType=1
+2026-11-20 11:28:02 [INFO] Vivify AssignObjectPrefab(trail): asset='assets/materials/saber/sabertrail.mat' saberType=1 additive=false
+2026-11-20 11:28:02 [INFO] Vivify sync: registered 'SaberBase(Clone)' with 0 video / 0 animator / 1 particle component(s), startTime=0
+2026-11-20 11:28:02 [INFO] Vivify saber trail: 1 map trail(s) created (following the game's trail)
+2026-11-20 11:28:02 [INFO] Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=8 hiddenOriginals=12
+2026-11-20 11:28:02 [INFO] Vivify sync: registered 'SaberBase(Clone)' with 0 video / 0 animator / 1 particle component(s), startTime=0
+2026-11-20 11:28:02 [INFO] Vivify saber trail: 1 map trail(s) created (following the game's trail)
+2026-11-20 11:28:02 [INFO] Vivify saber replaced (type 0): models=1 trails=1 spawned=2 renderers=8 hiddenOriginals=12
+2026-11-20 11:28:02 [INFO] Vivify catch-up event: type='SetRenderingSettings' time=0
+2026-11-20 11:28:02 [INFO] Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_realtimeReflectionProbes'
+2026-11-20 11:28:02 [INFO] Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_realtimeReflectionProbes'
+2026-11-20 11:28:02 [INFO] Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+2026-11-20 11:28:02 [INFO] Vivify catch-up: replayed 33 event(s) up to time=0
+2026-11-20 11:28:02 [INFO] Vivify PrepareBeatmap done: assets=63 livePrefabs=3 preloadedPrefabs=15
+2026-11-20 11:28:02 [WARN] VRCenterAdjust.OnEnable skipped: missing _settingsManager=true _settingsApplicator=true
+2026-11-20 11:28:02 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+2026-11-20 11:28:02 [WARN] VRCenterAdjust.Start skipped: missing _settingsManager=true _settingsApplicator=true
+2026-11-20 11:28:03 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-20 11:28:03 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-20 11:28:03 [WARN] VRCenterAdjust.Update skipped: missing _settingsManager=true _settingsApplicator=true
+=== Vivify 0.15.44 session started 2026-11-20 11:28:30 ===
+2026-11-20 11:28:30 [INFO] Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-20 11:28:30 [INFO] Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global.txt
+2026-11-20 11:28:30 [INFO] Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+2026-11-20 11:28:30 [INFO] Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+2026-11-20 11:28:30 [WARN] Vivify crash recovery: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)' did not end: the game crashed or was closed while it played (last sign of life 0 s into the song); realtime reflection probes were on, so next time it plays with them off (with Crash Recovery Mode off as well)
+2026-11-20 11:28:30 [INFO] Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-20 11:28:30 [INFO] Installing hook: SaberModelController_Init to offset: 0x79a4324928
+2026-11-20 11:28:30 [INFO] Installing hook: GameNoteController_Init to offset: 0x79a42221d0
+2026-11-20 11:28:30 [INFO] Installing hook: BombNoteController_Init to offset: 0x79a421f2d4
+2026-11-20 11:28:30 [INFO] Installing hook: BurstSliderGameNoteController_Init to offset: 0x79a4220668
+2026-11-20 11:28:30 [INFO] Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x79a42c2bb8
+2026-11-20 11:28:30 [INFO] Installing hook: NoteDebris_Init to offset: 0x79a42252e8
+2026-11-20 11:28:30 [INFO] Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x79a47b9968
+2026-11-20 11:28:30 [INFO] Installing hook: ImageEffectController_OnRenderImage to offset: 0x79a4117018
+2026-11-20 11:28:30 [INFO] Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x79a47bce78
+2026-11-20 11:28:30 [INFO] Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x79a47bc9f0
+2026-11-20 11:28:30 [INFO] Installing hook: MirrorRendererSO_RenderMirror to offset: 0x79a47bdbb8
+2026-11-20 11:28:30 [INFO] Installing hook: MirrorRendererSO_OnDisable to offset: 0x79a47bdf2c
+2026-11-20 11:28:30 [INFO] Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x79a47bd7f4
+2026-11-20 11:28:30 [INFO] Installing hook: VRCenterAdjust_Start to offset: 0x79a426c37c
+2026-11-20 11:28:30 [INFO] Installing hook: VRCenterAdjust_OnEnable to offset: 0x79a426c58c
+2026-11-20 11:28:30 [INFO] Installing hook: VRCenterAdjust_OnDisable to offset: 0x79a426c658
+2026-11-20 11:28:30 [INFO] Installing hook: VRCenterAdjust_Update to offset: 0x79a426c560
+2026-11-20 11:28:30 [INFO] Installing hook: VRCenterAdjust_ResetRoom to offset: 0x79a426c3e0
+2026-11-20 11:28:30 [INFO] Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x79a426c4a4
+2026-11-20 11:28:30 [INFO] Installing hook: PauseController_Pause to offset: 0x79a42de7ec
+2026-11-20 11:28:30 [INFO] Installing hook: PauseMenuManager_ShowMenu to offset: 0x79a42e8c54
+2026-11-20 11:28:30 [INFO] Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x79a42e9734
+2026-11-20 11:28:30 [INFO] Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x79a42e9094
+2026-11-20 11:28:30 [INFO] Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x79a42e8d88
+2026-11-20 11:28:30 [INFO] Installing hook: GamePause_Resume to offset: 0x79a42e4178
+2026-11-20 11:28:30 [INFO] Installing hook: Recorder_InstallBindings to offset: 0x79a432d294
+2026-11-20 11:28:30 [INFO] Installing hook: Recorder_HeightLateUpdate to offset: 0x79a43218b8
+2026-11-20 11:28:30 [INFO] Installing hook: Recorder_SpawnNote to offset: 0x79a4218928
+2026-11-20 11:28:30 [INFO] Installing hook: Recorder_SpawnObstacle to offset: 0x79a4217dec
+2026-11-20 11:28:30 [INFO] Installing hook: Recorder_NoteWasCut to offset: 0x79a4219de4
+2026-11-20 11:28:30 [INFO] Installing hook: Recorder_ScoreLateUpdate to offset: 0x79a432744c
+2026-11-20 11:28:30 [INFO] Installing hook: Recorder_ScoreStart to offset: 0x79a4327038
+2026-11-20 11:28:30 [INFO] Installing hook: Recorder_ComputeSwingRating to offset: 0x79a2deadb4
+2026-11-20 11:28:30 [INFO] Installing hook: Recorder_ProcessSwing to offset: 0x79a2deb690
+2026-11-20 11:28:30 [INFO] Installing hook: Recorder_SpawnControllerStart to offset: 0x79a421aae0
+2026-11-20 11:28:30 [INFO] Installing hook: Recorder_ShowPause to offset: 0x79a42e8c54
+2026-11-20 11:28:30 [INFO] Installing hook: Recorder_Resume to offset: 0x79a42e976c
+2026-11-20 11:28:30 [INFO] Installing hook: Recorder_Finish to offset: 0x79a42781dc
+2026-11-20 11:28:30 [INFO] Vivify: loaded mods (46): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libweb-utils.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaverplusplus.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libcustom-types.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libsongdetails.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libtinyxml2.so 0.0.0, FakeId 0.1.9, BSML 0.4.55,  , christmas 1.0.1, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, Lapiz 0.2.23, MetaCore 1.6.3, too-many-fireworks 1.2.5, tricksaberlite 0.1.1, SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether 2.2.5, BetterSongSearch 2.2.13, ClockMod 1.15.0-Dev, ModifiersCoreQuest 0.1.0, CustomJSONData 0.24.5, Tracks 2.5.4, Vivify 0.15.44, PlaylistCore 1.5.5, bl 0.9.666, bomb-qol
+2026-11-20 11:28:30 [INFO] orer 0.2.1, BetterSongList 1.0.8, ChatPlexSDK-BS 6.4.5, Chroma 2.10.3, CustomModels 1.2.1, Qounters++ 1.1.5, expcounter 0.2.0, MappingExtensions 0.25.4, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistManager 1.4.1, SimpleSabers 0.1.3, SnipeFeed 3.4.0, SongDownloader 0.8.8, unicode 0.1.7
+2026-11-20 11:28:32 [INFO] Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+2026-11-20 11:28:37 [INFO] Vivify Send Logs: uploaded 4 file part(s), 40 KB (logs/2026-11-20/162830_0.15.44_1c1e59a6060a6ba1 f9f4662; stored 4, deduplicated 0; 14385686 bytes saved cumulatively
+2026-11-20 11:28:37 [INFO] )
+2026-11-20 11:28:44 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.06,1.23,-0.01) fwd=(0.67,-0.15,0.73)
+2026-11-20 11:28:44 [INFO] Vivify main camera cullingMask is now 0x3818ff37
+2026-11-20 11:28:47 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.05,1.25,-0.02) fwd=(0.74,-0.04,0.67)
+2026-11-20 11:28:48 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.23,-0.00) fwd=(-0.09,0.02,1.00)
+2026-11-20 11:29:13 [INFO] Vivify updater: Looking for the build...
+2026-11-20 11:29:14 [INFO] Vivify updater: Downloading Vivify 0.15.44...
+2026-11-20 11:29:15 [INFO] Vivify updater: An update is already being installed
+2026-11-20 11:29:16 [INFO] Vivify updater: Installing Vivify 0.15.44...
+2026-11-20 11:29:17 [INFO] Vivify updater: replacing /sdcard/ModData/com.beatgames.beatsaber/Modloader/mods/libVivify.so
+=== Vivify 0.15.44 session started 2026-11-24 11:16:27 ===
+2026-11-24 11:16:27 [INFO] Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-24 11:16:27 [INFO] Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global.txt
+2026-11-24 11:16:27 [INFO] Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+2026-11-24 11:16:27 [INFO] Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+2026-11-24 11:16:27 [INFO] Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+2026-11-24 11:16:27 [INFO] Installing hook: SaberModelController_Init to offset: 0x703dd03928
+2026-11-24 11:16:27 [INFO] Installing hook: GameNoteController_Init to offset: 0x703dc011d0
+2026-11-24 11:16:27 [INFO] Installing hook: BombNoteController_Init to offset: 0x703dbfe2d4
+2026-11-24 11:16:27 [INFO] Installing hook: BurstSliderGameNoteController_Init to offset: 0x703dbff668
+2026-11-24 11:16:27 [INFO] Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x703dca1bb8
+2026-11-24 11:16:27 [INFO] Installing hook: NoteDebris_Init to offset: 0x703dc042e8
+2026-11-24 11:16:27 [INFO] Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x703e198968
+2026-11-24 11:16:27 [INFO] Installing hook: ImageEffectController_OnRenderImage to offset: 0x703daf6018
+2026-11-24 11:16:27 [INFO] Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x703e19be78
+2026-11-24 11:16:27 [INFO] Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x703e19b9f0
+2026-11-24 11:16:27 [INFO] Installing hook: MirrorRendererSO_RenderMirror to offset: 0x703e19cbb8
+2026-11-24 11:16:27 [INFO] Installing hook: MirrorRendererSO_OnDisable to offset: 0x703e19cf2c
+2026-11-24 11:16:27 [INFO] Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x703e19c7f4
+2026-11-24 11:16:27 [INFO] Installing hook: VRCenterAdjust_Start to offset: 0x703dc4b37c
+2026-11-24 11:16:27 [INFO] Installing hook: VRCenterAdjust_OnEnable to offset: 0x703dc4b58c
+2026-11-24 11:16:27 [INFO] Installing hook: VRCenterAdjust_OnDisable to offset: 0x703dc4b658
+2026-11-24 11:16:27 [INFO] Installing hook: VRCenterAdjust_Update to offset: 0x703dc4b560
+2026-11-24 11:16:27 [INFO] Installing hook: VRCenterAdjust_ResetRoom to offset: 0x703dc4b3e0
+2026-11-24 11:16:27 [INFO] Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x703dc4b4a4
+2026-11-24 11:16:27 [INFO] Installing hook: PauseController_Pause to offset: 0x703dcbd7ec
+2026-11-24 11:16:27 [INFO] Installing hook: PauseMenuManager_ShowMenu to offset: 0x703dcc7c54
+2026-11-24 11:16:27 [INFO] Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x703dcc8734
+2026-11-24 11:16:27 [INFO] Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x703dcc8094
+2026-11-24 11:16:27 [INFO] Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x703dcc7d88
+2026-11-24 11:16:27 [INFO] Installing hook: GamePause_Resume to offset: 0x703dcc3178
+2026-11-24 11:16:27 [INFO] Installing hook: Recorder_InstallBindings to offset: 0x703dd0c294
+2026-11-24 11:16:27 [INFO] Installing hook: Recorder_HeightLateUpdate to offset: 0x703dd008b8
+2026-11-24 11:16:27 [INFO] Installing hook: Recorder_SpawnNote to offset: 0x703dbf7928
+2026-11-24 11:16:27 [INFO] Installing hook: Recorder_SpawnObstacle to offset: 0x703dbf6dec
+2026-11-24 11:16:27 [INFO] Installing hook: Recorder_NoteWasCut to offset: 0x703dbf8de4
+2026-11-24 11:16:27 [INFO] Installing hook: Recorder_ScoreLateUpdate to offset: 0x703dd0644c
+2026-11-24 11:16:27 [INFO] Installing hook: Recorder_ScoreStart to offset: 0x703dd06038
+2026-11-24 11:16:27 [INFO] Installing hook: Recorder_ComputeSwingRating to offset: 0x703c7c9db4
+2026-11-24 11:16:27 [INFO] Installing hook: Recorder_ProcessSwing to offset: 0x703c7ca690
+2026-11-24 11:16:27 [INFO] Installing hook: Recorder_SpawnControllerStart to offset: 0x703dbf9ae0
+2026-11-24 11:16:27 [INFO] Installing hook: Recorder_ShowPause to offset: 0x703dcc7c54
+2026-11-24 11:16:27 [INFO] Installing hook: Recorder_Resume to offset: 0x703dcc876c
+2026-11-24 11:16:27 [INFO] Installing hook: Recorder_Finish to offset: 0x703dc571dc
+2026-11-24 11:16:27 [INFO] Vivify: loaded mods (46): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libweb-utils.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaverplusplus.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libcustom-types.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libsongdetails.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libtinyxml2.so 0.0.0, FakeId 0.1.9, BSML 0.4.55,  , christmas 1.0.1, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, Lapiz 0.2.23, MetaCore 1.6.3, too-many-fireworks 1.2.5, tricksaberlite 0.1.1, SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether 2.2.5, BetterSongSearch 2.2.13, ClockMod 1.15.0-Dev, ModifiersCoreQuest 0.1.0, CustomJSONData 0.24.5, Tracks 2.5.4, Vivify 0.15.44, PlaylistCore 1.5.5, bl 0.9.666, bomb-qol
+2026-11-24 11:16:27 [INFO] orer 0.2.1, BetterSongList 1.0.8, ChatPlexSDK-BS 6.4.5, Chroma 2.10.3, CustomModels 1.2.1, Qounters++ 1.1.5, expcounter 0.2.0, MappingExtensions 0.25.4, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistManager 1.4.1, SimpleSabers 0.1.3, SnipeFeed 3.4.0, SongDownloader 0.8.8, unicode 0.1.7
+2026-11-24 11:16:29 [INFO] Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+2026-11-24 11:16:35 [INFO] Vivify Send Logs: uploaded 3 file part(s), 11 KB (logs/2026-11-24/161626_0.15.44_485db5564d99d81f 06ad8ae; stored 3, deduplicated 0; 42831235 bytes saved cumulatively
+2026-11-24 11:16:35 [INFO] )
+2026-11-24 11:16:36 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.04,1.59,0.10) fwd=(-0.09,-0.05,1.00)
+2026-11-24 11:16:36 [INFO] Vivify main camera cullingMask is now 0x3818ff37
+2026-11-24 11:16:41 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.07,1.62,0.01) fwd=(0.37,0.51,0.78)
+2026-11-24 11:16:42 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.02,1.63,0.01) fwd=(0.34,0.58,0.74)
+2026-11-24 11:17:39 [INFO] Vivify: the game uses STEREO_MULTIVIEW_ON (60 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+2026-11-24 11:17:39 [INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+2026-11-24 11:17:39 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)' isCustom=true hasDetails=true
+2026-11-24 11:17:39 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-24 11:17:39 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=true mapReflectionProbes=reduced crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-24 11:17:39 [INFO] Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)/bundleAndroid2021.vivify'
+2026-11-24 11:17:39 [INFO] Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)/HardStandard.dat' at condition 690
+2026-11-24 11:17:39 [INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)/bundleAndroid2021.vivify'
+2026-11-24 11:17:39 [INFO] Vivify: play button blocked by Vivify ("Checking shaders...")
+2026-11-24 11:17:40 [INFO] Vivify: play button is enabled (no mod is blocking it)
+2026-11-24 11:17:40 [INFO] Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)/bundleAndroid2021.vivify'
+2026-11-24 11:17:40 [INFO] Vivify depth copy: PC 2D material=true PC array-slice material=true native slice binding=true
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/fonts/pala sdf - outro text.mat material='pala SDF - Outro Text' shader='You/OutroText' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/dropveins.mat material='DropVeins' shader='You/DropVeins' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/ambientflare.mat material='AmbientFlare' shader='You/AmbientFlare' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/ambientparticles.mat material='AmbientParticles' shader='You/AmbientParticles' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/builduppanel.mat material='BuildupPanel' shader='You/BuildupPanel' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/buildupwisps.mat material='BuildupWisps' shader='You/BuildupWisp' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/dropwisps.mat material='DropWisps' shader='You/DropWisp' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/explosion.mat material='Explosion' shader='You/Explosion' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/implosion.mat material='Implosion' shader='You/Implosion' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/outline.mat material='Outline' shader='You/CircleOutline' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/shaft.mat material='Shaft' shader='You/Shaft' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/effects/veinbacklight.mat material='VeinBacklight' shader='You/VeinBacklight' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/endingveins.mat material='EndingVeins' shader='You/EndingVeins' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/flowertiddle.mat material='FlowerTiddle' shader='You/SimpleColor' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/dropnote.mat material='DropNote' shader='You/PortalNote' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/dropnote_debris.mat material='DropNote_Debris' shader='You/PortalNote' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/dropnotearrow.mat material='DropNoteArrow' shader='You/FlickeringArrow' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/glassarrow.mat material='GlassArrow' shader='You/GlassNote' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/glassnote.mat material='GlassNote' shader='You/GlassNote' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/glassnote_debris.mat material='GlassNote_Debris' shader='You/GlassNote' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/reflectivearrow.mat material='ReflectiveArrow' shader='You/ReflectiveNote' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/reflectivenote.mat material='ReflectiveNote' shader='You/ReflectiveNote' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/note/reflectivenote_debris.mat material='ReflectiveNote_Debris' shader='You/ReflectiveNote' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/pedal.mat material='Pedal' shader='You/Leaf' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/post processing/buildupeffects.mat material='BuildupEffects' shader='You/EdgeHighlights' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/post processing/dropeffects.mat material='DropEffects' shader='You/DropEffects' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/ribbon.mat material='Ribbon' shader='You/Ribbon' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/saber/saberguide.mat material='SaberGuide' shader='You/SaberGuide' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/saber/sabertrail.mat material='SaberTrail' shader='You/SaberTrail' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/skybox/ambientskybox.mat material='AmbientSkybox' shader='You/AmbientSkybox' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/skybox/dropskybox.mat material='DropSkybox' shader='You/DropSkybox' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/skybox/endingskybox.mat material='EndingSkybox' shader='You/EndingSkybox' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify material: context=bundle-load asset=assets/materials/skybox/introskybox.mat material='IntroSkybox' shader='You/IntroSkybox' supported=true internalError=false
+2026-11-24 11:17:40 [INFO] Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)/bundleAndroid2021.vivify' grabs _GrabTexture1
+2026-11-24 11:17:40 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)/bundleAndroid2021.vivify' -> needed by You/AmbientFlare, You/DropWisp
+2026-11-24 11:18:10 [INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=63
+2026-11-24 11:18:10 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/e4af (Falling To Pieces - nitronik.exe)' isCustom=true hasDetails=true
+2026-11-24 11:18:20 [INFO] Vivify replay recorder: not recording this level (the Replay mod is not installed)
+2026-11-24 11:18:21 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3819ff37 stereoMode=3 multipassSetting=false pos=(-0.10,1.63,-0.07) fwd=(0.51,0.58,0.63)
+2026-11-24 11:18:21 [INFO] Vivify main camera cullingMask is now 0x3819ff37
+2026-11-24 11:18:39 [INFO] Vivify replay recorder: not recording this level (the Replay mod is not installed)
+2026-11-24 11:18:39 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3819ff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.63,-0.05) fwd=(0.07,0.66,0.75)
+2026-11-24 11:18:41 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.12,1.58,0.01) fwd=(-0.55,-0.12,0.82)
+2026-11-24 11:18:41 [INFO] Vivify main camera cullingMask is now 0x3818ff37
+2026-11-24 11:18:44 [INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+2026-11-24 11:18:44 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/e4af (Falling To Pieces - nitronik.exe)' isCustom=true hasDetails=true
+2026-11-24 11:18:46 [INFO] Vivify replay recorder: not recording this level (the Replay mod is not installed)
+2026-11-24 11:18:46 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3819ff37 stereoMode=3 multipassSetting=false pos=(-0.06,1.60,-0.02) fwd=(0.06,0.10,0.99)
+2026-11-24 11:18:46 [INFO] Vivify main camera cullingMask is now 0x3819ff37
+2026-11-24 11:19:01 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.09,1.63,0.01) fwd=(0.36,0.56,0.75)
+2026-11-24 11:19:01 [INFO] Vivify main camera cullingMask is now 0x3818ff37
+2026-11-24 11:19:05 [INFO] Vivify replay recorder: not recording this level (the Replay mod is not installed)
+2026-11-24 11:19:05 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3819ff37 stereoMode=3 multipassSetting=false pos=(-0.11,1.63,-0.01) fwd=(0.34,0.60,0.73)
+2026-11-24 11:19:05 [INFO] Vivify main camera cullingMask is now 0x3819ff37
+2026-11-24 11:21:26 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.45,0.19) fwd=(-0.14,-0.76,0.63)
+2026-11-24 11:21:26 [INFO] Vivify main camera cullingMask is now 0x3818ff37
+2026-11-24 11:22:01 [INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+2026-11-24 11:22:01 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/512a9 (One of These Mornings - Ooz X Pixy31 X Serephor)' isCustom=true hasDetails=true
+2026-11-24 11:22:01 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-24 11:22:01 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=true mapReflectionProbes=reduced crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-24 11:22:01 [INFO] Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/512a9 (One of These Mornings - Ooz X Pixy31 X Serephor)/bundleAndroid2021.vivify'
+2026-11-24 11:22:01 [INFO] Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/512a9 (One of These Mornings - Ooz X Pixy31 X Serephor)/ExpertStandard.dat' at condition 690
+2026-11-24 11:22:01 [INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/512a9 (One of These Mornings - Ooz X Pixy31 X Serephor)/bundleAndroid2021.vivify'
+2026-11-24 11:22:01 [INFO] Vivify: play button blocked by Vivify ("Checking shaders...")
+2026-11-24 11:22:01 [INFO] Vivify: play button is enabled (no mod is blocking it)
+2026-11-24 11:22:01 [INFO] Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/512a9 (One of These Mornings - Ooz X Pixy31 X Serephor)/bundleAndroid2021.vivify'
+2026-11-24 11:22:02 [INFO] Vivify material: context=bundle-load asset=assets/rsih saber/mats/rsih_saber_trail.mat material='RSIH_Saber_Trail' shader='Custom/rsih saber trail' supported=true internalError=false
+2026-11-24 11:22:02 [INFO] Vivify material: context=bundle-load asset=assets/shaders/tvdist.mat material='TvDist' shader='Custom/TvDist' supported=true internalError=false
+2026-11-24 11:22:02 [INFO] Vivify shader asset: path='assets/shaders/tvdist.shader' shader='Custom/TvDist' supported=true subshaders=1
+2026-11-24 11:22:02 [INFO] Vivify material: context=bundle-load asset=assets/shaders/vhs.mat material='VHS' shader='Custom/VHS' supported=true internalError=false
+2026-11-24 11:22:02 [INFO] Vivify shader asset: path='assets/shaders/vhs.shader' shader='Custom/VHS' supported=true subshaders=1
+2026-11-24 11:22:02 [INFO] Vivify shaders: bundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/512a9 (One of These Mornings - Ooz X Pixy31 X Serephor)/bundleAndroid2021.vivify' converted=false total=2 runnable=2 noAndroidProgram=0 deviceRejected=0
+2026-11-24 11:22:02 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/512a9 (One of These Mornings - Ooz X Pixy31 X Serephor)/bundleAndroid2021.vivify' -> not needed
+2026-11-24 11:22:06 [INFO] Vivify Send Logs: queued behind the current upload
+2026-11-24 11:22:09 [INFO] Vivify Send Logs: relay health check succeeded
