@@ -1,0 +1,58 @@
+=== Vivify 0.15.51 native crash at 1795496033 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27d9000035ed
+thread 13841 'UnityMain'
+pc 0x7c1fd3c9d8  lr 0x7c1fd3c9a8  sp 0x7b16453650  fp 0x7b164536f0
+backtrace:
+  #00 pc 0x7c1fd3c9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7c1fd3c9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7ac2f19234  libmetacore.so +0xce234
+  #03 fp 0x7ab867d114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x7ab867d264  libil2cpp.so +0x2226264
+  #05 fp 0x7ac2ecec10  libmetacore.so +0x83c10
+  #06 fp 0x7ac2ecebb0  libmetacore.so +0x83bb0 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7ac2f126ac  libmetacore.so +0xc76ac
+  #08 fp 0x79033697f8  libbsl.so +0x12d7f8
+  #09 fp 0x7ab9f55568  libil2cpp.so +0x3afe568
+last Vivify log lines (oldest first):
+  Vivify: loaded mods (28): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.26,-1.99) fwd=(-0.03,0.02,1.00)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify Send Logs: uploaded 3 file part(s), 12 KB (logs/2026-11-24/045300_0.15.51-lite_c391cd02aba04774 4264605; stored 3, deduplicated 0; 40126008 bytes saved cumulatively
+  )
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.04,0.91,0.01) fwd=(-0.10,0.02,1.00)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.27,-2.00) fwd=(-0.11,0.08,0.99)
+  Vivify: the game uses STEREO_MULTIVIEW_ON (60 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51492 (Pompeii - RateGyro, MadChase, Pleo)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51492 (Pompeii - RateGyro, MadChase, Pleo)/bundleAndroid2021.vivify'
+  Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51492 (Pompeii - RateGyro, MadChase, Pleo)/HardLawless.dat' at condition 691
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51492 (Pompeii - RateGyro, MadChase, Pleo)/bundleAndroid2021.vivify'
+  Vivify: moved 66 converted file(s) into one folder per map
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51492 (Pompeii - RateGyro, MadChase, Pleo)/bundleAndroid2021.vivify'
+  Vivify depth copy: PC 2D material=true PC array-slice material=true native slice binding=true
+  Vivify material: context=bundle-load asset=assets/pooods/trail.mat material='trail' shader='Hidden/Locked/.poiyomi/Poiyomi Pro/6ce60892ee0f76d4dbca6460bd36a367' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/pooods/tubestuff/eye/blit.mat material='blit' shader='Custom/blit/CloseEyesBlit' supported=true internalError=false
+  Vivify saber chain modelNode(smc): BasicSaberModelHologram(Clone)[w=(0.11,13.46,178.00) l=(0.00,0.00,0.00)] <- RightSaberBase[w=(0.11,13.46,178.00) l=(1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- Multip
+  Vivify saber chain saberNode: RightSaberBase[w=(0.11,13.46,178.00) l=(1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.00)] <- ShaderWarmup[w=(0.
+  Vivify saber chain initParent: RightSaberBase[w=(0.11,13.46,178.00) l=(1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.00)] <- ShaderWarmup[w=(0
+  Vivify saber chain modelNode(smc): BasicSaberModelHologram(Clone)[w=(-9.49,13.46,178.00) l=(0.00,0.00,0.00)] <- LeftSaberBase[w=(-9.49,13.46,178.00) l=(-1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- Mult
+  Vivify saber chain saberNode: LeftSaberBase[w=(-9.49,13.46,178.00) l=(-1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.00)] <- ShaderWarmup[w=(0
+  Vivify saber chain initParent: LeftSaberBase[w=(-9.49,13.46,178.00) l=(-1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.00)] <- ShaderWarmup[w=(
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.03,1.39,-0.04) fwd=(0.02,0.07,1.00)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.05,1.49,-2.09) fwd=(0.02,0.07,1.00)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=18
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51492 (Pompeii - RateGyro, MadChase, Pleo)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51492 (Pompeii - RateGyro, MadChase, Pleo)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle already preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51492 (Pompeii - RateGyro, MadChase, Pleo)/bundleAndroid2021.vivify'
+=== end ===
+
