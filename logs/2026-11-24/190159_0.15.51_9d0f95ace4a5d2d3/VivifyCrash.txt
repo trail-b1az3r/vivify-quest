@@ -1,0 +1,52 @@
+=== Vivify 0.15.51 native crash at 1795546910 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x30e48
+thread 13201 'Thread-3'
+pc 0x7e239f6740  lr 0x7e239f66f8  sp 0x7d33941480  fp 0x7d339417b0
+backtrace:
+  #00 pc 0x7e239f6740  libunity.so +0x13ee740
+  #01 lr 0x7e239f66f8  libunity.so +0x13ee6f8
+  #02 fp 0x7e23bdc9f4  libunity.so +0x15d49f4
+  #03 fp 0x7f88f13334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify visual check: 4 light(s) on, 0 with shadows: 'LightRight' type=2 intensity=1.00 shadows=0; 'LightLeft' type=2 intensity=1.00 shadows=0; 'LightFront' type=2 intensity=2.00 shadows=0; 'LightBottom' type=2 intensity=8.00 shadows=0; amb
+  Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout
+  Vivify visual check: cameras that may render the mirror: 'MainCamera' stereo=true eye=3 target=screen mask=0x3819ff37
+  Vivify visual check at 5s: 91 active renderer(s), 2 with no runnable shader; most drawn: Custom/CustomParticles x21, BeatSaber/Unlit Glow x16, Abstract/Debris2 x16, Saber/SaberReflective x6, Custom/NoteHD x3, Custom/SimpleLit x2, Custom/Gl
+  Vivify grab texture '_BackgroundTex' at 5s: nothing bound
+  Vivify grab texture '_Base' at 5s: nothing bound
+  Vivify grab texture '_BlackHoleGrabTex' at 5s: nothing bound
+  Vivify grab texture '_EclipseGrabTex' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+  Vivify visual check: main camera cullingMask=0x3819ff37 depthTextureMode=1 clearFlags=2
+  Vivify custom event: type='Blit' time=11.2 songTime=11.200454
+  Vivify material: context=Blit asset=assets/shaders/blackout.mat material='BlackOut' shader='PostProcessing/BlackOut' supported=true internalError=false
+  Vivify Blit event: time=11.2 asset='assets/shaders/blackout.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=6
+  Vivify custom event: type='CreateCamera' time=12.533333 songTime=12.543105
+  Vivify CreateCamera: id='NotesOneCam' colorTexture='_NotesOne' depthTexture='_NotesOne_Depth' size=1680x1760 mainEffect=true
+  Vivify culling pass on 'VivifyCamera_NotesOneCam': whitelist=true tracks=1 trackedGOs=6 movedGOs=21 camMask=0x00400000
+  Vivify culling pass on 'VivifyCamera_NotesOneCam': whitelist=true tracks=1 trackedGOs=8 movedGOs=28 camMask=0x00400000
+  Vivify culling pass on 'VivifyCamera_NotesOneCam': whitelist=true tracks=1 trackedGOs=8 movedGOs=28 camMask=0x00400000
+  Vivify: Reduce Debris player option = false (custom debris enabled)
+  Vivify custom event: type='Blit' time=12.773334 songTime=12.788955
+  Vivify Blit event: time=12.773334 asset='<none>' source='_Main' targets=1 priority=-11 pass=-1 order=7 durationBeats=0
+  Vivify custom event: type='SetRenderingSettings' time=12.8 songTime=12.80046
+  Vivify SetRenderingSettings: time=12.8 durationSeconds=0 immediate=true
+  Vivify custom event: type='DestroyObject' time=12.8 songTime=12.80046
+  Vivify DestroyObject: destroying live prefab id='clockscene'
+  Vivify custom event: type='SetGlobalProperty' time=12.8 songTime=12.80046
+  Vivify custom event: type='InstantiatePrefab' time=12.8 songTime=12.80046
+  Vivify InstantiatePrefab: asset='assets/monitor/monitorscene.prefab' id='monitorscene' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='monitorscene' asset='assets/monitor/monitorscene.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify custom event: type='Blit' time=12.8 songTime=12.80046
+  Vivify material: context=Blit asset=assets/blendexperiment/blender.mat material='Blender' shader='PostProcessing/Difference' supported=true internalError=false
+  Vivify Blit event: time=12.8 asset='assets/blendexperiment/blender.mat' source='_Main' targets=1 priority=-12 pass=-1 order=7 durationBeats=16
+  Vivify custom event: type='SetCameraProperty' time=12.8 songTime=12.80046
+  Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=true bloomPrePass=unset mainEffect=unset
+  Vivify custom event: type='Blit' time=12.8 songTime=12.80046
+  Vivify material: context=Blit asset=assets/shaders/distortnotes/one.mat material='One' shader='PostProcessing/DistortNotes' supported=true internalError=false
+  Vivify Blit event: time=12.8 asset='assets/shaders/distortnotes/one.mat' source='_Main' targets=1 priority=2 pass=0 order=7 durationBeats=64
+  Vivify culling pass on 'MainCamera': whitelist=false tracks=1 trackedGOs=8 movedGOs=28 camMask=0x3819ff37
+=== end ===
+
