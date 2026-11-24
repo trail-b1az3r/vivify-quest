@@ -1,0 +1,58 @@
+=== Vivify 0.15.45 native crash at 1795543098 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x284900002b07
+thread 11053 'UnityMain'
+pc 0x7ba775c9d8  lr 0x7ba775c9a8  sp 0x7a844721e0  fp 0x7a84472280
+backtrace:
+  #00 pc 0x7ba775c9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7ba775c9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7a84546c64  libmetacore.so +0xcdc64
+  #03 fp 0x7ba76ea4b4  libc.so +0x5c4b4
+  #04 fp 0x78618626c4  libvainsabers.so +0x1ba6c4 (_ZN10VainSabers13BlurSaberPart9OnDestroyEv +0xf8)
+  #05 fp 0x786184c360  libvainsabers.so +0x1a4360
+  #06 fp 0x7a26924840  libil2cpp.so +0x21ba840
+  #07 fp 0x7a2692478c  libil2cpp.so +0x21ba78c
+  #08 fp 0x7ba9f726c3
+  #09 fp 0x7a84473800
+last Vivify log lines (oldest first):
+  Installing hook: Recorder_ProcessSwing to offset: 0x7a26e1c690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7a2824bae0
+  Installing hook: Recorder_ShowPause to offset: 0x7a28319c54
+  Installing hook: Recorder_Resume to offset: 0x7a2831a76c
+  Installing hook: Recorder_Finish to offset: 0x7a282a91dc
+  Vivify: loaded mods (42): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  5, MetaCore 1.6.3, Hollywood 1.2.2, Lapiz 0.2.23, SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether 2.2.5, BetterSongSearch 2.2.13, ModifiersCoreQuest 0.1.0, CustomJSONData 0.24.5, Tracks 2.5.4, Vivify 0.15.45, PlaylistCore 1.5.5, bl 0.
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.02,1.32,0.04) fwd=(0.04,-0.02,1.00)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.00,2.01,0.01) fwd=(0.05,-0.18,0.98)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify Send Logs: uploaded 4 file part(s), 281 KB (logs/2026-11-24/175019_0.15.45_ff9ea8bc347d8aed 7cb635e; stored 4, deduplicated 0; 42832277 bytes saved cumulatively
+  )
+  Vivify: the game uses STEREO_MULTIVIEW_ON (60 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(-0.10,1.89,0.10) fwd=(0.40,-0.47,0.78)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.99,-0.03) fwd=(0.04,-0.25,0.97)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(-0.01,2.01,0.02) fwd=(0.01,-0.20,0.98)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.03,2.00,-0.04) fwd=(-0.12,-0.27,0.96)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(0.05,2.01,0.01) fwd=(0.15,-0.15,0.98)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.02,2.00,-0.05) fwd=(-0.04,-0.22,0.97)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(0.00,1.78,-0.01) fwd=(0.08,-0.25,0.97)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.07,1.78,-0.04) fwd=(-0.24,-0.11,0.96)
+  Vivify main camera cullingMask is now 0x3d3aff37
+=== end ===
+
