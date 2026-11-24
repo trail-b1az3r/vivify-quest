@@ -1,0 +1,175 @@
+=== Vivify 0.15.51 native crash at 1795492513 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7e4c9fe774
+thread 9174 'UnityMain'
+pc 0x7ee07587a4  lr 0x7b9634cf48  sp 0x7dca274a40  fp 0x7dca274e00
+backtrace:
+  #00 pc 0x7ee07587a4  libc.so +0xc87a4
+  #01 lr 0x7b9634cf48  libchroma.so +0x333f48
+  #02 fp 0x7b962db4d0  libchroma.so +0x2c24d0 (_Z33InstallGameplayCoreInstallerHooksv +0xec)
+  #03 fp 0x7b96348f50  libchroma.so +0x32ff50 (late_load +0x2b4)
+  #04 fp 0x7dd216bb9c  libsl2.so +0x543b9c
+  #05 fp 0x7d67119fb4  libunity.so +0xab1fb4
+  #06 fp 0x7ee02ab6c3
+  #07 fp 0x7dca275ea0
+last Vivify log lines (oldest first):
+  Installing hook: SaberModelController_Init to offset: 0x7d4ca66928
+  Installing hook: GameNoteController_Init to offset: 0x7d4c9641d0
+  Installing hook: BombNoteController_Init to offset: 0x7d4c9612d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x7d4c962668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7d4ca04bb8
+  Installing hook: NoteDebris_Init to offset: 0x7d4c9672e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7d4cefb968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x7d4c859018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7d4cefee78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7d4cefe9f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x7d4ceffbb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7d4cefff2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7d4ceff7f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x7d4c9ae37c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x7d4c9ae58c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7d4c9ae658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7d4c9ae560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7d4c9ae3e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7d4c9ae4a4
+  Installing hook: PauseController_Pause to offset: 0x7d4ca207ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7d4ca2ac54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7d4ca2b734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7d4ca2b094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7d4ca2ad88
+  Installing hook: GamePause_Resume to offset: 0x7d4ca26178
+  Installing hook: Recorder_InstallBindings to offset: 0x7d4ca6f294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x7d4ca638b8
+  Installing hook: Recorder_SpawnNote to offset: 0x7d4c95a928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x7d4c959dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x7d4c95bde4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7d4ca6944c
+  Installing hook: Recorder_ScoreStart to offset: 0x7d4ca69038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7d4b52cdb4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7d4b52d690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7d4c95cae0
+  Installing hook: Recorder_ShowPause to offset: 0x7d4ca2ac54
+  Installing hook: Recorder_Resume to offset: 0x7d4ca2b76c
+  Installing hook: Recorder_Finish to offset: 0x7d4c9ba1dc
+  Vivify: loaded mods (63): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, JDFixer 3.4.0, Lapiz 0.2.23, transparency 0.1.1, SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether 2.2.5, BetterSongSearch 2.2.13, IntroSkip 1.2.2, ModifiersCoreQuest 0.1.0,
+=== end ===
+
+=== Vivify 0.15.51 native crash at 1795493275 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x4800470049005c
+thread 9869 'UnityMain'
+pc 0x7baa0ff3dc  lr 0x7baa1820f8  sp 0x7dcc48a430  fp 0x7dcc48b510
+backtrace:
+  #00 pc 0x7baa0ff3dc  libhitscorevisualizer.so +0xef3dc (_Z5JudgePN15GlobalNamespace14CutScoreBufferEPNS_17FlyingScoreEffectERKNS_11NoteCutInfoE +0x50)
+  #01 lr 0x7baa1820f8  libhitscorevisualizer.so +0x1720f8 (_ZN58Hook_CutScoreBuffer_HandleSaberSwingRatingCounterDidChange58hook_CutScoreBuffer_HandleSaberSwingRatingCounterDidChangeEPN15GlobalNamespace14CutScoreBufferEPNS0_24ISaberSwingRatingCounterEf +0xb8)
+  #02 fp 0x7baa192ac8  libhitscorevisualizer.so +0x182ac8
+  #03 fp 0x7d5a248fe0  libil2cpp.so +0x26b2fe0
+  #04 fp 0x7bb70bcdc8  libbl.so +0x699dc8 (_ZN14ReplayRecorder24Hook_ProcessNewSwingData24hook_ProcessNewSwingDataEPN15GlobalNamespace23SaberSwingRatingCounterENS1_24BladeMovementDataElementES4_b +0x7c)
+  #05 fp 0x7bb70d0788  libbl.so +0x6ad788
+  #06 fp 0x7ba8953fec  libnoodleextensions.so +0x295fec (_ZN43Hook_SaberSwingRatingCounter_ProcessNewData43hook_SaberSwingRatingCounter_ProcessNewDataEPN15GlobalNamespace23SaberSwingRatingCounterENS0_24BladeMovementDataElementES3_b +0x214)
+  #07 fp 0x7ba89539a8  libnoodleextensions.so +0x2959a8
+  #08 fp 0x7d5a2478dc  libil2cpp.so +0x26b18dc
+last Vivify log lines (oldest first):
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55bbd (_Nettspend Cearense - trgg)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.11,1.15,0.06) fwd=(0.11,-0.28,0.95)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.92,-0.17) fwd=(-0.42,0.15,0.90)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/1ea1e (Crazy banger - Aquaflee)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.07,1.76,-0.03) fwd=(0.53,-0.13,0.84)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.03,1.91,-0.07) fwd=(-0.36,-0.12,0.93)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/2dd30 (Splitting Noise - Kip)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.04,1.92,-0.28) fwd=(-0.03,0.02,1.00)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.06,1.87,-0.16) fwd=(-0.02,-0.33,0.94)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3b391 ( アナメイン - Bug)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.17,1.91,-0.30) fwd=(0.41,0.05,0.91)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.05,1.89,-0.35) fwd=(-0.11,-0.18,0.98)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.10,1.90,-0.38) fwd=(0.19,-0.00,0.98)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.15,1.90,-0.07) fwd=(-0.38,-0.05,0.92)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4573e (you are ...mine - WalkingKat)' isCustom=true hasDetails=true
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e83c (An artifice - Potassium 737)' isCustom=true hasDetails=true
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5488d (orchids - Midnightcotton121, Freakynovavr)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.09,1.90,-0.08) fwd=(0.13,-0.01,0.99)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.89,0.12) fwd=(-0.10,-0.15,0.98)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.06,1.90,0.06) fwd=(0.79,-0.01,0.62)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+=== end ===
+
+=== Vivify 0.15.51 native crash at 1795493622 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x281000004ed4
+thread 20217 'UnityMain'
+pc 0x7ee075fe14  lr 0x7ee075fde8  sp 0x7dc6417fa0  fp 0x7dc6418040
+backtrace:
+  #00 pc 0x7ee075fe14  libc.so +0xcfe14 (abort +0xa4)
+  #01 lr 0x7ee075fde8  libc.so +0xcfde8 (abort +0x78)
+  #02 fp 0x7d7473fc64  libmetacore.so +0xcdc64
+  #03 fp 0x7dd09ab55c  libsl2.so +0x4fb55c
+  #04 fp 0x7dd09aae74  libsl2.so +0x4fae74
+  #05 fp 0x7dd09aad48  libsl2.so +0x4fad48
+  #06 fp 0x7dd09aace8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7ba4b90cd4  libhitscorevisualizer.so +0x182cd4
+  #08 fp 0x7d661acfe0  libil2cpp.so +0x26b2fe0
+  #09 fp 0x7bac6c5dc8  libbl.so +0x699dc8 (_ZN14ReplayRecorder24Hook_ProcessNewSwingData24hook_ProcessNewSwingDataEPN15GlobalNamespace23SaberSwingRatingCounterENS1_24BladeMovementDataElementES4_b +0x7c)
+  #10 fp 0x7bac6d9788  libbl.so +0x6ad788
+  #11 fp 0x7ba1ec9fec  libnoodleextensions.so +0x295fec (_ZN43Hook_SaberSwingRatingCounter_ProcessNewData43hook_SaberSwingRatingCounter_ProcessNewDataEPN15GlobalNamespace23SaberSwingRatingCounterENS0_24BladeMovementDataElementES3_b +0x214)
+  #12 fp 0x7ba1ec99a8  libnoodleextensions.so +0x2959a8
+  #13 fp 0x7d661ab8dc  libil2cpp.so +0x26b18dc
+last Vivify log lines (oldest first):
+  Installing hook: Recorder_NoteWasCut to offset: 0x7d675dade4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7d676e844c
+  Installing hook: Recorder_ScoreStart to offset: 0x7d676e8038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7d661abdb4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7d661ac690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7d675dbae0
+  Installing hook: Recorder_ShowPause to offset: 0x7d676a9c54
+  Installing hook: Recorder_Resume to offset: 0x7d676aa76c
+  Installing hook: Recorder_Finish to offset: 0x7d676391dc
+  Vivify: loaded mods (63): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, JDFixer 3.4.0, Lapiz 0.2.23, transparency 0.1.1, SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether 2.2.5, BetterSongSearch 2.2.13, IntroSkip 1.2.2, ModifiersCoreQuest 0.1.0,
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.27,-0.04) fwd=(0.66,0.14,0.73)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.07,1.11,0.08) fwd=(-0.08,-0.59,0.81)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.07,1.14,0.07) fwd=(-0.07,-0.69,0.72)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify: the game uses STEREO_MULTIVIEW_ON (60 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/31d85 (a little peace of happiness - OfficialSalad)' isCustom=true hasDetails=true
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/31d85 (a little peace of happiness - OfficialSalad)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.07,1.21,-0.05) fwd=(0.04,-0.15,0.99)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.14,1.94,-0.10) fwd=(-0.38,0.10,0.92)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.10,1.91,-0.12) fwd=(-0.30,-0.06,0.95)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.14,1.92,-0.13) fwd=(0.25,-0.08,0.96)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.16,1.93,-0.24) fwd=(-0.38,0.25,0.89)
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.03,1.92,-0.11) fwd=(-0.27,-0.06,0.96)
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.09,1.95,-0.12) fwd=(0.41,0.25,0.88)
+=== end ===
+
