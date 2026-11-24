@@ -1,0 +1,61 @@
+=== Vivify 0.15.45 native crash at 1795534938 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x79e022d0d0
+thread 12967 'UnityMain'
+pc 0x79e022d0d0  lr 0x7a31706314  sp 0x7a31071f00  fp 0x7a31071f60
+backtrace:
+  #00 pc 0x79e022d0d0
+  #01 lr 0x7a31706314  libunity.so +0x68b314
+  #02 fp 0x7a1c7dc78c  libil2cpp.so +0x21ba78c
+  #03 fp 0x787423fcfc  libVivify.so +0x395cfc
+  #04 fp 0x787424a748  libVivify.so +0x3a0748
+  #05 fp 0x78741ab7ec  libVivify.so +0x3017ec
+  #06 fp 0x78741a5c48  libVivify.so +0x2fbc48
+  #07 fp 0x7874193074  libVivify.so +0x2e9074 (_ZN6Vivify16RuntimeBehaviour6UpdateEv +0x1594)
+  #08 fp 0x78740ad334  libVivify.so +0x203334
+  #09 fp 0x7a1c7dc840  libil2cpp.so +0x21ba840
+  #10 fp 0x7a1c7dc78c  libil2cpp.so +0x21ba78c
+  #11 fp 0x7ba9f726c3
+  #12 fp 0x7a31075800
+last Vivify log lines (oldest first):
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify main camera: scene depth texture enabled for this map
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify main camera: scene depth texture enabled for this map
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify main camera: scene depth texture enabled for this map
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify main camera: scene depth texture enabled for this map
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify main camera: scene depth texture enabled for this map
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.SetRoomTransformOffset skipped: isolation toggle enabled
+  VRCenterAdjust.OnEnable skipped: isolation toggle enabled
+  VRCenterAdjust.OnDisable skipped: isolation toggle enabled
+  VRCenterAdjust.OnDisable skipped: isolation toggle enabled
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.03,2.03,-0.02) fwd=(-0.30,0.08,0.95)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify main camera: scene depth texture enabled for this map
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=3 preloaded=14 synced=0 secondaryCameras=0 declaredTextures=0 assets=37
+  Vivify level end: camera effects removed
+=== end ===
+
