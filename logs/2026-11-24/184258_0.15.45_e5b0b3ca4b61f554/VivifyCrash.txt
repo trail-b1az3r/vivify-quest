@@ -1,0 +1,111 @@
+=== Vivify 0.15.45 native crash at 1795545762 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x8
+thread 12192 'UnityMain'
+pc 0x79e6229560  lr 0x79e6229344  sp 0x79e95f97d0  fp 0x79e95f9890
+backtrace:
+  #00 pc 0x79e6229560  libil2cpp.so +0x2154560
+  #01 lr 0x79e6229344  libil2cpp.so +0x2154344
+  #02 fp 0x79e6229148  libil2cpp.so +0x2154148
+  #03 fp 0x79e6229148  libil2cpp.so +0x2154148
+  #04 fp 0x79e6229148  libil2cpp.so +0x2154148
+  #05 fp 0x7b562fc6c3
+  #06 fp 0x79e95fa840
+last Vivify log lines (oldest first):
+  Vivify Blit effects cleared: Disable All Blits enabled pre=0 post=1
+  Vivify custom event: type='Blit' time=150.38962 songTime=150.39249
+  Vivify material: context=Blit asset=assets/kick.mat material='kick' shader='Custom/kickwow' supported=true internalError=false
+  Vivify Blit event: time=150.38962 asset='assets/kick.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=8
+  Vivify Blit effects cleared: Disable All Blits enabled pre=0 post=1
+  Vivify custom event: type='SetMaterialProperty' time=151.16882 songTime=151.172
+  Vivify custom event: type='Blit' time=151.16882 songTime=151.172
+  Vivify material: context=Blit asset=assets/vignette.mat material='Vignette' shader='Custom/Vignette' supported=true internalError=false
+  Vivify Blit event: time=151.16882 asset='assets/vignette.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=64
+  Vivify Blit effects cleared: Disable All Blits enabled pre=0 post=1
+  Vivify custom event: type='Blit' time=158.57143 songTime=158.57393
+  Vivify material: context=Blit asset=assets/kick.mat material='kick' shader='Custom/kickwow' supported=true internalError=false
+  Vivify Blit event: time=158.57143 asset='assets/kick.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=8
+  Vivify Blit effects cleared: Disable All Blits enabled pre=0 post=1
+  Vivify custom event: type='InstantiatePrefab' time=163.63637 songTime=163.6372
+  Vivify InstantiatePrefab: asset='assets/prefabs/credits.prefab' id='canvas' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='canvas' asset='assets/prefabs/credits.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify text check +1s: prefab='assets/prefabs/credits.prefab' text='SongName' active=true enabled=true chars=61 shown=61 lossyScale=(0.1852,0.1852,0.1852) font='Minecraft SDF' dynamic=false sourceFont=false mesh vertices=208 uv2[0]=(0,0.00
+  Vivify text check +1s: prefab='assets/prefabs/credits.prefab' text='Mapper' active=true enabled=true chars=113 shown=113 lossyScale=(0.1852,0.1852,0.1852) font='Minecraft SDF' dynamic=false sourceFont=false mesh vertices=368 uv2[0]=(0,0.00
+  Vivify custom event: type='Blit' time=166.94806 songTime=166.94897
+  Vivify material: context=Blit asset=assets/kick.mat material='kick' shader='Custom/kickwow' supported=true internalError=false
+  Vivify Blit event: time=166.94806 asset='assets/kick.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=8
+  Vivify Blit effects cleared: Disable All Blits enabled pre=0 post=1
+  Vivify text check +6s: prefab='assets/prefabs/credits.prefab' text='SongName' active=true enabled=true chars=61 shown=61 lossyScale=(0.1852,0.1852,0.1852) font='Minecraft SDF' dynamic=false sourceFont=false mesh vertices=208 uv2[0]=(0,0.00
+  Vivify text check +6s: prefab='assets/prefabs/credits.prefab' text='Mapper' active=true enabled=true chars=113 shown=113 lossyScale=(0.1852,0.1852,0.1852) font='Minecraft SDF' dynamic=false sourceFont=false mesh vertices=368 uv2[0]=(0,0.00
+  Vivify frame stall: the game did not draw for 1.2s (songTime 176.04, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/448db (Darkness - animelover121)/bundleAndroid2021.vivify')
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.07,1.85,0.02) fwd=(-0.11,0.21,0.97)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=4 preloaded=4 synced=0 secondaryCameras=0 declaredTextures=0 assets=19
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+=== end ===
+
+=== Vivify 0.15.45 native crash at 1795545771 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7ada6562d4
+thread 13841 'UnityMain'
+pc 0x7b51902714  lr 0x781b943f48  sp 0x7a40484af0  fp 0x7a40484eb0
+backtrace:
+  #00 pc 0x7b51902714  libc.so +0xc7714
+  #01 lr 0x781b943f48  libchroma.so +0x333f48
+  #02 fp 0x781b8e1848  libchroma.so +0x2d1848 (_Z47MultiplayerLevelScenesTransitionSetupDataSOHookv +0x10c)
+  #03 fp 0x781b93ff50  libchroma.so +0x32ff50 (late_load +0x2b4)
+  #04 fp 0x7a4f5fcb9c  libsl2.so +0x543b9c
+  #05 fp 0x79ddec6fb4  libunity.so +0xab1fb4
+  #06 fp 0x7b562fc6c3
+  #07 fp 0x7a40485f40
+last Vivify log lines (oldest first):
+  Installing hook: SaberModelController_Init to offset: 0x79da721928
+  Installing hook: GameNoteController_Init to offset: 0x79da61f1d0
+  Installing hook: BombNoteController_Init to offset: 0x79da61c2d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x79da61d668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x79da6bfbb8
+  Installing hook: NoteDebris_Init to offset: 0x79da6222e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x79dabb6968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x79da514018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x79dabb9e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x79dabb99f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x79dabbabb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x79dabbaf2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x79dabba7f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x79da66937c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x79da66958c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x79da669658
+  Installing hook: VRCenterAdjust_Update to offset: 0x79da669560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x79da6693e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x79da6694a4
+  Installing hook: PauseController_Pause to offset: 0x79da6db7ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x79da6e5c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x79da6e6734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x79da6e6094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x79da6e5d88
+  Installing hook: GamePause_Resume to offset: 0x79da6e1178
+  Installing hook: Recorder_InstallBindings to offset: 0x79da72a294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x79da71e8b8
+  Installing hook: Recorder_SpawnNote to offset: 0x79da615928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x79da614dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x79da616de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x79da72444c
+  Installing hook: Recorder_ScoreStart to offset: 0x79da724038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x79d91e7db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x79d91e8690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x79da617ae0
+  Installing hook: Recorder_ShowPause to offset: 0x79da6e5c54
+  Installing hook: Recorder_Resume to offset: 0x79da6e676c
+  Installing hook: Recorder_Finish to offset: 0x79da6751dc
+  Vivify: loaded mods (56): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  pLoader.so 0.0.0, FakeId 0.1.9, NoPromo 0.1.13, BSML 0.4.55, anytext 1.0.1, Lapiz 0.2.23, AudioLink 0.0.2, datakeeper 0.2.5, MetaCore 1.6.3, Hollywood 1.2.2,  , smoothedcontroller 1.7.4, SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether
+=== end ===
+
