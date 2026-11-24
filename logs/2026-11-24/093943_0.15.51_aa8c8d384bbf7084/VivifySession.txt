@@ -1,0 +1,102 @@
+=== Vivify 0.15.51 session log, started 2026-11-24 01:39:44 ===
+[INFO] Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+[INFO] Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global-p3.txt
+[INFO] Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+[INFO] Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+[WARN] Vivify: the game crashed last time; the report (also in VivifyCrash.txt) follows
+[WARN] Vivify crash report: === Vivify 0.15.51 native crash at 1795513172 (seconds since 1970) ===
+[WARN] Vivify crash report: SIGSEGV (bad memory access), code 2, fault address 0x7b06be000c
+[WARN] Vivify crash report: thread 10792 'UnityMain'
+[WARN] Vivify crash report: pc 0x7b84d5f6fc  lr 0x784df50f48  sp 0x7a6c242af0  fp 0x7a6c242eb0
+[WARN] Vivify crash report: backtrace:
+[WARN] Vivify crash report:   #00 pc 0x7b84d5f6fc  libc.so +0xc76fc
+[WARN] Vivify crash report:   #01 lr 0x784df50f48  libchroma.so +0x333f48
+[WARN] Vivify crash report:   #02 fp 0x784dec0a48  libchroma.so +0x2a3a48 (_Z43InstallBeatmapObjectCallbackControllerHooksv +0x10c)
+[WARN] Vivify crash report:   #03 fp 0x784df4cf50  libchroma.so +0x32ff50 (late_load +0x2b4)
+[WARN] Vivify crash report:   #04 fp 0x7a7d1a2b9c  libsl2.so +0x543b9c
+[WARN] Vivify crash report:   #05 fp 0x7a0aafbfb4  libunity.so +0xab1fb4
+[WARN] Vivify crash report:   #06 fp 0x7b887196c3
+[WARN] Vivify crash report:   #07 fp 0x7a6c243f40
+[WARN] Vivify crash report: last Vivify log lines (oldest first):
+[WARN] Vivify crash report:   Installing hook: SaberModelController_Init to offset: 0x7a06d3e928
+[WARN] Vivify crash report:   Installing hook: GameNoteController_Init to offset: 0x7a06c3c1d0
+[WARN] Vivify crash report:   Installing hook: BombNoteController_Init to offset: 0x7a06c392d4
+[WARN] Vivify crash report:   Installing hook: BurstSliderGameNoteController_Init to offset: 0x7a06c3a668
+[WARN] Vivify crash report:   Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7a06cdcbb8
+[WARN] Vivify crash report:   Installing hook: NoteDebris_Init to offset: 0x7a06c3f2e8
+[WARN] Vivify crash report:   Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7a071d3968
+[WARN] Vivify crash report:   Installing hook: ImageEffectController_OnRenderImage to offset: 0x7a06b31018
+[WARN] Vivify crash report:   Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7a071d6e78
+[WARN] Vivify crash report:   Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7a071d69f0
+[WARN] Vivify crash report:   Installing hook: MirrorRendererSO_RenderMirror to offset: 0x7a071d7bb8
+[WARN] Vivify crash report:   Installing hook: MirrorRendererSO_OnDisable to offset: 0x7a071d7f2c
+[WARN] Vivify crash report:   Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7a071d77f4
+[WARN] Vivify crash report:   Installing hook: VRCenterAdjust_Start to offset: 0x7a06c8637c
+[WARN] Vivify crash report:   Installing hook: VRCenterAdjust_OnEnable to offset: 0x7a06c8658c
+[WARN] Vivify crash report:   Installing hook: VRCenterAdjust_OnDisable to offset: 0x7a06c86658
+[WARN] Vivify crash report:   Installing hook: VRCenterAdjust_Update to offset: 0x7a06c86560
+[WARN] Vivify crash report:   Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7a06c863e0
+[WARN] Vivify crash report:   Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7a06c864a4
+[WARN] Vivify crash report:   Installing hook: PauseController_Pause to offset: 0x7a06cf87ec
+[WARN] Vivify crash report:   Installing hook: PauseMenuManager_ShowMenu to offset: 0x7a06d02c54
+[WARN] Vivify crash report:   Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7a06d03734
+[WARN] Vivify crash report:   Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7a06d03094
+[WARN] Vivify crash report:   Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7a06d02d88
+[WARN] Vivify crash report:   Installing hook: GamePause_Resume to offset: 0x7a06cfe178
+[WARN] Vivify crash report:   Installing hook: Recorder_InstallBindings to offset: 0x7a06d47294
+[WARN] Vivify crash report:   Installing hook: Recorder_HeightLateUpdate to offset: 0x7a06d3b8b8
+[WARN] Vivify crash report:   Installing hook: Recorder_SpawnNote to offset: 0x7a06c32928
+[WARN] Vivify crash report:   Installing hook: Recorder_SpawnObstacle to offset: 0x7a06c31dec
+[WARN] Vivify crash report:   Installing hook: Recorder_NoteWasCut to offset: 0x7a06c33de4
+[WARN] Vivify crash report:   Installing hook: Recorder_ScoreLateUpdate to offset: 0x7a06d4144c
+[WARN] Vivify crash report:   Installing hook: Recorder_ScoreStart to offset: 0x7a06d41038
+[WARN] Vivify crash report:   Installing hook: Recorder_ComputeSwingRating to offset: 0x7a05804db4
+[WARN] Vivify crash report:   Installing hook: Recorder_ProcessSwing to offset: 0x7a05805690
+[WARN] Vivify crash report:   Installing hook: Recorder_SpawnControllerStart to offset: 0x7a06c34ae0
+[WARN] Vivify crash report:   Installing hook: Recorder_ShowPause to offset: 0x7a06d02c54
+[WARN] Vivify crash report:   Installing hook: Recorder_Resume to offset: 0x7a06d0376c
+[WARN] Vivify crash report:   Installing hook: Recorder_Finish to offset: 0x7a06c921dc
+[WARN] Vivify crash report:   Vivify: loaded mods (48): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+[WARN] Vivify crash report:   o 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libtinyxml2.so 0.0.0, FakeId 0.1.9, BSML 0.4.55, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, Lapiz 0.2.23, techniqolor 0.1.0, SongCore 1.1.26, BetterSon
+[WARN] Vivify crash report: === end ===
+[INFO] Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+[INFO] Installing hook: SaberModelController_Init to offset: 0x79fe382928
+[INFO] Installing hook: GameNoteController_Init to offset: 0x79fe2801d0
+[INFO] Installing hook: BombNoteController_Init to offset: 0x79fe27d2d4
+[INFO] Installing hook: BurstSliderGameNoteController_Init to offset: 0x79fe27e668
+[INFO] Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x79fe320bb8
+[INFO] Installing hook: NoteDebris_Init to offset: 0x79fe2832e8
+[INFO] Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x79fe817968
+[INFO] Installing hook: ImageEffectController_OnRenderImage to offset: 0x79fe175018
+[INFO] Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x79fe81ae78
+[INFO] Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x79fe81a9f0
+[INFO] Installing hook: MirrorRendererSO_RenderMirror to offset: 0x79fe81bbb8
+[INFO] Installing hook: MirrorRendererSO_OnDisable to offset: 0x79fe81bf2c
+[INFO] Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x79fe81b7f4
+[INFO] Installing hook: VRCenterAdjust_Start to offset: 0x79fe2ca37c
+[INFO] Installing hook: VRCenterAdjust_OnEnable to offset: 0x79fe2ca58c
+[INFO] Installing hook: VRCenterAdjust_OnDisable to offset: 0x79fe2ca658
+[INFO] Installing hook: VRCenterAdjust_Update to offset: 0x79fe2ca560
+[INFO] Installing hook: VRCenterAdjust_ResetRoom to offset: 0x79fe2ca3e0
+[INFO] Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x79fe2ca4a4
+[INFO] Installing hook: PauseController_Pause to offset: 0x79fe33c7ec
+[INFO] Installing hook: PauseMenuManager_ShowMenu to offset: 0x79fe346c54
+[INFO] Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x79fe347734
+[INFO] Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x79fe347094
+[INFO] Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x79fe346d88
+[INFO] Installing hook: GamePause_Resume to offset: 0x79fe342178
+[INFO] Installing hook: Recorder_InstallBindings to offset: 0x79fe38b294
+[INFO] Installing hook: Recorder_HeightLateUpdate to offset: 0x79fe37f8b8
+[INFO] Installing hook: Recorder_SpawnNote to offset: 0x79fe276928
+[INFO] Installing hook: Recorder_SpawnObstacle to offset: 0x79fe275dec
+[INFO] Installing hook: Recorder_NoteWasCut to offset: 0x79fe277de4
+[INFO] Installing hook: Recorder_ScoreLateUpdate to offset: 0x79fe38544c
+[INFO] Installing hook: Recorder_ScoreStart to offset: 0x79fe385038
+[INFO] Installing hook: Recorder_ComputeSwingRating to offset: 0x79fce48db4
+[INFO] Installing hook: Recorder_ProcessSwing to offset: 0x79fce49690
+[INFO] Installing hook: Recorder_SpawnControllerStart to offset: 0x79fe278ae0
+[INFO] Installing hook: Recorder_ShowPause to offset: 0x79fe346c54
+[INFO] Installing hook: Recorder_Resume to offset: 0x79fe34776c
+[INFO] Installing hook: Recorder_Finish to offset: 0x79fe2d61dc
+[INFO] Vivify: loaded mods (48): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavcodec.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavformat.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libweb-utils.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaverplusplus.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbs-utils.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libcustom-types.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libpaperlog.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libsongdetails.s
+[INFO] o 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libtinyxml2.so 0.0.0, FakeId 0.1.9, BSML 0.4.55, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, Lapiz 0.2.23, techniqolor 0.1.0, SongCore 1.1.26, BetterSongSearch 2.2.13, ClockMod 1.15.0-Dev, ModifiersCoreQuest 0.1.0, QuestSounds 1.5.4, CustomJSONData 0.24.5, Tracks 2.5.4, Vivify 0.15.51, PlaylistCore 1.5.5, bl 0.9.666, CameraUtils 1.1.11, ChatPlexSDK-BS 6.4.5, Chroma 2.10.3, MappingExtensions 0.25.4, NoodleExtensions 1.6.3, PlaylistManager 1.4.1, QBeatSaberPlus-GameTweaker 6.4.5, QBeatSaberPlus-Multiplayer 6.4.5, Qounters++ 1.1.5, QustomMenu 1.0.3, ReeSabers 0.4.0, Replay 0.5.2, SongDownloader 0.8.8, synapse 1.0.0, unicode 0.1.7
