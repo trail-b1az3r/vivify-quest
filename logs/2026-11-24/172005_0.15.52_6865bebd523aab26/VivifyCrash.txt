@@ -1,0 +1,64 @@
+=== Vivify 0.15.48 native crash at 1795539015 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x2010
+thread 21538 'games.beatsaber'
+pc 0x6f172fbb10  lr 0x6df990d2e0  sp 0x7ff1b83810  fp 0x7ff1b83840
+backtrace:
+  #00 pc 0x6f172fbb10  libil2cpp.so +0x34e6b10
+  #01 lr 0x6df990d2e0  libBSNightcoreQuest.so +0xcb2e0
+  #02 fp 0x70a5340bb4  libc.so +0x13abb4 (__cxa_finalize +0x94)
+  #03 fp 0x70ac8e296c
+  #04 fp 0x70ac8cae58
+  #05 fp 0x70ac8ccbd8
+  #06 fp 0x70ac8c7064
+  #07 fp 0x709e7240cc  libdl.so +0x10cc (dlclose +0xc)
+  #08 fp 0x6f759eaa80  libsl2.so +0x521a80
+  #09 fp 0x6f75a11ffc  libsl2.so +0x548ffc
+  #10 fp 0x6f75a0dc24  libsl2.so +0x544c24 (modloader_unload +0xa4)
+  #11 fp 0x6f795eb0a4  libmain.so +0xe80a4
+  #12 fp 0x6f795e9804  libmain.so +0xe6804
+  #13 fp 0x6ff8f39444  libart.so +0x227444
+  #14 fp 0x6f7bdb3a38
+  #15 fp 0x6462
+last Vivify log lines (oldest first):
+  Vivify InstantiatePrefab spawned: id='prefab_carnight_8' asset='assets/carnight.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/frontcarnight.prefab' id='prefab_frontcarnight_1' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_frontcarnight_1' asset='assets/frontcarnight.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/scenenight.prefab' id='prefab_scenenight_1' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_scenenight_1' asset='assets/scenenight.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowDistance'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowDistance'
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadows'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadows'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowCascades'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowCascades'
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 12 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=37 livePrefabs=10 preloadedPrefabs=10
+  Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify pause menu opened: syncedObjects=0 secondaryCameras=0
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(-0.01,1.86,-0.02) fwd=(-0.08,0.17,0.98)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=10 preloaded=10 synced=0 secondaryCameras=0 declaredTextures=0 assets=37
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify Send Logs: queued behind the current upload
+  Vivify Send Logs: uploaded 3 file part(s), 94 KB (logs/2026-11-24/164958_0.15.48_9cf806b5dabd5de4 000780a; stored 3, deduplicated 0; 42832277 bytes saved cumulatively
+  )
+=== end ===
+
