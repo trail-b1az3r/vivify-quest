@@ -1,0 +1,52 @@
+=== Vivify 0.15.45 native crash at 1795616305 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x4
+thread 10148 'Thread-165'
+pc 0x776923f740  lr 0x776923f6f8  sp 0x7677684480  fp 0x76776847b0
+backtrace:
+  #00 pc 0x776923f740  libunity.so +0x13ee740
+  #01 lr 0x776923f6f8  libunity.so +0x13ee6f8
+  #02 fp 0x77694259f4  libunity.so +0x15d49f4
+  #03 fp 0x78c2ad9334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify custom event: type='Blit' time=12.773334 songTime=12.779601
+  Vivify Blit event: time=12.773334 asset='<none>' source='_Main' targets=1 priority=-11 pass=-1 order=7 durationBeats=0
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify custom event: type='SetRenderingSettings' time=12.8 songTime=12.80017
+  Vivify SetRenderingSettings: time=12.8 durationSeconds=0 immediate=true
+  Vivify custom event: type='DestroyObject' time=12.8 songTime=12.80017
+  Vivify DestroyObject: destroying live prefab id='clockscene'
+  Vivify custom event: type='SetGlobalProperty' time=12.8 songTime=12.80017
+  Vivify custom event: type='InstantiatePrefab' time=12.8 songTime=12.80017
+  Vivify InstantiatePrefab: asset='assets/monitor/monitorscene.prefab' id='monitorscene' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='monitorscene' asset='assets/monitor/monitorscene.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify custom event: type='Blit' time=12.8 songTime=12.80017
+  Vivify material: context=Blit asset=assets/blendexperiment/blender.mat material='Blender' shader='PostProcessing/Difference' supported=true internalError=false
+  Vivify Blit event: time=12.8 asset='assets/blendexperiment/blender.mat' source='_Main' targets=1 priority=-12 pass=-1 order=7 durationBeats=16
+  Vivify custom event: type='SetCameraProperty' time=12.8 songTime=12.80017
+  Vivify SetCameraProperty: camera='_Main' depthTextureMode=-1 clearFlags=-1 hasBackground=false culling=true bloomPrePass=unset mainEffect=unset
+  Vivify custom event: type='Blit' time=12.8 songTime=12.80017
+  Vivify material: context=Blit asset=assets/shaders/distortnotes/one.mat material='One' shader='PostProcessing/DistortNotes' supported=true internalError=false
+  Vivify Blit event: time=12.8 asset='assets/shaders/distortnotes/one.mat' source='_Main' targets=1 priority=2 pass=0 order=7 durationBeats=64
+  Vivify culling pass on 'MainCamera': whitelist=false tracks=1 trackedGOs=8 movedGOs=156 camMask=0x3d3bff37
+  Vivify main camera: scene depth texture enabled for this map
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+=== end ===
+
