@@ -1,0 +1,63 @@
+=== Vivify 0.15.51 native crash at 1795573728 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27d900002c77
+thread 11414 'UnityMain'
+pc 0x7923ae19d8  lr 0x7923ae19a8  sp 0x780e4516c0  fp 0x780e451760
+backtrace:
+  #00 pc 0x7923ae19d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7923ae19a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x77b8eea234  libmetacore.so +0xce234
+  #03 fp 0x7799328114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x7799328264  libil2cpp.so +0x2226264
+  #05 fp 0x780ed2bd48  libsl2.so +0x4fad48
+  #06 fp 0x780ed2bce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x75f7276dcc  libbsl.so +0x16edcc
+  #08 fp 0x764be03e54  libsongcore.so +0x3cde54
+  #09 fp 0x75f72770fc  libbsl.so +0x16f0fc
+  #10 fp 0x779ac63514  libil2cpp.so +0x3b61514
+  #11 fp 0x75f72770fc  libbsl.so +0x16f0fc
+  #12 fp 0x779ac67958  libil2cpp.so +0x3b65958
+  #13 fp 0x779b18ccf4  libil2cpp.so +0x408acf4
+  #14 fp 0x7798fb2a0c  libil2cpp.so +0x1eb0a0c
+last Vivify log lines (oldest first):
+  Vivify material: context=bundle-load asset=assets/aether/materials/ambient/261 - bokeh.mat material='261 - Bokeh' shader='Swifter/Blit/Bokeh' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/aether/materials/bridge/propagating grid.mat material='Propagating Grid' shader='Swifter/PropagatingGrid' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/aether/materials/buildup/541 - terrain.mat material='541 - Terrain' shader='Swifter/SimpleTerrainFog' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/aether/materials/custom objects/black outline note debris.mat material='Black Outline Note Debris' shader='Swifter/OutlineNote' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/aether/materials/custom objects/black outline note.mat material='Black Outline Note' shader='Swifter/OutlineNote' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/aether/materials/custom objects/saber/saber trail.mat material='Saber Trail' shader='Swifter/SaberTrail' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/aether/materials/custom objects/terrain note debris.mat material='Terrain Note Debris' shader='Swifter/SimpleTerrainFog' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/aether/materials/custom objects/terrain note.mat material='Terrain Note' shader='Swifter/SimpleTerrainFog' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/aether/materials/custom objects/white outline note debris.mat material='White Outline Note Debris' shader='Swifter/OutlineNote' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/aether/materials/custom objects/white outline note.mat material='White Outline Note' shader='Swifter/OutlineNote' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/aether/materials/fadewhite.mat material='FadeWhite' shader='Swifter/Blit/SimpleColor' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/aether/materials/intro/introbokeh.mat material='IntroBokeh' shader='Swifter/Blit/Bokeh' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/aether/materials/intro/introdarkness.mat material='IntroDarkness' shader='Swifter/SimpleColor' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/aether/materials/intro/introskybox.mat material='IntroSkybox' shader='Swifter/RainbowSkybox' supported=true internalError=false
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__e97db0db7ff74cff.vivify' grabs _GrabTexture1
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__e97db0db7ff74cff.vivify' -> needed by Swifter/VF
+  Vivify: '4968d (743_Aether____ . _ 111} _ , . - Swifter)' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+  Vivify saber chain modelNode(smc): BasicSaberModelHologram(Clone)[w=(0.11,13.46,178.00) l=(0.00,0.00,0.00)] <- RightSaberBase[w=(0.11,13.46,178.00) l=(1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- Multip
+  Vivify saber chain saberNode: RightSaberBase[w=(0.11,13.46,178.00) l=(1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.00)] <- ShaderWarmup[w=(0.
+  Vivify saber chain initParent: RightSaberBase[w=(0.11,13.46,178.00) l=(1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.00)] <- ShaderWarmup[w=(0
+  Vivify saber chain modelNode(smc): BasicSaberModelHologram(Clone)[w=(-9.49,13.46,178.00) l=(0.00,0.00,0.00)] <- LeftSaberBase[w=(-9.49,13.46,178.00) l=(-1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- Mult
+  Vivify saber chain saberNode: LeftSaberBase[w=(-9.49,13.46,178.00) l=(-1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.00)] <- ShaderWarmup[w=(0
+  Vivify saber chain initParent: LeftSaberBase[w=(-9.49,13.46,178.00) l=(-1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.00)] <- ShaderWarmup[w=(
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.12,0.01) fwd=(-0.06,0.10,0.99)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.36,-0.03) fwd=(-0.15,0.04,0.99)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=37
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3819ff37 stereoMode=3 multipassSetting=false pos=(0.01,1.37,-0.02) fwd=(0.01,-0.09,1.00)
+  Vivify main camera cullingMask is now 0x3819ff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.08,1.37,-0.02) fwd=(-0.11,0.32,0.94)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+=== end ===
+
