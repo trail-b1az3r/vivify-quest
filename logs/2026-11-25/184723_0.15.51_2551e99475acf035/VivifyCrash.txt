@@ -1,0 +1,57 @@
+=== Vivify 0.15.51 native crash at 1795625257 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x34feebe0
+thread 25330 'UnityMain'
+pc 0x7c458fc3dc  lr 0x7c4597f0f8  sp 0x7e8447a320  fp 0x7e8447b400
+backtrace:
+  #00 pc 0x7c458fc3dc  libhitscorevisualizer.so +0xef3dc (_Z5JudgePN15GlobalNamespace14CutScoreBufferEPNS_17FlyingScoreEffectERKNS_11NoteCutInfoE +0x50)
+  #01 lr 0x7c4597f0f8  libhitscorevisualizer.so +0x1720f8 (_ZN58Hook_CutScoreBuffer_HandleSaberSwingRatingCounterDidChange58hook_CutScoreBuffer_HandleSaberSwingRatingCounterDidChangeEPN15GlobalNamespace14CutScoreBufferEPNS0_24ISaberSwingRatingCounterEf +0xb8)
+  #02 fp 0x7c4598fac8  libhitscorevisualizer.so +0x182ac8
+  #03 fp 0x7e0b68ffe0  libil2cpp.so +0x26b2fe0
+  #04 fp 0x7c5809edc8  libbl.so +0x699dc8 (_ZN14ReplayRecorder24Hook_ProcessNewSwingData24hook_ProcessNewSwingDataEPN15GlobalNamespace23SaberSwingRatingCounterENS1_24BladeMovementDataElementES4_b +0x7c)
+  #05 fp 0x7c580b2788  libbl.so +0x6ad788
+  #06 fp 0x7c42780fec  libnoodleextensions.so +0x295fec (_ZN43Hook_SaberSwingRatingCounter_ProcessNewData43hook_SaberSwingRatingCounter_ProcessNewDataEPN15GlobalNamespace23SaberSwingRatingCounterENS0_24BladeMovementDataElementES3_b +0x214)
+  #07 fp 0x7c427809a8  libnoodleextensions.so +0x2959a8
+  #08 fp 0x7e0b68e8dc  libil2cpp.so +0x26b18dc
+last Vivify log lines (oldest first):
+  Vivify main camera cullingMask is now 0x3819ff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=4
+  Vivify PrepareBeatmap: v2=false customEvents=3 triggerTime=0 beatmapAD=true
+  Vivify bundle preloaded, rebuilding asset caches: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bb17 (Huntress - slabs37)/bundleAndroid2021.vivify'
+  Vivify texture decode: scanned 18 material(s), replaced 0 unsupported texture reference(s) in 0ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+  Vivify: 'Map Realtime Shadows' is on; the game's shadow quality is left as it is
+  Vivify preload prefab: asset='assets/huntress/prefabs/scene.prefab' id='prefab_scene_1' instance=true
+  Vivify PreloadInstantiatePrefabs: 1 prefab event(s) preloaded
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/huntress/prefabs/scene.prefab' id='prefab_scene_1' alreadyLive=false
+  Vivify reflection probe 'Reflection Probe' reduced: 16 px -> 16 px, no HDR, refreshed once a second
+  Vivify InstantiatePrefab spawned: id='prefab_scene_1' asset='assets/huntress/prefabs/scene.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_softParticles'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_softParticles'
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 2 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=4 livePrefabs=1 preloadedPrefabs=1
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify frame stall: the game did not draw for 1.8s (songTime 2.45, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bb17 (Huntress - slabs37)/bundleAndroid2021.vivify')
+  Vivify frame took 68.2ms, over the 50ms budget
+  Vivify frame stall: the game did not draw for 0.5s (songTime 4.10, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bb17 (Huntress - slabs37)/bundleAndroid2021.vivify')
+  Vivify frame took 1650.1ms, over the 50ms budget
+  Vivify frame stall: the game did not draw for 2.0s (songTime 6.13, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bb17 (Huntress - slabs37)/bundleAndroid2021.vivify')
+  Vivify visual check at 6s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: 6 light(s) on, 1 with shadows: 'GiLight' type=2 intensity=0.70 shadows=0; 'Directional Light' type=1 intensity=1.00 shadows=1; 'CrystaLightU' type=2 intensity=0.00 shadows=0; 'CrystaLightE' type=2 intensity=0.00 shadow
+  Vivify visual check at 6s: 1 reflection probe(s) on: 'Reflection Probe' mode=1 refresh=2 resolution=16 importance=1 box=false pos=(0.0,2.6,2.0) texture='Reflection Probe'; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check at 6s: 118 active renderer(s), 0 with no runnable shader; most drawn: Hidden/Locked/.poiyomi/Poiyomi Toon/83226041e01c1834d9e4271a56b3ab52 x38, Hidden/Locked/.poiyomi/Poiyomi Toon/68a0fcf69e95fd4469564d7e478186f9 x14, C
+  Vivify grab texture '_GrabTexture' at 6s: render texture dimension=5 layers=2 1680x1760 msaa=1
+  Vivify grab texture '_GrabTexture1' at 6s: nothing bound
+  Vivify grab texture '_GrabTexture2' at 6s: nothing bound
+  Vivify grab texture '_MWGrab' at 6s: nothing bound
+  Vivify grab texture '_SceneColor' at 6s: nothing bound
+  Vivify visual check: main camera cullingMask=0x3819ff37 depthTextureMode=1 clearFlags=2
+  Vivify frame took 419.5ms, over the 50ms budget
+  Vivify: Reduce Debris player option = false (custom debris enabled)
+  Vivify multiplayer check: inMultiplayerGameplay=false multiplayerModLoaded=true
+=== end ===
+
