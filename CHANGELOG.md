@@ -45,6 +45,13 @@ version 34 -> 35).
     more than three vertices out, loops, points or lines in.
   - `tools/geometry-lowering/lower_test.py` checks the lowering in CI.
 
+### Changed
+
+- **GraphicsTweaks dependency per game version.** GraphicsTweaks 0.2.0 is
+  built for Beat Saber 1.45.3, so the 1.40.8 Vivify now asks for 0.1.13, the
+  last release for 1.40.8. The 1.45.3 build switches it to 0.2.0
+  (`targets/1.45.3.json` "modDependencies").
+
 ## [0.15.54]
 
 Not tried on a headset.

@@ -156,6 +156,11 @@ def apply(target, resolved, local=None):
             link = package_config(package, version)["info"].get("additionalData", {}).get("modLink")
             if link:
                 dep["downloadIfMissing"] = link
+    # Mod-only dependencies whose release differs per game (GraphicsTweaks).
+    for package, data in target.get("modDependencies", {}).items():
+        for dep in mod.get("dependencies", []):
+            if dep["id"] == package:
+                dep.update(data)
     mod_path.write_text(json.dumps(mod, indent=2) + "\n")
 
 

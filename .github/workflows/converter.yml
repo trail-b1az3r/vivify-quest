@@ -92,6 +92,7 @@ jobs:
           cp "out/bin/Vivify Quest Converter" app/
         fi
         cp converter/gui/README.md app/README.md
+        cp converter/LICENSE app/LICENSE
         ls -la app
 
     - uses: actions/upload-artifact@v4
@@ -125,6 +126,7 @@ jobs:
         cp libs/vivify-convert-linux-x64/lib/libvivifyconvert.so "$pkg/Editor/Plugins/"
         cp libs/vivify-convert-macos-universal/lib/libvivifyconvert.dylib "$pkg/Editor/Plugins/"
         cp converter/README.md "$pkg/README.md"
+        cp converter/LICENSE "$pkg/LICENSE"
         ls -la "$pkg" "$pkg/Editor/Plugins"
 
     - uses: actions/upload-artifact@v4
