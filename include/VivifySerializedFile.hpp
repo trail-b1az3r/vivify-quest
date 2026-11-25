@@ -389,6 +389,17 @@ struct TextureObject {
   size_t bodySize = 0;
 };
 
+// One Mesh object's m_IsReadable byte (0.15.55). A geometry stage lowered
+// into the vertex stage needs each triangle's corners in extra UV channels,
+// which the mod adds to a copy of the mesh at run time; Unity only lets it
+// read a mesh whose flag is set. Patched in place like a texture's.
+struct MeshReadableFlag {
+  int64_t pathID = 0;
+  bool present = false;
+  size_t fileOffset = 0;
+  bool readable = false;
+};
+
 // True for the block-compressed formats no Quest GPU can sample, which are the
 // only ones worth making readable: an ETC2 or RGBA32 texture already works.
 bool TextureFormatNeedsDecodingOnQuest(int32_t unityTextureFormat);
@@ -560,6 +571,7 @@ struct FileReport {
   int32_t textureObjectCount = 0;
   std::vector<ShaderObject> shaders;
   std::vector<TextureObject> textures;
+  std::vector<MeshReadableFlag> meshes;
   struct MaterialFeatures {
     int64_t shaderPathID = 0;
     std::map<std::string, float> floats;

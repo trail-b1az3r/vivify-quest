@@ -34,7 +34,9 @@ def build_conv():
                     "-o", out, os.path.join(ROOT, "tools", "bundleconvert", "main.cpp"),
                     os.path.join(ROOT, "src", "VivifyBundleConvert.cpp"),
                     os.path.join(ROOT, "src", "VivifySerializedFile.cpp"),
-                    os.path.join(ROOT, "src", "VivifyDxbc.cpp")], check=True)
+                    os.path.join(ROOT, "src", "VivifyDxbc.cpp"),
+                    os.path.join(ROOT, "src", "VivifyTriangleTessellation.cpp"),
+                    os.path.join(ROOT, "src", "VivifyGeometryLowering.cpp")], check=True)
     return out
 
 

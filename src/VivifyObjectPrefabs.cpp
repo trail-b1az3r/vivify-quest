@@ -1,4 +1,5 @@
 #include "VivifyRuntimeInternal.hpp"
+#include "VivifyLoweredGeometry.hpp"
 #include "VivifyRecovery.hpp"
 #include "GlobalNamespace/Mirror.hpp"
 #include "GlobalNamespace/BoolSO.hpp"
@@ -762,6 +763,7 @@ void Runtime::PreloadInstantiatePrefabs() {
       prefabFound = true;
       auto* instance = UnityEngine::Object::Instantiate(prefab);
       if (IsAlive(instance)) {
+        LoweredGeometry::Prepare(instance);
         instance->SetActive(false);
         data.instance = instance;
       }
@@ -814,6 +816,7 @@ void Runtime::InstantiatePrefab(CustomJSONData::CustomEventData* customEventData
       PaperLogger.warn("Vivify InstantiatePrefab: Instantiate of '{}' returned null", data.asset);
       return;
     }
+    LoweredGeometry::Prepare(data.instance);
     data.instance->SetActive(false);
   }
   auto* instance = data.instance;

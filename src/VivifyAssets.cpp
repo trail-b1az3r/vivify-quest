@@ -1,4 +1,5 @@
 #include "VivifyRuntimeInternal.hpp"
+#include "VivifyLoweredGeometry.hpp"
 #include "UnityEngine/Rendering/GlobalKeyword.hpp"
 #include <regex>
 #include "VivifySeparateEye.hpp"
@@ -492,6 +493,12 @@ BundleConversionOutcome RunBundleConversionUnclaimed(std::string const& source, 
                    conversion.shadersLinked, conversion.shadersSeen, conversion.variantsLinked,
                    conversion.variantsRefused, conversion.stereoVariantsRemapped, conversion.stereoVariantsSplit,
                    conversion.shadersRefused);
+  if (conversion.geometryStagesDropped > 0) {
+    PaperLogger.info("Vivify shader conversion: {} variant(s) lost a geometry stage the headset's two-eye pass cannot "
+                     "run; {} of them (wireframe-style, one triangle in and three corners out) now do that work in "
+                     "the vertex stage on a prepared mesh",
+                     conversion.geometryStagesDropped, conversion.geometryStagesLowered);
+  }
   if (conversion.texturesSeen > 0) {
     PaperLogger.info(
         "Vivify conversion marked {} of {} block-compressed texture(s) readable ({} keep their pixels "
@@ -2701,6 +2708,13 @@ void Runtime::ScanBundleForSceneDepth(std::string const& bundlePath) {
         needed = scan.samplesCameraDepth;
         for (auto const& name : scan.cameraDepthShaderNames) shaders += (shaders.empty() ? "" : ", ") + name;
       }
+      if (!scan.loweredGeometryShaderNames.empty()) {
+        LoweredGeometry::NoteShaders(scan.loweredGeometryShaderNames);
+        std::string names;
+        for (auto const& name : scan.loweredGeometryShaderNames) names += (names.empty() ? "" : ", ") + name;
+        PaperLogger.info("Vivify lowered geometry: '{}' has wireframe-style geometry stages done in the vertex "
+                         "stage: {}", bundlePath, names);
+      }
       if (!scan.grabTextureNames.empty()) {
         std::string grabs;
         for (auto const& name : scan.grabTextureNames) grabs += (grabs.empty() ? "" : ", ") + name;
@@ -3753,6 +3767,7 @@ void Runtime::RepairGameObjectMaterials(UnityEngine::GameObject* gameObject, std
   }
   for (auto* projector : Projectors::InChildren(gameObject))
     if (IsAlive(projector)) RepairMaterialShader(Projectors::GetMaterial(projector), context);
+  LoweredGeometry::Prepare(gameObject);
 }
 
 void Runtime::SetMaterialKeyword(UnityEngine::Material* material, ::StringW keyword, bool enabled) const {

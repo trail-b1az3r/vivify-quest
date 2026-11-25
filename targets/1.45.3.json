@@ -41,5 +41,12 @@
     "metacore",
     "metacore-bs"
   ],
-  "_flamingoNote": "flamingo is listed directly because beatsaber-hook 9's hooking.hpp calls flamingo::Install inline, so Vivify links libflamingo.so itself."
+  "_flamingoNote": "flamingo is listed directly because beatsaber-hook 9's hooking.hpp calls flamingo::Install inline, so Vivify links libflamingo.so itself.",
+  "modDependencies": {
+    "GraphicsTweaks": {
+      "version": "^0.2.0",
+      "downloadIfMissing": "https://github.com/FrozenAlex/GraphicsTweaks/releases/download/v0.2.0/GraphicsTweaks.qmod"
+    }
+  },
+  "_modDependenciesNote": "Mod-only dependencies (no qpm package) whose release differs per game: GraphicsTweaks 0.1.13 is the last for 1.40.8, 0.2.0 the first for 1.45.3."
 }

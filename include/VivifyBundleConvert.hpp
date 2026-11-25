@@ -44,7 +44,7 @@
 #include <unordered_map>
 
 namespace Vivify::BundleConvert {
-inline constexpr int kShaderConversionVersion = 34;
+inline constexpr int kShaderConversionVersion = 35;
 inline constexpr std::string_view kRenderDependencyCacheProof = "render-dependencies-v5-unique-asset-identity";
 inline constexpr std::string_view kRenderDependencyAssetPrefix = "assets/__vivify_internal__/render/";
 // Main, companion and explicit-eye caches must agree on translator changes.
@@ -172,6 +172,9 @@ struct ShaderScan {
   // Whether any program names _CameraDepthTexture (GLSL text, a DXBC resource
   // table, or a parameter blob): only then does the map need the depth
   // pre-pass that renders it.
+  // Shaders whose geometry stage the conversion moved into the vertex stage
+  // (VivifyGeometryLowering.hpp); their meshes need preparing at run time.
+  std::vector<std::string> loweredGeometryShaderNames;
   bool samplesCameraDepth = false;
   std::vector<std::string> cameraDepthShaderNames;
   // Conservative stage classification for runtime multiview reuse. Complete
@@ -206,6 +209,8 @@ struct ShaderConversion {
   int stereoVariantsRemapped = 0;
   int stereoVariantsSplit = 0;  // separateStereoVariants: variants renamed to STEREO_MULTIVIEW_ON
   int geometryStagesDropped = 0;  // variants linked without the geometry stage they could not use
+  int meshesMarkedReadable = 0;   // meshes kept readable so a lowered geometry stage can be prepared
+  int geometryStagesLowered = 0;  // of those, wireframe-style stages moved into the vertex stage
   int variantsSkipped = 0;  // program refs of variants a Quest never selects, left untranslated
   int tessellationShadersUntranslated = 0;
   int tessellationShadersTranslated = 0;

@@ -74,7 +74,7 @@ jobs:
         g++ -std=c++20 -O1 -g -fsanitize=address,undefined \
             -I include -o /tmp/conv \
             tools/bundleconvert/main.cpp src/VivifyBundleConvert.cpp \
-            src/VivifySerializedFile.cpp src/VivifyDxbc.cpp src/VivifyTriangleTessellation.cpp
+            src/VivifySerializedFile.cpp src/VivifyDxbc.cpp src/VivifyTriangleTessellation.cpp src/VivifyGeometryLowering.cpp
 
     - name: Round-trip and structure tests
       working-directory: tools/bundleconvert
@@ -172,6 +172,9 @@ jobs:
         g++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -I include \
             tools/separate-eye/policy_test.cpp -o /tmp/eye-policy-test
         /tmp/eye-policy-test
+
+    - name: Check geometry-stage lowering (wireframes into the vertex stage)
+      run: python3 tools/geometry-lowering/lower_test.py
 
     - name: Check the game-mirror layout readings
       run: |

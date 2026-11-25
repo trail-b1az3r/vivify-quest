@@ -1,4 +1,5 @@
 #include "VivifyBundleConvert.hpp"
+#include "VivifyGeometryLowering.hpp"
 #include "VivifyGeometrySpecialization.hpp"
 #include "VivifyMaterialSpecialization.hpp"
 #include "VivifySerializedFile.hpp"
@@ -1523,6 +1524,7 @@ struct LinkedShader {
   int stereoRemapped = 0;
   int stereoSplit = 0;
   int geometryDropped = 0;  // variants linked without their geometry stage
+  int geometryLowered = 0;  // of those, the ones whose geometry work moved into the vertex stage
   int variantsSkipped = 0;  // program refs a Quest never selects, left alone
   int programsTranslated = 0;
   bool tessellationUntranslated = false;
@@ -2153,6 +2155,23 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
       auto const* vs = translate(vertex);
       auto const* fs = fragment != nullptr ? translate(*fragment) : nullptr;
       if (vs == nullptr || (fragment != nullptr && fs == nullptr)) return false;
+      // A triangle-in, three-vertex geometry stage (wireframes) is done in the
+      // vertex stage instead, on a mesh the mod prepares (0.15.55,
+      // VivifyGeometryLowering.hpp). Anything else drops the stage as before.
+      if (auto const* gs = translate(*geometry); gs != nullptr && fs != nullptr) {
+        auto lowered = Vivify::GeometryLowering::LowerTriangleGeometry(vs->source, gs->source);
+        if (lowered.ok) {
+          Vivify::Dxbc::GlslResult loweredVertex = *vs;
+          loweredVertex.source = std::move(lowered.source);
+          loweredVertex.version = std::max(vs->version, gs->version);
+          Vivify::Dxbc::GlslResult renamedFragment = *fs;
+          for (auto const& [from, to] : gs->renamedVaryings) RenameIdentifier(renamedFragment.source, from, to);
+          source = LinkStages(loweredVertex, &renamedFragment, nullptr, version);
+          dropped = true;
+          ++out.geometryLowered;
+          return true;
+        }
+      }
       Vivify::Dxbc::GlslResult projected = *vs;
       if (!WithProjectedPosition(projected.source)) return false;
       source = LinkStages(projected, fs, nullptr, version);
@@ -2412,6 +2431,35 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
       conversion.texturesMarkedReadable++;
     }
 
+    // Meshes readable where a geometry stage may be lowered into the vertex
+    // stage (0.15.55): the mod rebuilds such a mesh per triangle at run time,
+    // which needs its CPU copy. Only in a file that has geometry programs to
+    // lower, since a readable mesh keeps that copy in memory.
+    if ((options.dropGeometryStages || options.dropUntranslatableGeometry) && !file.meshes.empty()) {
+      bool geometryHere = false;
+      for (auto const& shader : file.shaders) {
+        if (geometryHere) break;
+        auto const decodedHere = SerializedFileParse::DecodeShaderPrograms(nodeData, nodeSize, shader);
+        if (!decodedHere.ok) continue;
+        for (auto const& program : decodedHere.programs) {
+          if (!program.raw && (program.programType == SerializedFileParse::kGpuProgramDX11GeometrySM40 ||
+                               program.programType == SerializedFileParse::kGpuProgramDX11GeometrySM50)) {
+            geometryHere = true;
+            break;
+          }
+        }
+      }
+      if (geometryHere) {
+        for (auto const& mesh : file.meshes) {
+          if (mesh.readable) continue;
+          size_t const at = nodes[index].offset + mesh.fileOffset;
+          if (at >= data.size() || data[at] > 1) continue;
+          data[at] = 1;
+          conversion.meshesMarkedReadable++;
+        }
+      }
+    }
+
     if (file.shaders.empty()) continue;
 
     std::set<std::string> bundleShaderNames;
@@ -2451,6 +2499,7 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
         conversion.stereoVariantsRemapped += linked.stereoRemapped;
         conversion.stereoVariantsSplit += linked.stereoSplit;
         conversion.geometryStagesDropped += linked.geometryDropped;
+        conversion.geometryStagesLowered += linked.geometryLowered;
         conversion.variantsSkipped += linked.variantsSkipped;
         conversion.tessellationShadersUntranslated += linked.tessellationUntranslated ? 1 : 0;
         for (auto const& reason : linked.variantReasons) {
@@ -2971,6 +3020,19 @@ ShaderScan ScanShaders(std::string const& bundlePath) {
       }
       if (decoded.ok && glslHere > 0 && !multiviewHere && !shader.name.empty()) {
         scan.singleViewOnlyShaderNames.push_back(shader.name);
+      }
+      // A geometry stage the conversion moved into the vertex stage (0.15.55):
+      // its renderers need their meshes prepared per triangle.
+      if (decoded.ok && !shader.name.empty()) {
+        static constexpr std::string_view kLowered = "vivify:lowered-triangle-geometry";
+        for (auto const& program : decoded.programs) {
+          if (program.raw || !SerializedFileParse::GpuProgramIsGlslSource(program.programType)) continue;
+          if (std::search(program.code.begin(), program.code.end(), kLowered.begin(), kLowered.end()) !=
+              program.code.end()) {
+            scan.loweredGeometryShaderNames.push_back(shader.name);
+            break;
+          }
+        }
       }
       // Uniforms the GLSL declares as int (0.15.9): a material stores such a
       // property as a float, and the mod sets it as an integer too.
