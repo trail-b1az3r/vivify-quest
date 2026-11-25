@@ -1,0 +1,52 @@
+=== Vivify 0.15.45 native crash at 1795566307 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x9908fee52c
+thread 25412 'Thread-3'
+pc 0x7c256387b4  lr 0x7c256387d8  sp 0x7b30156480  fp 0x7b301567b0
+backtrace:
+  #00 pc 0x7c256387b4  libunity.so +0x13ee7b4
+  #01 lr 0x7c256387d8  libunity.so +0x13ee7d8
+  #02 fp 0x7c2581e9f4  libunity.so +0x15d49f4
+  #03 fp 0x7da1531334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+  Vivify preload prefab: asset='assets/prefabs/balloon.prefab' id='prefab_balloon_1' instance=true
+  Vivify preload prefab: asset='assets/prefabs/scene.prefab' id='prefab_scene_1' instance=true
+  Vivify preload prefab: asset='assets/prefabs/scene2.prefab' id='prefab_scene2_1' instance=true
+  Vivify preload prefab: asset='assets/prefabs/birds.prefab' id='prefab_birds_1' instance=true
+  Vivify PreloadInstantiatePrefabs: 4 prefab event(s) preloaded
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/prefabs/balloon.prefab' id='prefab_balloon_1' alreadyLive=false
+  Vivify reflection probe 'Reflection Probe' reduced: 64 px -> 64 px, no HDR, refreshed once a second
+  Vivify: watching cameras (reflection probes, the map's HUD)
+  Vivify texture cameras: this map's prefabs render into textures; from the next time it is selected, those cameras get single-view shaders ('Single-View Map Cameras')
+  Vivify InstantiatePrefab: GPU instancing off on 1 particle system(s) of 'assets/prefabs/balloon.prefab'
+  Vivify InstantiatePrefab spawned: id='prefab_balloon_1' asset='assets/prefabs/balloon.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/prefabs/scene.prefab' id='prefab_scene_1' alreadyLive=false
+  Vivify prefab camera 'AmbientLight' renders into texture 'Ambient_Source' (128x128): set to no eye, so it draws there instead of into the headset view
+  Vivify prefab camera 'BrightLight' renders into texture 'Lighting_Source' (128x128): set to no eye, so it draws there instead of into the headset view
+  Vivify prefab camera 'AdvancedFog' renders into texture 'Advanced_Fog' (256x128): set to no eye, so it draws there instead of into the headset view
+  Vivify prefab camera 'EdgeLighting' renders into texture 'EdgeLighting' (128x128): set to no eye, so it draws there instead of into the headset view
+  Vivify InstantiatePrefab: GPU instancing off on 2 particle system(s) of 'assets/prefabs/scene.prefab'
+  Vivify InstantiatePrefab spawned: id='prefab_scene_1' asset='assets/prefabs/scene.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/prefabs/scene2.prefab' id='prefab_scene2_1' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_scene2_1' asset='assets/prefabs/scene2.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/prefabs/birds.prefab' id='prefab_birds_1' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_birds_1' asset='assets/prefabs/birds.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/vivifytemplate/utilities/prefabs/custom objects/customnote.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/vivifytemplate/utilities/prefabs/custom objects/customnotedebris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: ignoring the map's realtimeReflectionProbes; turn on 'Map Reflection Probes' to let maps enable them
+  Vivify SetRenderingSettings: ignoring the map's realtime shadow settings ('shadows' and the rest); turn on 'Map Realtime Shadows' to let maps enable them
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 7 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=9 livePrefabs=4 preloadedPrefabs=4
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+=== end ===
+
