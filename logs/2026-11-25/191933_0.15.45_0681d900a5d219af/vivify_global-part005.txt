@@ -1,0 +1,920 @@
+eatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libweb-utils.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaverplusplus.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libcustom-types.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libsongdetails.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libtinyxml2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMa
+2026-11-25 14:15:45 [INFO] pLoader.so 0.0.0, FakeId 0.1.9, NoPromo 0.1.13, BSML 0.4.55, anytext 1.0.1, Lapiz 0.2.23, AudioLink 0.0.2, datakeeper 0.2.5, MetaCore 1.6.3, Hollywood 1.2.2,  , smoothedcontroller 1.7.4, SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether 2.2.5, BetterHaptics 0.2.2, BetterSongSearch 2.2.13, ClockMod 1.15.0-Dev, ModifiersCoreQuest 0.1.0, RecentlyPlayed 1.0.0, CustomJSONData 0.24.5, Tracks 2.5.4, Vivify 0.15.45, PlaylistCore 1.5.5, bl 0.9.666, BetterSongList 1.0.8, CameraUtils 1.1.11, ChatPlexSDK-BS 6.4.5, Chroma 2.10.3, CustomModels 1.2.1, Qounters++ 1.1.5, expcounter 0.2.0, MappingExtensions 0.25.4, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, PlaylistDownloader 0.3.1, PlaylistManager 1.4.1, QustomMenu 1.0.3, Replay 0.5.2, SongDownloader 0.8.8, synapse 1.0.0, Transitions 1.2.3, unicode 0.1.7
+2026-11-25 14:15:47 [INFO] Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+2026-11-25 14:15:49 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.89,0.00) fwd=(-0.23,-0.11,0.97)
+2026-11-25 14:15:49 [INFO] Vivify main camera cullingMask is now 0x3818ff37
+2026-11-25 14:15:50 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-25 14:15:51 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.07,1.85,-0.05) fwd=(-0.34,0.18,0.92)
+2026-11-25 14:15:51 [INFO] Vivify main camera cullingMask is now 0x3818ff37
+2026-11-25 14:15:51 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-25 14:15:53 [INFO] Vivify Send Logs: uploaded 4 file part(s), 56 KB (logs/2026-11-25/191545_0.15.45_127a435579d30a84 da7650e; stored 4, deduplicated 0; 47188829 bytes saved cumulatively
+2026-11-25 14:15:53 [INFO] )
+2026-11-25 14:16:02 [INFO] Vivify: the game uses STEREO_MULTIVIEW_ON (60 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+2026-11-25 14:16:02 [INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+2026-11-25 14:16:02 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5511e (Join Us for a Bite - JunkGenji)' isCustom=true hasDetails=true
+2026-11-25 14:16:02 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-25 14:16:02 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=reduced crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-25 14:16:02 [INFO] Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5511e (Join Us for a Bite - JunkGenji)/ExpertPlusStandard.dat' at condition 691
+2026-11-25 14:16:02 [INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5511e (Join Us for a Bite - JunkGenji)/bundleWindows2021.vivify'
+2026-11-25 14:16:02 [INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5511e (Join Us for a Bite - JunkGenji)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5511e (Join Us for a Bite - JunkGenji)/bundleWindows2021.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/5511e__Join_Us_for_a_Bite_-_JunkGenji_/5511e__Join_Us_for_a_Bite_-_JunkGenji__dc73628068466c95.vivify' cached=true
+2026-11-25 14:16:02 [INFO] Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/5511e__Join_Us_for_a_Bite_-_JunkGenji_/5511e__Join_Us_for_a_Bite_-_JunkGenji__dc73628068466c95.vivify'
+2026-11-25 14:16:02 [INFO] Vivify depth copy: PC 2D material=true PC array-slice material=true native slice binding=true
+2026-11-25 14:16:02 [INFO] Vivify material: context=bundle-load asset=assets/joinus/securitycam.mat material='securitycam' shader='JoinUs/SecurityCam' supported=true internalError=false
+2026-11-25 14:16:02 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/5511e__Join_Us_for_a_Bite_-_JunkGenji_/5511e__Join_Us_for_a_Bite_-_JunkGenji__dc73628068466c95.vivify' -> not needed
+2026-11-25 14:16:13 [INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=10
+2026-11-25 14:16:13 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/553c2 (My Way, So What!! - Amelia X Pixy31)' isCustom=true hasDetails=true
+2026-11-25 14:16:13 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-25 14:16:13 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=reduced crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-25 14:16:13 [INFO] Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/553c2 (My Way, So What!! - Amelia X Pixy31)/bundleAndroid2021.vivify'
+2026-11-25 14:16:13 [INFO] Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/553c2 (My Way, So What!! - Amelia X Pixy31)/ExpertPlusStandard.dat' at condition 691
+2026-11-25 14:16:13 [INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/553c2 (My Way, So What!! - Amelia X Pixy31)/bundleAndroid2021.vivify'
+2026-11-25 14:16:13 [INFO] Vivify: play button blocked by Vivify ("Checking shaders...")
+2026-11-25 14:16:14 [INFO] Vivify: play button is enabled (no mod is blocking it)
+2026-11-25 14:16:15 [INFO] Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/553c2 (My Way, So What!! - Amelia X Pixy31)/bundleAndroid2021.vivify'
+2026-11-25 14:16:15 [INFO] Vivify: the Replay mod's button is clickable again now that the map is ready
+2026-11-25 14:16:16 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/553c2 (My Way, So What!! - Amelia X Pixy31)/bundleAndroid2021.vivify' -> not needed
+2026-11-25 14:16:17 [INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=8
+2026-11-25 14:16:17 [INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)' isCustom=true hasDetails=true
+2026-11-25 14:16:17 [INFO] Vivify score submission: enabled for this Vivify map
+2026-11-25 14:16:17 [INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=reduced crashRecovery=true gameMirrors=true mapSabers=true
+2026-11-25 14:16:17 [INFO] Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)/bundleAndroid2021.vivify'
+2026-11-25 14:16:17 [INFO] Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)/ExpertStandard.dat' at condition 691
+2026-11-25 14:16:17 [INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)/bundleAndroid2021.vivify'
+2026-11-25 14:16:17 [INFO] Vivify: play button blocked by Vivify ("Checking shaders...")
+2026-11-25 14:16:18 [INFO] Vivify: play button is enabled (no mod is blocking it)
+2026-11-25 14:16:19 [INFO] Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)/bundleAndroid2021.vivify'
+2026-11-25 14:16:19 [INFO] Vivify material: context=bundle-load asset=assets/mats/gimmicblue.mat material='GimmicBLUE' shader='Hidden/Locked/.poiyomi/Poiyomi Pro/a2d2fef539d7c784eb105f289e944e54' supported=true internalError=false
+2026-11-25 14:16:19 [INFO] Vivify material: context=bundle-load asset=assets/mats/gimmicred.mat material='GimmicRED' shader='Hidden/Locked/.poiyomi/Poiyomi Pro/a2d2fef539d7c784eb105f289e944e54' supported=true internalError=false
+2026-11-25 14:16:19 [INFO] Vivify: the Replay mod's button is clickable again now that the map is ready
+2026-11-25 14:16:20 [INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)/bundleAndroid2021.vivify' -> not needed
+2026-11-25 14:16:22 [INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+2026-11-25 14:16:22 [INFO] Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+2026-11-25 14:16:22 [INFO] Vivify saber chain saberNode: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+2026-11-25 14:16:22 [INFO] Vivify saber chain initParent: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+2026-11-25 14:16:22 [INFO] Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(-0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+2026-11-25 14:16:22 [INFO] Vivify saber chain saberNode: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+2026-11-25 14:16:22 [INFO] Vivify saber chain initParent: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+2026-11-25 14:16:22 [INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(0.09,1.83,0.06) fwd=(0.13,0.11,0.98)
+2026-11-25 14:16:22 [INFO] Vivify main camera cullingMask is now 0x3d3bff37
+2026-11-25 14:16:22 [INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=25
+2026-11-25 14:16:22 [INFO] Vivify PrepareBeatmap: v2=false customEvents=2 triggerTime=0 beatmapAD=true
+2026-11-25 14:16:22 [INFO] Vivify graphics: api=OpenGLES3 (11) shaderLevel=50 (SM5.0) geometryShaderStagePossible=true gpu='Adreno (TM) 740'
+2026-11-25 14:16:22 [INFO] Vivify platform: os='Android OS 14 / API-34 (UP1A.231005.007.A1/4183210015200610)' device='Oculus Quest 3S' gpu='Adreno (TM) 740' vendor='Qualcomm' api=11 stereoMode=3 xrOcclusionMesh=true supportsInstancing=true supportsR8=true supportsDepthRT=true
+2026-11-25 14:16:22 [INFO] Vivify bundle preloaded, rebuilding asset caches: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)/bundleAndroid2021.vivify'
+2026-11-25 14:16:22 [INFO] Vivify material: context=bundle-load asset=assets/mats/gimmicblue.mat material='GimmicBLUE' shader='Hidden/Locked/.poiyomi/Poiyomi Pro/a2d2fef539d7c784eb105f289e944e54' supported=true internalError=false
+2026-11-25 14:16:22 [INFO] Vivify material: context=bundle-load asset=assets/mats/gimmicred.mat material='GimmicRED' shader='Hidden/Locked/.poiyomi/Poiyomi Pro/a2d2fef539d7c784eb105f289e944e54' supported=true internalError=false
+2026-11-25 14:16:22 [INFO] Vivify Projector interface: managedType=false nativeGetMaterial=true nativeSetMaterial=true
+2026-11-25 14:16:22 [INFO] Vivify texture decode: scanned 8 material(s), replaced 0 unsupported texture reference(s) in 0ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+2026-11-25 14:16:22 [INFO] Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+2026-11-25 14:16:22 [INFO] Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadows'
+2026-11-25 14:16:22 [INFO] Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadows'
+2026-11-25 14:16:22 [INFO] Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+2026-11-25 14:16:22 [INFO] Vivify preload prefab: asset='assets/prefabs/map.prefab' id='intro' instance=true
+2026-11-25 14:16:22 [INFO] Vivify PreloadInstantiatePrefabs: 1 prefab event(s) preloaded
+2026-11-25 14:16:22 [INFO] Vivify catch-up event: type='InstantiatePrefab' time=0
+2026-11-25 14:16:22 [INFO] Vivify InstantiatePrefab: asset='assets/prefabs/map.prefab' id='intro' alreadyLive=false
+2026-11-25 14:16:22 [INFO] Vivify InstantiatePrefab spawned: id='intro' asset='assets/prefabs/map.prefab' tracks=1 animators=0 offscreenCulled=0
+2026-11-25 14:16:22 [INFO] Vivify catch-up event: type='AssignObjectPrefab' time=0
+2026-11-25 14:16:22 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/prefabs/custom note.prefab' tracks=1 additive=false saberType=-
+2026-11-25 14:16:22 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/custom note dot.prefab' tracks=1 additive=false saberType=-
+2026-11-25 14:16:22 [INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/prefabs/custom note debris.prefab' tracks=1 additive=false saberType=-
+2026-11-25 14:16:22 [INFO] Vivify catch-up: replayed 2 event(s) up to time=0
+2026-11-25 14:16:22 [INFO] Vivify PrepareBeatmap done: assets=25 livePrefabs=1 preloadedPrefabs=1
+2026-11-25 14:16:22 [INFO] Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+2026-11-25 14:16:22 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-25 14:16:22 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-25 14:16:23 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+2026-11-25 14:16:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+2026-11-25 14:16:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+2026-11-25 14:16:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+2026-11-25 14:16:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+2026-11-25 14:16:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+2026-11-25 14:16:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+2026-11-25 14:16:25 [INFO] Vivify: Reduce Debris player option = false (custom debris enabled)
+2026-11-25 14:16:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=2
+2026-11-25 14:16:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+2026-11-25 14:16:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:16:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:27 [INFO] Vivify visual check at 5s: 3 live note(s), 3 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-25 14:16:27 [INFO] Vivify visual check: a live note has 6 renderer(s) (map prefab):
+2026-11-25 14:16:27 [INFO] Vivify visual check:   'NoteCube' enabled=false active=true layer=8 material='NoteHD' shader='Custom/NoteHD' supported=true queue=2004 block: _Cutout=1.00 _Color=(0.71,0.00,0.54,1.00)
+2026-11-25 14:16:27 [INFO] Vivify visual check:   'NoteArrow' enabled=false active=true layer=8 material='NoteArrowHD' shader='Custom/GlowingInstancedHD' supported=true queue=2002 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+2026-11-25 14:16:27 [INFO] Vivify visual check:   'NoteArrowGlow' enabled=false active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.71,0.00,0.54,1.00)
+2026-11-25 14:16:27 [INFO] Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.71,0.00,0.54,1.00)
+2026-11-25 14:16:27 [INFO] Vivify visual check:   'Base' enabled=true active=true layer=8 material='CustomNoteBase' shader='Swifter/OutlineNote' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.71,0.00,0.54,1.00)
+2026-11-25 14:16:27 [INFO] Vivify visual check:   'Arrow' enabled=true active=true layer=8 material='CustomNoteArrow' shader='Swifter/CustomNoteArrow' supported=true queue=2000 block: _Cutout=0.00 _Color=(0.71,0.00,0.54,1.00)
+2026-11-25 14:16:27 [INFO] Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+2026-11-25 14:16:27 [INFO] Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+2026-11-25 14:16:27 [INFO] Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00) mirrorRenderer: stereo=2x2 mono=2x2 aa=1 disableDepth=true
+2026-11-25 14:16:27 [INFO] Vivify visual check: cameras that may render the mirror: 'MainCamera' stereo=true eye=3 target=screen mask=0x3d3bff37
+2026-11-25 14:16:27 [INFO] Vivify visual check at 5s: 134 active renderer(s), 0 with no runnable shader; most drawn: Custom/TransparentNeonLight x36, Custom/Parametric3SliceSprite x28, Custom/CustomParticles x23, BeatSaber/AlyngsFiretrail x12, BeatSaber/AlyngsUnlit x8, Swifter/OutlineNote x7, BeatSaber/Unlit Glow x4, Swifter/CustomNoteArrow x3; screen effects: 0 before, 0 after the main effect
+2026-11-25 14:16:27 [INFO] Vivify visual check: main camera cullingMask=0x3d3bff37 depthTextureMode=0 clearFlags=2
+2026-11-25 14:16:28 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:29 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:16:29 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:29 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:30 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:30 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:30 [INFO] Vivify pause menu opened: syncedObjects=0 secondaryCameras=0
+2026-11-25 14:16:39 [INFO] Vivify pause menu closed: syncedObjects=0 secondaryCameras=0
+2026-11-25 14:16:39 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:40 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:40 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:40 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:16:40 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:40 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:40 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:41 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:41 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:16:41 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:41 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:42 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:42 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:42 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:43 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:43 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:16:43 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:43 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:43 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:43 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:44 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:44 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:44 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:45 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:45 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:45 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:45 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:16:46 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:46 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:46 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:46 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:47 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:47 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:16:47 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:48 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:48 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:48 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:48 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:48 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:16:49 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:49 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:49 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:49 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:49 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:49 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:49 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:49 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+2026-11-25 14:16:50 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:51 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:52 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:52 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:53 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:53 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:53 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:54 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:55 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:55 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:56 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:58 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:58 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:16:59 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:01 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:01 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:01 [INFO] Vivify visual check at 30s: 2 live note(s), 2 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-25 14:17:01 [INFO] Vivify visual check at 30s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+2026-11-25 14:17:01 [INFO] Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00) mirrorRenderer: stereo=2x2 mono=2x2 aa=1 disableDepth=true
+2026-11-25 14:17:01 [INFO] Vivify visual check: cameras that may render the mirror: 'MainCamera' stereo=true eye=3 target=screen mask=0x3d3bff37
+2026-11-25 14:17:01 [INFO] Vivify visual check at 30s: 126 active renderer(s), 0 with no runnable shader; most drawn: Custom/TransparentNeonLight x36, Custom/Parametric3SliceSprite x28, Custom/CustomParticles x20, BeatSaber/AlyngsFiretrail x12, BeatSaber/AlyngsUnlit x8, BeatSaber/Unlit Glow x4, Swifter/OutlineNote x4, Hidden/Locked/.poiyomi/Poiyomi Pro/94a1f854c7efd364280adcf6f8f0c774 x3; screen effects: 0 before, 0 after the main effect
+2026-11-25 14:17:01 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:02 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:02 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:03 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:03 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:05 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:05 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:05 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:05 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+2026-11-25 14:17:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:14 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:14 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:14 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:14 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:14 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:16 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:16 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:16 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:16 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:16 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:20 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:20 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:20 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:20 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:20 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:20 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:20 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:21 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:21 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:21 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:21 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:21 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:21 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:22 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:22 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:22 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:22 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:22 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:22 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:22 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+2026-11-25 14:17:23 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:23 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:23 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+2026-11-25 14:17:23 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:23 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:23 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:28 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:28 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:28 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:28 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:28 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:29 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:29 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:29 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:29 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:30 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:30 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:30 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:31 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:31 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:31 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:31 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:31 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:32 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:32 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:32 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:32 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:33 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:33 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:33 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:33 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:34 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:34 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:34 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:35 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:35 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:35 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:36 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:36 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:36 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:36 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:36 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:37 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:37 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:37 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:37 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:38 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:38 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:38 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:38 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:38 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:39 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:39 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:39 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:40 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:40 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:40 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:40 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:41 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:41 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:41 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:42 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:43 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:43 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:44 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:44 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:45 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:45 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:46 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:46 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:47 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:48 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:48 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:49 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:49 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:49 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:50 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:51 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:51 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:52 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:52 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:53 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:53 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:53 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:54 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:55 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:55 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:55 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:55 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:55 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:56 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:56 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:56 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:58 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:58 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:58 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:58 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:58 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:58 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:17:59 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:59 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:59 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:59 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:17:59 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:18:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:18:01 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:01 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:01 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:01 [INFO] Vivify visual check at 90s: 6 live note(s), 6 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+2026-11-25 14:18:01 [INFO] Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00) mirrorRenderer: stereo=2x2 mono=2x2 aa=1 disableDepth=true
+2026-11-25 14:18:01 [INFO] Vivify visual check: cameras that may render the mirror: 'MainCamera' stereo=true eye=3 target=screen mask=0x3d3bff37
+2026-11-25 14:18:01 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:18:02 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:02 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:18:02 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:02 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:02 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:02 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:03 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:03 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:03 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:03 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:18:03 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:03 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:18:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:05 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:05 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:05 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:05 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:05 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:18:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:18:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:18:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:18:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+2026-11-25 14:18:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:14 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:14 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:14 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:14 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:14 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:16 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:16 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:16 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:16 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:16 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:16 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:23 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:23 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:23 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:28 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:28 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:28 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:29 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:29 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:29 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:29 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:29 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:30 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:30 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:30 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:30 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:30 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:31 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:31 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:31 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:31 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:32 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:32 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:32 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:32 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:33 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:33 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:33 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:33 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:33 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:33 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:34 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:34 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:34 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:34 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:35 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:35 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:35 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:35 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:36 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:36 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:36 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:36 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:36 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:37 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:37 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:37 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:37 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:38 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:38 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:38 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:38 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:39 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:39 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:39 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:39 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:39 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:40 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:40 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:40 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:40 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:40 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:41 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:41 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:41 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:41 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:42 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:42 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:42 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:42 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:43 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:43 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:43 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:43 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:43 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:44 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:44 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:44 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:44 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:45 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:45 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:45 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:45 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:45 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:46 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:46 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:46 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:46 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:46 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:47 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:47 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:47 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:47 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:48 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:48 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:48 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:48 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:50 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:50 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:51 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:51 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:51 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:51 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:51 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:52 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:52 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:52 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:53 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:53 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:53 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:53 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:53 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:53 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:53 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:53 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:53 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:54 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:54 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:54 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:54 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:54 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:54 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:55 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:55 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:55 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:55 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:55 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:56 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:56 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:56 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:56 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:56 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:56 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:56 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:56 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:57 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:58 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:58 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:58 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:58 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:58 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:58 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:59 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:59 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:59 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:59 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:59 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:18:59 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:00 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:01 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:01 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:01 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:01 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:01 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:02 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:02 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:02 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:02 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:02 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:02 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:03 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:03 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:03 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:03 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:03 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:04 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:05 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:05 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:05 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:05 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:06 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:07 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:08 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:09 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:10 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:11 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:12 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:13 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:14 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:14 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:14 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:14 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:14 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:15 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:16 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:16 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:16 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:16 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:17 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:18 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:19 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:20 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:20 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:20 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:20 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:20 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:20 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:21 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:21 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:21 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:21 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:21 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:22 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:22 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:22 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:22 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:22 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:22 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:22 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:22 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:23 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:23 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:23 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:24 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:25 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:26 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:27 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:28 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:28 [INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=6
+2026-11-25 14:19:33 [WARN] Vivify frame stall: the game did not draw for 1.0s (songTime 180.30, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f922 (Signaling - Pixy31)/bundleAndroid2021.vivify')
+2026-11-25 14:19:33 [INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.15,1.82,0.06) fwd=(-0.34,0.03,0.94)
+2026-11-25 14:19:33 [INFO] Vivify main camera cullingMask is now 0x3d3aff37
+2026-11-25 14:19:33 [INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+2026-11-25 14:19:33 [INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+2026-11-25 14:19:33 [INFO] Vivify level end: level ended (quit or finished)
+2026-11-25 14:19:33 [INFO] Vivify ResetRuntime: livePrefabs=1 preloaded=1 synced=0 secondaryCameras=0 declaredTextures=0 assets=25
+2026-11-25 14:19:33 [INFO] Vivify level end: camera effects removed
+2026-11-25 14:19:33 [INFO] Vivify level end: note and saber visuals restored
+2026-11-25 14:19:33 [INFO] Vivify level end: camera restored
+2026-11-25 14:19:33 [INFO] Vivify level end: map prefabs destroyed
+2026-11-25 14:19:33 [INFO] Vivify level end: render textures released
+2026-11-25 14:19:33 [INFO] Vivify level end: render settings restored
+2026-11-25 14:19:33 [INFO] Vivify level end: done
