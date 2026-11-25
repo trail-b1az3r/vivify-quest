@@ -1,5 +1,9 @@
 #include "VivifyRuntimeInternal.hpp"
 #include "VivifyMirrorProbe.hpp"
+#include "UnityEngine/MeshRenderer.hpp"
+#include "UnityEngine/Collider.hpp"
+#include "UnityEngine/PrimitiveType.hpp"
+#include "UnityEngine/Canvas.hpp"
 #include "VivifyRecovery.hpp"
 #ifdef VIVIFY_GAME_1_45_3
 #include "UnityEngine/Rendering/RenderTextureSubElement.hpp"
@@ -1205,6 +1209,92 @@ void Runtime::UpdateBlitEffects() {
   cleanup(_preEffects);
   cleanup(_postEffects);
   for (auto& bucket : _midEffects) cleanup(bucket);
+  UpdateDesktopHud();
+}
+
+// A map's desktop HUD in the headset (0.16.0). Effects like End Times'
+// Aeroluna/OverlayUITex lay a HUD texture over the flat desktop view and pass
+// the picture through in a headset (0.15.53). Painting that texture into each
+// eye's picture put it out of place in both eyes; instead, while such an
+// effect is on, the texture is shown on a panel fixed in front of the head,
+// drawn like any object in the scene, so both eyes see it in the same spot.
+void Runtime::UpdateDesktopHud() {
+  UnityEngine::Material* overlayMaterial = nullptr;
+  if (_currentBeatmapData != nullptr && !_isResetting && !_pauseMenuActive && !_stereoDropsTextureShaders.empty()) {
+    for (auto const* effects : {&_preEffects, &_postEffects}) {
+      for (auto const& effect : *effects) {
+        auto* material = effect.data.material;
+        if (!IsAlive(material)) continue;
+        auto* shader = material->get_shader().unsafePtr();
+        if (!IsAlive(shader)) continue;
+        std::string const name = ShaderNameForLog(shader);
+        if (_stereoDropsTextureShaders.contains(name) && !_singleViewOnlyNativeShaders.contains(name)) {
+          overlayMaterial = material;
+          break;
+        }
+      }
+      if (overlayMaterial) break;
+    }
+  }
+  // The texture the two-eye program leaves out: the material's one that is
+  // not the screen (_MainTex).
+  UnityEngine::Texture* hudTexture = nullptr;
+  if (overlayMaterial) {
+    auto names = overlayMaterial->GetTexturePropertyNames();
+    for (int i = 0; names && i < names.size(); i++) {
+      if (static_cast<std::string>(names[i]) == "_MainTex") continue;
+      auto texture = overlayMaterial->GetTexture(names[i]);
+      if (IsAlive(texture.unsafePtr())) {
+        hudTexture = texture.unsafePtr();
+        break;
+      }
+    }
+  }
+  auto* hud = _desktopHud ? _desktopHud.ptr() : nullptr;
+  if (!hudTexture) {
+    if (hud && IsAlive(hud) && hud->get_activeSelf()) hud->SetActive(false);
+    return;
+  }
+  auto* camera = VivifyMainCamera();
+  if (!IsAlive(camera)) return;
+  if (!hud || !IsAlive(hud)) {
+    hud = UnityEngine::GameObject::CreatePrimitive(UnityEngine::PrimitiveType::Quad).unsafePtr();
+    if (!IsAlive(hud)) return;
+    hud->set_name(StringW("Vivify Desktop HUD"));
+    if (auto collider = hud->GetComponent<UnityEngine::Collider*>(); IsAlive(collider))
+      UnityEngine::Object::Destroy(collider);
+    auto* source = UnityEngine::Canvas::GetDefaultCanvasMaterial().unsafePtr();
+    auto* material = IsAlive(source) ? UnityEngine::Material::New_ctor(source) : nullptr;
+    if (!material) {
+      UnityEngine::Object::Destroy(hud);
+      return;
+    }
+    material->set_renderQueue(4000);
+    hud->GetComponent<UnityEngine::MeshRenderer*>()->set_sharedMaterial(material);
+    _desktopHud = hud;
+    _desktopHudMaterial = material;
+    PaperLogger.info("Vivify desktop HUD: showing '{}' from '{}' on a panel in front of the head",
+                     static_cast<std::string>(hudTexture->get_name()), ShaderNameForLog(overlayMaterial->get_shader()));
+  }
+  auto transform = hud->get_transform();
+  auto cameraTransform = camera->get_transform();
+  if (transform->get_parent().unsafePtr() != cameraTransform.unsafePtr()) {
+    transform->SetParent(cameraTransform, false);
+    hud->set_layer(camera->get_gameObject()->get_layer());
+  }
+  // Two metres ahead, 1.4 m tall: about the middle 40 degrees of the view,
+  // past the notes' near edge.
+  float const height = 1.4f;
+  float const aspect = hudTexture->get_height() > 0
+                           ? static_cast<float>(hudTexture->get_width()) / static_cast<float>(hudTexture->get_height())
+                           : 16.0f / 9.0f;
+  transform->set_localPosition(UnityEngine::Vector3(0.0f, 0.0f, 2.0f));
+  transform->set_localRotation(UnityEngine::Quaternion::get_identity());
+  transform->set_localScale(UnityEngine::Vector3(height * aspect, height, 1.0f));
+  if (_desktopHudMaterial && IsAlive(_desktopHudMaterial.ptr()) &&
+      _desktopHudMaterial->get_mainTexture().unsafePtr() != hudTexture)
+    _desktopHudMaterial->set_mainTexture(hudTexture);
+  if (!hud->get_activeSelf()) hud->SetActive(true);
 }
 
 void Runtime::HandleCreateScreenTexture(rapidjson::Value const& json) {
@@ -1891,17 +1981,36 @@ void Runtime::ApplyFieldOfView(UnityEngine::Camera* mainCam) {
     _fovFramesChecked = 0;
     _fovReported = false;
     PaperLogger.info("Vivify field of view: {}% for this map", percent);
-  } else if (!_fovReported && ++_fovFramesChecked >= 30) {
-    // Whether the headset's runtime kept last frame's projection or put its
-    // own back: "the setting does nothing" (0.15.15) is one or the other.
-    float const now = mainCam->GetStereoProjectionMatrix(UnityEngine::Camera_StereoscopicEye(0)).m00;
-    bool const kept = std::abs(now - _fovSetM00[0]) < 1e-4f;
-    PaperLogger.info("Vivify field of view: the headset {} the widened projection (set m00 {:.4f}, now {:.4f})",
-                     kept ? "kept" : "replaced", _fovSetM00[0], now);
-    _fovReported = true;
   }
-  // Set every frame from the headset's own projection: the runtime can hand
-  // the camera a new one each frame (0.15.16; 0.15.13 set it once).
+  WidenFieldOfView(mainCam);
+}
+
+// The headset's runtime puts its own projection back between the frame's
+// update and the camera drawing (every 0.15.16-0.15.55 log: "the headset
+// replaced the widened projection"), so Field Of View % did nothing. It is now
+// widened again just before the main camera culls (CameraApplier::OnPreCull,
+// 0.16.0), and checked just before it draws.
+void Runtime::FieldOfViewPreCull(UnityEngine::Camera* camera) {
+  if (_fovCamera == nullptr || camera != _fovCamera || !IsAlive(camera)) return;
+  WidenFieldOfView(camera);
+}
+
+void Runtime::FieldOfViewPreRender(UnityEngine::Camera* camera) {
+  if (_fovCamera == nullptr || camera != _fovCamera || !IsAlive(camera) || _fovReported) return;
+  if (++_fovFramesChecked < 30) return;
+  float const now = camera->GetStereoProjectionMatrix(UnityEngine::Camera_StereoscopicEye(0)).m00;
+  bool const kept = std::abs(now - _fovSetM00[0]) < 1e-4f;
+  PaperLogger.info("Vivify field of view: as the camera draws, the headset {} the widened projection (set m00 "
+                   "{:.4f}, now {:.4f})",
+                   kept ? "kept" : "replaced", _fovSetM00[0], now);
+  _fovReported = true;
+}
+
+void Runtime::WidenFieldOfView(UnityEngine::Camera* mainCam) {
+  int const percent = _fovAppliedPercent;
+  if (percent <= 100) return;
+  // From the headset's own projection each time: the runtime hands the
+  // camera a new one each frame (0.15.16; 0.15.13 set it once).
   mainCam->ResetStereoProjectionMatrices();
   float const scale = 100.0f / static_cast<float>(percent);
   UnityEngine::Matrix4x4 widened[2];
@@ -2178,7 +2287,8 @@ void Runtime::RefreshCameraApplier(UnityEngine::GameObject* mainCamGO, bool allo
                          (!_preEffects.empty() || !_postEffects.empty() || HasMidRenderEffects() ||
                           !_secondaryCameras.empty());
   // The one-time mirror test (0.15.54) runs in this camera's effect pass.
-  bool const needsCamera = needsBlit || GetExperimentalSeparateEye() || MirrorProbe::Wanted();
+  bool const needsCamera = needsBlit || GetExperimentalSeparateEye() || MirrorProbe::Wanted() ||
+                           (GetFieldOfViewPercent() > 100 && _currentBeatmapData != nullptr);
   if (_cameraApplier->get_enabled() != needsCamera) _cameraApplier->set_enabled(needsCamera);
 }
 
