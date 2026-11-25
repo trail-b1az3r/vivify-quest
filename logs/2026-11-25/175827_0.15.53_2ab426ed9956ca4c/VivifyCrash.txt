@@ -1,0 +1,58 @@
+=== Vivify 0.15.53 native crash at 1795629500 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27d600000b89
+thread 3001 'UnityMain'
+pc 0x7bef7569d8  lr 0x7bef7569a8  sp 0x7a75710020  fp 0x7a757100c0
+backtrace:
+  #00 pc 0x7bef7569d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7bef7569a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7a776cfc64  libmetacore.so +0xcdc64
+  #03 fp 0x7a4c38a114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x7a4c38a264  libil2cpp.so +0x2226264
+  #05 fp 0x7acf7d4d48  libsl2.so +0x4fad48
+  #06 fp 0x7acf7d4ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7a6db0e394  liblapiz.so +0xb3394
+  #08 fp 0x788a29d408  libmpex.so +0x196408
+  #09 fp 0x7a4ec89cd8  libil2cpp.so +0x4b25cd8
+last Vivify log lines (oldest first):
+  Vivify saber chain modelNode(smc): AvatarSaberModel(Clone)[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- LeftSaberBase[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAva
+  Vivify saber chain saberNode: LeftSaberBase[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAvatar[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- MultiplayerDuelConnectedP
+  Vivify saber chain initParent: LeftSaberBase[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAvatar[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- MultiplayerDuelConnected
+  Vivify saber chain modelNode(smc): AvatarSaberModel(Clone)[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- RightSaberBase[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAv
+  Vivify saber chain saberNode: RightSaberBase[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAvatar[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- MultiplayerDuelConnected
+  Vivify saber chain initParent: RightSaberBase[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAvatar[w=(-5.00,0.00,12.00) l=(0.00,0.00,0.00)] <- MultiplayerDuelConnecte
+  Vivify main camera: name='MainCamera' cullingMask=0x3819fd37 stereoMode=3 multipassSetting=false pos=(-0.05,1.11,-0.08) fwd=(0.16,0.26,0.95)
+  Vivify main camera cullingMask is now 0x3819fd37
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.05,1.35,-0.03) fwd=(0.39,0.02,0.92)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=9
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51266 (Dialtone - Copper)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51266 (Dialtone - Copper)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51266
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51266__Dialtone_-_Copper_/51266__Dialtone_-_Copper__37d8ad8402540779.vivify'
+  Vivify material: context=bundle-load asset=assets/materials/img_67.mat material='IMG_67' shader='.poiyomi/Extras/Poiyomi Fake Shadow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/img_8456.mat material='IMG_8456' shader='.poiyomi/Extras/Poiyomi Fake Shadow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/img_8457.mat material='IMG_8457' shader='.poiyomi/Extras/Poiyomi Fake Shadow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/img_8458.mat material='IMG_8458' shader='.poiyomi/Extras/Poiyomi Fake Shadow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/img_8459.mat material='IMG_8459' shader='.poiyomi/Extras/Poiyomi Fake Shadow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/img_8460.mat material='IMG_8460' shader='.poiyomi/Extras/Poiyomi Fake Shadow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/img_8461.mat material='IMG_8461' shader='.poiyomi/Extras/Poiyomi Fake Shadow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/img_8464.mat material='IMG_8464' shader='.poiyomi/Extras/Poiyomi Fake Shadow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/img_8466.mat material='IMG_8466' shader='.poiyomi/Extras/Poiyomi Fake Shadow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/img_8467.mat material='IMG_8467' shader='Custom/fade2' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/img_bus.mat material='IMG_bus' shader='.poiyomi/Extras/Poiyomi Fake Shadow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/img_dog.mat material='IMG_dog' shader='.poiyomi/Extras/Poiyomi Fake Shadow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/img_spo7.mat material='IMG_spo7' shader='.poiyomi/Extras/Poiyomi Fake Shadow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/stivkeft.mat material='stivkeft' shader='.poiyomi/Extras/Poiyomi Fake Shadow' supported=true internalError=false
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=30
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/529e0 (Flower Man - Quest)' isCustom=true hasDetails=true
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.00,1.36,0.01) fwd=(0.21,0.08,0.97)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/529e0 (Flower Man - Quest)' isCustom=true hasDetails=true
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.04,1.35,0.00) fwd=(0.12,0.01,0.99)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/529e0 (Flower Man - Quest)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+=== end ===
+
