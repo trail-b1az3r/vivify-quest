@@ -1,0 +1,52 @@
+=== Vivify 0.15.53 native crash at 1795637411 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x5a5e2f224
+thread 2194 'Thread-91'
+pc 0x70eae44740  lr 0x70eae446f8  sp 0x6ff9032480  fp 0x6ff90327b0
+backtrace:
+  #00 pc 0x70eae44740  libunity.so +0x13ee740
+  #01 lr 0x70eae446f8  libunity.so +0x13ee6f8
+  #02 fp 0x70eb02a9f4  libunity.so +0x15d49f4
+  #03 fp 0x7249d30334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify shaders: bundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/48c03 (Winter Wrap Up Late Again - slabs37)/bundleAndroid2021.vivify' converted=false total=1 runnable=1 noAndroidProgram=0 deviceRejected=0
+  Vivify texture decode: scanned 31 material(s), replaced 0 unsupported texture reference(s) in 1ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify material 'PanaMilky': '_ImageType' is an int in shader 'Skybox/Panoramic With Sun'; set as integer 0
+  Vivify material 'PanaMilky': '_Layout' is an int in shader 'Skybox/Panoramic With Sun'; set as integer 0
+  Vivify material 'PanaMilky': '_MirrorOnBack' is an int in shader 'Skybox/Panoramic With Sun'; set as integer 0
+  Vivify: maps may turn realtime reflection probes on (full quality)
+  Vivify: 'Map Realtime Shadows' is on; the game's shadow quality is left as it is
+  Vivify preload prefab: asset='assets/prefabs/balloon.prefab' id='prefab_balloon_1' instance=true
+  Vivify preload prefab: asset='assets/prefabs/scene.prefab' id='prefab_scene_1' instance=true
+  Vivify preload prefab: asset='assets/prefabs/scene2.prefab' id='prefab_scene2_1' instance=true
+  Vivify preload prefab: asset='assets/prefabs/birds.prefab' id='prefab_birds_1' instance=true
+  Vivify PreloadInstantiatePrefabs: 4 prefab event(s) preloaded
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/prefabs/balloon.prefab' id='prefab_balloon_1' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_balloon_1' asset='assets/prefabs/balloon.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/prefabs/scene.prefab' id='prefab_scene_1' alreadyLive=false
+  Vivify prefab camera 'AmbientLight' renders into texture 'Ambient_Source' (128x128): set to no eye, so it draws there instead of into the headset view
+  Vivify prefab camera 'BrightLight' renders into texture 'Lighting_Source' (128x128): set to no eye, so it draws there instead of into the headset view
+  Vivify prefab camera 'AdvancedFog' renders into texture 'Advanced_Fog' (256x128): set to no eye, so it draws there instead of into the headset view
+  Vivify prefab camera 'EdgeLighting' renders into texture 'EdgeLighting' (128x128): set to no eye, so it draws there instead of into the headset view
+  Vivify InstantiatePrefab spawned: id='prefab_scene_1' asset='assets/prefabs/scene.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/prefabs/scene2.prefab' id='prefab_scene2_1' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_scene2_1' asset='assets/prefabs/scene2.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/prefabs/birds.prefab' id='prefab_birds_1' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_birds_1' asset='assets/prefabs/birds.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/vivifytemplate/utilities/prefabs/custom objects/customnote.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/vivifytemplate/utilities/prefabs/custom objects/customnotedebris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowDistance'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowDistance'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowResolution'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowResolution'
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 7 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=9 livePrefabs=4 preloadedPrefabs=4
+=== end ===
+
