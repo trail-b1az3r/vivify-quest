@@ -1,0 +1,52 @@
+=== Vivify 0.15.53 native crash at 1795606722 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x1db7527c7c
+thread 20094 'Thread-3'
+pc 0x74a04597b4  lr 0x74a0459768  sp 0x73b3d85480  fp 0x73b3d857b0
+backtrace:
+  #00 pc 0x74a04597b4  libunity.so +0x13ee7b4
+  #01 lr 0x74a0459768  libunity.so +0x13ee768
+  #02 fp 0x74a063f9f4  libunity.so +0x15d49f4
+  #03 fp 0x75f8506774  libc.so +0xd1774
+last Vivify log lines (oldest first):
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify custom event: type='SetCameraProperty' time=130.66667 songTime=130.68155
+  Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=false bloomPrePass=unset mainEffect=unset
+  Vivify custom event: type='Blit' time=130.66667 songTime=130.68155
+  Vivify Blit skipped at time 130.66667: Disable All Blits enabled asset='assets/shaders/boxcolorize.mat'
+  Vivify custom event: type='Blit' time=132 songTime=132.00128
+  Vivify Blit skipped at time 132: Disable All Blits enabled asset='<none>'
+  Vivify custom event: type='DestroyObject' time=132.26666 songTime=132.26733
+  Vivify DestroyObject: destroying live prefab id='library2'
+  Vivify custom event: type='InstantiatePrefab' time=132.26666 songTime=132.26733
+  Vivify InstantiatePrefab: asset='assets/icosphere/icospherescene.prefab' id='trail' alreadyLive=false
+  Vivify InstantiatePrefab: GPU instancing off on 9 particle system(s) of 'assets/icosphere/icospherescene.prefab'
+  Vivify InstantiatePrefab spawned: id='trail' asset='assets/icosphere/icospherescene.prefab' tracks=0 animators=1 offscreenCulled=1
+  Vivify custom event: type='AssignObjectPrefab' time=140.79999 songTime=140.80121
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/morenotefucky/geodissolvenote.prefab' tracks=2 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/morenotefucky/geodissolvenotenoarrow.prefab' tracks=2 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/morenotefucky/geodissolvenotedebris.prefab' tracks=2 additive=false saberType=-
+  Vivify Send Logs: upload failed (http 503, curl 0): Cloudflare: Worker exceeded resource limits | vivify-log-relay.vivify-logs-forquest.workers.dev | Cloudflare [files: VivifyReport.txt, PlayingLevel.txt, VivifySession.txt, vivify_global-p
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+=== end ===
+
