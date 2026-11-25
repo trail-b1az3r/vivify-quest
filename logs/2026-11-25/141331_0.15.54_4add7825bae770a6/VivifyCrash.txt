@@ -1,0 +1,107 @@
+=== Vivify 0.15.54 native crash at 1795615986 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x158900001670
+thread 1982 'UnityMain'
+pc 0x7726e86220  lr 0x7726e8621c  sp 0x7725c50b90  fp 0x7725c50c70
+backtrace:
+  #00 pc 0x7726e86220  libunity.so +0x121f220
+  #01 lr 0x7726e8621c  libunity.so +0x121f21c
+  #02 fp 0x770b8f278c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify preload prefab: asset='assets/burning/prefabs/scene1.prefab' id='prefab_scene1_1' instance=true
+  Vivify preload prefab: asset='assets/burning/prefabs/scene2.prefab' id='prefab_scene2_1' instance=true
+  Vivify preload prefab: asset='assets/burning/prefabs/scene3.prefab' id='prefab_scene3_1' instance=true
+  Vivify preload prefab: asset='assets/burning/prefabs/scene4.prefab' id='prefab_scene4_1' instance=true
+  Vivify PreloadInstantiatePrefabs: 4 prefab event(s) preloaded
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/burning/prefabs/scene1.prefab' id='prefab_scene1_1' alreadyLive=false
+  Vivify: watching cameras (reflection probes, the map's HUD)
+  Vivify InstantiatePrefab spawned: id='prefab_scene1_1' asset='assets/burning/prefabs/scene1.prefab' tracks=1 animators=1 offscreenCulled=1
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/burning/prefabs/scene2.prefab' id='prefab_scene2_1' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_scene2_1' asset='assets/burning/prefabs/scene2.prefab' tracks=1 animators=1 offscreenCulled=1
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/burning/prefabs/scene3.prefab' id='prefab_scene3_1' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_scene3_1' asset='assets/burning/prefabs/scene3.prefab' tracks=1 animators=1 offscreenCulled=1
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/burning/prefabs/scene4.prefab' id='prefab_scene4_1' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_scene4_1' asset='assets/burning/prefabs/scene4.prefab' tracks=1 animators=1 offscreenCulled=1
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/vivifytemplate/utilities/prefabs/custom objects/custom note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/vivifytemplate/utilities/prefabs/custom objects/custom note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/vivifytemplate/utilities/prefabs/custom objects/custom note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/burning/prefabs/leftsaberb.prefab' tracks=0 additive=false saberType=0
+  Vivify AssignObjectPrefab(trail): asset='assets/burning/prefabs/sabertrail.prefab' saberType=0 additive=false
+  Vivify saber replaced (type 0): models=1 trails=0 spawned=1 renderers=3 hiddenOriginals=5
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/burning/prefabs/rightsaberb.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/burning/prefabs/sabertrail.prefab' saberType=1 additive=false
+  Vivify saber replaced (type 1): models=1 trails=0 spawned=1 renderers=3 hiddenOriginals=5
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadows'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadows'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowDistance'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowDistance'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowResolution'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowResolution'
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 8 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=12 livePrefabs=4 preloadedPrefabs=4
+=== end ===
+
+=== Vivify 0.15.54 native crash at 1795616001 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7815389f2c
+thread 9502 'UnityMain'
+pc 0x78c13016e4  lr 0x773a0edac0  sp 0x7792242850  fp 0x7792242c10
+backtrace:
+  #00 pc 0x78c13016e4  libc.so +0xc76e4
+  #01 lr 0x773a0edac0  libsongcore.so +0x4d6ac0
+  #02 fp 0x7739fc7bd8  libsongcore.so +0x3b0bd8
+  #03 fp 0x773a0e79c4  libsongcore.so +0x4d09c4 (late_load +0xd30)
+  #04 fp 0x779cb50b9c  libsl2.so +0x543b9c
+  #05 fp 0x771b120fb4  libunity.so +0xab1fb4
+  #06 fp 0x78b4fcc6c3
+  #07 fp 0x7792243f40
+last Vivify log lines (oldest first):
+  Vivify crash report:   Vivify preload prefab: asset='assets/burning/prefabs/scene3.prefab' id='prefab_scene3_1' instance=true
+  Vivify crash report:   Vivify preload prefab: asset='assets/burning/prefabs/scene4.prefab' id='prefab_scene4_1' instance=true
+  Vivify crash report:   Vivify PreloadInstantiatePrefabs: 4 prefab event(s) preloaded
+  Vivify crash report:   Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify crash report:   Vivify InstantiatePrefab: asset='assets/burning/prefabs/scene1.prefab' id='prefab_scene1_1' alreadyLive=false
+  Vivify crash report:   Vivify: watching cameras (reflection probes, the map's HUD)
+  Vivify crash report:   Vivify InstantiatePrefab spawned: id='prefab_scene1_1' asset='assets/burning/prefabs/scene1.prefab' tracks=1 animators=1 offscreenCulled=1
+  Vivify crash report:   Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify crash report:   Vivify InstantiatePrefab: asset='assets/burning/prefabs/scene2.prefab' id='prefab_scene2_1' alreadyLive=false
+  Vivify crash report:   Vivify InstantiatePrefab spawned: id='prefab_scene2_1' asset='assets/burning/prefabs/scene2.prefab' tracks=1 animators=1 offscreenCulled=1
+  Vivify crash report:   Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify crash report:   Vivify InstantiatePrefab: asset='assets/burning/prefabs/scene3.prefab' id='prefab_scene3_1' alreadyLive=false
+  Vivify crash report:   Vivify InstantiatePrefab spawned: id='prefab_scene3_1' asset='assets/burning/prefabs/scene3.prefab' tracks=1 animators=1 offscreenCulled=1
+  Vivify crash report:   Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify crash report:   Vivify InstantiatePrefab: asset='assets/burning/prefabs/scene4.prefab' id='prefab_scene4_1' alreadyLive=false
+  Vivify crash report:   Vivify InstantiatePrefab spawned: id='prefab_scene4_1' asset='assets/burning/prefabs/scene4.prefab' tracks=1 animators=1 offscreenCulled=1
+  Vivify crash report:   Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify crash report:   Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/vivifytemplate/utilities/prefabs/custom objects/custom note.prefab' tracks=1 additive=false saberType=-
+  Vivify crash report:   Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/vivifytemplate/utilities/prefabs/custom objects/custom note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify crash report:   Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/vivifytemplate/utilities/prefabs/custom objects/custom note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify crash report:   Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify crash report:   Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/burning/prefabs/leftsaberb.prefab' tracks=0 additive=false saberType=0
+  Vivify crash report:   Vivify AssignObjectPrefab(trail): asset='assets/burning/prefabs/sabertrail.prefab' saberType=0 additive=false
+  Vivify crash report:   Vivify saber replaced (type 0): models=1 trails=0 spawned=1 renderers=3 hiddenOriginals=5
+  Vivify crash report:   Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify crash report:   Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/burning/prefabs/rightsaberb.prefab' tracks=0 additive=false saberType=1
+  Vivify crash report:   Vivify AssignObjectPrefab(trail): asset='assets/burning/prefabs/sabertrail.prefab' saberType=1 additive=false
+  Vivify crash report:   Vivify saber replaced (type 1): models=1 trails=0 spawned=1 renderers=3 hiddenOriginals=5
+  Vivify crash report:   Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadows'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadows'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowDistance'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowDistance'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowResolution'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowResolution'
+  Vivify crash report:   Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify crash report:   Vivify catch-up: replayed 8 event(s) up to time=0
+  Vivify crash report:   Vivify PrepareBeatmap done: assets=12 livePrefabs=4 preloadedPrefabs=4
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
