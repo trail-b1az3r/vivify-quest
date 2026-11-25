@@ -1,0 +1,57 @@
+=== Vivify 0.15.51 native crash at 1795577716 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7a58999c7c
+thread 8159 'UnityMain'
+pc 0x7ad1f386e4  lr 0x77a8d6d1cc  sp 0x79bca3da50  fp 0x79bca3de10
+backtrace:
+  #00 pc 0x7ad1f386e4  libc.so +0xc76e4
+  #01 lr 0x77a8d6d1cc  libplaylistcore.so +0x3481cc
+  #02 fp 0x77a8d6d5cc  libplaylistcore.so +0x3485cc
+  #03 fp 0x77a8cd20ec  libplaylistcore.so +0x2ad0ec (_ZN7Hooking13__InstallHookI65Hook_AnnotatedBeatmapLevelCollectionCell_RefreshAvailabilityAsyncKN5Paper18ConstLoggerContextILm13EEELb1EEEvRT0_Pv +0x104)
+  #04 fp 0x77a8c53b34  libplaylistcore.so +0x22eb34 (late_load +0x278)
+  #05 fp 0x79c4752b9c  libsl2.so +0x543b9c
+  #06 fp 0x795e70afb4  libunity.so +0xab1fb4
+  #07 fp 0x7ad35ec6c3
+  #08 fp 0x79bca3ef40
+last Vivify log lines (oldest first):
+  Installing hook: SaberModelController_Init to offset: 0x79589a9928
+  Installing hook: GameNoteController_Init to offset: 0x79588a71d0
+  Installing hook: BombNoteController_Init to offset: 0x79588a42d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x79588a5668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7958947bb8
+  Installing hook: NoteDebris_Init to offset: 0x79588aa2e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7958e3e968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x795879c018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7958e41e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7958e419f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x7958e42bb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7958e42f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7958e427f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x79588f137c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x79588f158c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x79588f1658
+  Installing hook: VRCenterAdjust_Update to offset: 0x79588f1560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x79588f13e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x79588f14a4
+  Installing hook: PauseController_Pause to offset: 0x79589637ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x795896dc54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x795896e734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x795896e094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x795896dd88
+  Installing hook: GamePause_Resume to offset: 0x7958969178
+  Installing hook: Recorder_InstallBindings to offset: 0x79589b2294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x79589a68b8
+  Installing hook: Recorder_SpawnNote to offset: 0x795889d928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x795889cdec
+  Installing hook: Recorder_NoteWasCut to offset: 0x795889ede4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x79589ac44c
+  Installing hook: Recorder_ScoreStart to offset: 0x79589ac038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x795746fdb4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7957470690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x795889fae0
+  Installing hook: Recorder_ShowPause to offset: 0x795896dc54
+  Installing hook: Recorder_Resume to offset: 0x795896e76c
+  Installing hook: Recorder_Finish to offset: 0x79588fd1dc
+  Vivify: loaded mods (47): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  o 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libtinyxml2.so 0.0.0, FakeId 0.1.9, BSML 0.4.55, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, Lapiz 0.2.23, techniqolor 0.1.0, SongCore 1.1.26, BetterSon
+=== end ===
+
