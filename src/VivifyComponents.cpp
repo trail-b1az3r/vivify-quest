@@ -592,6 +592,7 @@ void SeparateEyeCapture::OnRenderImage(UnityEngine::RenderTexture* src, UnityEng
 
 void CameraApplier::OnPreCull() {
   Runtime::Instance().ValidateFixedMaterialFeatures();
+  if (cameraName == "_Main") Runtime::Instance().FieldOfViewPreCull(GetComponent<UnityEngine::Camera*>());
 
   Runtime::Instance().RestoreSecondaryCullingLayers();
   if (cameraName == "_Main") SeparateEye::PrepareFrame(GetComponent<UnityEngine::Camera*>(), this);
@@ -605,6 +606,7 @@ void CameraApplier::OnPreRender() {
   auto go = get_gameObject();
   auto* camera = IsManagedAlive(go.unsafePtr()) ? go->GetComponent<UnityEngine::Camera*>() : nullptr;
   runtime.AddMidRenderCommandBuffers(camera);
+  if (cameraName == "_Main") runtime.FieldOfViewPreRender(camera);
 }
 
 void CameraApplier::OnPostRender() {

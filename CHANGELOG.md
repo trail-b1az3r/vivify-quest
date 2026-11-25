@@ -11,6 +11,61 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.16.0] - beta 1
+
+Not tried on a headset.
+
+### Fixed
+
+- **Field Of View % did nothing.** Every log since 0.15.16 says why: "the
+  headset replaced the widened projection". Vivify widened the eye views
+  during the frame's update, and the headset's runtime put its own back
+  before the camera drew. They are now widened just before the main camera
+  culls, every frame, and checked just before it draws. Half a second into a
+  map, the log says whether the headset kept them ("as the camera draws, the
+  headset kept ..."). The main camera's Vivify component now stays on while
+  Field Of View is above 100%, which this needs.
+- **Mirrors drawn by one-eye cameras (Luminescent's lake, Lifelike).**
+  0.15.54's mirror test read the game's mirror shader on a headset (0.15.55
+  log). In its one-eye form it reads only the left half of the reflection
+  texture, across the whole view: it always expects the two-eye side-by-side
+  layout. A one-eye camera's reflection was drawn across the whole texture,
+  so it showed stretched to twice its width and out of place. That happens
+  whenever the Separate-Eye Renderer draws the scene once per eye, which maps
+  reading a screen grab (Luminescent's water) cause. A one-eye camera's
+  reflection is now drawn into the half the shader reads.
+- **The mirror test's two-eye reading was not valid.** It drew the mirror
+  with a screen copy, but the two-eye program positions its quad with the
+  eyes' own view, so the test picture landed anywhere. The 0.15.55 log shows
+  mixed colours. It now draws a large quad two metres in front of the
+  headset, as a mirror would be seen. Nothing was changed by the invalid
+  reading.
+- **GraphicsTweaks dependency id.** The mod's id is `graphicstweaks`; mod.json
+  had `GraphicsTweaks`, which no mod manager could match.
+
+### Added
+
+- **Desktop HUDs in the headset (End Times).** Since 0.15.53, an effect like
+  End Times' `Aeroluna/OverlayUITex` runs its headset path, as on PC VR,
+  which leaves its desktop HUD out. While such an effect is on, its HUD
+  texture is now shown on a panel two metres ahead of the head, 1.4 m tall,
+  drawn as an object in the scene. Both eyes see it in the same place, and it
+  cannot cover or grey out an eye the way painting it into each eye's picture
+  did. It is drawn with the game's UI shader, so it shows wherever the HUD
+  texture is not transparent.
+
+### Notes
+
+- **Lifelike's grass** is `Bytesized/Grass`. The ground mesh is tessellated
+  by distance: each edge's density is its length over its distance from the
+  camera, capped. A geometry stage then turns each resulting point into a
+  blade: a 7-vertex strip, three bending segments and a tip. Neither stage
+  can run in the headset's two-eye pass, so only the Separate-Eye Renderer
+  draws it. The 0.15.55 lowering handles only one triangle in and three
+  corners out, not this.
+- The reference videos could not be downloaded here: YouTube asks for a
+  signed-in browser. Only their preview frames were looked at.
+
 ## [0.15.55]
 
 Not tried on a headset. Converted maps are converted again once (conversion

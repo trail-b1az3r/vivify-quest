@@ -272,7 +272,20 @@ MAKE_HOOK_MATCH(MirrorRendererSO_RenderMirror, &GlobalNamespace::MirrorRendererS
     auto& runtime = Runtime::Instance();
     if (runtime.GetCurrentBeatmapData() == nullptr) return;
     auto* camera = UnityEngine::Camera::get_current().unsafePtr();
-    if (!IsManagedAlive(camera) || !camera->get_stereoEnabled()) return;
+    if (!IsManagedAlive(camera)) return;
+    if (!camera->get_stereoEnabled()) {
+      // A one-eye camera (the Separate-Eye Renderer's eye cameras, map
+      // cameras). The Quest game's mirror shader reads only one half of the
+      // reflection texture even in its one-eye form (mirror test, 0.15.55
+      // log), so a reflection drawn across the whole texture showed doubled
+      // in width and out of place. It is drawn into that half (0.16.0).
+      auto const* mono = MirrorProbe::Mono();
+      if (!mono || mono->half < 0) return;
+      float const width = screenRect.get_width() * 0.5f;
+      screenRect = UnityEngine::Rect(screenRect.get_x() + mono->half * width, screenRect.get_y(), width,
+                                     screenRect.get_height());
+      return;
+    }
     float const x = screenRect.get_x(), width = screenRect.get_width();
     bool half = false;
     int eye = 0;

@@ -96,6 +96,9 @@ public:
   bool IsResetting() const { return _isResetting; }
   bool IsPauseMenuActive() const { return _pauseMenuActive; }
   void ValidateFixedMaterialFeatures();
+  // Field Of View % at the main camera's own pre-cull / pre-render (0.16.0).
+  void FieldOfViewPreCull(UnityEngine::Camera* camera);
+  void FieldOfViewPreRender(UnityEngine::Camera* camera);
   bool HasSecondaryCameras() const { return !_secondaryCameras.empty(); }
   bool IsMultiplayerGameplayForEyeRenderer() { return IsInMultiplayerGameplay(); }
   bool GetPreEffectsEmpty() const { return _preEffects.empty(); }
@@ -491,6 +494,10 @@ private:
   void RestoreSaberMods();
   void RestoreForeignSaberLights();
   void ApplyFieldOfView(UnityEngine::Camera* mainCam);
+  void UpdateDesktopHud();
+  SafePtrUnity<UnityEngine::GameObject> _desktopHud;
+  SafePtrUnity<UnityEngine::Material> _desktopHudMaterial;
+  void WidenFieldOfView(UnityEngine::Camera* mainCam);
   void RestoreFieldOfView();
   UnityEngine::Camera* _fovCamera = nullptr;
   int _fovAppliedPercent = 0;

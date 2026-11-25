@@ -13,7 +13,13 @@
 #include "UnityEngine/FilterMode.hpp"
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/Graphics.hpp"
+#include "UnityEngine/Camera.hpp"
 #include "UnityEngine/Material.hpp"
+#include "UnityEngine/Matrix4x4.hpp"
+#include "UnityEngine/Mesh.hpp"
+#include "UnityEngine/Quaternion.hpp"
+#include "UnityEngine/Transform.hpp"
+#include "UnityEngine/Vector3.hpp"
 #include "UnityEngine/Rect.hpp"
 #include "UnityEngine/RenderTexture.hpp"
 #include "UnityEngine/RenderTextureDescriptor.hpp"
@@ -183,6 +189,7 @@ void Run(UnityEngine::RenderTexture* eyeTexture) {
   UnityEngine::Texture2D* pattern = nullptr;
   UnityEngine::Texture2D* reader = nullptr;
   UnityEngine::Material* probe = nullptr;
+  UnityEngine::Mesh* quad = nullptr;
   UnityEngine::Rendering::CommandBuffer* cb = nullptr;
   std::vector<UnityEngine::RenderTexture*> temporaries;
   bool keywordOff = false;
@@ -199,6 +206,20 @@ void Run(UnityEngine::RenderTexture* eyeTexture) {
     pattern->Apply(false);
     reader = UnityEngine::Texture2D::New_ctor(kSize, kSize, UnityEngine::TextureFormat::RGBA32, false);
     probe = UnityEngine::Material::New_ctor(material);
+    // Both windings, so the quad shows whatever the mirror material culls.
+    quad = UnityEngine::Mesh::New_ctor();
+    {
+      auto vertices = ArrayW<UnityEngine::Vector3>(static_cast<il2cpp_array_size_t>(4));
+      vertices[0] = UnityEngine::Vector3(-0.5f, -0.5f, 0.0f);
+      vertices[1] = UnityEngine::Vector3(0.5f, -0.5f, 0.0f);
+      vertices[2] = UnityEngine::Vector3(-0.5f, 0.5f, 0.0f);
+      vertices[3] = UnityEngine::Vector3(0.5f, 0.5f, 0.0f);
+      int32_t const order[12] = {0, 2, 1, 1, 2, 3, 0, 1, 2, 1, 3, 2};
+      auto triangles = ArrayW<int32_t>(static_cast<il2cpp_array_size_t>(12));
+      for (int i = 0; i < 12; i++) triangles[i] = order[i];
+      quad->set_vertices(vertices);
+      quad->set_triangles(triangles);
+    }
     probe->SetTexture(StringW(property), pattern);
     cb = UnityEngine::Rendering::CommandBuffer::New_ctor();
 
@@ -233,7 +254,23 @@ void Run(UnityEngine::RenderTexture* eyeTexture) {
       auto* eye1 = temporary(flat);
       if (target && eye0 && eye1) {
         Draw(cb, UnityEngine::Texture2D::get_blackTexture().unsafePtr(), -1, target, true, -1, nullptr);
-        Draw(cb, pattern, -1, target, true, -1, probe);
+        // The two-eye program places its quad with the eyes' own view and
+        // projection (UnityStereoGlobals), not a blit's flat one, so a blit
+        // put the test picture anywhere (0.15.55 log: mixed colours). A large
+        // quad two metres in front of the headset camera fills both eyes'
+        // views instead, as a mirror would (0.16.0).
+        auto* camera = UnityEngine::Camera::get_current().unsafePtr();
+        if (IsManagedAlive(camera) && IsManagedAlive(quad)) {
+          auto transform = camera->get_transform();
+          auto const forward = transform->get_forward();
+          auto const position = transform->get_position();
+          auto const centre = UnityEngine::Vector3(position.x + forward.x * 2.0f, position.y + forward.y * 2.0f,
+                                                   position.z + forward.z * 2.0f);
+          auto const matrix = UnityEngine::Matrix4x4::TRS(centre, transform->get_rotation(),
+                                                          UnityEngine::Vector3(40.0f, 40.0f, 1.0f));
+          cb->SetRenderTarget(TargetId(target, true));
+          cb->DrawMesh(quad, matrix, probe, 0, 0);
+        }
         Draw(cb, target, 0, eye0, false, -1, nullptr);
         Draw(cb, target, 1, eye1, false, -1, nullptr);
         UnityEngine::Graphics::ExecuteCommandBuffer(cb);
@@ -281,10 +318,15 @@ void Run(UnityEngine::RenderTexture* eyeTexture) {
                      Stereo() && (Stereo()->mode != MirrorLayout::StereoMode::AsGame || Stereo()->flipV)
                          ? "; Vivify now draws the reflection that way"
                          : "",
-                     mono ? (mono->known ? (mono->flipV ? std::string("it upside down") : std::string("it upright"))
+                     mono ? (mono->known ? std::string(mono->flipV ? "it upside down" : "it upright") +
+                                               (mono->half < 0 ? std::string(" across the whole width")
+                                                               : std::string(mono->half == 0 ? ", only its left half"
+                                                                                             : ", only its right half"))
                                          : std::string("no known layout"))
                           : std::string("(no reading)"),
-                     Mono() && Mono()->flipV ? "; Vivify now turns that reflection over" : "",
+                     Mono() && (Mono()->flipV || Mono()->half >= 0)
+                         ? "; Vivify now draws one-eye reflections that way"
+                         : "",
                      rawStereo.empty() ? std::string("-") : rawStereo, rawMono.empty() ? std::string("-") : rawMono);
   } catch (std::exception const& ex) {
     PaperLogger.warn("Vivify mirror test failed ({}); mirrors are drawn as the game draws them", ex.what());
@@ -300,6 +342,7 @@ void Run(UnityEngine::RenderTexture* eyeTexture) {
   try {
     if (cb) cb->Dispose();
     if (IsManagedAlive(probe)) UnityEngine::Object::Destroy(probe);
+    if (IsManagedAlive(quad)) UnityEngine::Object::Destroy(quad);
     if (IsManagedAlive(pattern)) UnityEngine::Object::Destroy(pattern);
     if (IsManagedAlive(reader)) UnityEngine::Object::Destroy(reader);
   } catch (...) {}

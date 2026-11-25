@@ -62,6 +62,11 @@ struct StereoRemedy {
 struct MonoRemedy {
   bool known = false;
   bool flipV = false;
+  // -1: reads the whole width. 0 / 1: reads only the left / right half
+  // across the whole view (the shader expects the two-eye side-by-side
+  // texture even in one-eye form), so a one-eye reflection is drawn into
+  // that half (0.16.0; the game's Custom/Mirror on the Quest reads the left).
+  int half = -1;
 };
 
 // samples[layer][row][col]: layer 0 left eye; row 0 the lower quarter of the
@@ -119,18 +124,22 @@ inline StereoRemedy Stereo(Texel const (&samples)[2][2][2]) {
 // samples[row][col] of the one-eye program drawn into a plain texture.
 inline MonoRemedy Mono(Texel const (&samples)[2][2]) {
   MonoRemedy remedy;
-  bool upright = true, flipped = true;
+  bool upright = true, flipped = true, whole = true, left = true, right = true;
   for (int r = 0; r < 2; r++) {
     for (int c = 0; c < 2; c++) {
-      if (samples[r][c] == Texel::Unknown || TexelX(samples[r][c]) != c) return remedy;
+      if (samples[r][c] == Texel::Unknown) return remedy;
+      int const x = TexelX(samples[r][c]);
+      if (x != c) whole = false;
+      if (x != 0) left = false;
+      if (x != 1) right = false;
       if (TexelY(samples[r][c]) != r) upright = false;
       if (TexelY(samples[r][c]) != 1 - r) flipped = false;
     }
   }
-  if (upright || flipped) {
-    remedy.known = true;
-    remedy.flipV = flipped;
-  }
+  if (!(upright || flipped) || !(whole || left || right)) return remedy;
+  remedy.known = true;
+  remedy.flipV = flipped;
+  remedy.half = whole ? -1 : (left ? 0 : 1);
   return remedy;
 }
 

@@ -60,8 +60,15 @@ int main() {
   T monoFlipped[2][2] = {{T::TopLeft, T::TopRight}, {T::BottomLeft, T::BottomRight}};
   m = Mono(monoFlipped);
   assert(m.known && m.flipV);
+  assert(m.half == -1);
+  // The Quest game's Custom/Mirror, read back on a headset (0.15.55 log):
+  // red red / blue blue -- the left half, upright.
   T monoHalf[2][2] = {{T::BottomLeft, T::BottomLeft}, {T::TopLeft, T::TopLeft}};
-  assert(!Mono(monoHalf).known);
+  m = Mono(monoHalf);
+  assert(m.known && !m.flipV && m.half == 0);
+  assert(Classify(134, 2, 2) == T::BottomLeft && Classify(1, 1, 135) == T::TopLeft && Classify(0, 0, 134) == T::TopLeft);
+  T monoMixed[2][2] = {{T::BottomLeft, T::BottomRight}, {T::TopRight, T::TopRight}};
+  assert(!Mono(monoMixed).known);
 
   std::puts("mirror layout: all passed");
   return 0;
