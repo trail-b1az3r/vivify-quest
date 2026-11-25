@@ -1,0 +1,109 @@
+=== Vivify 0.15.45 native crash at 1795565771 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x9960c4580c
+thread 20100 'Thread-3'
+pc 0x7c218107b4  lr 0x7c218107d8  sp 0x7b37280480  fp 0x7b372807b0
+backtrace:
+  #00 pc 0x7c218107b4  libunity.so +0x13ee7b4
+  #01 lr 0x7c218107d8  libunity.so +0x13ee7d8
+  #02 fp 0x7c219f69f4  libunity.so +0x15d49f4
+  #03 fp 0x7da1531334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify crash recovery: this map did not end cleanly last time, so it plays in recovery mode: unused assets unloaded, textures at half resolution, effects at 50% or less. 'Forget Crash Recovery' in the advanced settings turns it off for eve
+  Vivify visual check: Crash recovery mode: textures at half resolution
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_masterTextureLimit'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_masterTextureLimit'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_realtimeReflectionProbes'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_realtimeReflectionProbes'
+  Vivify: realtime reflection probes off for this level (crash recovery mode; the game had them off)
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadows'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadows'
+  Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+  Vivify preload prefab: asset='assets/wind/prefabs/ocean.prefab' id='prefab_ocean_2' instance=true
+  Vivify preload prefab: asset='assets/wind/prefabs/island.prefab' id='prefab_island_2' instance=true
+  Vivify PreloadInstantiatePrefabs: 2 prefab event(s) preloaded
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/wind/prefabs/ocean.prefab' id='prefab_ocean_2' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_ocean_2' asset='assets/wind/prefabs/ocean.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/wind/prefabs/island.prefab' id='prefab_island_2' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='prefab_island_2' asset='assets/wind/prefabs/island.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/wind/prefabs/handl.prefab' tracks=0 additive=false saberType=0
+  Vivify AssignObjectPrefab(trail): asset='assets/wind/mat/sabernotrail.mat' saberType=0 additive=false
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber replaced (type 0): models=1 trails=1 spawned=2 renderers=2 hiddenOriginals=14
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/wind/prefabs/handr.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/wind/mat/sabernotrail.mat' saberType=1 additive=false
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=2 hiddenOriginals=14
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/wind/prefabs/custom note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/wind/prefabs/custom note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/wind/prefabs/custom note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: ignoring the map's realtimeReflectionProbes; turn on 'Map Reflection Probes' to let maps enable them
+  Vivify SetRenderingSettings: ignoring the map's realtime shadow settings ('shadows' and the rest); turn on 'Map Realtime Shadows' to let maps enable them
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 7 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=12 livePrefabs=2 preloadedPrefabs=2
+=== end ===
+
+=== Vivify 0.15.45 native crash at 1795565782 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7d2927b8b4
+thread 21019 'UnityMain'
+pc 0x7da15286fc  lr 0x7a58915614  sp 0x7c259bd9e0  fp 0x7c259bdda0
+backtrace:
+  #00 pc 0x7da15286fc  libc.so +0xc76fc
+  #01 lr 0x7a58915614  libnoodleextensions.so +0x2a5614
+  #02 fp 0x7a588bbb10  libnoodleextensions.so +0x24bb10 (_Z34InstallMirroredNoteControllerHooksv +0x290)
+  #03 fp 0x7a5890f1ec  libnoodleextensions.so +0x29f1ec (_Z21InstallAndRegisterAllv +0x1b8)
+  #04 fp 0x7a58914e34  libnoodleextensions.so +0x2a4e34 (late_load +0x98)
+  #05 fp 0x7c8ab55b9c  libsl2.so +0x543b9c
+  #06 fp 0x7c2f71dfb4  libunity.so +0xab1fb4
+  #07 fp 0x7d994ff6c3
+  #08 fp 0x7c259bef40
+last Vivify log lines (oldest first):
+  Installing hook: SaberModelController_Init to offset: 0x7c295b0928
+  Installing hook: GameNoteController_Init to offset: 0x7c294ae1d0
+  Installing hook: BombNoteController_Init to offset: 0x7c294ab2d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x7c294ac668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7c2954ebb8
+  Installing hook: NoteDebris_Init to offset: 0x7c294b12e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7c29a45968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x7c293a3018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7c29a48e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7c29a489f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x7c29a49bb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7c29a49f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7c29a497f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x7c294f837c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x7c294f858c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7c294f8658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7c294f8560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7c294f83e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7c294f84a4
+  Installing hook: PauseController_Pause to offset: 0x7c2956a7ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7c29574c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7c29575734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7c29575094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7c29574d88
+  Installing hook: GamePause_Resume to offset: 0x7c29570178
+  Installing hook: Recorder_InstallBindings to offset: 0x7c295b9294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x7c295ad8b8
+  Installing hook: Recorder_SpawnNote to offset: 0x7c294a4928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x7c294a3dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x7c294a5de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7c295b344c
+  Installing hook: Recorder_ScoreStart to offset: 0x7c295b3038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7c28076db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7c28077690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7c294a6ae0
+  Installing hook: Recorder_ShowPause to offset: 0x7c29574c54
+  Installing hook: Recorder_Resume to offset: 0x7c2957576c
+  Installing hook: Recorder_Finish to offset: 0x7c295041dc
+  Vivify: loaded mods (56): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  pLoader.so 0.0.0, FakeId 0.1.9, NoPromo 0.1.13, BSML 0.4.55, anytext 1.0.1, Lapiz 0.2.23, AudioLink 0.0.2, datakeeper 0.2.5, MetaCore 1.6.3, Hollywood 1.2.2,  , smoothedcontroller 1.7.4, SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether
+=== end ===
+
