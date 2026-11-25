@@ -1,0 +1,171 @@
+=== Vivify 0.15.55 native crash at 1795630166 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x6400000001
+thread 692 'UnityMain'
+pc 0x724c0c2300  lr 0x724c0c2330  sp 0x72bea50610  fp 0x72bea50670
+backtrace:
+  #00 pc 0x724c0c2300  libunity.so +0x68b300
+  #01 lr 0x724c0c2330  libunity.so +0x68b330
+  #02 fp 0x7245a0e78c  libil2cpp.so +0x21ba78c
+  #03 fp 0x708bc28a04  libVivify.so +0x3bda04
+  #04 fp 0x708bc35438  libVivify.so +0x3ca438
+  #05 fp 0x708bb79320  libVivify.so +0x30e320
+  #06 fp 0x708bb72b30  libVivify.so +0x307b30
+  #07 fp 0x708bb60030  libVivify.so +0x2f5030 (_ZN6Vivify16RuntimeBehaviour6UpdateEv +0x152c)
+  #08 fp 0x708ba79160  libVivify.so +0x20e160
+  #09 fp 0x7245a0e840  libil2cpp.so +0x21ba840
+  #10 fp 0x7245a0e78c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=14
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=14
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=14
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=14
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=14
+  Vivify scene route: separate eyes; native compatibility was not established
+  Vivify scene route detail: perspective=true shadowsDisabled=true effectsCompatible=true image=1680x1760 XR=1680x1760 viewportScale=1 bloom=false
+  Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify separate-eye 0 grab '_GrabTexture1__VivifyEye0' frame 22781: 'Vivify Eye Grab Left' id=-125198 840x880 rt=yes eyeTarget=no eyeImage=840x880
+  Vivify separate-eye 1 grab '_GrabTexture1__VivifyEye1' frame 22781: 'Vivify Eye Grab Right' id=-125212 840x880 rt=yes eyeTarget=no eyeImage=840x880
+  Vivify frame stall: the game did not draw for 0.5s (songTime 264.12, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743Aether____111_______-_Swifter_/4968d__743Aether____111_______-_Swifter__d12c831dbcb
+  Vivify: the game stalled while geometry-shader effect 'Swifter/TriangleExplosion' was drawn for each eye; it is turned off for the rest of this map so the game keeps running
+  Vivify scene route: native multiview; no separate-eye scene renders needed for this frame
+  Vivify frame stall: the game did not draw for 0.7s (songTime 265.28, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743Aether____111_______-_Swifter_/4968d__743Aether____111_______-_Swifter__d12c831dbcb
+  Vivify frame took 54.5ms, over the 50ms budget
+  Vivify custom event: type='DestroyObject' time=271.86206 songTime=271.91605
+  Vivify DestroyObject: destroying live prefab id='prefab_outro_2'
+  Vivify frame stall: the game did not draw for 13.4s (songTime 273.22, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743Aether____111_______-_Swifter_/4968d__743Aether____111_______-_Swifter__d12c831dbc
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.46,-0.00) fwd=(0.06,-0.68,0.73)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify frame took 126.6ms, over the 50ms budget
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=6 synced=0 secondaryCameras=0 declaredTextures=0 assets=298
+  Vivify level end: camera effects removed
+=== end ===
+
+=== Vivify 0.15.55 native crash at 1795630178 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x73492e3cac
+thread 9075 'UnityMain'
+pc 0x73e55186fc  lr 0x70d93a399c  sp 0x72c245ab20  fp 0x72c245aee0
+backtrace:
+  #00 pc 0x73e55186fc  libc.so +0xc76fc
+  #01 lr 0x70d93a399c  libtracks.so +0x15799c
+  #02 fp 0x70d9391d00  libtracks.so +0x145d00 (_Z24InstallBaseProviderHooksv +0x13c)
+  #03 fp 0x70d93a1514  libtracks.so +0x155514 (late_load +0x134)
+  #04 fp 0x72cc146b9c  libsl2.so +0x543b9c
+  #05 fp 0x724e6fffb4  libunity.so +0xab1fb4
+  #06 fp 0x73db1be6c3
+  #07 fp 0x72c245bf40
+last Vivify log lines (oldest first):
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=14
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=14
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=14
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=13
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=14
+  Vivify crash report:   Vivify scene route: separate eyes; native compatibility was not established
+  Vivify crash report:   Vivify scene route detail: perspective=true shadowsDisabled=true effectsCompatible=true image=1680x1760 XR=1680x1760 viewportScale=1 bloom=false
+  Vivify crash report:   Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify crash report:   Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify crash report:   Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify crash report:   Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify crash report:   Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify crash report:   Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify crash report:   Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify crash report:   Vivify native scene blocker: material='673 - Triangle Explosion' sourceShader='Swifter/TriangleExplosion' currentShader='Swifter/TriangleExplosion' remembered=true geometryOrTessellation=true
+  Vivify crash report:   Vivify separate-eye 0 grab '_GrabTexture1__VivifyEye0' frame 22781: 'Vivify Eye Grab Left' id=-125198 840x880 rt=yes eyeTarget=no eyeImage=840x880
+  Vivify crash report:   Vivify separate-eye 1 grab '_GrabTexture1__VivifyEye1' frame 22781: 'Vivify Eye Grab Right' id=-125212 840x880 rt=yes eyeTarget=no eyeImage=840x880
+  Vivify crash report:   Vivify frame stall: the game did not draw for 0.5s (songTime 264.12, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743Aether____111_______-_Swifter_/4968d__743Aether____111______
+  Vivify crash report:   Vivify: the game stalled while geometry-shader effect 'Swifter/TriangleExplosion' was drawn for each eye; it is turned off for the rest of this map so the game keeps running
+  Vivify crash report:   Vivify scene route: native multiview; no separate-eye scene renders needed for this frame
+  Vivify crash report:   Vivify frame stall: the game did not draw for 0.7s (songTime 265.28, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743Aether____111_______-_Swifter_/4968d__743Aether____111______
+  Vivify crash report:   Vivify frame took 54.5ms, over the 50ms budget
+  Vivify crash report:   Vivify custom event: type='DestroyObject' time=271.86206 songTime=271.91605
+  Vivify crash report:   Vivify DestroyObject: destroying live prefab id='prefab_outro_2'
+  Vivify crash report:   Vivify frame stall: the game did not draw for 13.4s (songTime 273.22, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743Aether____111_______-_Swifter_/4968d__743Aether____111_____
+  Vivify crash report:   Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.46,-0.00) fwd=(0.06,-0.68,0.73)
+  Vivify crash report:   Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify crash report:   Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify crash report:   Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify crash report:   Vivify frame took 126.6ms, over the 50ms budget
+  Vivify crash report:   Vivify level end: level ended (quit or finished)
+  Vivify crash report:   Vivify ResetRuntime: livePrefabs=0 preloaded=6 synced=0 secondaryCameras=0 declaredTextures=0 assets=298
+  Vivify crash report:   Vivify level end: camera effects removed
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
+=== Vivify 0.15.55 native crash at 1795630185 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x735d3b300c
+thread 9308 'UnityMain'
+pc 0x73e55186fc  lr 0x708b338f48  sp 0x72673f8af0  fp 0x72673f8eb0
+backtrace:
+  #00 pc 0x73e55186fc  libc.so +0xc76fc
+  #01 lr 0x708b338f48  libchroma.so +0x333f48
+  #02 fp 0x708b2a8a48  libchroma.so +0x2a3a48 (_Z43InstallBeatmapObjectCallbackControllerHooksv +0x10c)
+  #03 fp 0x708b334f50  libchroma.so +0x32ff50 (late_load +0x2b4)
+  #04 fp 0x72c9149b9c  libsl2.so +0x543b9c
+  #05 fp 0x72600f1fb4  libunity.so +0xab1fb4
+  #06 fp 0x73db2056c3
+  #07 fp 0x72673f9f40
+last Vivify log lines (oldest first):
+  Installing hook: Thermal_ResultsDidActivate to offset: 0x725d5148b8
+  Installing hook: GameNoteController_Init to offset: 0x725d48f1d0
+  Installing hook: BombNoteController_Init to offset: 0x725d48c2d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x725d48d668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x725d52fbb8
+  Installing hook: NoteDebris_Init to offset: 0x725d4922e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x725da26968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x725d384018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x725da29e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x725da299f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x725da2abb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x725da2af2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x725da2a7f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x725d4d937c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x725d4d958c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x725d4d9658
+  Installing hook: VRCenterAdjust_Update to offset: 0x725d4d9560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x725d4d93e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x725d4d94a4
+  Installing hook: PauseController_Pause to offset: 0x725d54b7ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x725d555c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x725d556734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x725d556094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x725d555d88
+  Installing hook: GamePause_Resume to offset: 0x725d551178
+  Installing hook: Recorder_InstallBindings to offset: 0x725d59a294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x725d58e8b8
+  Installing hook: Recorder_SpawnNote to offset: 0x725d485928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x725d484dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x725d486de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x725d59444c
+  Installing hook: Recorder_ScoreStart to offset: 0x725d594038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x725c057db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x725c058690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x725d487ae0
+  Installing hook: Recorder_ShowPause to offset: 0x725d555c54
+  Installing hook: Recorder_Resume to offset: 0x725d55676c
+  Installing hook: Recorder_Finish to offset: 0x725d4e51dc
+  Vivify: loaded mods (61): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMapLoader.so 0.0.0, FakeId 0.1.9, BSML 0.4.55, FasterScroll 1.17.0, NoPromo 0.1.13, anytext 1.0.1, bstheater 0.1.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.
+=== end ===
+
