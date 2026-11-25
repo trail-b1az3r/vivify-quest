@@ -490,6 +490,7 @@ private:
   void HideForeignSaberLights();
   // Other saber mods' sabers on a Vivify map with its own saber (0.15.51).
   bool SuppressSaberMods(GlobalNamespace::SaberModelController* smc, GlobalNamespace::Saber* saber);
+  bool _mapSaberReplacesSaber = false;  // a map saber model this level that is not "Additive"
   void SweepSaberMods();
   void RestoreSaberMods();
   void RestoreForeignSaberLights();

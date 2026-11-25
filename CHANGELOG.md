@@ -11,6 +11,23 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.16.1] - beta 2
+
+Not tried on a headset.
+
+### Fixed
+
+- **Through The Screen: sabers invisible the whole map.** The map does not
+  replace the saber. It assigns a glow `Additive`ly, on top of the player's
+  own saber, coloured with the player's saber colours (`_TTS_ColorL/R` set to
+  `baseSaberAColor`/`baseSaberBColor`). "Map Sabers Turn Off Saber Mods"
+  treated any map saber as a replacement and switched off the player's saber
+  mod (ReeSabers, CustomModels). That mod had already hidden the game's own
+  saber, so only the half-transparent glow was left. Saber mods are now only
+  switched off for a map saber that replaces the saber (not `Additive`). The
+  reference recording (you sent it) shows ordinary red and blue sabers with a
+  glow throughout.
+
 ## [0.16.0] - beta 1
 
 Not tried on a headset.
