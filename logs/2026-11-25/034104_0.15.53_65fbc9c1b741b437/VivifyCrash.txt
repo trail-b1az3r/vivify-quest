@@ -1,0 +1,236 @@
+=== Vivify 0.15.53 native crash at 1795570307 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x6f1beba27c
+thread 19504 'UnityMain'
+pc 0x6fae1396fc  lr 0x6c6cf7f1cc  sp 0x6e1834ca50  fp 0x6e1834ce10
+backtrace:
+  #00 pc 0x6fae1396fc  libc.so +0xc76fc
+  #01 lr 0x6c6cf7f1cc  libplaylistcore.so +0x3481cc
+  #02 fp 0x6c6cf7f5cc  libplaylistcore.so +0x3485cc
+  #03 fp 0x6c6cee40ec  libplaylistcore.so +0x2ad0ec (_ZN7Hooking13__InstallHookI65Hook_AnnotatedBeatmapLevelCollectionCell_RefreshAvailabilityAsyncKN5Paper18ConstLoggerContextILm13EEELb1EEEvRT0_Pv +0x104)
+  #04 fp 0x6c6ce65b34  libplaylistcore.so +0x22eb34 (late_load +0x278)
+  #05 fp 0x6e94babb9c  libsl2.so +0x543b9c
+  #06 fp 0x6e20706fb4  libunity.so +0xab1fb4
+  #07 fp 0x6fbc36e6c3
+last Vivify log lines (oldest first):
+  Installing hook: Thermal_ResultsDidActivate to offset: 0x6e1bec28b8
+  Installing hook: GameNoteController_Init to offset: 0x6e1be3d1d0
+  Installing hook: BombNoteController_Init to offset: 0x6e1be3a2d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x6e1be3b668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x6e1beddbb8
+  Installing hook: NoteDebris_Init to offset: 0x6e1be402e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x6e1c3d4968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x6e1bd32018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x6e1c3d7e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x6e1c3d79f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x6e1c3d8bb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x6e1c3d8f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x6e1c3d87f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x6e1be8737c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x6e1be8758c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x6e1be87658
+  Installing hook: VRCenterAdjust_Update to offset: 0x6e1be87560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x6e1be873e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x6e1be874a4
+  Installing hook: PauseController_Pause to offset: 0x6e1bef97ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x6e1bf03c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x6e1bf04734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x6e1bf04094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x6e1bf03d88
+  Installing hook: GamePause_Resume to offset: 0x6e1beff178
+  Installing hook: Recorder_InstallBindings to offset: 0x6e1bf48294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x6e1bf3c8b8
+  Installing hook: Recorder_SpawnNote to offset: 0x6e1be33928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x6e1be32dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x6e1be34de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x6e1bf4244c
+  Installing hook: Recorder_ScoreStart to offset: 0x6e1bf42038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x6e1aa05db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x6e1aa06690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x6e1be35ae0
+  Installing hook: Recorder_ShowPause to offset: 0x6e1bf03c54
+  Installing hook: Recorder_Resume to offset: 0x6e1bf0476c
+  Installing hook: Recorder_Finish to offset: 0x6e1be931dc
+  Vivify: loaded mods (56): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, FakeId 0.1.9, BSML 0.4.55, FasterScroll 1.17.0, NoPromo 0.1.13, bstheater 0.1.0, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.
+=== end ===
+
+=== Vivify 0.15.53 native crash at 1795570337 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27e200004d0f
+thread 19762 'UnityMain'
+pc 0x6fae1409d8  lr 0x6fae1409a8  sp 0x6e8666d380  fp 0x6e8666d420
+backtrace:
+  #00 pc 0x6fae1409d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x6fae1409a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x6e1f11bc64  libmetacore.so +0xcdc64
+  #03 fp 0x6dfb1a8114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x6dfb1a8264  libil2cpp.so +0x2226264
+  #05 fp 0x6e95517d48  libsl2.so +0x4fad48
+  #06 fp 0x6e95517ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x6e3214c8d8  libbsml.so +0x4b18d8
+  #08 fp 0x6c55885090  libbl.so +0x87b090 (_ZN19Hook_ModalView_Show19hook_ModalView_ShowEPN4HMUI9ModalViewEbbPN6System6ActionE +0x38)
+  #09 fp 0x6c5588af4c  libbl.so +0x880f4c
+  #10 fp 0x6dfb13c840  libil2cpp.so +0x21ba840
+  #11 fp 0x6dfb13c78c  libil2cpp.so +0x21ba78c
+  #12 fp 0x6e31ff27ac  libbsml.so +0x3577ac
+  #13 fp 0x6c4f66bbf8  libdiscordrichpresence.so +0x16fbf8
+  #14 fp 0x6e32073040  libbsml.so +0x3d8040 (_ZN4BSML19MainThreadScheduler6UpdateEv +0x1104)
+  #15 fp 0x6e31f95e08  libbsml.so +0x2fae08
+  #16 fp 0x6dfb13c840  libil2cpp.so +0x21ba840
+  #17 fp 0x6dfb13c78c  libil2cpp.so +0x21ba78c
+  #18 fp 0x6fbec146c3
+  #19 fp 0x6e86671120
+last Vivify log lines (oldest first):
+  Vivify preload prefab: asset='assets/sky3.prefab' id='Sky3 - Speckles' instance=true
+  Vivify preload prefab: asset='assets/sky2.prefab' id='Sky2 - Fractal' instance=true
+  Vivify preload prefab: asset='assets/sky1.prefab' id='Sky1 - Galaxy' instance=true
+  Vivify preload prefab: asset='assets/sky4.prefab' id='Sky4 - Nebula' instance=true
+  Vivify preload prefab: asset='assets/skybox1.prefab' id='Skybox1 - Space' instance=true
+  Vivify preload prefab: asset='assets/water.prefab' id='Water' instance=true
+  Vivify preload prefab: asset='assets/stars.prefab' id='Stars' instance=true
+  Vivify preload prefab: asset='assets/streaks.prefab' id='Streaks' instance=true
+  Vivify preload prefab: asset='assets/mountains.prefab' id='Mountains' instance=true
+  Vivify preload prefab: asset='assets/sky1.prefab' id='Sky1 - Galaxy' instance=true
+  Vivify preload prefab: asset='assets/skybox1.prefab' id='Skybox1 - Space' instance=true
+  Vivify preload prefab: asset='assets/sky6.prefab' id='Sky6 - Swirl' instance=true
+  Vivify PreloadInstantiatePrefabs: 17 prefab event(s) preloaded
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='SetMaterialProperty' time=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/sky1.prefab' id='Sky1 - Galaxy' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='Sky1 - Galaxy' asset='assets/sky1.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/skybox1.prefab' id='Skybox1 - Space' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='Skybox1 - Space' asset='assets/skybox1.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/stars.prefab' id='Stars' alreadyLive=false
+  Vivify InstantiatePrefab: GPU instancing off on 1 particle system(s) of 'assets/stars.prefab'
+  Vivify InstantiatePrefab spawned: id='Stars' asset='assets/stars.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/starsclose.prefab' id='StarsClose' alreadyLive=false
+  Vivify InstantiatePrefab: GPU instancing off on 1 particle system(s) of 'assets/starsclose.prefab'
+  Vivify InstantiatePrefab spawned: id='StarsClose' asset='assets/starsclose.prefab' tracks=0 animators=0 offscreenCulled=0
+  Vivify catch-up: replayed 15 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=72 livePrefabs=4 preloadedPrefabs=17
+=== end ===
+
+=== Vivify 0.15.53 native crash at 1795570350 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x6f162fcf98
+thread 21988 'UnityMain'
+pc 0x6fae1396fc  lr 0x6c436c9230  sp 0x6e8a25e750  fp 0x6e8a25eb10
+backtrace:
+  #00 pc 0x6fae1396fc  libc.so +0xc76fc
+  #01 lr 0x6c436c9230  libreplay.so +0x39a230
+  #02 fp 0x6c436c9630  libreplay.so +0x39a630
+  #03 fp 0x6c436646e0  libreplay.so +0x3356e0 (_ZN7Hooking13__InstallHookI45Hook_MenuTransitionsHelper_StartStandardLevelKN5Paper18ConstLoggerContextILm7EEELb1EEEvRT0_Pv +0xfc)
+  #04 fp 0x6c43672994  libreplay.so +0x343994 (late_load +0xf4)
+  #05 fp 0x6e94fe3b9c  libsl2.so +0x543b9c
+  #06 fp 0x6e196d2fb4  libunity.so +0xab1fb4
+  #07 fp 0x6fbc36e6c3
+last Vivify log lines (oldest first):
+  Installing hook: Thermal_ResultsDidActivate to offset: 0x6e163e78b8
+  Installing hook: GameNoteController_Init to offset: 0x6e163621d0
+  Installing hook: BombNoteController_Init to offset: 0x6e1635f2d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x6e16360668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x6e16402bb8
+  Installing hook: NoteDebris_Init to offset: 0x6e163652e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x6e168f9968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x6e16257018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x6e168fce78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x6e168fc9f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x6e168fdbb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x6e168fdf2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x6e168fd7f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x6e163ac37c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x6e163ac58c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x6e163ac658
+  Installing hook: VRCenterAdjust_Update to offset: 0x6e163ac560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x6e163ac3e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x6e163ac4a4
+  Installing hook: PauseController_Pause to offset: 0x6e1641e7ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x6e16428c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x6e16429734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x6e16429094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x6e16428d88
+  Installing hook: GamePause_Resume to offset: 0x6e16424178
+  Installing hook: Recorder_InstallBindings to offset: 0x6e1646d294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x6e164618b8
+  Installing hook: Recorder_SpawnNote to offset: 0x6e16358928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x6e16357dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x6e16359de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x6e1646744c
+  Installing hook: Recorder_ScoreStart to offset: 0x6e16467038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x6e14f2adb4
+  Installing hook: Recorder_ProcessSwing to offset: 0x6e14f2b690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x6e1635aae0
+  Installing hook: Recorder_ShowPause to offset: 0x6e16428c54
+  Installing hook: Recorder_Resume to offset: 0x6e1642976c
+  Installing hook: Recorder_Finish to offset: 0x6e163b81dc
+  Vivify: loaded mods (56): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, FakeId 0.1.9, BSML 0.4.55, FasterScroll 1.17.0, NoPromo 0.1.13, bstheater 0.1.0, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.
+=== end ===
+
+=== Vivify 0.15.53 native crash at 1795578055 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x6f16870794
+thread 32654 'UnityMain'
+pc 0x6fae1396fc  lr 0x6c57137614  sp 0x6e8644e9e0  fp 0x6e8644eda0
+backtrace:
+  #00 pc 0x6fae1396fc  libc.so +0xc76fc
+  #01 lr 0x6c57137614  libnoodleextensions.so +0x2a5614
+  #02 fp 0x6c57072ea8  libnoodleextensions.so +0x1e0ea8 (_Z35InstallBadNoteCutEffectSpawnerHooksv +0x118)
+  #03 fp 0x6c571311ec  libnoodleextensions.so +0x29f1ec (_Z21InstallAndRegisterAllv +0x1b8)
+  #04 fp 0x6c57136e34  libnoodleextensions.so +0x2a4e34 (late_load +0x98)
+  #05 fp 0x6e91dd5b9c  libsl2.so +0x543b9c
+  #06 fp 0x6e19729fb4  libunity.so +0xab1fb4
+  #07 fp 0x6fbec146c3
+last Vivify log lines (oldest first):
+  Installing hook: Thermal_ResultsDidActivate to offset: 0x6e169248b8
+  Installing hook: GameNoteController_Init to offset: 0x6e1689f1d0
+  Installing hook: BombNoteController_Init to offset: 0x6e1689c2d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x6e1689d668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x6e1693fbb8
+  Installing hook: NoteDebris_Init to offset: 0x6e168a22e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x6e16e36968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x6e16794018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x6e16e39e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x6e16e399f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x6e16e3abb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x6e16e3af2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x6e16e3a7f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x6e168e937c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x6e168e958c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x6e168e9658
+  Installing hook: VRCenterAdjust_Update to offset: 0x6e168e9560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x6e168e93e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x6e168e94a4
+  Installing hook: PauseController_Pause to offset: 0x6e1695b7ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x6e16965c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x6e16966734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x6e16966094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x6e16965d88
+  Installing hook: GamePause_Resume to offset: 0x6e16961178
+  Installing hook: Recorder_InstallBindings to offset: 0x6e169aa294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x6e1699e8b8
+  Installing hook: Recorder_SpawnNote to offset: 0x6e16895928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x6e16894dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x6e16896de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x6e169a444c
+  Installing hook: Recorder_ScoreStart to offset: 0x6e169a4038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x6e15467db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x6e15468690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x6e16897ae0
+  Installing hook: Recorder_ShowPause to offset: 0x6e16965c54
+  Installing hook: Recorder_Resume to offset: 0x6e1696676c
+  Installing hook: Recorder_Finish to offset: 0x6e168f51dc
+  Vivify: loaded mods (56): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, FakeId 0.1.9, BSML 0.4.55, FasterScroll 1.17.0, NoPromo 0.1.13, bstheater 0.1.0, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.
+=== end ===
+
