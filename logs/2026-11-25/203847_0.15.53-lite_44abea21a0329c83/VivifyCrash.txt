@@ -1,0 +1,60 @@
+=== Vivify 0.15.53 native crash at 1795639103 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27b1000061fe
+thread 25130 'UnityMain'
+pc 0x7249d2e9d8  lr 0x7249d2e9a8  sp 0x70f350a900  fp 0x70f350a9a0
+backtrace:
+  #00 pc 0x7249d2e9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7249d2e9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x70f1358c64  libmetacore.so +0xcdc64
+  #03 fp 0x70e5fb9114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x70e5fb9264  libil2cpp.so +0x2226264
+  #05 fp 0x7146dc4d48  libsl2.so +0x4fad48
+  #06 fp 0x7146dc4ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x6f1964ab08  libreplay.so +0x338b08
+  #08 fp 0x70e5f4d840  libil2cpp.so +0x21ba840
+  #09 fp 0x70e5f4d78c  libil2cpp.so +0x21ba78c
+  #10 fp 0x726173e6c3
+  #11 fp 0x70f350c120
+last Vivify log lines (oldest first):
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x70e7e16e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x70e7e169f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x70e7e17bb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x70e7e17f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x70e7e177f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x70e78c637c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x70e78c658c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x70e78c6658
+  Installing hook: VRCenterAdjust_Update to offset: 0x70e78c6560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x70e78c63e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x70e78c64a4
+  Installing hook: PauseController_Pause to offset: 0x70e79387ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x70e7942c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x70e7943734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x70e7943094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x70e7942d88
+  Installing hook: GamePause_Resume to offset: 0x70e793e178
+  Vivify: loaded mods (43): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  o 0.0.0, FakeId 0.1.9, BSML 0.4.55, datakeeper 0.2.5, MetaCore 1.6.3, Hollywood 1.2.2, Lapiz 0.2.23, sslocalization 0.7.0, tricksaberlite 0.1.1, SongCore 1.1.26, BetterSongSearch 2.2.13, ModifiersCoreQuest 0.1.0, QuestSounds 1.5.4, CustomJ
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.85,1.37,-0.07) fwd=(-0.93,-0.01,0.36)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.86,1.39,-0.08) fwd=(-0.60,0.21,0.77)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.87,1.38,-0.05) fwd=(-0.49,0.08,0.87)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify Send Logs: uploaded 4 file part(s), 50 KB (logs/2026-11-25/203734_0.15.53-lite_d52b60caa1ff29f2 8862d4e; stored 4, deduplicated 0; 47539343 bytes saved cumulatively
+  )
+  Vivify: the game uses STEREO_MULTIVIEW_ON (60 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/53bf1 (Animal - dwaebea)' isCustom=true hasDetails=true
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.81,0.47,0.57) fwd=(0.10,-0.07,0.99)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera cullingMask is now 0x7f7bfdbf
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.08,0.47,0.22) fwd=(-0.11,0.14,0.98)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera cullingMask is now 0x7f7bfdbf
+=== end ===
+
