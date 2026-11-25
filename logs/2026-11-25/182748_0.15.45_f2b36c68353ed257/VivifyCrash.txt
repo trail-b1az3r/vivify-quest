@@ -1,0 +1,65 @@
+=== Vivify 0.15.45 native crash at 1795471132 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x2010
+thread 12688 'games.beatsaber'
+pc 0x76f321db10  lr 0x7587142cf8  sp 0x7ff79a4bd0  fp 0x7ff79a4c00
+backtrace:
+  #00 pc 0x76f321db10  libil2cpp.so +0x34e6b10
+  #01 lr 0x7587142cf8  libVivify.so +0x264cf8
+  #02 fp 0x7587138288  libVivify.so +0x25a288
+  #03 fp 0x785f171d74  libc.so +0x13bd74 (__cxa_finalize +0x94)
+  #04 fp 0x7880a7d90c
+  #05 fp 0x7880a65df8
+  #06 fp 0x7880a67b78
+  #07 fp 0x7880a61ff4
+  #08 fp 0x787804c0cc  libdl.so +0x10cc (dlclose +0xc)
+  #09 fp 0x7757ba7a80  libsl2.so +0x521a80
+  #10 fp 0x7757bceffc  libsl2.so +0x548ffc
+  #11 fp 0x7757bcac24  libsl2.so +0x544c24 (modloader_unload +0xa4)
+  #12 fp 0x77583ea0a4  libmain.so +0xe80a4
+  #13 fp 0x77583e8804  libmain.so +0xe6804
+  #14 fp 0x77d6bb3444  libart.so +0x227444
+  #15 fp 0x775e0f9a38
+  #16 fp 0x6462
+last Vivify log lines (oldest first):
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/453f8 (GOODRAGE - Removable DIsk C_Amo)' isCustom=true hasDetails=true
+  Vivify Send Logs: uploaded 2 file part(s), 109 KB (logs/2026-11-23/215106_0.15.45_7c30177f4833ce02 eec797a; stored 2, deduplicated 0; 40091608 bytes saved cumulatively
+  )
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(0.01,1.77,-0.14) fwd=(-0.01,-0.10,0.99)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(-0.01,1.77,-0.13) fwd=(0.04,-0.03,1.00)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(-0.01,1.77,-0.16) fwd=(0.04,-0.10,0.99)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(0.01,1.78,-0.15) fwd=(-0.20,-0.04,0.98)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b3c9 (Unwelcome School - Salty)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(-0.03,1.77,-0.13) fwd=(0.01,-0.01,1.00)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(-0.11,1.78,-0.12) fwd=(-0.03,0.07,1.00)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(-0.02,1.77,-0.13) fwd=(0.02,-0.12,0.99)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(0.03,1.78,-0.11) fwd=(-0.16,-0.02,0.99)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/1d24fb4634f4f167ba3e06100b686832a15951a3' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(-0.03,1.77,-0.14) fwd=(0.01,-0.03,1.00)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(-0.03,1.78,-0.15) fwd=(-0.21,0.13,0.97)
+  Vivify main camera cullingMask is now 0x3d3affb7
+=== end ===
+
