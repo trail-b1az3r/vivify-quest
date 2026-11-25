@@ -1,0 +1,58 @@
+=== Vivify 0.15.53 native crash at 1795639602 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27b100007de9
+thread 32279 'UnityMain'
+pc 0x7249d2e9d8  lr 0x7249d2e9a8  sp 0x70f21f96d0  fp 0x70f21f9770
+backtrace:
+  #00 pc 0x7249d2e9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7249d2e9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x70ec754c64  libmetacore.so +0xcdc64
+  #03 fp 0x70ccba7114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x70ccba7264  libil2cpp.so +0x2226264
+  #05 fp 0x7145954d48  libsl2.so +0x4fad48
+  #06 fp 0x7145954ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x6f1f154b08  libreplay.so +0x338b08
+  #08 fp 0x70ccb3b840  libil2cpp.so +0x21ba840
+  #09 fp 0x70ccb3b78c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.SetRoomTransformOffset skipped: isolation toggle enabled
+  VRCenterAdjust.OnEnable skipped: isolation toggle enabled
+  VRCenterAdjust.OnDisable skipped: isolation toggle enabled
+  VRCenterAdjust.OnDisable skipped: isolation toggle enabled
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.08,0.43,-0.08) fwd=(-0.48,-0.08,0.88)
+  Vivify field of view: 115% for this map
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=1 preloaded=1 synced=0 secondaryCameras=0 declaredTextures=0 assets=18
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/53bf1 (Animal - dwaebea)' isCustom=true hasDetails=true
+  Vivify Send Logs: upload attempt 1/4 failed (http 503, curl 0, Cloudflare: Worker exceeded resource limits | vivify-log-relay.vivify-logs-forquest.workers.dev | Cloudflare); retrying in 4 s
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.08,0.44,-0.05) fwd=(-0.32,0.04,0.95)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera cullingMask is now 0x7f7bfdbf
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.05,0.44,-0.07) fwd=(-0.58,-0.05,0.81)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera cullingMask is now 0x7f7bfdbf
+=== end ===
+
