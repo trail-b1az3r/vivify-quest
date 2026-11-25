@@ -1,0 +1,52 @@
+=== Vivify 0.15.53 native crash at 1795637658 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0xffffffffc3ffe4
+thread 11552 'Thread-3'
+pc 0x70e5c177b4  lr 0x70e5c17768  sp 0x6ff3277480  fp 0x6ff32777b0
+backtrace:
+  #00 pc 0x70e5c177b4  libunity.so +0x13ee7b4
+  #01 lr 0x70e5c17768  libunity.so +0x13ee768
+  #02 fp 0x70e5dfd9f4  libunity.so +0x15d49f4
+  #03 fp 0x7249d30334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify multiplayer check: inMultiplayerGameplay=false multiplayerModLoaded=false
+  Vivify: this map has its own saber, so 'CustomSaberAPI(Clone)' (CustomModels::CustomSaberAPI) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'CustomModelsTrail0' (CustomModels::CustomSaberTrail) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'ReeSaber' (ReeSabers::ReeSaberController) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'BlurSaber' (ReeSabers::BlurSaber) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'SimpleTrail' (ReeSabers::SimpleTrail) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify saber trail: controller has no game trail (another saber mod); following the saber
+  Vivify saber trail: 1 map trail(s) created (following the saber)
+  Vivify saber replaced (type 0): models=1 trails=1 spawned=2 renderers=2 hiddenOriginals=6
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/wind/prefabs/handr.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/wind/mat/sabernotrail.mat' saberType=1 additive=false
+  Vivify saber trail: controller has no game trail (another saber mod); following the saber
+  Vivify saber trail: 1 map trail(s) created (following the saber)
+  Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=2 hiddenOriginals=6
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/wind/prefabs/custom note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/wind/prefabs/custom note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/wind/prefabs/custom note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadows'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadows'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowDistance'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowDistance'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowResolution'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowResolution'
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 7 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=12 livePrefabs=2 preloadedPrefabs=2
+  Vivify custom event: type='AssignObjectPrefab' time=21.904762 songTime=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/wind/prefabs/oar.prefab' tracks=0 additive=false saberType=0
+  Vivify AssignObjectPrefab(trail): asset='assets/wind/mat/sabertrail.mat' saberType=0 additive=false
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/wind/prefabs/oar.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/wind/mat/sabertrail.mat' saberType=1 additive=false
+  Vivify saber trail: controller has no game trail (another saber mod); following the saber
+  Vivify saber trail: 1 map trail(s) created (following the saber)
+  Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=2 hiddenOriginals=8
+  Vivify saber trail: controller has no game trail (another saber mod); following the saber
+  Vivify saber trail: 1 map trail(s) created (following the saber)
+  Vivify saber replaced (type 0): models=1 trails=1 spawned=2 renderers=2 hiddenOriginals=8
+=== end ===
+
