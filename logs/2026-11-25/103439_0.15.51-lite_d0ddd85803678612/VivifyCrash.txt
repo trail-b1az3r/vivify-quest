@@ -1,0 +1,52 @@
+=== Vivify 0.15.51 native crash at 1795602829 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x5c
+thread 22086 'Thread-3'
+pc 0x70f64627b4  lr 0x70f6462768  sp 0x70089b7480  fp 0x70089b77b0
+backtrace:
+  #00 pc 0x70f64627b4  libunity.so +0x13ee7b4
+  #01 lr 0x70f6462768  libunity.so +0x13ee768
+  #02 fp 0x70f66489f4  libunity.so +0x15d49f4
+  #03 fp 0x7249d30334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/wind/prefabs/handr.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/wind/mat/sabernotrail.mat' saberType=1 additive=false
+  Vivify saber trail: controller has no game trail (another saber mod); following the saber
+  Vivify saber trail: 1 map trail(s) created (following the saber)
+  Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=2 hiddenOriginals=6
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/wind/prefabs/custom note.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/wind/prefabs/custom note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/wind/prefabs/custom note debris.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_realtimeReflectionProbes'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_realtimeReflectionProbes'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowResolution'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowResolution'
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 7 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=12 livePrefabs=2 preloadedPrefabs=2
+  Vivify field of view: 115% for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify foveated rendering: level 4 for this map (was 4), eye-tracked false, accepted true; device 'Oculus Quest 3S'
+  Vivify: this map has its own saber, so 'GameplayTricksManager' (ReeSabers::TricksEnvironmentManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'ReplayModDetector' (ReeSabers::ReplayModDetector) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'PauseHandlesManager' (ReeSabers::PauseHandlesManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'PauseLaserManager' (ReeSabers::PauseLaserManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'GameplaySabersManager' (ReeSabers::GameplaySabersManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'GameplayDriversManager' (ReeSabers::GameplayDriversManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'SecondCheckManager' (ReeSabers::SecondCheckManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'EnvironmentMapManager' (ReeSabers::EnvironmentMapManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'VersionCheckManager' (ReeSabers::VersionCheckManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'ReeInputManager' (ReeSabers::ReeInputManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'FramerateManager' (ReeSabers::FramerateManager) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'GCStorage' (ReeSabers::GCStorageBehavior) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+=== end ===
+
