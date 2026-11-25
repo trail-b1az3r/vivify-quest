@@ -1,0 +1,64 @@
+=== Vivify 0.15.52 native crash at 1795541127 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x2010
+thread 5238 'games.beatsaber'
+pc 0x6f1f115b10  lr 0x6e017112e0  sp 0x7ff1b83810  fp 0x7ff1b83840
+backtrace:
+  #00 pc 0x6f1f115b10  libil2cpp.so +0x34e6b10
+  #01 lr 0x6e017112e0  libBSNightcoreQuest.so +0xcb2e0
+  #02 fp 0x70a5340bb4  libc.so +0x13abb4 (__cxa_finalize +0x94)
+  #03 fp 0x70ac8e296c
+  #04 fp 0x70ac8cae58
+  #05 fp 0x70ac8ccbd8
+  #06 fp 0x70ac8c7064
+  #07 fp 0x709e7240cc  libdl.so +0x10cc (dlclose +0xc)
+  #08 fp 0x6f76b2ba80  libsl2.so +0x521a80
+  #09 fp 0x6f76b52ffc  libsl2.so +0x548ffc
+  #10 fp 0x6f76b4ec24  libsl2.so +0x544c24 (modloader_unload +0xa4)
+  #11 fp 0x6f79deb0a4  libmain.so +0xe80a4
+  #12 fp 0x6f79de9804  libmain.so +0xe6804
+  #13 fp 0x6ff8f39444  libart.so +0x227444
+  #14 fp 0x6f7cecda38
+  #15 fp 0x6462
+last Vivify log lines (oldest first):
+  )
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=105
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51058 (WHY_S THIS DEALER_ - lestershire)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=true geometryEffects=true 
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51058 (WHY_S THIS DEALER_ - lestershire)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/Cus
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51058__WHY_S_THIS_DEALER__-_lestershire_/51058__WHY_S_THIS_DEALER__-_lestershire__ee042876b52c9bf0.vivify'
+  Vivify material: context=bundle-load asset=assets/postprocess.mat material='PostProcess' shader='Custom/PostProcess' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/postprocesscrunch.mat material='PostProcessCrunch' shader='Custom/Crunch' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/sabertrail.mat material='SaberTrail' shader='Custom/Unlit Saber Trail' supported=true internalError=false
+  Vivify: play button blocked by Vivify ("Preparing shaders 0/43...")
+  Vivify: preparing the shaders of 43 material(s) before play ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51058__WHY_S_THIS_DEALER__-_lestershire_/51058__WHY_S_THIS_DEALER__-_lestershire__ee042876b52c9bf0.vivify')
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51058__WHY_S_THIS_DEALER__-_lestershire_/51058__WHY_S_THIS_DEALER__-_lestershire__ee042876b52c9bf0.vivify' -> not needed
+  Vivify: shaders of 43 material(s) prepared in 0.6s
+  Vivify shader preparation: 96 pass bind attempt(s), 0 non-binding/exception result(s), including non-draw passes; compilation is not pixel validation
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=31
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f82e (Get Your Wish - nasafrasa)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=true geometryEffects=true 
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f82e (Get Your Wish - nasafrasa)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLeve
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f82e__Get_Your_Wish_-_nasafrasa_/4f82e__Get_Your_Wish_-_nasafrasa__d03521c08404a076.vivify'
+  Vivify material: context=bundle-load asset=assets/materials/black.mat material='Black' shader='nasafrasa/Unlit Black' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/note/nurturesabertrail.mat material='NurtureSaberTrail' shader='nasafrasa/Unlit Nurture Saber Trail' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/white.mat material='White' shader='nasafrasa/Unlit White' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/ppunderwater.mat material='PPUnderwater' shader='nasafrasa/PPUnderwater' supported=true internalError=false
+  Vivify: play button blocked by Vivify ("Preparing shaders 0/68...")
+  Vivify: preparing the shaders of 68 material(s) before play ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f82e__Get_Your_Wish_-_nasafrasa_/4f82e__Get_Your_Wish_-_nasafrasa__d03521c08404a076.vivify')
+  Vivify shader preparation: material 'Underwater' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'Underwater' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f82e__Get_Your_Wish_-_nasafrasa_/4f82e__Get_Your_Wish_-_nasafrasa__d03521c08404a076.vivify' grabs _GrabTexture
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f82e__Get_Your_Wish_-_nasafrasa_/4f82e__Get_Your_Wish_-_nasafrasa__d03521c08404a076.vivify' -> needed by Silent/Clear Water
+  Vivify: '4f82e (Get Your Wish - nasafrasa)' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+  Vivify Blit: 25 single-view shader(s) ready for blits into screen textures and the map's texture cameras ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f82e__Get_Your_Wish_-_nasafrasa_/4f82e__Get_Your_Wish_-_nasafr
+  Vivify texture cameras: 21 more single-view shader(s) from the map's prefabs
+  Vivify shader preparation: material 'CensorEffectMat' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'CensorEffectMat' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify: shaders of 68 material(s) prepared in 1.1s
+  Vivify shader preparation: 148 pass bind attempt(s), 4 non-binding/exception result(s), including non-draw passes; compilation is not pixel validation
+  Vivify: play button is enabled (no mod is blocking it)
+=== end ===
+
