@@ -1,0 +1,57 @@
+=== Vivify 0.15.53 native crash at 1795637552 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x1000000db
+thread 7723 'UnityMain'
+pc 0x70e9d721a4  lr 0x70e9903ea0  sp 0x70fb5f60f0  fp 0x70fb5f6190
+backtrace:
+  #00 pc 0x70e9d721a4  libunity.so +0xb411a4
+  #01 lr 0x70e9903ea0  libunity.so +0x6d2ea0
+  #02 fp 0x70e50f478c  libil2cpp.so +0x21ba78c
+  #03 fp 0x6f26486958  libchroma.so +0x278958 (_ZN6Chroma29EnvironmentEnhancementManager17GetAllGameObjectsEv +0x154)
+  #04 fp 0x6f2648be18  libchroma.so +0x27de18 (_ZN6Chroma29EnvironmentEnhancementManager4InitEPN14CustomJSONData17CustomBeatmapDataEPN7Zenject11DiContainerE +0x470)
+  #05 fp 0x6f26421454  libchroma.so +0x213454
+  #06 fp 0x70ff4e69c4  libcustom-types.so +0x2d49c4
+  #07 fp 0x70e77e44a8  libil2cpp.so +0x48aa4a8
+  #08 fp 0x70e50f478c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4953e (Say It  - SkilljoyJr, Vendrix)/bundleAndroid2021.vivify'
+  Vivify material: context=bundle-load asset=assets/claps/explosionparticle.mat material='ExplosionParticle' shader='Claps/AmbientParticles' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/intro but actually/introfrfr.mat material='Introfrfr' shader='You/IntroSkybox' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/intro/intro.mat material='Intro' shader='You/IntroSkybox' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/mainbackground/themat but matter.mat material='THEMAT BUT MATTER' shader='Hidden/Locked/.poiyomi/Poiyomi Toon/82d72b14b5e69ce49a34325073be8264' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/post-fx/blur.mat material='Blur' shader='Custom/GaussianBlur' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/post-fx/chromaticaberration.mat material='chromaticaberration' shader='Custom/ChromaticAberration_VR' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/post-fx/kickwow.mat material='KickWow' shader='Custom/kickwow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/swirly sphere/swirly sphere mat.mat material='Swirly Sphere Mat' shader='Custom/MySky' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/universe in mesh/wow.mat material='Wow' shader='Doppels shaders/Models shaders/Best Universe Within 1.02' supported=true internalError=false
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=15
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4a2b3 (Turret Orchestra - MadChase, RateGyro, Xentha_)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=true
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4a2b3 (Turret Orchestra - MadChase, RateGyro, Xentha_)/bundleAndroid2021.vivify'
+  Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4a2b3 (Turret Orchestra - MadChase, RateGyro, Xentha_)/ExpertPlusOneSaber.dat' at condition 691
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4a2b3 (Turret Orchestra - MadChase, RateGyro, Xentha_)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b15c (Passing Memories - MadChase, Cush)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=true
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b15c (Passing Memories - MadChase, Cush)/bundleAndroid2021.vivify'
+  Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b15c (Passing Memories - MadChase, Cush)/ExpertPlusLawless.dat' at condition 691
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b15c (Passing Memories - MadChase, Cush)/bundleAndroid2021.vivify'
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4c0ba (Wayfaring Stranger - HickeyChan)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=true
+  Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4c0ba (Wayfaring Stranger - HickeyChan)/HardStandard.dat' at condition 691
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4c0ba (Wayfaring Stranger - HickeyChan)/bundleWindows2021.vivify'
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4c0ba (Wayfaring Stranger - HickeyChan)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/Cust
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4c0ba__Wayfaring_Stranger_-_HickeyChan_/4c0ba__Wayfaring_Stranger_-_HickeyChan__f11133e4f774de05.vivify'
+  Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.
+  Vivify saber chain saberNode: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Lo
+  Vivify saber chain initParent: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- L
+  Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(-0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=
+  Vivify saber chain saberNode: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+  Vivify saber chain initParent: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <-
+=== end ===
+
