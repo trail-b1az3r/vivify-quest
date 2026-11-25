@@ -1,0 +1,116 @@
+=== Vivify 0.15.51 native crash at 1795498533 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27d90000686e
+thread 26773 'UnityMain'
+pc 0x7c1fd3c9d8  lr 0x7c1fd3c9a8  sp 0x7b16279410  fp 0x7b162794b0
+backtrace:
+  #00 pc 0x7c1fd3c9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7c1fd3c9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7b1634f234  libmetacore.so +0xce234
+  #03 fp 0x7ab6e7c114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x7ab6e7c264  libil2cpp.so +0x2226264
+  #05 fp 0x7b17f61d48  libsl2.so +0x4fad48
+  #06 fp 0x7b17f61ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7903318dcc  libbsl.so +0x16edcc
+  #08 fp 0x794ee03e54  libsongcore.so +0x3cde54
+  #09 fp 0x79033190fc  libbsl.so +0x16f0fc
+  #10 fp 0x7ab87b7514  libil2cpp.so +0x3b61514
+  #11 fp 0x7ab6e1078c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 120 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=37 livePrefabs=1 preloadedPrefabs=6
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify pause menu opened: syncedObjects=2 secondaryCameras=0
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.07,1.49,-2.25) fwd=(-0.08,-0.08,0.99)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=1 preloaded=6 synced=0 secondaryCameras=0 declaredTextures=0 assets=37
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify Send Logs: queued behind the current upload
+  Vivify Send Logs: uploaded 2 file part(s), 131 KB (logs/2026-11-24/053509_0.15.51_f6a043c43636d077 6e197b8; stored 2, deduplicated 0; 40126011 bytes saved cumulatively
+  )
+  Vivify Send Logs: uploaded 3 file part(s), 123 KB (logs/2026-11-24/053516_0.15.51_1469f1fdbb53ab6a ceeae3e; stored 3, deduplicated 0; 40126011 bytes saved cumulatively
+  )
+  Vivify saber chain modelNode(smc): BasicSaberModelHologram(Clone)[w=(0.11,13.46,178.00) l=(0.00,0.00,0.00)] <- RightSaberBase[w=(0.11,13.46,178.00) l=(1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- Multip
+  Vivify saber chain saberNode: RightSaberBase[w=(0.11,13.46,178.00) l=(1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.00)] <- ShaderWarmup[w=(0.
+  Vivify saber chain initParent: RightSaberBase[w=(0.11,13.46,178.00) l=(1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.00)] <- ShaderWarmup[w=(0
+  Vivify saber chain modelNode(smc): BasicSaberModelHologram(Clone)[w=(-9.49,13.46,178.00) l=(0.00,0.00,0.00)] <- LeftSaberBase[w=(-9.49,13.46,178.00) l=(-1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- Mult
+  Vivify saber chain saberNode: LeftSaberBase[w=(-9.49,13.46,178.00) l=(-1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.00)] <- ShaderWarmup[w=(0
+  Vivify saber chain initParent: LeftSaberBase[w=(-9.49,13.46,178.00) l=(-1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.00)] <- ShaderWarmup[w=(
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.03,1.42,-0.21) fwd=(-0.30,0.02,0.95)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.04,1.51,-0.19) fwd=(-0.29,0.03,0.96)
+=== end ===
+
+=== Vivify 0.15.51 native crash at 1795498542 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7bab653308
+thread 20369 'UnityMain'
+pc 0x7c1fd356fc  lr 0x795879c99c  sp 0x7ac726cb20  fp 0x7ac726cee0
+backtrace:
+  #00 pc 0x7c1fd356fc  libc.so +0xc76fc
+  #01 lr 0x795879c99c  libtracks.so +0x15799c
+  #02 fp 0x79587907ac  libtracks.so +0x14b7ac (_Z43InstallBeatmapObjectCallbackControllerHooksv +0x140)
+  #03 fp 0x795879a514  libtracks.so +0x155514 (late_load +0x134)
+  #04 fp 0x7b17981b9c  libsl2.so +0x543b9c
+  #05 fp 0x7ac7d25fb4  libunity.so +0xab1fb4
+  #06 fp 0x7c25c486c3
+  #07 fp 0x7ac726df40
+last Vivify log lines (oldest first):
+  Vivify crash report:   Vivify catch-up: replayed 120 event(s) up to time=0
+  Vivify crash report:   Vivify PrepareBeatmap done: assets=37 livePrefabs=1 preloadedPrefabs=6
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify crash report:   Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+  Vivify crash report:   Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify crash report:   Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify crash report:   Vivify pause menu opened: syncedObjects=2 secondaryCameras=0
+  Vivify crash report:   Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.07,1.49,-2.25) fwd=(-0.08,-0.08,0.99)
+  Vivify crash report:   Vivify main camera cullingMask is now 0x3818ff37
+  Vivify crash report:   Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify crash report:   Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify crash report:   Vivify level end: level ended (quit or finished)
+  Vivify crash report:   Vivify ResetRuntime: livePrefabs=1 preloaded=6 synced=0 secondaryCameras=0 declaredTextures=0 assets=37
+  Vivify crash report:   Vivify level end: camera effects removed
+  Vivify crash report:   Vivify level end: note and saber visuals restored
+  Vivify crash report:   Vivify level end: camera restored
+  Vivify crash report:   Vivify level end: map prefabs destroyed
+  Vivify crash report:   Vivify level end: render textures released
+  Vivify crash report:   Vivify level end: render settings restored
+  Vivify crash report:   Vivify level end: done
+  Vivify crash report:   Vivify Send Logs: queued behind the current upload
+  Vivify crash report:   Vivify Send Logs: uploaded 2 file part(s), 131 KB (logs/2026-11-24/053509_0.15.51_f6a043c43636d077 6e197b8; stored 2, deduplicated 0; 40126011 bytes saved cumulatively
+  Vivify crash report:   )
+  Vivify crash report:   Vivify Send Logs: uploaded 3 file part(s), 123 KB (logs/2026-11-24/053516_0.15.51_1469f1fdbb53ab6a ceeae3e; stored 3, deduplicated 0; 40126011 bytes saved cumulatively
+  Vivify crash report:   )
+  Vivify crash report:   Vivify saber chain modelNode(smc): BasicSaberModelHologram(Clone)[w=(0.11,13.46,178.00) l=(0.00,0.00,0.00)] <- RightSaberBase[w=(0.11,13.46,178.00) l=(1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00
+  Vivify crash report:   Vivify saber chain saberNode: RightSaberBase[w=(0.11,13.46,178.00) l=(1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.00)
+  Vivify crash report:   Vivify saber chain initParent: RightSaberBase[w=(0.11,13.46,178.00) l=(1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.00
+  Vivify crash report:   Vivify saber chain modelNode(smc): BasicSaberModelHologram(Clone)[w=(-9.49,13.46,178.00) l=(0.00,0.00,0.00)] <- LeftSaberBase[w=(-9.49,13.46,178.00) l=(-1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.
+  Vivify crash report:   Vivify saber chain saberNode: LeftSaberBase[w=(-9.49,13.46,178.00) l=(-1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.00
+  Vivify crash report:   Vivify saber chain initParent: LeftSaberBase[w=(-9.49,13.46,178.00) l=(-1.20,3.36,34.00)] <- AvatarAndSabers[w=(-4.69,0.00,42.00) l=(0.00,0.00,34.00)] <- MultiplayerGameBigAvatar[w=(-4.69,0.00,8.00) l=(-4.69,0.00,0.0
+  Vivify crash report:   Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.03,1.42,-0.21) fwd=(-0.30,0.02,0.95)
+  Vivify crash report:   Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.04,1.51,-0.19) fwd=(-0.29,0.03,0.96)
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
