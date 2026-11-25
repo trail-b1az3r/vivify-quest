@@ -11,6 +11,40 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.15.55]
+
+Not tried on a headset. Converted maps are converted again once (conversion
+version 34 -> 35).
+
+### Added
+
+- **The converter recognises wireframe-style geometry effects and draws them
+  properly.** The headset draws a map in one two-eye pass, where a geometry
+  stage cannot run. Until now such a stage was dropped (with "Geometry
+  Effects Both Eyes" on, or where it does not translate). Wireframes then
+  came out as solid shapes and exploding triangles as the plain mesh.
+  - The converter now recognises the commonest kind: a stage that takes one
+    triangle and emits exactly its three corners. That covers solid
+    wireframes such as Aether's `Mawntee/Beat Saber Wireframe 3D-Noise`, and
+    triangle explosions such as `Swifter/TriangleExplosion`.
+  - Such a stage now does its work in the vertex stage. The vertex code runs
+    once for each corner of the triangle, then the original geometry code runs
+    over the three results, and each vertex keeps what was emitted for its own
+    corner.
+  - For that, every renderer drawn with such a shader gets a copy of its mesh
+    in which each triangle has its own three vertices, carrying all three
+    corners in UV channels 4 to 7. The conversion keeps the meshes of a bundle
+    with geometry stages readable, so this copy can be built.
+  - Skinned meshes, non-triangle meshes and meshes that cannot be read still
+    draw as before, as the plain mesh. The log says which.
+  - In Aether, all 14 such programs lower and pass the GLSL compiler and
+    linker.
+  - New log lines: "Vivify lowered geometry: ..." and, after a conversion,
+    how many dropped geometry stages were lowered.
+  - Shapes this cannot do are left as before and the log gives the reason:
+    more than three vertices out, loops, points or lines in.
+  - `tools/geometry-lowering/lower_test.py` checks the lowering in CI.
+
 ## [0.15.54]
 
 Not tried on a headset.

@@ -22,6 +22,7 @@ def _build_default_binary() -> str:
         os.path.join(root, "src", "VivifySerializedFile.cpp"),
         os.path.join(root, "src", "VivifyDxbc.cpp"),
         os.path.join(root, "src", "VivifyTriangleTessellation.cpp"),
+        os.path.join(root, "src", "VivifyGeometryLowering.cpp"),
     ]
     subprocess.run(cmd, check=True)
     return out

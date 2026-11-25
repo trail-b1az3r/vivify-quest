@@ -15,6 +15,7 @@ namespace {
 // Unity ClassID for UnityEngine.Shader.
 constexpr int32_t kClassIdShader = 48;
 constexpr int32_t kClassIdTexture2D = 28;
+constexpr int32_t kClassIdMesh = 43;
 
 // Type-tree node flags. Bit 0 of typeFlags marks a node whose children are the
 // [size, data] pair of an array; bit 14 of metaFlag requests 4-byte alignment
@@ -1388,6 +1389,31 @@ ShaderObject ReadShaderObject(uint8_t const* data, size_t size, size_t fileOffse
 // arrived in different versions -- so every field is found by the name the
 // file's own type tree gives it, and anything unrecognised is walked past to
 // stay in step with the byte stream.
+// A Mesh's top-level m_IsReadable, found by name and walked to like a
+// texture's fields; nothing after it is read.
+MeshReadableFlag ReadMeshReadable(uint8_t const* data, size_t size, size_t fileOffset,
+                                  SerializedTypeInfo const& type) {
+  MeshReadableFlag mesh;
+  if (type.nodes.empty()) return mesh;
+  Reader reader(data, size);
+  for (size_t child : ChildIndices(type.nodes, 0)) {
+    if (!reader.ok()) break;
+    std::string const name = NodeName(type, type.nodes[child]);
+    size_t const before = reader.position();
+    WalkNode(reader, type, child, nullptr, 1);
+    if (reader.position() <= before) continue;
+    if (name == "m_IsReadable") {
+      if (type.nodes[child].byteSize == 1 && before < size) {
+        mesh.present = true;
+        mesh.fileOffset = fileOffset + before;
+        mesh.readable = data[before] != 0;
+      }
+      break;
+    }
+  }
+  return mesh;
+}
+
 TextureObject ReadTextureObject(uint8_t const* data, size_t size, size_t fileOffset,
                                 SerializedTypeInfo const& type) {
   TextureObject texture;
@@ -2680,6 +2706,15 @@ FileReport InspectSerializedFile(uint8_t const* data, size_t size, bool inspectM
     }
     bool const isShader = type.classID == kClassIdShader;
     bool const isTexture = type.classID == kClassIdTexture2D;
+    if (type.classID == kClassIdMesh && layout.typeTreePresent && !type.nodes.empty()) {
+      uint64_t const start = static_cast<uint64_t>(object.byteStart) + layout.dataOffset;
+      if (start < size && object.byteSize <= size - start) {
+        MeshReadableFlag mesh = ReadMeshReadable(data + start, object.byteSize, static_cast<size_t>(start), type);
+        mesh.pathID = object.pathID;
+        if (mesh.present) report.meshes.push_back(mesh);
+      }
+      continue;
+    }
     if (!isShader && !isTexture) continue;
     if (isShader) report.shaderObjectCount++;
     if (isTexture) report.textureObjectCount++;
