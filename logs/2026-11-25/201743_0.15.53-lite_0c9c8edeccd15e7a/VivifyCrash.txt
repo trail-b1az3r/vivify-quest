@@ -1,0 +1,57 @@
+=== Vivify 0.15.53 native crash at 1795637720 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x260
+thread 14028 'UnityMain'
+pc 0x70f4bc21a4  lr 0x70f4753ea0  sp 0x7101ff5a00  fp 0x7101ff5aa0
+backtrace:
+  #00 pc 0x70f4bc21a4  libunity.so +0xb411a4
+  #01 lr 0x70f4753ea0  libunity.so +0x6d2ea0
+  #02 fp 0x70dbf7e78c  libil2cpp.so +0x21ba78c
+  #03 fp 0x6f2e685958  libchroma.so +0x278958 (_ZN6Chroma29EnvironmentEnhancementManager17GetAllGameObjectsEv +0x154)
+  #04 fp 0x6f2e68ae18  libchroma.so +0x27de18 (_ZN6Chroma29EnvironmentEnhancementManager4InitEPN14CustomJSONData17CustomBeatmapDataEPN7Zenject11DiContainerE +0x470)
+  #05 fp 0x6f2e620454  libchroma.so +0x213454
+  #06 fp 0x70fe8f99c4  libcustom-types.so +0x2d49c4
+  #07 fp 0x70de66e4a8  libil2cpp.so +0x48aa4a8
+  #08 fp 0x70dbf7e78c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/500eb (By The Wind - slabs37)/bundleAndroid2021.vivify'
+  Vivify depth copy: PC 2D material=true PC array-slice material=true native slice binding=true
+  Vivify material: context=bundle-load asset=assets/wind/mat/healthbar.mat material='HealthBar' shader='Custom/HealthBar' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/wind/mat/sabernotrail.mat material='SaberNoTrail' shader='Hidden/Locked/.poiyomi/Poiyomi Toon/8e7f40c951c4f66479b0212942eab1d7' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/wind/mat/sabertrail.mat material='SaberTrail' shader='Swifter/SaberTrail' supported=true internalError=false
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=12
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5112d (LAND OF FIRE [FITBEAT] - slabs37)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=true
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5112d (LAND OF FIRE [FITBEAT] - slabs37)/bundleAndroid2021.vivify'
+  Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5112d (LAND OF FIRE [FITBEAT] - slabs37)/ExpertStandard.dat' at condition 691
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5112d (LAND OF FIRE [FITBEAT] - slabs37)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5112d (LAND OF FIRE [FITBEAT] - slabs37)/bundleAndroid2021.vivify'
+  Vivify material: context=bundle-load asset=assets/vivifytemplate/utilities/materials/custom objects/customsabertrail.mat material='CustomSaberTrail' shader='Vivify/CustomObjects/CustomSaberTrail' supported=true internalError=false
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=13
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51806 (geekd - SwervyMan)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=true
+  Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51806 (geekd - SwervyMan)/ExpertPlusStandard.dat' at condition 691
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51806 (geekd - SwervyMan)/bundleWindows2021.vivify'
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51806 (geekd - SwervyMan)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51806
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51806__geekd_-_SwervyMan_/51806__geekd_-_SwervyMan__c1bbb283d6d14644.vivify'
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=6
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51873 (I Got No Time - SwervyMan)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=true
+  Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51873 (I Got No Time - SwervyMan)/ExpertStandard.dat' at condition 691
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51873 (I Got No Time - SwervyMan)/bundleWindows2021.vivify'
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51873 (I Got No Time - SwervyMan)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLeve
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51873__I_Got_No_Time_-_SwervyMan_/51873__I_Got_No_Time_-_SwervyMan__05ebacb475b9199e.vivify'
+  Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.
+  Vivify saber chain saberNode: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Lo
+  Vivify saber chain initParent: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- L
+  Vivify saber chain modelNode(smc): CustomSaberAPI(Clone)[w=(-0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=
+  Vivify saber chain saberNode: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+  Vivify saber chain initParent: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <-
+=== end ===
+
