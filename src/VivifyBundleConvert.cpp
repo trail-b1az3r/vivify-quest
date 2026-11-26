@@ -1526,6 +1526,7 @@ struct LinkedShader {
   int geometryDropped = 0;  // variants linked without their geometry stage
   int geometryLowered = 0;  // of those, the ones whose geometry work moved into the vertex stage
   int geometryGated = 0;    // of those, flattened ones that keep the stage's camera check
+  int geometryOrthographic = 0;  // variants linked single-view: their geometry stage draws only in orthographic cameras
   int variantsSkipped = 0;  // program refs a Quest never selects, left alone
   int programsTranslated = 0;
   bool tessellationUntranslated = false;
@@ -1847,9 +1848,10 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
         for (auto& name : *list) if (name == grab) name = renamed;
     }
   };
-  auto translate = [&](ParsedProgramRef const& ref, bool forceMultiview = false) -> Vivify::Dxbc::GlslResult const* {
+  auto translate = [&](ParsedProgramRef const& ref, bool forceMultiview = false,
+                       bool forceSingleView = false) -> Vivify::Dxbc::GlslResult const* {
     uint32_t const blob = ref.blobIndex;
-    bool const multiview = forceMultiview || multiviewRef[indexOf(ref)];
+    bool const multiview = !forceSingleView && (forceMultiview || multiviewRef[indexOf(ref)]);
     Vivify::Dxbc::GlslOptions options;
     options.multiview = multiview;
     options.singleViewStereoEye = forceMultiview ? -1 : conversionOptions.singleViewStereoEye;
@@ -2138,6 +2140,30 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
       return true;
     };
 
+    // A geometry stage that returns at once unless the camera is
+    // orthographic (AreaLit's light-mesh pass, which fills the light data
+    // texture from the map's orthographic light camera) can never draw in the
+    // headset's two-eye view. Its variant is linked single-view, geometry
+    // stage and all (0.16.4): a two-eye program cannot draw into that
+    // camera's plain texture, so the light texture stayed empty and every
+    // surface it lights came out black (Through The Screen's floor and TV).
+    // In the two-eye view the single-view program is not drawn at all, which
+    // is what its geometry stage would have done there.
+    auto orthographicOnly = [&](ParsedProgramRef const* geometry) {
+      if (geometry == nullptr || conversionOptions.singleViewOnly) return false;
+      auto const* gs = translate(*geometry, false, true);
+      return gs != nullptr && GeometrySpecialization::EmptyForPerspective(gs->source);
+    };
+    auto linkSingleView = [&](ParsedProgramRef const& vertex, ParsedProgramRef const* fragment,
+                              ParsedProgramRef const& geometry, std::string& source, int& version) {
+      auto const* vs = translate(vertex, false, true);
+      auto const* fs = fragment != nullptr ? translate(*fragment, false, true) : nullptr;
+      auto const* gs = translate(geometry, false, true);
+      if (vs == nullptr || (fragment != nullptr && fs == nullptr) || gs == nullptr) return false;
+      source = LinkStages(*vs, fs, gs, version);
+      return true;
+    };
+
     // A geometry stage cannot run here: multiview forbids one, and some do
     // not translate at all. Rather than leave the whole variant on DirectX --
     // which is a grey stand-in, or nothing, on the headset -- its vertex and
@@ -2194,7 +2220,9 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
       bool dropped = false;
       auto const* fragment = BestMatch(fragments, *vertex);
       auto const* geometry = BestMatch(geometries, *vertex);
-      if (!linkDroppingGeometry(*vertex, fragment, geometry, source, version, dropped) ||
+      bool const single = orthographicOnly(geometry) && linkSingleView(*vertex, fragment, *geometry, source, version);
+      if (single) ++out.geometryOrthographic;
+      if ((!single && !linkDroppingGeometry(*vertex, fragment, geometry, source, version, dropped)) ||
           !place(*vertex, source, version)) {
         out.variantsRefused++;
         continue;
@@ -2209,6 +2237,11 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
         bool dropped = false;
         auto const* vertex = BestMatch(vertices, *ref);
         if (stageList == &geometries) {
+          if (vertex != nullptr && orthographicOnly(ref) &&
+              linkSingleView(*vertex, BestMatch(fragments, *ref), *ref, source, version)) {
+            place(*ref, source, version);
+            continue;
+          }
           // A geometry entry only takes a program that keeps its stage; one
           // that dropped it is left on DirectX, so Unity skips the stage.
           if (!conversionOptions.dropGeometryStages && vertex != nullptr &&
@@ -2218,7 +2251,9 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
           continue;
         }
         ParsedProgramRef const* geometry = BestMatch(geometries, *ref);
-        if (vertex == nullptr || !linkDroppingGeometry(*vertex, ref, geometry, source, version, dropped) ||
+        bool const single = vertex != nullptr && orthographicOnly(geometry) &&
+                            linkSingleView(*vertex, ref, *geometry, source, version);
+        if (vertex == nullptr || (!single && !linkDroppingGeometry(*vertex, ref, geometry, source, version, dropped)) ||
             !place(*ref, source, version)) {
           out.variantsRefused++;
         }
@@ -2511,6 +2546,7 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
         conversion.geometryStagesDropped += linked.geometryDropped;
         conversion.geometryStagesLowered += linked.geometryLowered;
         conversion.geometryStagesGated += linked.geometryGated;
+        conversion.geometryOrthographicSingleView += linked.geometryOrthographic;
         conversion.variantsSkipped += linked.variantsSkipped;
         conversion.tessellationShadersUntranslated += linked.tessellationUntranslated ? 1 : 0;
         for (auto const& reason : linked.variantReasons) {

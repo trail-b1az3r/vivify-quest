@@ -11,6 +11,33 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.16.5] - beta 6
+
+Not tried on a headset. Converted maps are converted again once (conversion
+version 37 -> 38).
+
+### Fixed
+
+- **Black floors and objects in AreaLit maps (Through The Screen's floor, TV
+  body and TV-in-TV frames).** AreaLit lights a room from a small data
+  texture that the map's orthographic light camera fills with a geometry
+  shader. The converter linked that pass for the headset's two-eye view, and
+  a two-eye program cannot draw into the light camera's plain texture, so
+  the texture stayed empty and every AreaLit surface was unlit. A variant
+  whose geometry stage returns at once unless the camera is orthographic
+  (the same proof the separate-eye renderer uses) is now linked single-view,
+  geometry stage and all: the light camera runs it directly, whatever the
+  settings and from the first play. In the headset view it is not drawn,
+  which is what its geometry stage would have done there. The conversion log
+  counts these variants.
+- **Fully dissolved notes drawn whole (Through The Screen's real notes, which
+  are hidden while copies play on the TV).** Quest Noodle Extensions gives a
+  note its dissolving material only while its dissolve is above 0, so at
+  exactly 0 (fully gone) the note kept its plain material, where the cutout
+  does nothing. While a Vivify map plays, a note whose cutout is set above 0
+  now gets the dissolving material. This works around Noodle Extensions; the
+  first time it applies in a level, the log says so.
+
 ## [0.16.4] - beta 5
 
 Not tried on a headset. Converted maps are converted again once (conversion
