@@ -1,0 +1,52 @@
+=== Vivify 0.16.0 native crash at 1795651471 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x1d0
+thread 25172 'Thread-3'
+pc 0x6e23657740  lr 0x6e236576f8  sp 0x6d39f00480  fp 0x6d39f007b0
+backtrace:
+  #00 pc 0x6e23657740  libunity.so +0x13ee740
+  #01 lr 0x6e236576f8  libunity.so +0x13ee6f8
+  #02 fp 0x6e2383d9f4  libunity.so +0x15d49f4
+  #03 fp 0x6fae142334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e468 (Hear Me - RateGyro & MadChase)/bundleAndroid2021.vivify'
+  Vivify: the Replay mod's button is clickable again now that the map is ready
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e468 (Hear Me - RateGyro & MadChase)/bundleAndroid2021.vivify' grabs _MWGrab
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e468 (Hear Me - RateGyro & MadChase)/bundleAndroid2021.vivify' -> needed by BeatSaber/newParticle Alpha Blended
+  Vivify: '4e468 (Hear Me - RateGyro & MadChase)' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify saber chain modelNode(smc): BasicSaberModel(Clone)[w=(0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0
+  Vivify saber chain saberNode: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Lo
+  Vivify saber chain initParent: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- L
+  Vivify saber chain modelNode(smc): BasicSaberModel(Clone)[w=(-0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l
+  Vivify saber chain saberNode: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+  Vivify saber chain initParent: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <-
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(-0.09,1.66,0.14) fwd=(0.15,-0.67,0.73)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=2
+  Vivify PrepareBeatmap: v2=false customEvents=91 triggerTime=0 beatmapAD=true
+  Vivify bundle preloaded, rebuilding asset caches: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e468 (Hear Me - RateGyro & MadChase)/bundleAndroid2021.vivify'
+  Vivify texture decode: scanned 6 material(s), replaced 0 unsupported texture reference(s) in 0ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify material 'water4': '_BlendNoiseSource' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water4': '_FlowMapUV' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water4': '_InvertNormals' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water4': '_TexCoordSpace' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify material 'water4': '_TexCoordSpaceSwizzle' is an int in shader 'Mochie/Water'; set as integer 1
+  Vivify material 'water4': '_VisualizeFlowmap' is an int in shader 'Mochie/Water'; set as integer 0
+  Vivify: maps may turn realtime reflection probes on (full quality)
+  Vivify: 'Map Realtime Shadows' is on; the game's shadow quality is left as it is
+  Vivify preload prefab: asset='assets/imagine dragons/up4/env.prefab' id='dance' instance=true
+  Vivify preload prefab: asset='assets/imagine dragons/up4/rocks.prefab' id='rocks' instance=true
+  Vivify PreloadInstantiatePrefabs: 2 prefab event(s) preloaded
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/imagine dragons/up4/env.prefab' id='dance' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='dance' asset='assets/imagine dragons/up4/env.prefab' tracks=1 animators=0 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/imagine dragons/up4/rocks.prefab' id='rocks' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='rocks' asset='assets/imagine dragons/up4/rocks.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up: replayed 2 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=2 livePrefabs=2 preloadedPrefabs=2
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+=== end ===
+
