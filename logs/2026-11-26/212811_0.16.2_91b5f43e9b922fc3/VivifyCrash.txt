@@ -1,0 +1,70 @@
+=== Vivify 0.16.2 native crash at 1795728475 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x28
+thread 18848 'UnityMain'
+pc 0x7612405d90  lr 0x7612409794  sp 0x77aebf9e90  fp 0x77aebf9eb0
+backtrace:
+  #00 pc 0x7612405d90  libnoodleextensions.so +0x13dd90
+  #01 lr 0x7612409794  libnoodleextensions.so +0x141794
+  #02 fp 0x7612408744  libnoodleextensions.so +0x140744 (_ZN16NoodleExtensions26NoodleMovementDataProvider10InitObjectEPN15GlobalNamespace17BeatmapObjectDataE +0x140)
+  #03 fp 0x76124baf7c  libnoodleextensions.so +0x1f2f7c
+  #04 fp 0x76124bb584  libnoodleextensions.so +0x1f3584
+  #05 fp 0x775df7eb10  libil2cpp.so +0x5d21b10
+  #06 fp 0x775df6e398  libil2cpp.so +0x5d11398
+  #07 fp 0x775b730a68  libil2cpp.so +0x34d3a68
+  #08 fp 0x761338811c  libcustom-json-data.so +0x17911c
+  #09 fp 0x76133871b4  libcustom-json-data.so +0x1781b4
+  #10 fp 0x7613396444  libcustom-json-data.so +0x187444
+  #11 fp 0x760b7a732c  libtracks.so +0x15f32c
+  #12 fp 0x76156ccb30  libchroma.so +0x227b30
+  #13 fp 0x7615705afc  libchroma.so +0x260afc
+  #14 fp 0x76124326e0  libnoodleextensions.so +0x16a6e0
+  #15 fp 0x775b730af4  libil2cpp.so +0x34d3af4
+  #16 fp 0x775b730a68  libil2cpp.so +0x34d3a68
+  #17 fp 0x7864a5a69c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #18 fp 0x7864a5a748  libgame.so +0x19748 (android_main +0x78)
+  #19 fp 0x7864a62920  libgame.so +0x21920
+  #20 fp 0x791eda72b0  libc.so +0x1372b0
+  #21 fp 0x791ed3f174  libc.so +0xcf174
+last Vivify log lines (oldest first):
+  Vivify source bundle shaders: unity=2019.4.28f1 serializedFiles=1 shaders=17 runnableOnQuest=0 platforms=[Direct3D 11(4)] programs=372 glslSource=0 binary=372 shadersWithTessellation=0 programTypes=[D3D11 vertex sm4.0, D3D11 pixel sm4.0, D
+  Vivify bundle conversion succeeded: translated 17 of 17 shader(s) (163 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 17 of 17 block-compressed texture(s) marked readable (17 streamed)
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b85d (A Faint Signal - Pixy31)/bundleAndroid2021.vivify'
+  Vivify material: context=bundle-load asset=assets/materials/vhs.mat material='VHS' shader='BeatSaber/VHS' supported=true internalError=false
+  Vivify shader asset: path='assets/materials/vhs.shader' shader='BeatSaber/VHS' supported=true subshaders=1
+  Vivify shaders: bundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b85d (A Faint Signal - Pixy31)/bundleAndroid2021.vivify' converted=false total=1 runnable=1 noAndroidProgram=0 deviceRejected=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=7
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4106b (As The Meow Meows In - Reese)' isCustom=true hasDetails=true
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b85d (A Faint Signal - Pixy31)/bundleAndroid2021.vivify' -> not needed
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/1f576 (Country Thunder - [Xavier])' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51058 (WHY_S THIS DEALER_ - lestershire)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51058 (WHY_S THIS DEALER_ - lestershire)/ExpertPlusStandard.dat' at condition 698
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51058 (WHY_S THIS DEALER_ - lestershire)/bundleWindows2019.vivify'
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51058 (WHY_S THIS DEALER_ - lestershire)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/Cus
+  Vivify: play button blocked by Vivify ("Converting PC assets...")
+  Vivify converting PC asset bundle on device: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51058 (WHY_S THIS DEALER_ - lestershire)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/Con
+  Vivify shader conversion: 18 of 18 shader(s) linked for multiview GLES, 65 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 122 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo
+  Vivify conversion marked 4 of 4 block-compressed texture(s) readable (4 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+  Vivify source bundle shaders: unity=2019.4.28f1 serializedFiles=1 shaders=18 runnableOnQuest=0 platforms=[Direct3D 11(4)] programs=216 glslSource=0 binary=216 shadersWithTessellation=0 programTypes=[D3D11 vertex sm4.0, D3D11 pixel sm4.0]
+  Vivify bundle conversion succeeded: translated 18 of 18 shader(s) (108 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 4 of 4 block-compressed texture(s) marked readable (4 streamed)
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51058__WHY_S_THIS_DEALER__-_lestershire_/51058__WHY_S_THIS_DEALER__-_lestershire__c9f5a9365981fb80.vivify'
+  Vivify material: context=bundle-load asset=assets/postprocess.mat material='PostProcess' shader='Custom/PostProcess' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/postprocesscrunch.mat material='PostProcessCrunch' shader='Custom/Crunch' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/sabertrail.mat material='SaberTrail' shader='Custom/Unlit Saber Trail' supported=true internalError=false
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51058__WHY_S_THIS_DEALER__-_lestershire_/51058__WHY_S_THIS_DEALER__-_lestershire__c9f5a9365981fb80.vivify' -> not needed
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify saber chain modelNode(smc): RightBasicSaberModel[w=(0.21,0.16,0.10) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.21,0.16,0.10) l=(0.01,-0.05,0.10)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- RightSaberTrailReference[w=(0.00,0.
+  Vivify saber chain saberNode: RightSaber[w=(0.21,0.16,0.10) l=(0.01,-0.05,0.10)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- RightSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.0
+  Vivify saber chain initParent: RightSaber[w=(0.21,0.16,0.10) l=(0.01,-0.05,0.10)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- RightSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.
+  Vivify saber chain modelNode(smc): LeftBasicSaberModel[w=(-0.21,0.16,0.10) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.21,0.16,0.10) l=(-0.01,-0.05,0.10)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- LeftSaberTrailReference[w=(0.00,0
+  Vivify saber chain saberNode: LeftSaber[w=(-0.21,0.16,0.10) l=(-0.01,-0.05,0.10)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- LeftSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.
+  Vivify saber chain initParent: LeftSaber[w=(-0.21,0.16,0.10) l=(-0.01,-0.05,0.10)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- LeftSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0
+  Vivify main camera: name='MainCamera' cullingMask=0x381bff37 stereoMode=3 multipassSetting=false pos=(0.05,1.24,-0.14) fwd=(0.13,0.26,0.96)
+  Vivify main camera cullingMask is now 0x381bff37
+=== end ===
+
