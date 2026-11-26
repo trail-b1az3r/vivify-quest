@@ -1,0 +1,63 @@
+=== Vivify 0.15.51 native crash at 1795670719 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27d900001ae7
+thread 6935 'UnityMain'
+pc 0x73091069d8  lr 0x73091069a8  sp 0x71b7d8dfe0  fp 0x71b7d8e080
+backtrace:
+  #00 pc 0x73091069d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x73091069a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x71b431b234  libmetacore.so +0xce234
+  #03 fp 0x719b9be114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x719b9be264  libil2cpp.so +0x2226264
+  #05 fp 0x72037ced48  libsl2.so +0x4fad48
+  #06 fp 0x72037cece8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x6ffa6dadcc  libbsl.so +0x16edcc
+  #08 fp 0x70453dae54  libsongcore.so +0x3cde54
+  #09 fp 0x6ffa6db0fc  libbsl.so +0x16f0fc
+  #10 fp 0x719d2f9514  libil2cpp.so +0x3b61514
+  #11 fp 0x6ffa6db0fc  libbsl.so +0x16f0fc
+  #12 fp 0x719d2fd958  libil2cpp.so +0x3b65958
+  #13 fp 0x719d822cf4  libil2cpp.so +0x408acf4
+  #14 fp 0x719b648a0c  libil2cpp.so +0x1eb0a0c
+last Vivify log lines (oldest first):
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x719d81be78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x719d81b9f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x719d81cbb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x719d81cf2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x719d81c7f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x719d2cb37c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x719d2cb58c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x719d2cb658
+  Installing hook: VRCenterAdjust_Update to offset: 0x719d2cb560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x719d2cb3e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x719d2cb4a4
+  Installing hook: PauseController_Pause to offset: 0x719d33d7ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x719d347c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x719d348734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x719d348094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x719d347d88
+  Installing hook: GamePause_Resume to offset: 0x719d343178
+  Installing hook: Recorder_InstallBindings to offset: 0x719d38c294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x719d3808b8
+  Installing hook: Recorder_SpawnNote to offset: 0x719d277928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x719d276dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x719d278de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x719d38644c
+  Installing hook: Recorder_ScoreStart to offset: 0x719d386038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x719be49db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x719be4a690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x719d279ae0
+  Installing hook: Recorder_ShowPause to offset: 0x719d347c54
+  Installing hook: Recorder_Resume to offset: 0x719d34876c
+  Installing hook: Recorder_Finish to offset: 0x719d2d71dc
+  Vivify: loaded mods (28): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.01,0.85,0.06) fwd=(0.15,0.05,0.99)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify Send Logs: uploaded 2 file part(s), 22 KB (logs/2026-11-26/052453_0.15.51_41fc73aacb1919ab cafadbf; stored 2, deduplicated 0; 47842508 bytes saved cumulatively
+  )
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.06,1.44,0.32) fwd=(-0.04,-0.04,1.00)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.00,1.18,0.01) fwd=(0.00,-0.07,1.00)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.05,1.41,-0.02) fwd=(-0.12,-0.00,0.99)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.06,1.41,-0.02) fwd=(-0.20,-0.04,0.98)
+=== end ===
+
