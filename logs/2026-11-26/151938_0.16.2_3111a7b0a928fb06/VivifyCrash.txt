@@ -1,0 +1,62 @@
+=== Vivify 0.16.2 native crash at 1795706362 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x28a400002e78
+thread 11947 'UnityMain'
+pc 0x78c13089d8  lr 0x78c13089a8  sp 0x7790447420  fp 0x77904474c0
+backtrace:
+  #00 pc 0x78c13089d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x78c13089a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x77222eac64  libmetacore.so +0xcdc64
+  #03 fp 0x779cf8f55c  libsl2.so +0x4fb55c
+  #04 fp 0x779cf8ee74  libsl2.so +0x4fae74
+  #05 fp 0x779cf8ed48  libsl2.so +0x4fad48
+  #06 fp 0x779cf8ece8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x754f7a59e4  libbl.so +0x7719e4
+  #08 fp 0x770be02874  libil2cpp.so +0x3b47874
+  #09 fp 0x754f826970  libbl.so +0x7f2970
+  #10 fp 0x770a5426d8  libil2cpp.so +0x22876d8
+  #11 fp 0x770be0a138  libil2cpp.so +0x3b4f138
+  #12 fp 0x770a555df0  libil2cpp.so +0x229adf0
+  #13 fp 0x770a47578c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify material: context=bundle-load asset=assets/thing.mat material='thing' shader='BeatSaber/Lit Glow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/umm.mat material='umm' shader='Custom/umm' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/virus.mat material='virus' shader='BeatSaber/Lit Glow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/virus2.mat material='virus2' shader='BeatSaber/Lit Glow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/warp.mat material='warp' shader='Custom/warp' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/white.mat material='white' shader='BeatSaber/Lit Glow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/windowsbackground.mat material='windowsbackground' shader='BeatSaber/Lit Glow' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/windowscube.mat material='windowscube' shader='BeatSaber/Lit Glow' supported=true internalError=false
+  Vivify: the Replay mod's button is clickable again now that the map is ready
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a2e (Ego Death - Sands)/bundleAndroid2021.vivify' grabs _GrabTexture
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a2e (Ego Death - Sands)/bundleAndroid2021.vivify' -> needed by Legacy Shaders/Particles/Alpha Blended Premultiply
+  Vivify: '43a2e (Ego Death - Sands)' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+  Vivify saber chain modelNode(smc): AvatarSaberModel(Clone)[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LeftSaberBase[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAvatar
+  Vivify saber chain saberNode: LeftSaberBase[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAvatar[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- MultiplayerConnectedPlayerCo
+  Vivify saber chain initParent: LeftSaberBase[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAvatar[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- MultiplayerConnectedPlayerC
+  Vivify saber chain modelNode(smc): AvatarSaberModel(Clone)[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- RightSaberBase[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAvata
+  Vivify saber chain saberNode: RightSaberBase[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAvatar[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- MultiplayerConnectedPlayerC
+  Vivify saber chain initParent: RightSaberBase[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAvatar[w=(-0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- MultiplayerConnectedPlayer
+  Vivify saber chain modelNode(smc): AvatarSaberModel(Clone)[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- LeftSaberBase[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAva
+  Vivify saber chain saberNode: LeftSaberBase[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAvatar[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- MultiplayerConnectedPlaye
+  Vivify saber chain initParent: LeftSaberBase[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAvatar[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- MultiplayerConnectedPlay
+  Vivify saber chain modelNode(smc): AvatarSaberModel(Clone)[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- RightSaberBase[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAv
+  Vivify saber chain saberNode: RightSaberBase[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAvatar[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- MultiplayerConnectedPlay
+  Vivify saber chain initParent: RightSaberBase[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- AvatarContainer[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- MultiplayerGameAvatar[w=(25.98,0.00,45.00) l=(0.00,0.00,0.00)] <- MultiplayerConnectedPla
+  Vivify main camera: name='MainCamera' cullingMask=0x3809ff37 stereoMode=3 multipassSetting=false pos=(0.10,1.66,-0.04) fwd=(-0.07,-0.00,1.00)
+  Vivify main camera cullingMask is now 0x3809ff37
+  Vivify saber chain modelNode(smc): BasicSaberModelHologram(Clone)[w=(3.20,0.20,31.85) l=(0.00,0.00,0.00)] <- LeftSaberBase[w=(3.20,0.20,31.85) l=(0.05,1.01,-0.07)] <- AvatarAndSabers[w=(3.20,0.20,31.85) l=(0.00,0.00,26.31)] <- MultiplayerG
+  Vivify saber chain saberNode: LeftSaberBase[w=(3.20,0.20,31.85) l=(0.05,1.01,-0.07)] <- AvatarAndSabers[w=(3.20,0.20,31.85) l=(0.00,0.00,26.31)] <- MultiplayerGameBigAvatar[w=(25.98,0.20,45.00) l=(0.00,0.00,0.00)] <- MultiplayerConnectedPl
+  Vivify saber chain initParent: LeftSaberBase[w=(3.20,0.20,31.85) l=(0.05,1.01,-0.07)] <- AvatarAndSabers[w=(3.20,0.20,31.85) l=(0.00,0.00,26.31)] <- MultiplayerGameBigAvatar[w=(25.98,0.20,45.00) l=(0.00,0.00,0.00)] <- MultiplayerConnectedP
+  Vivify saber chain modelNode(smc): BasicSaberModelHologram(Clone)[w=(3.20,0.20,31.85) l=(0.00,0.00,0.00)] <- RightSaberBase[w=(3.20,0.20,31.85) l=(0.32,0.95,-0.63)] <- AvatarAndSabers[w=(3.20,0.20,31.85) l=(0.00,0.00,26.31)] <- Multiplayer
+  Vivify saber chain saberNode: RightSaberBase[w=(3.20,0.20,31.85) l=(0.32,0.95,-0.63)] <- AvatarAndSabers[w=(3.20,0.20,31.85) l=(0.00,0.00,26.31)] <- MultiplayerGameBigAvatar[w=(25.98,0.20,45.00) l=(0.00,0.00,0.00)] <- MultiplayerConnectedP
+  Vivify saber chain initParent: RightSaberBase[w=(3.20,0.20,31.85) l=(0.32,0.95,-0.63)] <- AvatarAndSabers[w=(3.20,0.20,31.85) l=(0.00,0.00,26.31)] <- MultiplayerGameBigAvatar[w=(25.98,0.20,45.00) l=(0.00,0.00,0.00)] <- MultiplayerConnected
+  Vivify saber chain modelNode(smc): BasicSaberModel(Clone)[w=(-9.72,8.95,10.23) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-9.72,8.95,10.23) l=(0.00,0.09,0.13)] <- LeftHand[w=(-9.83,9.00,10.14) l=(0.09,0.90,0.20)] <- VRGameCore[w=(-10.00,8.10,10.0
+  Vivify saber chain saberNode: LeftSaber[w=(-9.72,8.95,10.23) l=(0.00,0.09,0.13)] <- LeftHand[w=(-9.83,9.00,10.14) l=(0.09,0.90,0.20)] <- VRGameCore[w=(-10.00,8.10,10.00) l=(0.00,0.00,0.00)] <- MultiplayerLocalInactivePlayerResultsControlle
+  Vivify saber chain initParent: LeftSaber[w=(-9.72,8.95,10.23) l=(0.00,0.09,0.13)] <- LeftHand[w=(-9.83,9.00,10.14) l=(0.09,0.90,0.20)] <- VRGameCore[w=(-10.00,8.10,10.00) l=(0.00,0.00,0.00)] <- MultiplayerLocalInactivePlayerResultsControll
+  Vivify saber chain modelNode(smc): BasicSaberModel(Clone)[w=(-9.71,8.99,10.23) l=(0.00,0.00,0.00)] <- RightSaber[w=(-9.71,8.99,10.23) l=(0.00,0.09,0.13)] <- RightHand[w=(-9.79,9.05,10.11) l=(0.14,0.95,0.19)] <- VRGameCore[w=(-10.00,8.10,10
+  Vivify saber chain saberNode: RightSaber[w=(-9.71,8.99,10.23) l=(0.00,0.09,0.13)] <- RightHand[w=(-9.79,9.05,10.11) l=(0.14,0.95,0.19)] <- VRGameCore[w=(-10.00,8.10,10.00) l=(0.00,0.00,0.00)] <- MultiplayerLocalInactivePlayerResultsControl
+  Vivify saber chain initParent: RightSaber[w=(-9.71,8.99,10.23) l=(0.00,0.09,0.13)] <- RightHand[w=(-9.79,9.05,10.11) l=(0.14,0.95,0.19)] <- VRGameCore[w=(-10.00,8.10,10.00) l=(0.00,0.00,0.00)] <- MultiplayerLocalInactivePlayerResultsContro
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.07,1.67,-0.06) fwd=(-0.22,0.07,0.97)
+  Vivify main camera cullingMask is now 0x3d3aff37
+=== end ===
+
