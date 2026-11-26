@@ -1,0 +1,61 @@
+=== Vivify 0.15.45 native crash at 1795575759 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27e0000044af
+thread 17615 'UnityMain'
+pc 0x7dd0adc9d8  lr 0x7dd0adc9a8  sp 0x7cbaa88010  fp 0x7cbaa880b0
+backtrace:
+  #00 pc 0x7dd0adc9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7dd0adc9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7c65f4a234  libmetacore.so +0xce234
+  #03 fp 0x7cc571c55c  libsl2.so +0x4fb55c
+  #04 fp 0x7cc571be74  libsl2.so +0x4fae74
+  #05 fp 0x7cc571bd48  libsl2.so +0x4fad48
+  #06 fp 0x7cc571bce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7aa07fbd74  libchatplex-sdk-bs.so +0x5dbd74
+  #08 fp 0x7c53c2b840  libil2cpp.so +0x21ba840
+  #09 fp 0x7c53c2b78c  libil2cpp.so +0x21ba78c
+  #10 fp 0x7c53c2b78c  libil2cpp.so +0x21ba78c
+  #11 fp 0x7de222e6c3
+  #12 fp 0x143a7f88
+last Vivify log lines (oldest first):
+  Vivify custom event: type='SetMaterialProperty' time=155.62329 songTime=155.63678
+  Vivify custom event: type='SetMaterialProperty' time=155.62329 songTime=155.63678
+  Vivify custom event: type='SetMaterialProperty' time=156.09204 songTime=156.09515
+  Vivify custom event: type='SetMaterialProperty' time=156.09204 songTime=156.09515
+  Vivify custom event: type='SetMaterialProperty' time=156.56079 songTime=156.56561
+  Vivify custom event: type='SetMaterialProperty' time=156.56079 songTime=156.56561
+  Vivify custom event: type='SetMaterialProperty' time=157.02954 songTime=157.03925
+  Vivify custom event: type='SetMaterialProperty' time=157.02954 songTime=157.03925
+  Vivify custom event: type='SetMaterialProperty' time=157.49829 songTime=157.51202
+  Vivify custom event: type='SetMaterialProperty' time=157.49829 songTime=157.51202
+  Vivify custom event: type='SetMaterialProperty' time=157.96704 songTime=157.96735
+  Vivify custom event: type='SetMaterialProperty' time=157.96704 songTime=157.96735
+  Vivify custom event: type='SetMaterialProperty' time=158.43579 songTime=158.44073
+  Vivify custom event: type='SetMaterialProperty' time=158.43579 songTime=158.44073
+  Vivify custom event: type='SetMaterialProperty' time=158.90454 songTime=158.91241
+  Vivify custom event: type='SetMaterialProperty' time=158.90454 songTime=158.91241
+  Vivify custom event: type='SetMaterialProperty' time=159.37329 songTime=159.38702
+  Vivify custom event: type='SetMaterialProperty' time=159.37329 songTime=159.38702
+  Vivify custom event: type='SetMaterialProperty' time=159.37329 songTime=159.38702
+  Vivify custom event: type='SetMaterialProperty' time=159.37329 songTime=159.38702
+  Vivify custom event: type='SetMaterialProperty' time=159.84204 songTime=159.84393
+  Vivify custom event: type='SetMaterialProperty' time=159.84204 songTime=159.84393
+  Vivify custom event: type='SetMaterialProperty' time=161.24829 songTime=161.25824
+  Vivify custom event: type='SetMaterialProperty' time=161.24829 songTime=161.25824
+  Vivify custom event: type='SetMaterialProperty' time=161.24829 songTime=161.25824
+  Vivify custom event: type='SetMaterialProperty' time=161.24829 songTime=161.25824
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.17,1.51,0.12) fwd=(-0.77,0.47,0.43)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=3 preloaded=3 synced=0 secondaryCameras=0 declaredTextures=0 assets=17
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+=== end ===
+
