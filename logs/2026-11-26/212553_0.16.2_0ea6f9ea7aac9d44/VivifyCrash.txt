@@ -1,0 +1,70 @@
+=== Vivify 0.16.2 native crash at 1795728331 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x28
+thread 14981 'UnityMain'
+pc 0x7611063d90  lr 0x7611067794  sp 0x786492de90  fp 0x786492deb0
+backtrace:
+  #00 pc 0x7611063d90  libnoodleextensions.so +0x13dd90
+  #01 lr 0x7611067794  libnoodleextensions.so +0x141794
+  #02 fp 0x7611066744  libnoodleextensions.so +0x140744 (_ZN16NoodleExtensions26NoodleMovementDataProvider10InitObjectEPN15GlobalNamespace17BeatmapObjectDataE +0x140)
+  #03 fp 0x7611118f7c  libnoodleextensions.so +0x1f2f7c
+  #04 fp 0x7611119584  libnoodleextensions.so +0x1f3584
+  #05 fp 0x77527aeb10  libil2cpp.so +0x5d21b10
+  #06 fp 0x775279e398  libil2cpp.so +0x5d11398
+  #07 fp 0x774ff60a68  libil2cpp.so +0x34d3a68
+  #08 fp 0x7612b7c11c  libcustom-json-data.so +0x17911c
+  #09 fp 0x7612b7b1b4  libcustom-json-data.so +0x1781b4
+  #10 fp 0x7612b8a444  libcustom-json-data.so +0x187444
+  #11 fp 0x760d37632c  libtracks.so +0x15f32c
+  #12 fp 0x76160c9b30  libchroma.so +0x227b30
+  #13 fp 0x7616102afc  libchroma.so +0x260afc
+  #14 fp 0x76110906e0  libnoodleextensions.so +0x16a6e0
+  #15 fp 0x774ff60af4  libil2cpp.so +0x34d3af4
+  #16 fp 0x774ff60a68  libil2cpp.so +0x34d3a68
+  #17 fp 0x786c7dc69c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #18 fp 0x786c7dc748  libgame.so +0x19748 (android_main +0x78)
+  #19 fp 0x786c7e4920  libgame.so +0x21920
+  #20 fp 0x791eda72b0  libc.so +0x1372b0
+  #21 fp 0x791ed3f174  libc.so +0xcf174
+last Vivify log lines (oldest first):
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/fragheartmat.mat material='fragHeartMat' shader='GirlHell/Flat' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/ghostcyanmat.mat material='ghostCyanMat' shader='GirlHell/Ghost' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/ghostmagentamat.mat material='ghostMagentaMat' shader='GirlHell/Ghost' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/glitchmat.mat material='glitchMat' shader='GirlHell/Glitch' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/heartfxmat.mat material='heartFxMat' shader='GirlHell/HeartFX' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/heartmat.mat material='heartMat' shader='GirlHell/Flat' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/lightningmat.mat material='lightningMat' shader='GirlHell/Lightning' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/monitormat.mat material='monitorMat' shader='GirlHell/MonitorScreen' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/neuronmat.mat material='neuronMat' shader='GirlHell/Neurons' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/notefleshmat.mat material='noteFleshMat' shader='GirlHell/NoteFlesh' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/noteglitchmat.mat material='noteGlitchMat' shader='GirlHell/NoteGlitch' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/noteglitchmatl.mat material='noteGlitchMatL' shader='GirlHell/NoteGlitch' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/noteglitchmatr.mat material='noteGlitchMatR' shader='GirlHell/NoteGlitch' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/noteneuronmat.mat material='noteNeuronMat' shader='GirlHell/NoteNeuron' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/pixelmat.mat material='pixelMat' shader='GirlHell/Pixel' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/risemat.mat material='riseMat' shader='GirlHell/Rise' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/signmat.mat material='signMat' shader='GirlHell/Sign' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/sizemat.mat material='sizeMat' shader='GirlHell/SizeText' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/skullmat.mat material='skullMat' shader='GirlHell/Flat' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/slowmat.mat material='slowMat' shader='GirlHell/SlowMo' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/sparkmat.mat material='sparkMat' shader='GirlHell/Pixel' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/staticmat.mat material='staticMat' shader='GirlHell/StaticWalls' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/tvonmat.mat material='tvOnMat' shader='GirlHell/TVOn' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/veinmat.mat material='veinMat' shader='GirlHell/Veins' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/vhsmat.mat material='vhsMat' shader='GirlHell/VHS' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/wavebigmat.mat material='waveBigMat' shader='GirlHell/Wave' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/wavemat.mat material='waveMat' shader='GirlHell/Wave' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/girlhell/materials/zapmat.mat material='zapMat' shader='GirlHell/Zap' supported=true internalError=false
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/8a0b2e3af32908b82f45099f11f4d66f28a1a42d/bundleAndroid2021.vivify' grabs _BloodGrab
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/8a0b2e3af32908b82f45099f11f4d66f28a1a42d/bundleAndroid2021.vivify' -> needed by GirlHell/SizeText, GirlHell/VHS, GirlHell/TVOn, GirlHell/BrainDama
+  Vivify: '8a0b2e3af32908b82f45099f11f4d66f28a1a42d' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify saber chain modelNode(smc): RightBasicSaberModel[w=(0.21,0.16,0.10) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.21,0.16,0.10) l=(0.01,-0.05,0.10)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- RightSaberTrailReference[w=(0.00,0.
+  Vivify saber chain saberNode: RightSaber[w=(0.21,0.16,0.10) l=(0.01,-0.05,0.10)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- RightSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.0
+  Vivify saber chain initParent: RightSaber[w=(0.21,0.16,0.10) l=(0.01,-0.05,0.10)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- RightSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.
+  Vivify saber chain modelNode(smc): LeftBasicSaberModel[w=(-0.21,0.16,0.10) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.21,0.16,0.10) l=(-0.01,-0.05,0.10)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- LeftSaberTrailReference[w=(0.00,0
+  Vivify saber chain saberNode: LeftSaber[w=(-0.21,0.16,0.10) l=(-0.01,-0.05,0.10)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- LeftSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.
+  Vivify saber chain initParent: LeftSaber[w=(-0.21,0.16,0.10) l=(-0.01,-0.05,0.10)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- LeftSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0
+  Vivify main camera: name='MainCamera' cullingMask=0x381bff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.26,0.07) fwd=(0.04,0.04,1.00)
+  Vivify main camera cullingMask is now 0x381bff37
+=== end ===
+
