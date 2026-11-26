@@ -1,0 +1,58 @@
+=== Vivify 0.16.2 native crash at 1795706622 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x77fe3f4268
+thread 29433 'UnityMain'
+pc 0x78c13016e4  lr 0x754baa28a0  sp 0x7792240af0  fp 0x7792240eb0
+backtrace:
+  #00 pc 0x78c13016e4  libc.so +0xc76e4
+  #01 lr 0x754baa28a0  libchatplex-sdk-bs.so +0x81a8a0
+  #02 fp 0x754baa2ca4  libchatplex-sdk-bs.so +0x81aca4
+  #03 fp 0x754b966e38  libchatplex-sdk-bs.so +0x6dee38
+  #04 fp 0x754b935610  libchatplex-sdk-bs.so +0x6ad610 (_ZN6CP_SDK5Utils5Hooks12InstallHooksEv +0x40)
+  #05 fp 0x754ba0d888  libchatplex-sdk-bs.so +0x785888 (late_load +0x58)
+  #06 fp 0x779e563b9c  libsl2.so +0x543b9c
+  #07 fp 0x7715afdfb4  libunity.so +0xab1fb4
+  #08 fp 0x78b4e5c6c3
+  #09 fp 0x7792241f40
+last Vivify log lines (oldest first):
+  Installing hook: GameNoteController_Init to offset: 0x76fe3fe1d0
+  Installing hook: BombNoteController_Init to offset: 0x76fe3fb2d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x76fe3fc668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x76fe49ebb8
+  Installing hook: NoteDebris_Init to offset: 0x76fe4012e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x76fe995968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x76fe2f3018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x76fe998e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x76fe9989f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x76fe999bb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x76fe999f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x76fe9997f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x76fe44837c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x76fe44858c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x76fe448658
+  Installing hook: VRCenterAdjust_Update to offset: 0x76fe448560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x76fe4483e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x76fe4484a4
+  Installing hook: PauseController_Pause to offset: 0x76fe4ba7ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x76fe4c4c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x76fe4c5734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x76fe4c5094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x76fe4c4d88
+  Installing hook: GamePause_Resume to offset: 0x76fe4c0178
+  Installing hook: Recorder_InstallBindings to offset: 0x76fe509294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x76fe4fd8b8
+  Installing hook: Recorder_SpawnNote to offset: 0x76fe3f4928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x76fe3f3dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x76fe3f5de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x76fe50344c
+  Installing hook: Recorder_ScoreStart to offset: 0x76fe503038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x76fcfc6db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x76fcfc7690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x76fe3f6ae0
+  Installing hook: Recorder_ShowPause to offset: 0x76fe4c4c54
+  Installing hook: Recorder_Resume to offset: 0x76fe4c576c
+  Installing hook: Recorder_Finish to offset: 0x76fe4541dc
+  Vivify: loaded mods (85): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMapLoader.so 0.0.0, BSML 0.4.55, CongXinJian 0.1.0, DlcSorter 0.1.13, EasyOffsetQuest 0.1.7, FakeId 0.1.9, FasterScroll 1.17.0, anytext 1.0.1, bsdc 0.6.4, bstheater 0.1
+  0.3, MappingExtensions 0.25.4, morebuttons 1.0.4, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistDownloader 0.3.1, PlaylistManager 1.4.1, practicetwea
+=== end ===
+
