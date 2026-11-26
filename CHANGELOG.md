@@ -11,6 +11,25 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.16.4] - beta 5
+
+Not tried on a headset. Converted maps are converted again once (conversion
+version 36 -> 37).
+
+### Fixed
+
+- **A light effect drawn inside the player (Through The Screen, AreaLit
+  maps), with Flat Geometry Effects on.** AreaLit's light-mesh pass is only
+  meant to draw in the map's small orthographic light camera, where it fills
+  the light data texture: its geometry stage throws every triangle away in
+  any other camera. With the geometry stage dropped, the converter drew the
+  plain light meshes in every camera instead, so the headset view got the
+  sky-light sphere around the player, the light box inside the TV and the
+  TV's light quad. A dropped geometry stage that opens with a check reading
+  only uniforms (here "not an orthographic camera: draw nothing") now keeps
+  that check in the vertex stage. The conversion log counts these as
+  "keep the stage's camera check". New geometry-lowering tests.
+
 ## [0.16.3] - beta 4
 
 Not tried on a headset. No conversion change.

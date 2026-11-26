@@ -1525,6 +1525,7 @@ struct LinkedShader {
   int stereoSplit = 0;
   int geometryDropped = 0;  // variants linked without their geometry stage
   int geometryLowered = 0;  // of those, the ones whose geometry work moved into the vertex stage
+  int geometryGated = 0;    // of those, flattened ones that keep the stage's camera check
   int variantsSkipped = 0;  // program refs a Quest never selects, left alone
   int programsTranslated = 0;
   bool tessellationUntranslated = false;
@@ -2174,6 +2175,15 @@ LinkedShader ConvertThroughParsedForm(uint8_t const* nodeData, size_t nodeSize,
       }
       Vivify::Dxbc::GlslResult projected = *vs;
       if (!WithProjectedPosition(projected.source)) return false;
+      // A stage that draws nothing outside some cameras (AreaLit's light
+      // meshes, only in its orthographic light camera) keeps that check
+      // (0.16.4, VivifyGeometryLowering.hpp).
+      if (auto const* gs = translate(*geometry); gs != nullptr) {
+        if (auto gate = Vivify::GeometryLowering::OpeningUniformReturn(gs->source);
+            gate && Vivify::GeometryLowering::WithGate(projected.source, *gate)) {
+          ++out.geometryGated;
+        }
+      }
       source = LinkStages(projected, fs, nullptr, version);
       dropped = true;
       return true;
@@ -2500,6 +2510,7 @@ ShaderConversion ConvertShadersToGles(std::string const& sourcePath,
         conversion.stereoVariantsSplit += linked.stereoSplit;
         conversion.geometryStagesDropped += linked.geometryDropped;
         conversion.geometryStagesLowered += linked.geometryLowered;
+        conversion.geometryStagesGated += linked.geometryGated;
         conversion.variantsSkipped += linked.variantsSkipped;
         conversion.tessellationShadersUntranslated += linked.tessellationUntranslated ? 1 : 0;
         for (auto const& reason : linked.variantReasons) {

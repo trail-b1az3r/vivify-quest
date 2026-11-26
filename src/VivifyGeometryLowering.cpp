@@ -1,6 +1,8 @@
 #include "VivifyGeometryLowering.hpp"
 
 #include <cctype>
+#include <map>
+#include <set>
 #include <regex>
 #include <sstream>
 #include <vector>
@@ -274,6 +276,99 @@ Result LowerTriangleGeometry(std::string const& vertex, std::string const& geome
   result.ok = true;
   result.source = std::move(text);
   return result;
+}
+
+std::optional<Gate> OpeningUniformReturn(std::string const& geometry) {
+  size_t const mainAt = geometry.find("void main()");
+  if (mainAt == std::string::npos) return std::nullopt;
+  size_t const open = geometry.find('{', mainAt);
+  if (open == std::string::npos) return std::nullopt;
+  // Plain uniforms declared before main: name -> declaration line.
+  std::map<std::string, std::string> uniforms;
+  {
+    std::istringstream head(geometry.substr(0, mainAt));
+    static std::regex const decl(R"(^\s*uniform\s+(?:(?:highp|mediump|lowp)\s+)?(\w+)\s+(\w+)\s*(\[\d+\])?\s*;\s*$)");
+    for (std::string line; std::getline(head, line);) {
+      std::smatch m;
+      if (std::regex_match(line, m, decl) && m[1] != "sampler2D") uniforms[m[2]] = line;
+    }
+  }
+  std::istringstream body(geometry.substr(open + 1));
+  std::vector<std::string> lines;
+  for (std::string line; std::getline(body, line) && lines.size() < 64;) {
+    size_t const first = line.find_first_not_of(" \t");
+    if (first == std::string::npos) continue;
+    lines.push_back(line.substr(first));
+  }
+  static std::regex const declaration(R"(^(?:ivec4|uvec4|vec4|ivec3|vec3|ivec2|vec2|int|uint|float|bool|mat4)\s+\w.*;$)");
+  size_t i = 0;
+  while (i < lines.size() && std::regex_match(lines[i], declaration)) i++;
+  if (i + 3 >= lines.size()) return std::nullopt;
+  static std::regex const test(R"(^(r\d+)\.([xyzw]) = \((.+)\) \? -1 : 0;$)");
+  std::smatch m;
+  if (!std::regex_match(lines[i], m, test)) return std::nullopt;
+  std::string const reg = m[1].str() + "." + m[2].str();
+  std::string const condition = m[3];
+  if (lines[i + 1] != "if (" + reg + " != 0) {" || lines[i + 2] != "return;" || lines[i + 3] != "}")
+    return std::nullopt;
+  // Only uniforms, literals and operators: nothing the vertex stage does not have.
+  static std::set<std::string> const allowed = {"float", "int", "uint", "abs", "floor", "intBitsToFloat",
+                                                "floatBitsToInt", "uintBitsToFloat", "floatBitsToUint"};
+  Gate gate;
+  gate.condition = condition;
+  std::set<std::string> needed;
+  for (size_t at = 0; at < condition.size();) {
+    char const c = condition[at];
+    if (std::isalpha(static_cast<unsigned char>(c)) || c == '_') {
+      size_t end = at;
+      while (end < condition.size() &&
+             (std::isalnum(static_cast<unsigned char>(condition[end])) || condition[end] == '_'))
+        end++;
+      std::string const word = condition.substr(at, end - at);
+      // A swizzle or member after a dot is not a name.
+      bool const member = at > 0 && condition[at - 1] == '.';
+      if (!member && !allowed.contains(word)) {
+        auto it = uniforms.find(word);
+        if (it == uniforms.end()) return std::nullopt;
+        needed.insert(word);
+      }
+      at = end;
+    } else if (std::isdigit(static_cast<unsigned char>(c))) {
+      // A literal, including 1.0, 9.99e-06 and 0x3f800000.
+      while (at < condition.size() &&
+             (std::isalnum(static_cast<unsigned char>(condition[at])) || condition[at] == '.' ||
+              ((condition[at] == '-' || condition[at] == '+') && at > 0 &&
+               (condition[at - 1] == 'e' || condition[at - 1] == 'E'))))
+        at++;
+    } else {
+      at++;
+    }
+  }
+  if (needed.empty()) return std::nullopt;
+  for (auto const& name : needed) gate.declarations += uniforms[name] + "\n";
+  return gate;
+}
+
+bool WithGate(std::string& vertex, Gate const& gate) {
+  size_t const mainAt = vertex.find("void main()");
+  if (mainAt == std::string::npos || vertex.find("vivify_gated_main") != std::string::npos) return false;
+  size_t const end = vertex.rfind('}');
+  if (end == std::string::npos || end < mainAt) return false;
+  std::string declarations;
+  std::istringstream lines(gate.declarations);
+  static std::regex const name(R"(\b(\w+)\s*(\[\d+\])?\s*;\s*$)");
+  for (std::string line; std::getline(lines, line);) {
+    std::smatch m;
+    if (!std::regex_search(line, m, name)) return false;
+    // Already declared (as a uniform or anything else): the vertex stage's own wins.
+    if (std::regex_search(vertex, std::regex("\\b" + m[1].str() + "\\b"))) continue;
+    declarations += line + "\n";
+  }
+  vertex.insert(end + 1, "\nvoid main() {\n  vivify_gated_main();\n  if (" + gate.condition +
+                             ") gl_Position = vec4(0.0);\n}\n");
+  vertex.replace(mainAt, std::string("void main()").size(), "void vivify_gated_main()");
+  vertex.insert(mainAt, declarations);
+  return true;
 }
 
 }  // namespace Vivify::GeometryLowering

@@ -44,7 +44,7 @@
 #include <unordered_map>
 
 namespace Vivify::BundleConvert {
-inline constexpr int kShaderConversionVersion = 36;
+inline constexpr int kShaderConversionVersion = 37;
 inline constexpr std::string_view kRenderDependencyCacheProof = "render-dependencies-v5-unique-asset-identity";
 inline constexpr std::string_view kRenderDependencyAssetPrefix = "assets/__vivify_internal__/render/";
 // Main, companion and explicit-eye caches must agree on translator changes.
@@ -211,6 +211,7 @@ struct ShaderConversion {
   int geometryStagesDropped = 0;  // variants linked without the geometry stage they could not use
   int meshesMarkedReadable = 0;   // meshes kept readable so a lowered geometry stage can be prepared
   int geometryStagesLowered = 0;  // of those, wireframe-style stages moved into the vertex stage
+  int geometryStagesGated = 0;    // of those, flattened ones that keep the stage's camera check (0.16.4)
   int variantsSkipped = 0;  // program refs of variants a Quest never selects, left untranslated
   int tessellationShadersUntranslated = 0;
   int tessellationShadersTranslated = 0;
