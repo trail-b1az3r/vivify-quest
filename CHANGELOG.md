@@ -11,6 +11,26 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.16.3] - beta 4
+
+Not tried on a headset. No conversion change.
+
+### Added
+
+- **Use Windows Bundle For All Maps** (PC Maps). Plays every map from its
+  Windows (PC) bundle, converted on the headset, even when it ships a Quest
+  bundle. Each map's own Use Windows Bundle choice is stored separately and
+  left as it is: turning this off brings every map back to its own choice.
+  The This Map button still sets the map's own choice and says when the
+  all-maps switch is on.
+- **The whole Performance category in Map Settings.** Besides Screen
+  Effects, Game Bloom and the Flat-Screen Effect Guard, a map can now have its
+  own Effect Resolution %, Field Of View %, Foveated Rendering, Far Culling,
+  Note Draw Distance, Auto Effect Resolution, Separate Eyes Follow Effect
+  Resolution, Separate Eyes Keep Scene Depth and Offscreen Culling. The
+  number settings are steppers whose lowest step is "default" (follow the
+  main setting); the switches go default, ON, OFF as before.
+
 ## [0.16.2] - beta 3
 
 Not tried on a headset. Converted maps are converted again once (conversion

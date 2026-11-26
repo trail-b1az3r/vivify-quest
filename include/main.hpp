@@ -100,6 +100,7 @@ bool GetReplayRenderModeSetting();
 bool GetReplayModInstalled();
 // "Use Windows Bundle For This Map", by song folder.
 bool GetWindowsBundleForMap(std::string const& levelPath);
+bool GetWindowsBundleSetForMap(std::string const& levelPath);
 void SetWindowsBundleForMap(std::string const& levelPath, bool enabled);
 // Experimental blit companion (0.14.10, opt-in from 0.14.11).
 bool GetBlitScreenTextureFix();
