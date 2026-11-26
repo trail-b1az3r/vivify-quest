@@ -32,7 +32,7 @@ def check(condition, why):
     checks += 1
 
 
-def convert(source, target, mode, success):
+def convert(source, target, mode, success, shader="Roystan/Grass"):
     target.unlink(missing_ok=True)
     process = subprocess.run([str(conv), mode, str(source), str(target)], env=env, text=True, capture_output=True)
     (destination / (target.stem + ".log")).write_text(process.stdout + process.stderr)
@@ -41,7 +41,7 @@ def convert(source, target, mode, success):
         check(process.returncode == 0 and target.exists(), process.stdout + process.stderr)
         check(fields.get("untranslatedTessellationShaders") == "0", fields)
         check(fields.get("translatedTessellationShaders") == "1", fields)
-        check(fields.get("translatedTessellationShader") == "Roystan/Grass", "named output coverage missing")
+        check(fields.get("translatedTessellationShader") == shader, "named output coverage missing")
         check("refused=0" in process.stdout and "variantsRefused=0" in process.stdout, process.stdout)
     else:
         check(process.returncode != 0, "unsupported donor was accepted: " + process.stdout)
@@ -174,7 +174,10 @@ for mutation in ("missing-domain", "different-tier", "duplicate-hull", "wrong-fa
     process = convert(source, destination / (mutation + "-rejected.vivify"), "--shaders-tess-eye-left-isolated", False)
     check("refused atomically" in process.stdout, process.stdout)
 
-convert(lifelike, destination / "lifelike-rejected-validation.vivify", "--shaders-tess-eye-left-isolated", False)
+# Lifelike's Bytesized/Grass computes edge factors from length and camera
+# distance (0.16.5): translated, no longer refused.
+convert(lifelike, destination / "lifelike-edge-factors.vivify", "--shaders-tess-eye-left-isolated", True,
+        "Bytesized/Grass")
 
 for flag in ("VIVIFY_DROP_GEOMETRY", "VIVIFY_DROP_ALL_GEOMETRY"):
     env[flag] = "1"

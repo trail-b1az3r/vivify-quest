@@ -11,6 +11,30 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.16.6] - beta 7
+
+Not tried on a headset. Converted maps are converted again once (conversion
+version 38 -> 39).
+
+### Fixed
+
+- **Lifelike's grass.** Its shader (Bytesized/Grass) tessellates each ground
+  triangle by how long its edges are against how far they are from the
+  camera, then grows blades in a geometry stage. The tessellation translator
+  only knew a fixed, material-set amount of tessellation and refused it
+  ("unsupported hull phase structure"), so the grass never drew. That shape
+  is now translated too: each edge's factor is its world-space length over
+  the camera's distance to its middle, capped by the material's maximum,
+  plus its base, with fractional-odd spacing as on PC. Needs the
+  Separate-Eye Renderer and Triangle Tessellation on, as Yoi Okashi's grass
+  does. Checked offline: the grass converts for both eyes and the single-view
+  copy, and every five-stage program links.
+- **A green patch over the pause menu in maps with tessellated or
+  geometry-shader scenery (Yoi Okashi's grass).** While paused no eye images
+  are drawn, and the main camera drew those materials without their extra
+  stages: the bare ground mesh in the grass colour. Those renderers are now
+  hidden while paused and come back on resume.
+
 ## [0.16.5] - beta 6
 
 Not tried on a headset. Converted maps are converted again once (conversion
