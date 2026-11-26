@@ -11,6 +11,22 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.16.7] - beta 8
+
+Not tried on a headset. No conversion change.
+
+### Fixed
+
+- **Aether's glass showing a frozen camera picture after the rift.** Aether's
+  glass rocks and shockwaves refract a named screen grab (_GrabTexture1).
+  While the rift's exploding triangles are on screen the Separate-Eye
+  Renderer draws each eye on its own and gives each eye its own copy of the
+  grab, also under that plain name. That copy was left bound afterwards, so
+  when the map went back to drawing both eyes together the glass read a
+  one-eye picture from an earlier frame, under a name the two-eye shaders
+  read as a two-layer texture. Whatever was bound under the name before the
+  eye renders is now put back after them.
+
 ## [0.16.6] - beta 7
 
 Not tried on a headset. Converted maps are converted again once (conversion

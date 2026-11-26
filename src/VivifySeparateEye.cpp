@@ -1488,6 +1488,27 @@ bool RenderEyes(UnityEngine::Camera* main, UnityEngine::RenderTextureDescriptor 
     if (runtime.GetPreEffectsEmpty() && runtime.GetPostEffectsEmpty() &&
         std::none_of(swaps.begin(), swaps.end(), [](auto const& swap) { return swap.active; })) return false;
     imageEffects = effects; captureNeedsDepth = needsDepth;
+#ifndef VIVIFY_GAME_1_45_3
+    // Each eye's grab copy is also published under the map's plain grab
+    // name, for that eye's scene. Left there, the two-eye shaders drawn in
+    // later normal frames read a one-eye 2D texture under a name they sample
+    // as a two-layer array: Aether's glass and shockwaves showed a frozen,
+    // wrong picture (0.16.6). What was bound before is put back afterwards.
+    struct GrabNameRestore {
+      std::vector<std::pair<std::string, SafePtr<UnityEngine::Texture>>> saved;
+      GrabNameRestore() {
+        if (!SelectedMapGrabsScreen()) return;
+        for (auto const& name : Runtime::Instance().GrabTextureNames()) {
+          auto* texture = UnityEngine::Shader::GetGlobalTexture(StringW(name)).unsafePtr();
+          saved.emplace_back(name, Alive(texture) ? SafePtr<UnityEngine::Texture>(texture) : SafePtr<UnityEngine::Texture>());
+        }
+      }
+      ~GrabNameRestore() {
+        for (auto& [name, texture] : saved)
+          if (texture && Alive(texture.ptr())) UnityEngine::Shader::SetGlobalTexture(StringW(name), texture.ptr());
+      }
+    } grabNameRestore;
+#endif
     for (int eye = 0; eye != 2; ++eye) {
       if (!cameras[eye] || !Alive(cameras[eye].ptr())) {
         auto* go = UnityEngine::GameObject::New_ctor(u"Vivify Experimental Eye Camera");
