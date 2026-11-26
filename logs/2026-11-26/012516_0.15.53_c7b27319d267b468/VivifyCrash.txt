@@ -1,0 +1,52 @@
+=== Vivify 0.15.53 native crash at 1795655940 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x30e48
+thread 16088 'Thread-3'
+pc 0x7126bf1740  lr 0x7126bf16f8  sp 0x703d129480  fp 0x703d1297b0
+backtrace:
+  #00 pc 0x7126bf1740  libunity.so +0x13ee740
+  #01 lr 0x7126bf16f8  libunity.so +0x13ee6f8
+  #02 fp 0x7126dd79f4  libunity.so +0x15d49f4
+  #03 fp 0x72aa8fb334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify main camera cullingMask is now 0x3819fd37
+  Vivify texture decode: scanned 105 material(s), replaced 0 unsupported texture reference(s) in 4ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify material 'BoxColorize': '_BoxCount' is an int in shader 'PostProcessing/BoxColorize'; set as integer 0
+  Vivify material 'VilarGeometryDissolve': '_Debris' is an int in shader 'Vilar/GeometryDissolve'; set as integer 0
+  Vivify material 'VilarGeometryDissolveDebris': '_Debris' is an int in shader 'Vilar/GeometryDissolve'; set as integer 1
+  Vivify material 'VidScreen': '_Columns' is an int in shader 'Monitor/SpriteSheetScreen'; set as integer 10
+  Vivify material 'VidScreen': '_FrameNumber' is an int in shader 'Monitor/SpriteSheetScreen'; set as integer 0
+  Vivify material 'VidScreen': '_Rows' is an int in shader 'Monitor/SpriteSheetScreen'; set as integer 5
+  Vivify material 'VidScreen': '_TotalFrames' is an int in shader 'Monitor/SpriteSheetScreen'; set as integer 50
+  Vivify: material 'WACOWater4' now uses the PC build of 'WACOMalt/WACOWater4'
+  Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+  Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  VRCenterAdjust.OnEnable skipped: missing _settingsManager=true _settingsApplicator=true
+  VRCenterAdjust.Start skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  VRCenterAdjust.Update skipped: missing _settingsManager=true _settingsApplicator=true
+  Vivify Blit check: effect(s) 'PostProcessing/FilmGrain' -- 2 colour(s) among 16 blocks going in, 2 coming out (first rgb=(0,0,0)); screen 1680x1760 slices=2; _ScreenParams before the effects=(1680,1760)
+  Vivify visual check at 5s: 2 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: a live note has 4 renderer(s):
+  Vivify visual check:   'NoteCube' enabled=true active=true layer=8 material='NoteHD' shader='Custom/NoteHD' supported=true queue=2004 block: _Cutout=0.43 _Color=(0.40,0.40,0.40,1.00)
+  Vivify visual check:   'NoteArrow' enabled=true active=true layer=8 material='NoteArrowHD' shader='Custom/GlowingInstancedHD' supported=true queue=2002 block: _Cutout=0.43 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'NoteArrowGlow' enabled=true active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.40,0.40,0.40,0.58)
+  Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.40,0.40,0.40,0.58)
+  Vivify visual check: 4 light(s) on, 0 with shadows: 'LightRight' type=2 intensity=1.00 shadows=0; 'LightLeft' type=2 intensity=1.00 shadows=0; 'LightFront' type=2 intensity=2.00 shadows=0; 'LightBottom' type=2 intensity=8.00 shadows=0; amb
+  Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout
+  Vivify visual check: cameras that may render the mirror: 'MainCamera' stereo=true eye=3 target=screen mask=0x3819fd37
+  Vivify visual check at 5s: 85 active renderer(s), 2 with no runnable shader; most drawn: Custom/CustomParticles x19, BeatSaber/Unlit Glow x16, Abstract/Debris2 x16, Saber/SaberReflective x6, Custom/NoteHD x3, Custom/SimpleLit x2, Custom/Gl
+  Vivify grab texture '_Base' at 5s: nothing bound
+  Vivify grab texture '_BlackHoleGrabTex' at 5s: nothing bound
+  Vivify grab texture '_EclipseGrabTex' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+  Vivify grab texture '_GrabTextureWater' at 5s: nothing bound
+  Vivify grab texture '_SceneColor' at 5s: nothing bound
+  Vivify visual check: main camera cullingMask=0x3819fd37 depthTextureMode=1 clearFlags=2
+=== end ===
+
