@@ -11,6 +11,25 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.16.2] - beta 3
+
+Not tried on a headset. Converted maps are converted again once (conversion
+version 35 -> 36).
+
+### Fixed
+
+- **Shaders seen from the left eye in both eyes (Through The Screen's
+  raymarched room, Frautcres/WaveBackground).** A vertex program written
+  without per-eye setup has the eye index folded to 0 when compiled: it reads
+  the left eye's view-projection rows of the stereo camera block by fixed
+  index. Converted for the headset's two-eye pass, the right eye then drew
+  those objects from the left eye's position: the white-then-grey section's
+  raymarch came out misplaced and broken. 0.15.42 fixed this for pixel
+  programs; vertex programs now read each eye's rows too. The same applies
+  when the block's variables keep their own names (`unity_StereoMatrixVP`
+  and the rest, and `unity_StereoWorldSpaceCameraPos`). A translator test
+  checks it.
+
 ## [0.16.1] - beta 2
 
 Not tried on a headset.

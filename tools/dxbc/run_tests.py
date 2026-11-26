@@ -1057,6 +1057,49 @@ check("eye-index pixel translates without multiview", fields.get("ok") == "1",
 check("eye index is 0 without multiview", "ivec4 vRTArrayIndex = ivec4(0)" in source,
       source)
 
+# A vertex program written without per-eye setup reads unity_StereoMatrixVP
+# with the eye index folded to 0: fixed rows 24-27 of UnityStereoGlobals.
+# Under multiview each eye must read its own rows (0.16.2; Through The
+# Screen's raymarched room projected both eyes from the left eye).
+def stereo_globals_vertex():
+    isgn = m.signature_chunk([{"name": "POSITION", "index": 0, "register": 0}], b"ISGN")
+    osgn = m.signature_chunk([{"name": "SV_POSITION", "index": 0, "register": 0, "sv": 1, "rw_mask": 0}], b"OSGN")
+    rdef = m.rdef_chunk(
+        constant_buffers=[{"name": "UnityStereoGlobals", "size": 1088, "variables": [
+            variable("unity_StereoMatrixP", 0, 128, MATRIX4, elements=2),
+            variable("unity_StereoMatrixV", 128, 128, MATRIX4, elements=2),
+            variable("unity_StereoMatrixInvV", 256, 128, MATRIX4, elements=2),
+            variable("unity_StereoMatrixVP", 384, 128, MATRIX4, elements=2),
+            variable("unity_StereoCameraProjection", 512, 128, MATRIX4, elements=2),
+            variable("unity_StereoCameraInvProjection", 640, 128, MATRIX4, elements=2),
+            variable("unity_StereoWorldToCamera", 768, 128, MATRIX4, elements=2),
+            variable("unity_StereoCameraToWorld", 896, 128, MATRIX4, elements=2),
+            variable("unity_StereoWorldSpaceCameraPos", 1024, 28, VECTOR4, elements=2),
+            variable("unity_StereoScaleOffset", 1056, 32, VECTOR4, elements=2),
+        ]}],
+        bindings=[{"name": "UnityStereoGlobals", "type": 0, "dimension": 0, "bind_point": 0}])
+    code = []
+    code += m.insn(DCL_GLOBAL_FLAGS, controls=1)
+    code += m.insn(DCL_CONSTANT_BUFFER, m.src_cb(0, 68))
+    code += m.insn(DCL_INPUT, m.dest(INPUT, 0))
+    code += m.insn(DCL_OUTPUT_SIV, m.dest(OUTPUT, 0), extra=[1])
+    code += m.insn(DCL_TEMPS, extra=[1])
+    code += m.insn(MUL, m.dest(TEMP, 0), m.src(INPUT, 0, (X, X, X, X)), m.src_cb(0, 24))
+    code += m.insn(MAD, m.dest(TEMP, 0), m.src(INPUT, 0, (Y, Y, Y, Y)), m.src_cb(0, 25), m.src(TEMP, 0))
+    code += m.insn(MAD, m.dest(TEMP, 0), m.src(INPUT, 0, (Z, Z, Z, Z)), m.src_cb(0, 26), m.src(TEMP, 0))
+    code += m.insn(ADD, m.dest(OUTPUT, 0), m.src(TEMP, 0), m.src_cb(0, 27))
+    code += m.insn(RET)
+    return m.container([rdef, isgn, osgn, m.shex_chunk([code], stage=1)])
+
+proc, fields, _, source = run("glsl-mv", stereo_globals_vertex())
+check("fixed-eye vertex translates for multiview", fields.get("ok") == "1", fields.get("error", ""))
+check("fixed-eye vertex reads each eye's view-projection rows",
+      "StereoMatrixVP[0 + 4 * int(gl_ViewID_OVR)]" in source and "StereoMatrixVP[3 + 4 * int(gl_ViewID_OVR)]" in source,
+      source)
+proc, fields, _, source = run("glsl", stereo_globals_vertex())
+check("fixed-eye vertex without multiview keeps its rows",
+      fields.get("ok") == "1" and "gl_ViewID_OVR" not in source, source)
+
 # Separate-eye geometry prototype: the right eye must not silently become
 # eye zero, and layer writes must not route into a missing array layer.
 for eye, side in enumerate(("left", "right")):

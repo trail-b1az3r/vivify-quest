@@ -2286,10 +2286,29 @@ std::string GlslEmitter::ConstantComponent(Operand const& operand, int component
     // broken copy of the view instead of nothing (0.15.42). Under multiview
     // each eye's pixels now read their own rows: the block holds eight
     // float4x4[2] (four rows per eye) and then two float3 / float4 [2].
-    if (_options.multiview && _program.stage == Stage::Pixel && found->name == "vivify_cb_UnityStereoGlobals") {
+    // The same holds for a vertex program written without per-eye setup
+    // (0.16.2): Through The Screen's raymarched room (Mawntee/Raymarching/
+    // DigitalAmbience2D-AL) and Frautcres/WaveBackground projected both eyes
+    // with unity_StereoMatrixVP[0], so the right eye saw them from the left
+    // eye. A two-eye vertex program that picks its eye itself indexes these
+    // rows dynamically and never reaches this constant-row branch.
+    if (_options.multiview && (_program.stage == Stage::Pixel || _program.stage == Stage::Vertex) &&
+        found->name == "vivify_cb_UnityStereoGlobals") {
       int stride = 0;
       if (element < 64 && element % 8 < 4) stride = 4;
       else if (element == 64) stride = 1;
+      if (stride != 0) {
+        _usedPixelStereoEye = true;
+        index += " + " + std::to_string(stride) + " * int(gl_ViewID_OVR)";
+      }
+    }
+    // The same rows when the block's variables keep their own names (a
+    // program whose reflection survived): unity_Stereo* matrices are
+    // float4x4[2], four rows per eye; the camera position is float3[2].
+    if (_options.multiview && (_program.stage == Stage::Pixel || _program.stage == Stage::Vertex)) {
+      int stride = 0;
+      if (found->name.rfind("hlslcc_mtx4x4unity_Stereo", 0) == 0 && element < 4) stride = 4;
+      else if (found->name == "unity_StereoWorldSpaceCameraPos" && element == 0) stride = 1;
       if (stride != 0) {
         _usedPixelStereoEye = true;
         index += " + " + std::to_string(stride) + " * int(gl_ViewID_OVR)";
