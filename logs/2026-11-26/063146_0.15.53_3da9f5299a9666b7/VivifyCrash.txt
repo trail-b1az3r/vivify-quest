@@ -1,0 +1,56 @@
+=== Vivify 0.15.53 native crash at 1795674261 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x80
+thread 12629 'UnityMain'
+pc 0x7a3515b270  lr 0x7a3515b270  sp 0x7bc13f8ed0  fp 0x7bc13f8ee0
+backtrace:
+  #00 pc 0x7a3515b270  libBetterSongSearch.so +0x356270
+  #01 lr 0x7a3515b270  libBetterSongSearch.so +0x356270
+  #02 fp 0x7a3515b0ec  libBetterSongSearch.so +0x3560ec (_ZN16BetterSongSearch2UI15ViewControllers18SongListController9OnDestroyEv +0x46c)
+  #03 fp 0x7a350159a0  libBetterSongSearch.so +0x2109a0
+  #04 fp 0x7ba79d4840  libil2cpp.so +0x21ba840
+  #05 fp 0x7ba79d478c  libil2cpp.so +0x21ba78c
+  #06 fp 0x7d491776c3
+  #07 fp 0x7bc13f9f70
+last Vivify log lines (oldest first):
+  Vivify settings: 'experimentalSeparateEyeRenderer' for map '43999 (42-flux - Aeroluna)' is now false
+  Vivify: choosing the bundle for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)' again (Windows bundle for this map: true)
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)' androidBundle=yes, Windows bundle chosen for this map android2021=2158164444 pcBundle='/sdcard/ModData/com.beatg
+  Vivify Blit: 76 single-view shader(s) ready for blits into screen textures and the map's texture cameras ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43999__42-flux_-_Aeroluna_/43999__42-flux_-_Aeroluna__f71525a7f
+  Vivify texture cameras: 48 more single-view shader(s) from the map's prefabs
+  Vivify settings: 'forceBloom' for map '43999 (42-flux - Aeroluna)' is now false
+  Vivify settings: 'flatScreenGuard' for map '43999 (42-flux - Aeroluna)' is now false
+  Vivify settings: Windows bundle for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)' turned off
+  Vivify: choosing the bundle for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)' again (Windows bundle for this map: false)
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify: 2 shader(s) in this map's Quest bundle have no two-eye program; a screen effect using one runs once per eye
+  Vivify: this map's Quest bundle ships 1 shader(s) with no programs ('WACOMalt/WACOWater4'); looking for the map's PC build to stand in for them
+  Vivify: the PC shaders are stood in at load instead of merged: no shader could be merged; WACOMalt/WACOWater4: the PC build was converted with the stereo split; merging needs one without
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43999__42-flux_-_Aeroluna_/43999__42-flux_-_Aeroluna__f71525a7f7372b81_donor.vivify' grabs _BlackHoleGrabTex, _GrabTexture, _EclipseGrabTex, _Base
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43999__42-flux_-_Aeroluna_/43999__42-flux_-_Aeroluna__f71525a7f7372b81_donor.vivify' -> needed by BlackHole/BlackHole, PostProcessing/Volumetric
+  Vivify: 1 of 1 empty shader(s) have a working PC build standing in (1 found in the PC bundle, 76 shader(s) seen there)
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleAndroid2021.vivify' grabs _BlackHoleGrabTex, _GrabTexture, _EclipseGrabTex, _Base
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleAndroid2021.vivify' -> needed by BlackHole/BlackHole, PostProcessing/VolumetricFog, Library/Particle Fog, PostPro
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3e7d8 (stasis - GojiCringer)' isCustom=true hasDetails=true
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a26 (luminescent - nasafrasa)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=fals
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a26 (luminescent - nasafrasa)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels
+  Vivify: play button blocked by Vivify ("Converting PC assets...")
+  Vivify converting PC asset bundle on device: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a26 (luminescent - nasafrasa)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBun
+  Vivify shader conversion: 18 of 18 shader(s) linked for multiview GLES, 64 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 120 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo
+  Vivify conversion marked 9 of 9 block-compressed texture(s) readable (9 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+  Vivify source bundle shaders: unity=2019.4.28f1 serializedFiles=1 shaders=18 runnableOnQuest=0 platforms=[Direct3D 11(4)] programs=240 glslSource=0 binary=240 shadersWithTessellation=0 programTypes=[D3D11 vertex sm4.0, D3D11 pixel sm4.0]
+  Vivify bundle conversion succeeded: translated 18 of 18 shader(s) (120 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 9 of 9 block-compressed texture(s) marked readable (9 streamed)
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify: the Replay mod's button is clickable again now that the map is ready
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43a26__luminescent_-_nasafrasa_/43a26__luminescent_-_nasafrasa__0ed370fcd5d3e5f6.vivify' grabs _GrabTextureWater
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43a26__luminescent_-_nasafrasa_/43a26__luminescent_-_nasafrasa__0ed370fcd5d3e5f6.vivify' -> needed by Legacy Shaders/Particles/Alpha Blended Pre
+  Vivify: '43a26 (luminescent - nasafrasa)' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+=== end ===
+
