@@ -466,6 +466,13 @@ bool SuspendIfGeometry(Swap& swap) {
   }
   return false;
 }
+// While the game is paused no eye images are drawn, and the main camera
+// draws every material with its two-eye program. For a geometry or
+// tessellation shader that program is the bare mesh in the pass's colour:
+// Yoi Okashi's grass became a flat green patch over the pause menu
+// (0.16.5). Those renderers are off while paused and back on resume.
+std::vector<SafePtr<UnityEngine::Renderer>> pausedGeometryRenderers;
+bool pausedGeometryLogged = false;
 std::vector<std::vector<Swap>> freeTextureSwaps;
 bool ShadowsDisabled() {
   // Getters are stripped from the generated managed API. The Unity 2021.3
@@ -948,6 +955,10 @@ void Reset(bool unloadDonors) {
   for (auto& renderer : suspendedGeometryRenderers)
     if (renderer && Alive(renderer.ptr())) renderer->set_enabled(true);
   suspendedGeometryRenderers.clear();
+  for (auto& renderer : pausedGeometryRenderers)
+    if (renderer && Alive(renderer.ptr())) renderer->set_enabled(true);
+  pausedGeometryRenderers.clear();
+  pausedGeometryLogged = false;
   sceneRenderers.clear(); rendererIndex.clear(); materialList = nullptr;
   sceneProjectors.clear(); projectorIndex.clear();
   captureEye = blitEye = -1; imageEffects = nullptr;
@@ -1326,6 +1337,33 @@ void InstallNativeMaterials(std::vector<Swap>& swaps, UnityEngine::Camera* main,
   }
 }
 
+void HidePausedGeometry(UnityEngine::Camera* camera) {
+  if (!pausedGeometryRenderers.empty() || !completeStageInfo) return;
+  std::vector<Swap> swaps;
+  CaptureMaterials(swaps, camera);
+  bool const perspective = Alive(camera) && !camera->get_orthographic();
+  bool const noShadows = ShadowsDisabled();
+  for (auto& swap : swaps) {
+    if (!swap.active || !swap.renderer || !Alive(swap.renderer.ptr())) continue;
+    for (auto* material : ArrayW<UnityEngine::Material*>(swap.original.ptr())) {
+      if (GeometryShaderOf(material).empty()) continue;
+      if (CanUseNativeMaterial(material) || CanUsePerspectiveEmpty(material, perspective, noShadows)) continue;
+      swap.renderer->set_enabled(false);
+      pausedGeometryRenderers.emplace_back(swap.renderer.ptr());
+      break;
+    }
+  }
+  if (!pausedGeometryRenderers.empty() && !pausedGeometryLogged) {
+    pausedGeometryLogged = true;
+    PaperLogger.info("Vivify separate-eye: paused; {} geometry/tessellation renderer(s) hidden until the level "
+                     "resumes (their two-eye fallback is only the bare mesh)", pausedGeometryRenderers.size());
+  }
+}
+void ShowPausedGeometry() {
+  for (auto& renderer : pausedGeometryRenderers)
+    if (renderer && Alive(renderer.ptr())) renderer->set_enabled(true);
+  pausedGeometryRenderers.clear();
+}
 bool RenderEyes(UnityEngine::Camera* main, UnityEngine::RenderTextureDescriptor desc, CameraApplier* effects) {
   if (!GetExperimentalSeparateEye() || rendering || !Alive(main) || !Alive(effects)) return false;
   auto& runtime = Runtime::Instance();
@@ -1381,6 +1419,8 @@ bool RenderEyes(UnityEngine::Camera* main, UnityEngine::RenderTextureDescriptor 
                        msaaRestoreValue);
     }
   }
+  if (frame.paused && frame.playing && frame.ready && !frame.resetting) HidePausedGeometry(main);
+  else ShowPausedGeometry();
   auto reason = Rejection(frame, false);
   if (!reason.empty()) {
     if (reason == "resolved cross-type texture copies are unavailable")
@@ -1448,6 +1488,27 @@ bool RenderEyes(UnityEngine::Camera* main, UnityEngine::RenderTextureDescriptor 
     if (runtime.GetPreEffectsEmpty() && runtime.GetPostEffectsEmpty() &&
         std::none_of(swaps.begin(), swaps.end(), [](auto const& swap) { return swap.active; })) return false;
     imageEffects = effects; captureNeedsDepth = needsDepth;
+#ifndef VIVIFY_GAME_1_45_3
+    // Each eye's grab copy is also published under the map's plain grab
+    // name, for that eye's scene. Left there, the two-eye shaders drawn in
+    // later normal frames read a one-eye 2D texture under a name they sample
+    // as a two-layer array: Aether's glass and shockwaves showed a frozen,
+    // wrong picture (0.16.6). What was bound before is put back afterwards.
+    struct GrabNameRestore {
+      std::vector<std::pair<std::string, SafePtr<UnityEngine::Texture>>> saved;
+      GrabNameRestore() {
+        if (!SelectedMapGrabsScreen()) return;
+        for (auto const& name : Runtime::Instance().GrabTextureNames()) {
+          auto* texture = UnityEngine::Shader::GetGlobalTexture(StringW(name)).unsafePtr();
+          saved.emplace_back(name, Alive(texture) ? SafePtr<UnityEngine::Texture>(texture) : SafePtr<UnityEngine::Texture>());
+        }
+      }
+      ~GrabNameRestore() {
+        for (auto& [name, texture] : saved)
+          if (texture && Alive(texture.ptr())) UnityEngine::Shader::SetGlobalTexture(StringW(name), texture.ptr());
+      }
+    } grabNameRestore;
+#endif
     for (int eye = 0; eye != 2; ++eye) {
       if (!cameras[eye] || !Alive(cameras[eye].ptr())) {
         auto* go = UnityEngine::GameObject::New_ctor(u"Vivify Experimental Eye Camera");

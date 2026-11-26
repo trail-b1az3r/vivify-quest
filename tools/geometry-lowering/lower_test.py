@@ -149,6 +149,42 @@ def main():
             failures += 1
         else:
             print(f"ok   refuses {label}: {run.stderr.strip()}")
+    # A stage that only draws in orthographic cameras (AreaLit's light
+    # meshes): its opening check moves into the flattened vertex program.
+    gs_gated = GS_HEAD.replace("uniform float _WireThickness;",
+                               "uniform float _WireThickness;\nuniform vec4 unity_OrthoParams;") + """void main() {
+  ivec4 r0, r1;
+  int vivify_EyeCopy = VIVIFY_EYE_COPY != 0 ? gl_InvocationID : 0;
+  r0.x = (unity_OrthoParams.w != 1.0) ? -1 : 0;
+  if (r0.x != 0) {
+    return;
+  }
+""" + emit(0, "1.0, 0.0, 0.0") + emit(1, "0.0, 1.0, 0.0") + emit(2, "0.0, 0.0, 1.0") + "  return;\n}\n"
+    gs = write("gated.geom.txt", gs_gated)
+    run = subprocess.run([tool, "--gate", vs, gs], capture_output=True, text=True)
+    plain_fs = write("gated.frag", FS.replace("in vec4 gs_TEXCOORD1;\nin vec4 vs_TEXCOORD2;\n", "in vec4 vs_TEXCOORD1;\n")
+                     .replace("min(min(gs_TEXCOORD1.x, gs_TEXCOORD1.y), gs_TEXCOORD1.z) * gs_TEXCOORD1.w) + vs_TEXCOORD2 * 0.0",
+                              "vs_TEXCOORD1.x)"))
+    if run.returncode != 0 or "if (unity_OrthoParams.w != 1.0) gl_Position = vec4(0.0);" not in run.stdout \
+            or run.stdout.count("uniform vec4 unity_OrthoParams;") != 1:
+        print(f"FAIL gate: {run.stderr.strip()}\n{run.stdout}")
+        failures += 1
+    else:
+        gated = write("gated.vert", run.stdout)
+        check = subprocess.run(["glslangValidator", "-l", gated, plain_fs], capture_output=True, text=True)
+        if check.returncode != 0:
+            print(f"FAIL gate: glslangValidator\n{check.stdout}{check.stderr}")
+            failures += 1
+        else:
+            print("ok   gate: the orthographic-camera check is kept and compiles")
+    # A check that reads a varying is not a camera check: no gate.
+    gs = write("ungated.geom.txt", gs_gated.replace("(unity_OrthoParams.w != 1.0)", "(vs_TEXCOORD1[0].w != 1.0)"))
+    run = subprocess.run([tool, "--gate", vs, gs], capture_output=True, text=True)
+    if run.returncode == 0:
+        print("FAIL gate: a varying-based check was taken as a gate")
+        failures += 1
+    else:
+        print("ok   no gate for a varying-based check")
     return 1 if failures else 0
 
 

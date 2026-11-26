@@ -11,6 +11,112 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.16.7] - beta 8
+
+Not tried on a headset. No conversion change.
+
+### Fixed
+
+- **Aether's glass showing a frozen camera picture after the rift.** Aether's
+  glass rocks and shockwaves refract a named screen grab (_GrabTexture1).
+  While the rift's exploding triangles are on screen the Separate-Eye
+  Renderer draws each eye on its own and gives each eye its own copy of the
+  grab, also under that plain name. That copy was left bound afterwards, so
+  when the map went back to drawing both eyes together the glass read a
+  one-eye picture from an earlier frame, under a name the two-eye shaders
+  read as a two-layer texture. Whatever was bound under the name before the
+  eye renders is now put back after them.
+
+## [0.16.6] - beta 7
+
+Not tried on a headset. Converted maps are converted again once (conversion
+version 38 -> 39).
+
+### Fixed
+
+- **Lifelike's grass.** Its shader (Bytesized/Grass) tessellates each ground
+  triangle by how long its edges are against how far they are from the
+  camera, then grows blades in a geometry stage. The tessellation translator
+  only knew a fixed, material-set amount of tessellation and refused it
+  ("unsupported hull phase structure"), so the grass never drew. That shape
+  is now translated too: each edge's factor is its world-space length over
+  the camera's distance to its middle, capped by the material's maximum,
+  plus its base, with fractional-odd spacing as on PC. Needs the
+  Separate-Eye Renderer and Triangle Tessellation on, as Yoi Okashi's grass
+  does. Checked offline: the grass converts for both eyes and the single-view
+  copy, and every five-stage program links.
+- **A green patch over the pause menu in maps with tessellated or
+  geometry-shader scenery (Yoi Okashi's grass).** While paused no eye images
+  are drawn, and the main camera drew those materials without their extra
+  stages: the bare ground mesh in the grass colour. Those renderers are now
+  hidden while paused and come back on resume.
+
+## [0.16.5] - beta 6
+
+Not tried on a headset. Converted maps are converted again once (conversion
+version 37 -> 38).
+
+### Fixed
+
+- **Black floors and objects in AreaLit maps (Through The Screen's floor, TV
+  body and TV-in-TV frames).** AreaLit lights a room from a small data
+  texture that the map's orthographic light camera fills with a geometry
+  shader. The converter linked that pass for the headset's two-eye view, and
+  a two-eye program cannot draw into the light camera's plain texture, so
+  the texture stayed empty and every AreaLit surface was unlit. A variant
+  whose geometry stage returns at once unless the camera is orthographic
+  (the same proof the separate-eye renderer uses) is now linked single-view,
+  geometry stage and all: the light camera runs it directly, whatever the
+  settings and from the first play. In the headset view it is not drawn,
+  which is what its geometry stage would have done there. The conversion log
+  counts these variants.
+- **Fully dissolved notes drawn whole (Through The Screen's real notes, which
+  are hidden while copies play on the TV).** Quest Noodle Extensions gives a
+  note its dissolving material only while its dissolve is above 0, so at
+  exactly 0 (fully gone) the note kept its plain material, where the cutout
+  does nothing. While a Vivify map plays, a note whose cutout is set above 0
+  now gets the dissolving material. This works around Noodle Extensions; the
+  first time it applies in a level, the log says so.
+
+## [0.16.4] - beta 5
+
+Not tried on a headset. Converted maps are converted again once (conversion
+version 36 -> 37).
+
+### Fixed
+
+- **A light effect drawn inside the player (Through The Screen, AreaLit
+  maps), with Flat Geometry Effects on.** AreaLit's light-mesh pass is only
+  meant to draw in the map's small orthographic light camera, where it fills
+  the light data texture: its geometry stage throws every triangle away in
+  any other camera. With the geometry stage dropped, the converter drew the
+  plain light meshes in every camera instead, so the headset view got the
+  sky-light sphere around the player, the light box inside the TV and the
+  TV's light quad. A dropped geometry stage that opens with a check reading
+  only uniforms (here "not an orthographic camera: draw nothing") now keeps
+  that check in the vertex stage. The conversion log counts these as
+  "keep the stage's camera check". New geometry-lowering tests.
+
+## [0.16.3] - beta 4
+
+Not tried on a headset. No conversion change.
+
+### Added
+
+- **Use Windows Bundle For All Maps** (PC Maps). Plays every map from its
+  Windows (PC) bundle, converted on the headset, even when it ships a Quest
+  bundle. Each map's own Use Windows Bundle choice is stored separately and
+  left as it is: turning this off brings every map back to its own choice.
+  The This Map button still sets the map's own choice and says when the
+  all-maps switch is on.
+- **The whole Performance category in Map Settings.** Besides Screen
+  Effects, Game Bloom and the Flat-Screen Effect Guard, a map can now have its
+  own Effect Resolution %, Field Of View %, Foveated Rendering, Far Culling,
+  Note Draw Distance, Auto Effect Resolution, Separate Eyes Follow Effect
+  Resolution, Separate Eyes Keep Scene Depth and Offscreen Culling. The
+  number settings are steppers whose lowest step is "default" (follow the
+  main setting); the switches go default, ON, OFF as before.
+
 ## [0.16.2] - beta 3
 
 Not tried on a headset. Converted maps are converted again once (conversion

@@ -493,11 +493,18 @@ BundleConversionOutcome RunBundleConversionUnclaimed(std::string const& source, 
                    conversion.shadersLinked, conversion.shadersSeen, conversion.variantsLinked,
                    conversion.variantsRefused, conversion.stereoVariantsRemapped, conversion.stereoVariantsSplit,
                    conversion.shadersRefused);
+  if (conversion.geometryOrthographicSingleView > 0) {
+    PaperLogger.info("Vivify shader conversion: {} variant(s) whose geometry stage draws only in orthographic cameras "
+                     "(AreaLit light meshes) linked single-view, so the map's light camera can run them",
+                     conversion.geometryOrthographicSingleView);
+  }
   if (conversion.geometryStagesDropped > 0) {
     PaperLogger.info("Vivify shader conversion: {} variant(s) lost a geometry stage the headset's two-eye pass cannot "
                      "run; {} of them (wireframe-style, one triangle in and three corners out) now do that work in "
-                     "the vertex stage on a prepared mesh",
-                     conversion.geometryStagesDropped, conversion.geometryStagesLowered);
+                     "the vertex stage on a prepared mesh; {} keep the stage's camera check (drawn only where the "
+                     "stage would have drawn)",
+                     conversion.geometryStagesDropped, conversion.geometryStagesLowered,
+                     conversion.geometryStagesGated);
   }
   if (conversion.texturesSeen > 0) {
     PaperLogger.info(

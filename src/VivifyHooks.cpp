@@ -9,6 +9,10 @@
 #include "VivifyMirrorProbe.hpp"
 #include <cstring>
 #include "GlobalNamespace/UserInfo.hpp"
+#include "GlobalNamespace/CutoutEffect.hpp"
+#include "GlobalNamespace/ConditionalMaterialSwitcher.hpp"
+#include "GlobalNamespace/NoteControllerBase.hpp"
+#include <unordered_map>
 #ifdef VIVIFY_GAME_1_45_3
 #include "GlobalNamespace/MainEffectPostRenderPass.hpp"
 #include "GlobalNamespace/MainEffectRendererFeature.hpp"
@@ -202,6 +206,66 @@ MAKE_HOOK_MATCH(AlwaysVisibleQuad_OnEnable, &GlobalNamespace::AlwaysVisibleQuad:
     if (!IsManagedAlive(transform.unsafePtr())) return;
     transform->set_position(UnityEngine::Vector3(0.0f, -1000.0f, 0.0f));
   });
+}
+
+// Fully dissolved notes stayed visible (0.16.4, Through The Screen). Quest
+// Noodle Extensions gives a note its dissolve-capable material
+// (ConditionalMaterialSwitcher._material1) only while its dissolve is above
+// 0, then sets the cutout to 1 - dissolve. At exactly dissolve 0 -- fully
+// gone, which Through The Screen gives its real notes while copies are
+// shown on the TV -- the note keeps its plain material, where the cutout does
+// nothing, and is drawn whole. While a Vivify map plays, a note whose cutout
+// is set above 0 is given the dissolve-capable material.
+namespace {
+struct NoteSwitchers {
+  std::vector<GlobalNamespace::ConditionalMaterialSwitcher*> switchers;
+};
+std::unordered_map<GlobalNamespace::CutoutEffect*, NoteSwitchers> gNoteSwitchers;
+void const* gNoteSwitchersLevel = nullptr;
+bool gNoteDissolveLogged = false;
+
+void KeepDissolveMaterial(GlobalNamespace::CutoutEffect* effect, float cutout) {
+  auto* level = Runtime::Instance().GetCurrentBeatmapData();
+  if (level == nullptr || Runtime::Instance().IsResetting()) return;
+  if (level != gNoteSwitchersLevel) {
+    gNoteSwitchers.clear();
+    gNoteSwitchersLevel = level;
+  }
+  if (!(cutout > 0.001f) || !IsManagedAlive(effect)) return;
+  auto found = gNoteSwitchers.find(effect);
+  if (found == gNoteSwitchers.end()) {
+    NoteSwitchers entry;
+    auto* note = effect->GetComponentInParent<GlobalNamespace::NoteControllerBase*>();
+    if (IsManagedAlive(note)) {
+      auto switchers = note->GetComponentsInChildren<GlobalNamespace::ConditionalMaterialSwitcher*>(true);
+      for (int i = 0; switchers && i < switchers.size(); i++)
+        if (IsManagedAlive(switchers[i])) entry.switchers.push_back(switchers[i]);
+    }
+    found = gNoteSwitchers.emplace(effect, std::move(entry)).first;
+  }
+  int switched = 0;
+  for (auto* switcher : found->second.switchers) {
+    if (!IsManagedAlive(switcher)) continue;
+    auto* renderer = switcher->_renderer.unsafePtr();
+    auto* dissolving = switcher->_material1.unsafePtr();
+    if (!IsManagedAlive(renderer) || !IsManagedAlive(dissolving)) continue;
+    if (renderer->get_sharedMaterial().unsafePtr() == dissolving) continue;
+    renderer->set_sharedMaterial(dissolving);
+    switched++;
+  }
+  if (switched > 0 && !gNoteDissolveLogged) {
+    gNoteDissolveLogged = true;
+    PaperLogger.info("Vivify notes: a note dissolved to cutout {:.2f} was on its plain material; gave it the "
+                     "dissolving one (fully dissolved notes stay hidden)", cutout);
+  }
+}
+}  // namespace
+
+MAKE_HOOK_MATCH(CutoutEffect_SetCutout,
+                static_cast<void (GlobalNamespace::CutoutEffect::*)(float_t)>(&GlobalNamespace::CutoutEffect::SetCutout),
+                void, GlobalNamespace::CutoutEffect* self, float_t cutout) {
+  CutoutEffect_SetCutout(self, cutout);
+  VivifyPart("CutoutEffect.SetCutout", [&] { KeepDissolveMaterial(self, cutout); });
 }
 
 #ifndef VIVIFY_GAME_1_45_3
@@ -504,6 +568,7 @@ void LateLoad() {
   INSTALL_HOOK(PaperLogger, BurstSliderGameNoteController_Init);
   INSTALL_HOOK(PaperLogger, NoteCutCoreEffectsSpawner_SpawnNoteCutEffect);
   INSTALL_HOOK(PaperLogger, NoteDebris_Init);
+  INSTALL_HOOK(PaperLogger, CutoutEffect_SetCutout);
   INSTALL_HOOK(PaperLogger, AlwaysVisibleQuad_OnEnable);
 #ifndef VIVIFY_GAME_1_45_3
   INSTALL_HOOK(PaperLogger, ImageEffectController_OnRenderImage);

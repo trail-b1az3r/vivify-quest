@@ -8,6 +8,7 @@
 #include "bsml/shared/BSML.hpp"
 #include "bsml/shared/BSML/Components/ModalView.hpp"
 #include "bsml/shared/BSML/Components/Settings/ToggleSetting.hpp"
+#include "bsml/shared/BSML/Components/Settings/IncrementSetting.hpp"
 #include <sstream>
 #include <mutex>
 #include <optional>
@@ -536,6 +537,10 @@ void SetBoolConfigValue(std::string_view key, bool enabled, bool& value) {
 // "Use Windows Bundle For This Map" (0.14.29): song folder names whose PC
 // bundle is converted and played even though they ship a Quest bundle.
 constexpr char const* kWindowsBundleMapsConfigKey = "windowsBundleMaps";
+// Use Windows Bundle For All Maps (0.16.3): on top of the list above, which
+// it leaves untouched.
+constexpr std::string_view kWindowsBundleAllMapsConfigKey = "windowsBundleAllMaps";
+bool gWindowsBundleAllMaps = false;
 
 std::string MapKeyOf(std::string const& levelPath) {
   std::string trimmed = levelPath;
@@ -558,10 +563,14 @@ std::mutex gMapOverridesMutex;
 std::string gMapOverridesFor;  // song folder name the cache below is for
 std::string gGrabMapKey;  // map whose shaders read a named screen grab (NoteMapGrabsScreen)
 std::unordered_map<std::string, bool> gMapOverrides;
+// Number settings set for the map (0.16.3): Effect Resolution, Field Of
+// View and the rest of Performance, stored as JSON numbers beside the bools.
+std::unordered_map<std::string, int> gMapIntOverrides;
 
 void LoadMapOverridesLocked(std::string const& mapKey) {
   gMapOverridesFor = mapKey;
   gMapOverrides.clear();
+  gMapIntOverrides.clear();
   if (mapKey.empty()) return;
   auto const& doc = getConfig().config;
   if (!doc.IsObject()) return;
@@ -571,6 +580,7 @@ void LoadMapOverridesLocked(std::string const& mapKey) {
   if (map == all->value.MemberEnd() || !map->value.IsObject()) return;
   for (auto const& member : map->value.GetObject()) {
     if (member.value.IsBool()) gMapOverrides[member.name.GetString()] = member.value.GetBool();
+    else if (member.value.IsInt()) gMapIntOverrides[member.name.GetString()] = member.value.GetInt();
   }
 }
 
@@ -588,6 +598,22 @@ bool MapBool(std::string_view key, bool global) {
   return value.has_value() ? *value : global;
 }
 
+int MapInt(std::string_view key, int global) {
+  std::lock_guard lock(gMapOverridesMutex);
+  if (gMapIntOverrides.empty()) return global;
+  auto it = gMapIntOverrides.find(std::string(key));
+  return it == gMapIntOverrides.end() ? global : it->second;
+}
+
+std::optional<int> GetMapIntSetting(std::string const& levelPath, std::string_view key) {
+  std::string const mapKey = MapKeyOf(levelPath);
+  std::lock_guard lock(gMapOverridesMutex);
+  if (mapKey != gMapOverridesFor) LoadMapOverridesLocked(mapKey);
+  auto it = gMapIntOverrides.find(std::string(key));
+  if (it == gMapIntOverrides.end()) return std::nullopt;
+  return it->second;
+}
+
 std::optional<bool> GetMapSetting(std::string const& levelPath, std::string_view key) {
   std::string const mapKey = MapKeyOf(levelPath);
   std::lock_guard lock(gMapOverridesMutex);
@@ -602,7 +628,9 @@ void LoadMapOverridesFor(std::string const& levelPath) {
   LoadMapOverridesLocked(MapKeyOf(levelPath));
 }
 
-void SetMapSetting(std::string const& levelPath, std::string_view key, std::optional<bool> value) {
+// Stores (or with nullopt removes) one setting of one map; `value` is a JSON
+// bool or number.
+void SetMapSettingValue(std::string const& levelPath, std::string_view key, std::optional<rapidjson::Value> value) {
   std::string const mapKey = MapKeyOf(levelPath);
   if (mapKey.empty()) return;
   auto& config = getConfig();
@@ -626,7 +654,12 @@ void SetMapSetting(std::string const& levelPath, std::string_view key, std::opti
   std::string const name(key);
   map->value.RemoveMember(name.c_str());
   if (value.has_value()) {
-    map->value.AddMember(rapidjson::Value(name.c_str(), allocator), rapidjson::Value(*value), allocator);
+    std::string const shown = value->IsBool() ? (value->GetBool() ? "true" : "false")
+                                              : std::to_string(value->IsInt() ? value->GetInt() : 0);
+    map->value.AddMember(rapidjson::Value(name.c_str(), allocator), std::move(*value), allocator);
+    PaperLogger.info("Vivify settings: '{}' for map '{}' is now {}", name, mapKey, shown);
+  } else {
+    PaperLogger.info("Vivify settings: '{}' for map '{}' now follows the global setting", name, mapKey);
   }
   if (map->value.ObjectEmpty()) all->value.RemoveMember(mapKey.c_str());
   config.Write();
@@ -634,8 +667,16 @@ void SetMapSetting(std::string const& levelPath, std::string_view key, std::opti
     std::lock_guard lock(gMapOverridesMutex);
     LoadMapOverridesLocked(mapKey);
   }
-  PaperLogger.info("Vivify settings: '{}' for map '{}' is now {}", name, mapKey,
-                   value.has_value() ? (*value ? "true" : "false") : "the global setting");
+}
+
+void SetMapSetting(std::string const& levelPath, std::string_view key, std::optional<bool> value) {
+  SetMapSettingValue(levelPath, key, value.has_value() ? std::optional<rapidjson::Value>(rapidjson::Value(*value))
+                                                       : std::nullopt);
+}
+
+void SetMapIntSetting(std::string const& levelPath, std::string_view key, std::optional<int> value) {
+  SetMapSettingValue(levelPath, key, value.has_value() ? std::optional<rapidjson::Value>(rapidjson::Value(*value))
+                                                       : std::nullopt);
 }
 
 void SetIntConfigValue(std::string_view key, int newValue, int& value) {
@@ -689,6 +730,9 @@ char const* SettingHint(std::u16string_view label) {
       {u"Separate-Eye Renderer (prototype)",
        "Experimental: renders depth and screen effects per eye, with separate shaders for map texture cameras. "
        "Off by default; visual and performance validation required. Reuses native multiview when compatible, otherwise uses two replacement views. Effects stay at 100%."},
+      {u"Use Windows Bundle For All Maps",
+       "Plays every map from its Windows (PC) bundle, converted on the headset, even when it ships a Quest one. "
+       "Each map's own Use Windows Bundle choice is kept and applies again when this is off."},
       {u"Record Replays",
        "Records every single-player level to Mods/bl/replays, where the Replay mod (needed) finds it to watch "
        "or render. Nothing is uploaded and BeatLeader is not needed. Keeps the last 10 tries per map."},
@@ -971,6 +1015,10 @@ bool GlobalGameMirrors() { return gGameMirrors; }
 bool GlobalFullReflectionProbes() { return gFullReflectionProbes; }
 bool GlobalForceBloom() { return gForceBloom; }
 bool GlobalSeparateEye() { return !kLiteBuild && gExperimentalSeparateEye; }
+bool GlobalAutoEffectResolution() { return gAutoEffectResolution; }
+bool GlobalSeparateEyeFollows() { return gSeparateEyeFollowsEffectResolution; }
+bool GlobalSeparateEyeKeepSceneDepth() { return gSeparateEyeKeepSceneDepth; }
+bool GlobalOffscreenCulling() { return gOffscreenCulling; }
 MapSettingRow const kMapSettingRows[] = {
     {"Screen Effects", kDisableAllBlitsConfigKey, true, GlobalDisableAllBlits},
     {"Game Bloom", kForceBloomConfigKey, false, GlobalForceBloom},
@@ -985,7 +1033,41 @@ MapSettingRow const kMapSettingRows[] = {
     {"AudioLink", kAudioLinkConfigKey, false, GlobalAudioLink},
     {"Triangle Tessellation", kUniformTriangleTessellationKey, false, GlobalTriangleTessellation},
     {"Separate-Eye Renderer", kExperimentalSeparateEyeKey, false, GlobalSeparateEye},
+    // The rest of Performance (0.16.3).
+    {"Auto Effect Resolution", kAutoEffectResolutionConfigKey, false, GlobalAutoEffectResolution},
+    {"Separate Eyes Follow Effect Res.", kSeparateEyeFollowsEffectResolutionConfigKey, false, GlobalSeparateEyeFollows},
+    {"Separate Eyes Keep Scene Depth", kSeparateEyeKeepSceneDepthConfigKey, false, GlobalSeparateEyeKeepSceneDepth},
+    {"Offscreen Culling", kOffscreenCullingConfigKey, false, GlobalOffscreenCulling},
 };
+
+// Performance's number settings for this map (0.16.3). The increment's
+// lowest step, one below the setting's own minimum, is "default": the map
+// follows the main setting.
+struct MapIntRow {
+  char const* label;
+  std::string_view key;
+  int min, max, step;
+  int const* global;
+};
+MapIntRow const kMapIntRows[] = {
+    {"Effect Resolution %", kEffectResolutionConfigKey, 25, 100, 5, &gEffectResolution},
+    {"Field Of View %", kFieldOfViewConfigKey, 100, 150, 5, &gFieldOfView},
+    {"Foveated Rendering", kFoveationConfigKey, 0, 4, 1, &gFoveationLevel},
+    {"Far Culling (m)", kFarCullingConfigKey, 0, 1000, 10, &gFarCullingDistance},
+    {"Note Draw Distance (m)", kNoteDrawDistanceConfigKey, 0, 200, 5, &gNoteDrawDistance},
+};
+std::vector<SafePtrUnity<BSML::IncrementSetting>> gMapIntSettings;
+
+float MapIntRowValue(MapIntRow const& row, std::string const& path) {
+  auto const stored = path.empty() ? std::nullopt : GetMapIntSetting(path, row.key);
+  return static_cast<float>(stored.has_value() ? std::clamp(*stored, row.min, row.max) : row.min - row.step);
+}
+
+std::string MapIntRowText(MapIntRow const& row, float value) {
+  int const v = static_cast<int>(value + (value < 0 ? -0.5f : 0.5f));
+  if (v < row.min) return "default (" + std::to_string(*row.global) + ")";
+  return "<color=#5fd35f>" + std::to_string(v) + "</color>";
+}
 std::vector<SafePtrUnity<UnityEngine::UI::Button>> gMapSettingButtons;
 
 std::string MapSettingButtonText(MapSettingRow const& row, std::string const& path) {
@@ -1041,10 +1123,20 @@ void RefreshThisMapRow() {
       BSML::Lite::SetButtonText(gMapSettingButtons[i].ptr(), StringW(MapSettingButtonText(kMapSettingRows[i], path)));
     }
   }
+  for (size_t i = 0; i < gMapIntSettings.size() && i < std::size(kMapIntRows); i++) {
+    if (auto& setting = gMapIntSettings[i]) {
+      setting->currentValue = MapIntRowValue(kMapIntRows[i], path);
+      setting->UpdateState();
+    }
+  }
   if (gThisMapButton) {
-    BSML::Lite::SetButtonText(gThisMapButton.ptr(), StringW(path.empty() ? std::string("Use Windows Bundle: -")
-                                                                         : std::string("Use Windows Bundle: ") +
-                                                                               (enabled ? "on" : "off")));
+    bool const own = !path.empty() && GetWindowsBundleSetForMap(path);
+    std::string text = "Use Windows Bundle: -";
+    if (!path.empty()) {
+      text = std::string("Use Windows Bundle: ") + (own ? "on" : "off");
+      if (gWindowsBundleAllMaps) text += " <size=80%>(on for all maps)</size>";
+    }
+    BSML::Lite::SetButtonText(gThisMapButton.ptr(), StringW(text));
   }
 }
 
@@ -1190,7 +1282,7 @@ void RegisterModSettings() {
               RefreshThisMapRow();
               return;
             }
-            bool const enabled = !GetWindowsBundleForMap(path);
+            bool const enabled = !GetWindowsBundleSetForMap(path);
             SetWindowsBundleForMap(path, enabled);
             PaperLogger.info("Vivify settings: Windows bundle for '{}' turned {}", path, enabled ? "on" : "off");
             Vivify::ReselectSelectedMap();
@@ -1234,6 +1326,30 @@ void RegisterModSettings() {
                                                     : "")));
             }
             gMapSettingButtons.emplace_back(created);
+          }
+          gMapIntSettings.clear();
+          for (size_t i = 0; i < std::size(kMapIntRows); i++) {
+            auto const& row = kMapIntRows[i];
+            auto* created = BSML::Lite::CreateIncrementSetting(
+                mapParent, StringW(std::string(row.label)), 0, static_cast<float>(row.step),
+                MapIntRowValue(row, Vivify::SelectedVivifyMapPath()), true, true,
+                static_cast<float>(row.min - row.step), static_cast<float>(row.max), [i](float value) {
+                  std::string const path = Vivify::SelectedVivifyMapPath();
+                  if (path.empty() || i >= std::size(kMapIntRows)) return;
+                  auto const& row = kMapIntRows[i];
+                  int const v = static_cast<int>(value + (value < 0 ? -0.5f : 0.5f));
+                  SetMapIntSetting(path, row.key,
+                                   v < row.min ? std::nullopt : std::optional<int>(std::clamp(v, row.min, row.max)));
+                });
+            if (created) {
+              created->formatter = [i](float value) { return StringW(MapIntRowText(kMapIntRows[i], value)); };
+              created->UpdateState();
+              FitSettingLabels(reinterpret_cast<UnityEngine::Component*>(created));
+              BSML::Lite::AddHoverHint(created->get_gameObject().unsafePtr(),
+                                       StringW("This map only: the lowest step is default, which follows the "
+                                               "Performance setting"));
+            }
+            gMapIntSettings.emplace_back(created);
           }
           if (mapModalList) {
             BSML::Lite::CreateUIButton(mapParent, u"Close", [mapModalPtr]() {
@@ -1340,6 +1456,16 @@ void RegisterModSettings() {
               force);
         };
         button(u"Convert All PC Bundles", []() { startConversion(false); });
+        if constexpr (!kLiteBuild) {
+          // Every map's Windows bundle at once (0.16.3). Each map's own choice
+          // is kept as it is and applies again when this is turned off.
+          toggle(u"Use Windows Bundle For All Maps", gWindowsBundleAllMaps, [](bool value) {
+            SetBoolConfigValue(kWindowsBundleAllMapsConfigKey, value, gWindowsBundleAllMaps);
+            PaperLogger.info("Vivify settings: Windows bundle for all maps turned {}", value ? "on" : "off");
+            if (!gSettingsMenuBuilding) Vivify::ReselectSelectedMap();
+            RefreshThisMapRow();
+          });
+        }
 
         header("Updates");
         // Installs the newest numbered release in place of this build, for the
@@ -1654,7 +1780,9 @@ bool GetExperimentalSeparateEye() {
   if (auto const value = MapOverride(kExperimentalSeparateEyeKey)) return *value;
   return GlobalSeparateEye();
 }
-bool GetSeparateEyeKeepSceneDepth() { return !kLiteBuild && gSeparateEyeKeepSceneDepth; }
+bool GetSeparateEyeKeepSceneDepth() {
+  return !kLiteBuild && MapBool(kSeparateEyeKeepSceneDepthConfigKey, gSeparateEyeKeepSceneDepth);
+}
 // Per map too (0.15.24): it swapped Yoi Okashi's grass shader for its
 // tessellated build when turned on for Lifelike's grass.
 bool GetUniformTriangleTessellation() {
@@ -1886,6 +2014,12 @@ bool GetReplayRenderMode() {
 // installed, maps get their single-view conversion prepared ahead of a render.
 bool GetWindowsBundleForMap(std::string const& levelPath) {
   if (kLiteBuild || levelPath.empty()) return false;
+  return gWindowsBundleAllMaps || GetWindowsBundleSetForMap(levelPath);
+}
+
+// The map's own choice, whatever Use Windows Bundle For All Maps says.
+bool GetWindowsBundleSetForMap(std::string const& levelPath) {
+  if (kLiteBuild || levelPath.empty()) return false;
   auto const& doc = getConfig().config;
   if (!doc.IsObject()) return false;
   auto it = doc.FindMember(kWindowsBundleMapsConfigKey);
@@ -1957,23 +2091,24 @@ bool GetUsePcBundleForMissingShaders() {
 bool GetOffscreenCulling() {
   // Off while the field of view is widened: it would freeze what the wider
   // view now shows (0.15.12).
-  return !kLiteBuild && gOffscreenCulling && gFieldOfView <= 100;
+  return !kLiteBuild && MapBool(kOffscreenCullingConfigKey, gOffscreenCulling) &&
+         GetFieldOfViewPercent() <= 100;
 }
 
 int GetVivifyFoveationLevel() {
-  return gFoveationLevel;
+  return std::clamp(MapInt(kFoveationConfigKey, gFoveationLevel), 0, 4);
 }
 
 int GetFieldOfViewPercent() {
-  return gFieldOfView;
+  return std::clamp(MapInt(kFieldOfViewConfigKey, gFieldOfView), 100, 150);
 }
 
 int GetFarCullingDistance() {
-  return kLiteBuild ? 0 : std::clamp(gFarCullingDistance, 0, 1000);
+  return kLiteBuild ? 0 : std::clamp(MapInt(kFarCullingConfigKey, gFarCullingDistance), 0, 1000);
 }
 
 int GetNoteDrawDistance() {
-  return kLiteBuild ? 0 : std::clamp(gNoteDrawDistance, 0, 200);
+  return kLiteBuild ? 0 : std::clamp(MapInt(kNoteDrawDistanceConfigKey, gNoteDrawDistance), 0, 200);
 }
 
 void ResetAutoEffectResolution() {
@@ -1989,7 +2124,7 @@ void ReportSeparateEyeFrame(float seconds) {
   // (0.15.40): in 0.15.39 the follow setting turned them off entirely, and
   // Aether's rift held 25 fps at 100%.
   if (kLiteBuild || !GetExperimentalSeparateEye() ||
-      (gSeparateEyeFollowsEffectResolution && !gAutoEffectResolution)) return;
+      (MapBool(kSeparateEyeFollowsEffectResolutionConfigKey, gSeparateEyeFollowsEffectResolution) && !MapBool(kAutoEffectResolutionConfigKey, gAutoEffectResolution))) return;
   if (!(seconds > 0.0f) || seconds > 0.5f) return;  // a pause or a stall, not pacing
   auto& s = gSeparateEyeAuto;
   s.elapsed += seconds;
@@ -2036,15 +2171,15 @@ int GetSeparateEyeResolutionPercent() {
   if (kLiteBuild) return 100;
   int const automatic = std::clamp(gSeparateEyePercent.load(), 50, 100);
   int percent = automatic;
-  if (gSeparateEyeFollowsEffectResolution) {
-    percent = std::clamp(gEffectResolution, 25, 100);
-    if (gAutoEffectResolution) percent = std::min(percent, automatic);
+  if (MapBool(kSeparateEyeFollowsEffectResolutionConfigKey, gSeparateEyeFollowsEffectResolution)) {
+    percent = std::clamp(MapInt(kEffectResolutionConfigKey, gEffectResolution), 25, 100);
+    if (MapBool(kAutoEffectResolutionConfigKey, gAutoEffectResolution)) percent = std::min(percent, automatic);
   }
   return GetRecoveryModeActive() ? std::min(percent, 50) : percent;
 }
 
 void ReportGameplayFrame(float seconds) {
-  if (kLiteBuild || !gAutoEffectResolution || GetExperimentalSeparateEye()) return;
+  if (kLiteBuild || !MapBool(kAutoEffectResolutionConfigKey, gAutoEffectResolution) || GetExperimentalSeparateEye()) return;
   if (!(seconds > 0.0f) || seconds > 0.5f) return;  // a pause or a stall, not pacing
   auto& s = gAutoEffect;
   s.elapsed += seconds;
@@ -2083,8 +2218,8 @@ int GetEffectResolutionPercent() {
   // This experiment targets original effects, including their full resolution.
   // Keep the saved user controls intact for the ordinary renderer/recovery.
   if (GetExperimentalSeparateEye() && !GetRecoveryModeActive()) return 100;
-  int percent = std::clamp(gEffectResolution, 25, 100);
-  if (gAutoEffectResolution) percent = std::min(percent, gAutoEffectPercent.load());
+  int percent = std::clamp(MapInt(kEffectResolutionConfigKey, gEffectResolution), 25, 100);
+  if (MapBool(kAutoEffectResolutionConfigKey, gAutoEffectResolution)) percent = std::min(percent, gAutoEffectPercent.load());
   // Crash recovery mode: half resolution or less (0.15.2).
   return GetRecoveryModeActive() ? std::min(percent, 50) : percent;
 }
@@ -2151,6 +2286,7 @@ void EnsureConfigDefaults() {
                                         gStandInShaderName);
   needsWrite |= EnsureIntConfigValue(kEffectResolutionConfigKey, 100, 25, 100, gEffectResolution);
   needsWrite |= EnsureBoolConfigValue(kOffscreenCullingConfigKey, false, gOffscreenCulling);
+  needsWrite |= EnsureBoolConfigValue(kWindowsBundleAllMapsConfigKey, false, gWindowsBundleAllMaps);
   needsWrite |= EnsureBoolConfigValue(kCrashGuardConfigKey, true, gCrashGuard);
   needsWrite |= EnsureBoolConfigValue(kPcBundleForMissingShadersConfigKey, false, gPcBundleForMissingShaders);
   needsWrite |= EnsureIntConfigValue(kFarCullingConfigKey, 0, 0, 1000, gFarCullingDistance);
