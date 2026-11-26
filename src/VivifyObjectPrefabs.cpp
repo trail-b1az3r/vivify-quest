@@ -1959,7 +1959,9 @@ bool Runtime::SuppressSaberMods(GlobalNamespace::SaberModelController* smc, Glob
 // ReeSabers' blades and trails draw with its own "Ree/..." shaders: those
 // renderers are switched off (0.15.52; its trails stayed with 0.15.51).
 void Runtime::SweepSaberMods() {
-  if (_currentBeatmapData == nullptr || _isResetting || !GetMapSabers() || !GetTurnOffSaberModsForMapSabers()) return;
+  if (_currentBeatmapData == nullptr || _isResetting || !GetMapSabers() || !GetTurnOffSaberModsForMapSabers() ||
+      !_mapSaberReplacesSaber)
+    return;
   bool const mapSaber = std::any_of(_saberReplacements.begin(), _saberReplacements.end(), [](auto const& entry) {
     return !entry.second.spawnedObjects.empty() || !entry.second.followedTrails.empty();
   });
@@ -2022,6 +2024,7 @@ void Runtime::RestoreSaberMods() {
   _suppressedSaberModClasses.clear();
   _lastSaberModSweep = -100.0f;
   _saberModSweeps = 0;
+  _mapSaberReplacesSaber = false;
 }
 
 void Runtime::RestoreForeignSaberLights() {
@@ -2200,8 +2203,13 @@ void Runtime::ApplySaberVisuals(GlobalNamespace::SaberModelController* smc, Glob
   }
 
   // Another saber mod's controller (CustomModels): its saber is switched off
-  // and the map's model hangs on the game's saber instead (0.15.51).
-  if (SuppressSaberMods(smc, saber)) {
+  // and the map's model hangs on the game's saber instead (0.15.51). Only
+  // for a map saber that replaces the saber: one loaded "Additive" goes on
+  // top of the player's own (Through The Screen's glow), and switching the
+  // player's saber mod off left no saber at all (0.16.0).
+  bool const replacesSaber = ShouldHideOriginal(validModelInfos);
+  if (replacesSaber) _mapSaberReplacesSaber = true;
+  if (replacesSaber && SuppressSaberMods(smc, saber)) {
     auto* saberTransform = saber->get_transform().unsafePtr();
     if (IsAlive(saberTransform) && parent != saberTransform) {
       parent = saberTransform;

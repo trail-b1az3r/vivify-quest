@@ -11,6 +11,42 @@ conversion cache version, and cached conversions are redone automatically.
 
 ## [Unreleased]
 
+## [0.16.2] - beta 3
+
+Not tried on a headset. Converted maps are converted again once (conversion
+version 35 -> 36).
+
+### Fixed
+
+- **Shaders seen from the left eye in both eyes (Through The Screen's
+  raymarched room, Frautcres/WaveBackground).** A vertex program written
+  without per-eye setup has the eye index folded to 0 when compiled: it reads
+  the left eye's view-projection rows of the stereo camera block by fixed
+  index. Converted for the headset's two-eye pass, the right eye then drew
+  those objects from the left eye's position: the white-then-grey section's
+  raymarch came out misplaced and broken. 0.15.42 fixed this for pixel
+  programs; vertex programs now read each eye's rows too. The same applies
+  when the block's variables keep their own names (`unity_StereoMatrixVP`
+  and the rest, and `unity_StereoWorldSpaceCameraPos`). A translator test
+  checks it.
+
+## [0.16.1] - beta 2
+
+Not tried on a headset.
+
+### Fixed
+
+- **Through The Screen: sabers invisible the whole map.** The map does not
+  replace the saber. It assigns a glow `Additive`ly, on top of the player's
+  own saber, coloured with the player's saber colours (`_TTS_ColorL/R` set to
+  `baseSaberAColor`/`baseSaberBColor`). "Map Sabers Turn Off Saber Mods"
+  treated any map saber as a replacement and switched off the player's saber
+  mod (ReeSabers, CustomModels). That mod had already hidden the game's own
+  saber, so only the half-transparent glow was left. Saber mods are now only
+  switched off for a map saber that replaces the saber (not `Additive`). The
+  reference recording (you sent it) shows ordinary red and blue sabers with a
+  glow throughout.
+
 ## [0.16.0] - beta 1
 
 Not tried on a headset.
