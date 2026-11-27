@@ -1,0 +1,108 @@
+=== Vivify 0.15.51 native crash at 1795807367 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0xd24
+thread 29009 'Thread-128'
+pc 0x7e24039740  lr 0x7e240396f8  sp 0x7d3a49c480  fp 0x7d3a49c7b0
+backtrace:
+  #00 pc 0x7e24039740  libunity.so +0x13ee740
+  #01 lr 0x7e240396f8  libunity.so +0x13ee6f8
+  #02 fp 0x7e2421f9f4  libunity.so +0x15d49f4
+  #03 fp 0x7f88f13334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify visual check:   'NoteCube' enabled=true active=true layer=8 material='NoteHD' shader='Custom/NoteHD' supported=true queue=2004 block: _Cutout=0.43 _Color=(0.40,0.40,0.40,1.00)
+  Vivify visual check:   'NoteArrow' enabled=true active=true layer=8 material='NoteArrowHD' shader='Custom/GlowingInstancedHD' supported=true queue=2002 block: _Cutout=0.43 _Color=(0.00,0.00,0.00,0.00)
+  Vivify visual check:   'NoteArrowGlow' enabled=true active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.40,0.40,0.40,0.58)
+  Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.40,0.40,0.40,0.58)
+  Vivify visual check: 4 light(s) on, 0 with shadows: 'LightRight' type=2 intensity=1.00 shadows=0; 'LightLeft' type=2 intensity=1.00 shadows=0; 'LightFront' type=2 intensity=2.00 shadows=0; 'LightBottom' type=2 intensity=8.00 shadows=0; amb
+  Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout
+  Vivify visual check: cameras that may render the mirror: 'MainCamera' stereo=true eye=3 target=screen mask=0x3819ff37
+  Vivify visual check at 5s: 91 active renderer(s), 2 with no runnable shader; most drawn: Custom/CustomParticles x21, BeatSaber/Unlit Glow x16, Abstract/Debris2 x16, Saber/SaberReflective x6, Custom/NoteHD x3, Custom/SimpleLit x2, Custom/Gl
+  Vivify grab texture '_Base' at 5s: nothing bound
+  Vivify grab texture '_BlackHoleGrabTex' at 5s: nothing bound
+  Vivify grab texture '_EclipseGrabTex' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture' at 5s: nothing bound
+  Vivify visual check: main camera cullingMask=0x3819ff37 depthTextureMode=1 clearFlags=2
+  Vivify custom event: type='Blit' time=11.2 songTime=11.203856
+  Vivify material: context=Blit asset=assets/shaders/blackout.mat material='BlackOut' shader='PostProcessing/BlackOut' supported=true internalError=false
+  Vivify Blit event: time=11.2 asset='assets/shaders/blackout.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=6
+  Vivify custom event: type='CreateCamera' time=12.533333 songTime=12.535766
+  Vivify CreateCamera: id='NotesOneCam' colorTexture='_NotesOne' depthTexture='_NotesOne_Depth' size=1680x1760 mainEffect=true
+  Vivify culling pass on 'VivifyCamera_NotesOneCam': whitelist=true tracks=1 trackedGOs=6 movedGOs=21 camMask=0x00400000
+  Vivify culling pass on 'VivifyCamera_NotesOneCam': whitelist=true tracks=1 trackedGOs=6 movedGOs=21 camMask=0x00400000
+  Vivify culling pass on 'VivifyCamera_NotesOneCam': whitelist=true tracks=1 trackedGOs=8 movedGOs=28 camMask=0x00400000
+  Vivify: Reduce Debris player option = false (custom debris enabled)
+  Vivify custom event: type='Blit' time=12.773334 songTime=12.783202
+  Vivify Blit event: time=12.773334 asset='<none>' source='_Main' targets=1 priority=-11 pass=-1 order=7 durationBeats=0
+  Vivify custom event: type='SetRenderingSettings' time=12.8 songTime=12.802306
+  Vivify SetRenderingSettings: time=12.8 durationSeconds=0 immediate=true
+  Vivify custom event: type='DestroyObject' time=12.8 songTime=12.802306
+  Vivify DestroyObject: destroying live prefab id='clockscene'
+  Vivify custom event: type='SetGlobalProperty' time=12.8 songTime=12.802306
+  Vivify custom event: type='InstantiatePrefab' time=12.8 songTime=12.802306
+  Vivify InstantiatePrefab: asset='assets/monitor/monitorscene.prefab' id='monitorscene' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='monitorscene' asset='assets/monitor/monitorscene.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify custom event: type='Blit' time=12.8 songTime=12.802306
+  Vivify Blit skipped at time 12.8: 'assets/blendexperiment/blender.mat' was starting when this map last went down (crash recovery; 'Forget Crash Recovery' in the advanced settings brings it back)
+  Vivify custom event: type='SetCameraProperty' time=12.8 songTime=12.802306
+  Vivify SetCameraProperty: camera='_Main' depthTextureMode=1 clearFlags=-1 hasBackground=false culling=true bloomPrePass=unset mainEffect=unset
+  Vivify custom event: type='Blit' time=12.8 songTime=12.802306
+  Vivify Blit skipped at time 12.8: 'assets/shaders/distortnotes/one.mat' was starting when this map last went down (crash recovery; 'Forget Crash Recovery' in the advanced settings brings it back)
+  Vivify culling pass on 'MainCamera': whitelist=false tracks=1 trackedGOs=8 movedGOs=28 camMask=0x3819ff37
+=== end ===
+
+=== Vivify 0.15.51 native crash at 1795807376 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7efcfab8fc
+thread 9664 'UnityMain'
+pc 0x7f88f0a6e4  lr 0x7c43959f48  sp 0x7e7e24daf0  fp 0x7e7e24deb0
+backtrace:
+  #00 pc 0x7f88f0a6e4  libc.so +0xc76e4
+  #01 lr 0x7c43959f48  libchroma.so +0x333f48
+  #02 fp 0x7c438c8bec  libchroma.so +0x2a2bec (_Z30BeatmapDataTransformHelperHookv +0x114)
+  #03 fp 0x7c43955f50  libchroma.so +0x32ff50 (late_load +0x2b4)
+  #04 fp 0x7e8a413b9c  libsl2.so +0x543b9c
+  #05 fp 0x7e13adafb4  libunity.so +0xab1fb4
+  #06 fp 0x7f95a2e6c3
+  #07 fp 0x7e7e24ef40
+last Vivify log lines (oldest first):
+  Installing hook: SaberModelController_Init to offset: 0x7dfe4e9928
+  Installing hook: GameNoteController_Init to offset: 0x7dfe3e71d0
+  Installing hook: BombNoteController_Init to offset: 0x7dfe3e42d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x7dfe3e5668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x7dfe487bb8
+  Installing hook: NoteDebris_Init to offset: 0x7dfe3ea2e8
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7dfe97e968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x7dfe2dc018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7dfe981e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7dfe9819f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x7dfe982bb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7dfe982f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7dfe9827f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x7dfe43137c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x7dfe43158c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7dfe431658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7dfe431560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x7dfe4313e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x7dfe4314a4
+  Installing hook: PauseController_Pause to offset: 0x7dfe4a37ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7dfe4adc54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7dfe4ae734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7dfe4ae094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7dfe4add88
+  Installing hook: GamePause_Resume to offset: 0x7dfe4a9178
+  Installing hook: Recorder_InstallBindings to offset: 0x7dfe4f2294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x7dfe4e68b8
+  Installing hook: Recorder_SpawnNote to offset: 0x7dfe3dd928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x7dfe3dcdec
+  Installing hook: Recorder_NoteWasCut to offset: 0x7dfe3dede4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x7dfe4ec44c
+  Installing hook: Recorder_ScoreStart to offset: 0x7dfe4ec038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7dfcfafdb4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7dfcfb0690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x7dfe3dfae0
+  Installing hook: Recorder_ShowPause to offset: 0x7dfe4adc54
+  Installing hook: Recorder_Resume to offset: 0x7dfe4ae76c
+  Installing hook: Recorder_Finish to offset: 0x7dfe43d1dc
+  Vivify: loaded mods (56): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  atakeeper 0.2.5, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, menuvisualizers 0.1.0,  , transparency 0.1.1, SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether 2.2.5, BetterHaptics 0.2.2, BetterSongSearch 2.2.1
+=== end ===
+
