@@ -1,0 +1,768 @@
+=== Vivify 0.15.53 session log, started 2026-11-27 12:09:07 ===
+[INFO] Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+[INFO] Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global.txt
+[INFO] Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+[INFO] Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+[INFO] Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+[INFO] Installing hook: SaberModelController_Init to offset: 0x78164a1928
+[INFO] Installing hook: Thermal_ResultsDidActivate to offset: 0x78164248b8
+[INFO] Installing hook: GameNoteController_Init to offset: 0x781639f1d0
+[INFO] Installing hook: BombNoteController_Init to offset: 0x781639c2d4
+[INFO] Installing hook: BurstSliderGameNoteController_Init to offset: 0x781639d668
+[INFO] Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x781643fbb8
+[INFO] Installing hook: NoteDebris_Init to offset: 0x78163a22e8
+[INFO] Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7816936968
+[INFO] Installing hook: ImageEffectController_OnRenderImage to offset: 0x7816294018
+[INFO] Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7816939e78
+[INFO] Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x78169399f0
+[INFO] Installing hook: MirrorRendererSO_RenderMirror to offset: 0x781693abb8
+[INFO] Installing hook: MirrorRendererSO_OnDisable to offset: 0x781693af2c
+[INFO] Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x781693a7f4
+[INFO] Installing hook: VRCenterAdjust_Start to offset: 0x78163e937c
+[INFO] Installing hook: VRCenterAdjust_OnEnable to offset: 0x78163e958c
+[INFO] Installing hook: VRCenterAdjust_OnDisable to offset: 0x78163e9658
+[INFO] Installing hook: VRCenterAdjust_Update to offset: 0x78163e9560
+[INFO] Installing hook: VRCenterAdjust_ResetRoom to offset: 0x78163e93e0
+[INFO] Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x78163e94a4
+[INFO] Installing hook: PauseController_Pause to offset: 0x781645b7ec
+[INFO] Installing hook: PauseMenuManager_ShowMenu to offset: 0x7816465c54
+[INFO] Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7816466734
+[INFO] Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7816466094
+[INFO] Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7816465d88
+[INFO] Installing hook: GamePause_Resume to offset: 0x7816461178
+[INFO] Installing hook: Recorder_InstallBindings to offset: 0x78164aa294
+[INFO] Installing hook: Recorder_HeightLateUpdate to offset: 0x781649e8b8
+[INFO] Installing hook: Recorder_SpawnNote to offset: 0x7816395928
+[INFO] Installing hook: Recorder_SpawnObstacle to offset: 0x7816394dec
+[INFO] Installing hook: Recorder_NoteWasCut to offset: 0x7816396de4
+[INFO] Installing hook: Recorder_ScoreLateUpdate to offset: 0x78164a444c
+[INFO] Installing hook: Recorder_ScoreStart to offset: 0x78164a4038
+[INFO] Installing hook: Recorder_ComputeSwingRating to offset: 0x7814f67db4
+[INFO] Installing hook: Recorder_ProcessSwing to offset: 0x7814f68690
+[INFO] Installing hook: Recorder_SpawnControllerStart to offset: 0x7816397ae0
+[INFO] Installing hook: Recorder_ShowPause to offset: 0x7816465c54
+[INFO] Installing hook: Recorder_Resume to offset: 0x781646676c
+[INFO] Installing hook: Recorder_Finish to offset: 0x78163f51dc
+[INFO] Vivify: loaded mods (50): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavcodec.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavformat.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libweb-utils.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaverplusplus.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libcustom-types.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libflamingo.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libreflectcpp.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libsongdetails
+[INFO] .so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libtinyxml2.so 0.0.0, FakeId 0.1.9, MetaCore 1.6.3, BSML 0.4.55, SqoreToggler 0.7.0, datakeeper 0.2.5, Hollywood 1.2.2, Lapiz 0.2.23, too-many-fireworks 1.2.5, SongCore 1.1.26, MultiplayerCore 1.6.7, BeatTogether 2.2.5, BetterSongSearch 2.2.13, ModifiersCoreQuest 0.1.0, Nya 1.1.8, CustomJSONData 0.24.5, Tracks 2.5.4, Vivify 0.15.53, PlaylistCore 1.5.5, BeatSync 0.1.2, bl 0.9.666, CameraUtils 1.1.11, ChatPlexSDK-BS 6.4.5, Chroma 2.10.3, Qounters++ 1.1.5, expcounter 0.2.0, MappingExtensions 0.25.4, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistManager 1.4.1, QBeatSaberPlus-Multiplayer 6.4.5, ReeSabers 0.3.18, Replay 0.5.2, SongDownloader 0.8.8, Transitions 1.2.3, unicode 0.1.7
+[INFO] Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.04,1.31,0.06) fwd=(0.27,-0.38,0.89)
+[INFO] Vivify main camera cullingMask is now 0x3818ff37
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.00,2.11,0.03) fwd=(0.20,-0.36,0.91)
+[INFO] Vivify main camera cullingMask is now 0x3818ff37
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify: the game uses STEREO_MULTIVIEW_ON (60 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/517aa (Go Kitty Go - SwervyMan)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/517aa (Go Kitty Go - SwervyMan)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/517aa__Go_Kitty_Go_-_SwervyMan_/517aa__Go_Kitty_Go_-_SwervyMan__df3eb0454ac5ff66.vivify'
+[INFO] Vivify fixed material: chart eligibility=true for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/44384 (___________________________! - Yaomin)/bundleWindows2019.vivify'
+[INFO] Vivify shader conversion: 6 of 6 shader(s) linked for multiview GLES, 89 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 182 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 59 of 59 block-compressed texture(s) readable (59 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/44384 (___________________________! - Yaomin)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/44384_______________________________-_Yaomin_/44384_______________________________-_Yaomin__bf27f468cbe5fe6f.vivify' (translated 6 of 6 shader(s) (166 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 59 of 59 block-compressed texture(s) marked readable (59 streamed))
+[INFO] Vivify fixed material: chart eligibility=true for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45943 (As the world caves in - rekyy)/bundleWindows2021.vivify'
+[INFO] Vivify shader conversion: 6 of 6 shader(s) linked for multiview GLES, 74 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 0 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 3 of 3 block-compressed texture(s) readable (3 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45943 (As the world caves in - rekyy)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/45943__As_the_world_caves_in_-_rekyy_/45943__As_the_world_caves_in_-_rekyy__e0f739fb2a11bbf6.vivify' (translated 6 of 6 shader(s) (114 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 3 of 3 block-compressed texture(s) marked readable (3 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5529d (TOKYOFUNK! - Deezave)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5529d (TOKYOFUNK! - Deezave)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/5529d__TOKYOFUNK__-_Deezave_/5529d__TOKYOFUNK__-_Deezave__2688dd09999fb849.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4a26f (Freddy Music - eastinanddopey)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4a26f (Freddy Music - eastinanddopey)/bundleWindows2019.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4a26f__Freddy_Music_-_eastinanddopey_/4a26f__Freddy_Music_-_eastinanddopey__aae938b86946817a.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a25 (Lifelike - nasafrasa)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a25 (Lifelike - nasafrasa)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43a25__Lifelike_-_nasafrasa_/43a25__Lifelike_-_nasafrasa__2d4821522fa12cca.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/48c03 (Winter Wrap Up Late Again - slabs37)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/48c03__Winter_Wrap_Up_Late_Again_-_slabs37_/48c03__Winter_Wrap_Up_Late_Again_-_slabs37__1ee3162f8684409a.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/48c03__Winter_Wrap_Up_Late_Again_-_slabs37_/48c03__Winter_Wrap_Up_Late_Again_-_slabs37__1ee3162f8684409a.vivify' to reconvert
+[INFO] Vivify shader conversion: 26 of 26 shader(s) linked for multiview GLES, 361 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 833 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 1 of 1 block-compressed texture(s) readable (1 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/48c03 (Winter Wrap Up Late Again - slabs37)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/48c03__Winter_Wrap_Up_Late_Again_-_slabs37_/48c03__Winter_Wrap_Up_Late_Again_-_slabs37__1ee3162f8684409a.vivify' (translated 26 of 26 shader(s) (645 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 1 of 1 block-compressed texture(s) marked readable (1 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4d444 (Every Night - RateGyro & MadChase)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4d444__Every_Night_-_RateGyro___MadChase_/4d444__Every_Night_-_RateGyro___MadChase__2ed80322d9dc5c6c.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4d444__Every_Night_-_RateGyro___MadChase_/4d444__Every_Night_-_RateGyro___MadChase__2ed80322d9dc5c6c.vivify' to reconvert
+[INFO] Vivify shader conversion: 8 of 8 shader(s) linked for multiview GLES, 84 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 151 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 12 of 12 block-compressed texture(s) readable (12 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4d444 (Every Night - RateGyro & MadChase)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4d444__Every_Night_-_RateGyro___MadChase_/4d444__Every_Night_-_RateGyro___MadChase__2ed80322d9dc5c6c.vivify' (translated 8 of 8 shader(s) (144 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 12 of 12 block-compressed texture(s) marked readable (12 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51056 (______________________________ - katsu0dashi)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51056_________________________________-_katsu0da/51056_________________________________-_katsu0da_c05ec9ab373e48cb.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51056_________________________________-_katsu0da/51056_________________________________-_katsu0da_c05ec9ab373e48cb.vivify' to reconvert
+[INFO] Vivify shader conversion: 30 of 30 shader(s) linked for multiview GLES, 638 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 1276 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 8 of 8 block-compressed texture(s) readable (8 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51056 (______________________________ - katsu0dashi)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51056_________________________________-_katsu0da/51056_________________________________-_katsu0da_c05ec9ab373e48cb.vivify' (translated 30 of 30 shader(s) (1240 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 8 of 8 block-compressed texture(s) marked readable (8 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e2c0 (the war II - cabers)/bundleWindows2019.vivify'
+[INFO] Vivify shader translation left a shader as it was -- shader@-2287101110655656103: no programs decoded
+[INFO] Vivify shader conversion: 5 of 6 shader(s) linked for multiview GLES, 5 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 11 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 1 shader(s) refused
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e2c0 (the war II - cabers)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4e2c0__the_war_II_-_cabers_/4e2c0__the_war_II_-_cabers__a04d25e64dcc01c2.vivify' (translated 5 of 6 shader(s) (11 program(s)) across 1 serialized file(s); 0 already ran here, 1 left as they were; 0 of 0 block-compressed texture(s) marked readable (0 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b15c (Passing Memories - MadChase, Cush)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4b15c__Passing_Memories_-_MadChase__Cush_/4b15c__Passing_Memories_-_MadChase__Cush__671b266e415607f8.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4b15c__Passing_Memories_-_MadChase__Cush_/4b15c__Passing_Memories_-_MadChase__Cush__671b266e415607f8.vivify' to reconvert
+[INFO] Vivify shader conversion: 15 of 15 shader(s) linked for multiview GLES, 369 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 722 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 44 of 44 block-compressed texture(s) readable (44 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4b15c (Passing Memories - MadChase, Cush)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4b15c__Passing_Memories_-_MadChase__Cush_/4b15c__Passing_Memories_-_MadChase__Cush__671b266e415607f8.vivify' (translated 15 of 15 shader(s) (630 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 44 of 44 block-compressed texture(s) marked readable (44 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/521af (SPONGEBOB TOOTHPASTE - swervyman)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/521af (SPONGEBOB TOOTHPASTE - swervyman)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/521af__SPONGEBOB_TOOTHPASTE_-_swervyman_/521af__SPONGEBOB_TOOTHPASTE_-_swervyman__bcc42ac61a342b1b.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/555d3 (Tutorial - isaknboom)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/555d3 (Tutorial - isaknboom)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/555d3__Tutorial_-_isaknboom_/555d3__Tutorial_-_isaknboom__ebc40fc92e1f87e6.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/446f0 (Beat Daver - NDBGaming)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/446f0 (Beat Daver - NDBGaming)/bundleWindows2019.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/446f0__Beat_Daver_-_NDBGaming_/446f0__Beat_Daver_-_NDBGaming__9622925d41baf044.vivify'
+[INFO] Vivify fixed material: chart eligibility=true for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54cd2 (Same guy - TPG_nolan)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54cd2 (Same guy - TPG_nolan)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/54cd2__Same_guy_-_TPG_nolan_/54cd2__Same_guy_-_TPG_nolan__d8a8d6644bf99de6.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f222 (Numb & Getting Colder - SkilljoyJr)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f222__Numb___Getting_Colder_-_SkilljoyJr_/4f222__Numb___Getting_Colder_-_SkilljoyJr__ca7843efdbdf790c.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f222__Numb___Getting_Colder_-_SkilljoyJr_/4f222__Numb___Getting_Colder_-_SkilljoyJr__ca7843efdbdf790c.vivify' to reconvert
+[INFO] Vivify shader conversion: 23 of 23 shader(s) linked for multiview GLES, 49 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 102 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 2 of 2 block-compressed texture(s) readable (2 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f222 (Numb & Getting Colder - SkilljoyJr)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f222__Numb___Getting_Colder_-_SkilljoyJr_/4f222__Numb___Getting_Colder_-_SkilljoyJr__ca7843efdbdf790c.vivify' (translated 23 of 23 shader(s) (96 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 2 of 2 block-compressed texture(s) marked readable (2 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bd60 (The Snail - Vainstains)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4bd60__The_Snail_-_Vainstains_/4bd60__The_Snail_-_Vainstains__6f3f005d6d0cef8e.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4bd60__The_Snail_-_Vainstains_/4bd60__The_Snail_-_Vainstains__6f3f005d6d0cef8e.vivify' to reconvert
+[INFO] Vivify shader conversion: 6 of 6 shader(s) linked for multiview GLES, 8 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 16 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 2 of 2 block-compressed texture(s) readable (2 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bd60 (The Snail - Vainstains)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4bd60__The_Snail_-_Vainstains_/4bd60__The_Snail_-_Vainstains__6f3f005d6d0cef8e.vivify' (translated 6 of 6 shader(s) (16 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 2 of 2 block-compressed texture(s) marked readable (2 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a5d (Through The Screen - Mawntee)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a5d (Through The Screen - Mawntee)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43a5d__Through_The_Screen_-_Mawntee_/43a5d__Through_The_Screen_-_Mawntee__734cce3c96c81a42.vivify'
+[INFO] Vivify fixed material: chart eligibility=true for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51266 (Dialtone - Copper)/bundleWindows2021.vivify'
+[INFO] Vivify shader conversion: 3 of 3 shader(s) linked for multiview GLES, 20 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 0 variant(s) given their single-pass stereo twin's per-eye code, 16 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 15 of 15 block-compressed texture(s) readable (15 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51266 (Dialtone - Copper)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51266__Dialtone_-_Copper_/51266__Dialtone_-_Copper__2913ba6a808b0b63.vivify' (translated 3 of 3 shader(s) (32 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 15 of 15 block-compressed texture(s) marked readable (15 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4839c (LOST IN DATA - slabs37)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4839c__LOST_IN_DATA_-_slabs37_/4839c__LOST_IN_DATA_-_slabs37__d878341eb42683e5.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4839c__LOST_IN_DATA_-_slabs37_/4839c__LOST_IN_DATA_-_slabs37__d878341eb42683e5.vivify' to reconvert
+[INFO] Vivify shader conversion: 22 of 22 shader(s) linked for multiview GLES, 592 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 1184 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4839c (LOST IN DATA - slabs37)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4839c__LOST_IN_DATA_-_slabs37_/4839c__LOST_IN_DATA_-_slabs37__d878341eb42683e5.vivify' (translated 22 of 22 shader(s) (1068 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 0 of 0 block-compressed texture(s) marked readable (0 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/49f94 (Transmission 11623-55-2 - Pixy31 X Animelover121)/bundleWindows2021.vivify'
+[INFO] Vivify shader translation left a shader as it was -- Custom/Circle: no programs decoded
+[INFO] Vivify shader conversion: 18 of 19 shader(s) linked for multiview GLES, 332 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 614 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 1 shader(s) refused
+[INFO] Vivify conversion marked 8 of 8 block-compressed texture(s) readable (8 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/49f94 (Transmission 11623-55-2 - Pixy31 X Animelover121)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/49f94__Transmission_11623-55-2_-_Pixy31_X_Animel/49f94__Transmission_11623-55-2_-_Pixy31_X_Animel_bc03425f547f0469.vivify' (translated 18 of 19 shader(s) (454 program(s)) across 1 serialized file(s); 0 already ran here, 1 left as they were; 8 of 8 block-compressed texture(s) marked readable (8 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51058 (WHY_S THIS DEALER_ - lestershire)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51058 (WHY_S THIS DEALER_ - lestershire)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51058__WHY_S_THIS_DEALER__-_lestershire_/51058__WHY_S_THIS_DEALER__-_lestershire__692576ac3aafa518.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4cf60 (Cosmic Disgust - Sonoluminn, Rashed)/bundleWindows2019.vivify'
+[INFO] Vivify shader conversion: 12 of 12 shader(s) linked for multiview GLES, 426 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 0 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 13 of 13 block-compressed texture(s) readable (13 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4cf60 (Cosmic Disgust - Sonoluminn, Rashed)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4cf60__Cosmic_Disgust_-_Sonoluminn__Rashed_/4cf60__Cosmic_Disgust_-_Sonoluminn__Rashed__de39e3d610c5e08b.vivify' (translated 12 of 12 shader(s) (823 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 13 of 13 block-compressed texture(s) marked readable (13 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ce54 (Comet Observatory - MadChase)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ce54 (Comet Observatory - MadChase)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4ce54__Comet_Observatory_-_MadChase_/4ce54__Comet_Observatory_-_MadChase__56debe2a9cda3a74.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4c0ba (Wayfaring Stranger - HickeyChan)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4c0ba__Wayfaring_Stranger_-_HickeyChan_/4c0ba__Wayfaring_Stranger_-_HickeyChan__c74c8c5b52d8b6c4.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4c0ba__Wayfaring_Stranger_-_HickeyChan_/4c0ba__Wayfaring_Stranger_-_HickeyChan__c74c8c5b52d8b6c4.vivify' to reconvert
+[INFO] Vivify shader conversion: 28 of 28 shader(s) linked for multiview GLES, 602 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 2258 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 7 of 7 block-compressed texture(s) readable (7 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4c0ba (Wayfaring Stranger - HickeyChan)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4c0ba__Wayfaring_Stranger_-_HickeyChan_/4c0ba__Wayfaring_Stranger_-_HickeyChan__c74c8c5b52d8b6c4.vivify' (translated 28 of 28 shader(s) (1106 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 7 of 7 block-compressed texture(s) marked readable (7 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/441fe (lets go bowling - Kimi)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/441fe__lets_go_bowling_-_Kimi_/441fe__lets_go_bowling_-_Kimi__6b8f1c8150817621.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/441fe__lets_go_bowling_-_Kimi_/441fe__lets_go_bowling_-_Kimi__6b8f1c8150817621.vivify' to reconvert
+[INFO] Vivify shader conversion: 3 of 3 shader(s) linked for multiview GLES, 75 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 138 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/441fe (lets go bowling - Kimi)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/441fe__lets_go_bowling_-_Kimi_/441fe__lets_go_bowling_-_Kimi__6b8f1c8150817621.vivify' (translated 3 of 3 shader(s) (138 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 0 of 0 block-compressed texture(s) marked readable (0 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/50158 (Algae - Crungey)/bundleWindows2019.vivify'
+[INFO] Vivify shader conversion: 6 of 6 shader(s) linked for multiview GLES, 59 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 114 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/50158 (Algae - Crungey)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/50158__Algae_-_Crungey_/50158__Algae_-_Crungey__2bdc4a31f15436e7.vivify' (translated 6 of 6 shader(s) (96 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 0 of 0 block-compressed texture(s) marked readable (0 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4953e (Say It  - SkilljoyJr)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4953e__Say_It__-_SkilljoyJr_/4953e__Say_It__-_SkilljoyJr__669a28530384662e.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4953e__Say_It__-_SkilljoyJr_/4953e__Say_It__-_SkilljoyJr__669a28530384662e.vivify' to reconvert
+[INFO] Vivify shader conversion: 9 of 9 shader(s) linked for multiview GLES, 31 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 62 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 4 of 4 block-compressed texture(s) readable (4 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4953e (Say It  - SkilljoyJr)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4953e__Say_It__-_SkilljoyJr_/4953e__Say_It__-_SkilljoyJr__669a28530384662e.vivify' (translated 9 of 9 shader(s) (60 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 4 of 4 block-compressed texture(s) marked readable (4 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/467ba (4_33_ - Yluem, Blindyeti & AlexOkawa)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/467ba (4_33_ - Yluem, Blindyeti & AlexOkawa)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/467ba__4_33__-_Yluem__Blindyeti___AlexOkawa_/467ba__4_33__-_Yluem__Blindyeti___AlexOkawa__b0fd7af3d4a86771.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4d8a5 (Puppet - Rxerti & Skilljoyjr)/bundleWindows2021.vivify'
+[INFO] Vivify shader conversion: 22 of 22 shader(s) linked for multiview GLES, 286 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 578 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 15 of 15 block-compressed texture(s) readable (15 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4d8a5 (Puppet - Rxerti & Skilljoyjr)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4d8a5__Puppet_-_Rxerti___Skilljoyjr_/4d8a5__Puppet_-_Rxerti___Skilljoyjr__0b029f7654a1459e.vivify' (translated 22 of 22 shader(s) (548 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 15 of 15 block-compressed texture(s) marked readable (15 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f0a9 (Credits - Sonoluminn, Fatalution)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f0a9__Credits_-_Sonoluminn__Fatalution_/4f0a9__Credits_-_Sonoluminn__Fatalution__16118e13530a2d96.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f0a9__Credits_-_Sonoluminn__Fatalution_/4f0a9__Credits_-_Sonoluminn__Fatalution__16118e13530a2d96.vivify' to reconvert
+[INFO] Vivify shader conversion: 7 of 7 shader(s) linked for multiview GLES, 79 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 158 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f0a9 (Credits - Sonoluminn, Fatalution)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f0a9__Credits_-_Sonoluminn__Fatalution_/4f0a9__Credits_-_Sonoluminn__Fatalution__16118e13530a2d96.vivify' (translated 7 of 7 shader(s) (152 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 0 of 0 block-compressed texture(s) marked readable (0 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/44f7c (Wii Coconut Mall - Nugget & Rashed)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/44f7c (Wii Coconut Mall - Nugget & Rashed)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/44f7c__Wii_Coconut_Mall_-_Nugget___Rashed_/44f7c__Wii_Coconut_Mall_-_Nugget___Rashed__57f00299e975a3a0.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45051 (Nhelv - Remec)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/45051__Nhelv_-_Remec_/45051__Nhelv_-_Remec__dd1723ff323fb32b.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/45051__Nhelv_-_Remec_/45051__Nhelv_-_Remec__dd1723ff323fb32b.vivify' to reconvert
+[INFO] Vivify shader conversion: 17 of 17 shader(s) linked for multiview GLES, 128 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 232 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 17 of 17 block-compressed texture(s) readable (17 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45051 (Nhelv - Remec)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/45051__Nhelv_-_Remec_/45051__Nhelv_-_Remec__dd1723ff323fb32b.vivify' (translated 17 of 17 shader(s) (163 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 17 of 17 block-compressed texture(s) marked readable (17 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51806 (geekd - SwervyMan)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51806 (geekd - SwervyMan)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51806__geekd_-_SwervyMan_/51806__geekd_-_SwervyMan__1b0d4e19bbe5c9bf.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/52f65 (I_ve Got in Your Tablet - tetralign)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/52f65 (I_ve Got in Your Tablet - tetralign)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/52f65__I_ve_Got_in_Your_Tablet_-_tetralign_/52f65__I_ve_Got_in_Your_Tablet_-_tetralign__44832efd71e04a58.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ccfb (Rain Simulator - Nugget)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4ccfb__Rain_Simulator_-_Nugget_/4ccfb__Rain_Simulator_-_Nugget__be5613a8221f1bd6.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4ccfb__Rain_Simulator_-_Nugget_/4ccfb__Rain_Simulator_-_Nugget__be5613a8221f1bd6.vivify' to reconvert
+[INFO] Vivify shader conversion: 12 of 12 shader(s) linked for multiview GLES, 338 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 584 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 17 of 17 block-compressed texture(s) readable (17 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ccfb (Rain Simulator - Nugget)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4ccfb__Rain_Simulator_-_Nugget_/4ccfb__Rain_Simulator_-_Nugget__be5613a8221f1bd6.vivify' (translated 12 of 12 shader(s) (512 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 17 of 17 block-compressed texture(s) marked readable (17 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e1ae (Burning Sands - slabs37)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e1ae (Burning Sands - slabs37)/bundleWindows2019.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4e1ae__Burning_Sands_-_slabs37_/4e1ae__Burning_Sands_-_slabs37__1e405a61036e1b17.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/514ad (Lucky Number 3 - welpy)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/514ad (Lucky Number 3 - welpy)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/514ad__Lucky_Number_3_-_welpy_/514ad__Lucky_Number_3_-_welpy__de41ff805a23bf1d.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55c11 (We_re Gonna Cruise the island... - PootisMan111232)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55c11 (We_re Gonna Cruise the island... - PootisMan111232)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55c11__We_re_Gonna_Cruise_the_island____-_Pootis/55c11__We_re_Gonna_Cruise_the_island____-_Pootis_ba3db2cf0ef6c32f.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/500eb (By The Wind - slabs37)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/500eb__By_The_Wind_-_slabs37_/500eb__By_The_Wind_-_slabs37__18d744691c57abf6.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/500eb__By_The_Wind_-_slabs37_/500eb__By_The_Wind_-_slabs37__18d744691c57abf6.vivify' to reconvert
+[INFO] Vivify shader conversion: 26 of 26 shader(s) linked for multiview GLES, 399 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 819 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 1 of 1 block-compressed texture(s) readable (1 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/500eb (By The Wind - slabs37)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/500eb__By_The_Wind_-_slabs37_/500eb__By_The_Wind_-_slabs37__18d744691c57abf6.vivify' (translated 26 of 26 shader(s) (766 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 1 of 1 block-compressed texture(s) marked readable (1 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55e07 (_Perfect Pair__ - Error404)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55e07 (_Perfect Pair__ - Error404)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55e07___Perfect_Pair___-_Error404_/55e07___Perfect_Pair___-_Error404__ccd4cae14fb1a5c3.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e493 (im a sandwich - Kimi)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4e493__im_a_sandwich_-_Kimi_/4e493__im_a_sandwich_-_Kimi__94d5607c50300ecf.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4e493__im_a_sandwich_-_Kimi_/4e493__im_a_sandwich_-_Kimi__94d5607c50300ecf.vivify' to reconvert
+[INFO] Vivify shader conversion: 4 of 4 shader(s) linked for multiview GLES, 32 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 60 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 3 of 3 block-compressed texture(s) readable (3 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4e493 (im a sandwich - Kimi)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4e493__im_a_sandwich_-_Kimi_/4e493__im_a_sandwich_-_Kimi__94d5607c50300ecf.vivify' (translated 4 of 4 shader(s) (59 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 3 of 3 block-compressed texture(s) marked readable (3 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5156d (See Myself - Cabers)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/5156d__See_Myself_-_Cabers_/5156d__See_Myself_-_Cabers__b084a4914fe5d72b.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/5156d__See_Myself_-_Cabers_/5156d__See_Myself_-_Cabers__b084a4914fe5d72b.vivify' to reconvert
+[INFO] Vivify shader conversion: 11 of 11 shader(s) linked for multiview GLES, 64 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 136 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 1 of 1 block-compressed texture(s) readable (1 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5156d (See Myself - Cabers)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/5156d__See_Myself_-_Cabers_/5156d__See_Myself_-_Cabers__b084a4914fe5d72b.vivify' (translated 11 of 11 shader(s) (106 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 1 of 1 block-compressed texture(s) marked readable (1 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/500ec (Walking Beside a Dragonfly - slabs37)/bundleWindows2019.vivify'
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.01,1.31,0.03) fwd=(0.10,-0.23,0.97)
+[INFO] Vivify main camera cullingMask is now 0x3818ff37
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify shader conversion: 46 of 46 shader(s) linked for multiview GLES, 939 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 1904 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 1 of 1 block-compressed texture(s) readable (1 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/500ec (Walking Beside a Dragonfly - slabs37)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/500ec__Walking_Beside_a_Dragonfly_-_slabs37_/500ec__Walking_Beside_a_Dragonfly_-_slabs37__aabd92a85c1b9e96.vivify' (translated 46 of 46 shader(s) (1776 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 1 of 1 block-compressed texture(s) marked readable (1 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/47172 (Rat Dance  - RatChase & RatEhGyro)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/47172 (Rat Dance  - RatChase & RatEhGyro)/bundleWindows2019.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/47172__Rat_Dance__-_RatChase___RatEhGyro_/47172__Rat_Dance__-_RatChase___RatEhGyro__2b313e5afc453d2b.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/518e5 (Love the way you lie - SwervyMan)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/518e5 (Love the way you lie - SwervyMan)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/518e5__Love_the_way_you_lie_-_SwervyMan_/518e5__Love_the_way_you_lie_-_SwervyMan__bafd9342a7729490.vivify'
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.65,0.03) fwd=(0.43,-0.38,0.82)
+[INFO] Vivify main camera cullingMask is now 0x3818ff37
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4a3da (NEVER (feat. Evil Neuro) - TheDoctorTTV)/bundleWindows2021.vivify'
+[INFO] Vivify shader conversion: 5 of 5 shader(s) linked for multiview GLES, 57 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 106 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4a3da (NEVER (feat. Evil Neuro) - TheDoctorTTV)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4a3da__NEVER__feat__Evil_Neuro__-_TheDoctorTTV_/4a3da__NEVER__feat__Evil_Neuro__-_TheDoctorTTV__4b3cecc22fbc31bb.vivify' (translated 5 of 5 shader(s) (70 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 0 of 0 block-compressed texture(s) marked readable (0 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/52c0e (Ramen-Man - Tizian)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/52c0e__Ramen-Man_-_Tizian_/52c0e__Ramen-Man_-_Tizian__117b21216507daee.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/52c0e__Ramen-Man_-_Tizian_/52c0e__Ramen-Man_-_Tizian__117b21216507daee.vivify' to reconvert
+[INFO] Vivify shader conversion: 4 of 4 shader(s) linked for multiview GLES, 4 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 8 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/52c0e (Ramen-Man - Tizian)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/52c0e__Ramen-Man_-_Tizian_/52c0e__Ramen-Man_-_Tizian__117b21216507daee.vivify' (translated 4 of 4 shader(s) (8 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 0 of 0 block-compressed texture(s) marked readable (0 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f82e (Get Your Wish - nasafrasa)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f82e__Get_Your_Wish_-_nasafrasa_/4f82e__Get_Your_Wish_-_nasafrasa__70893057d532e8f6.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f82e__Get_Your_Wish_-_nasafrasa_/4f82e__Get_Your_Wish_-_nasafrasa__70893057d532e8f6.vivify' to reconvert
+[INFO] Vivify shader conversion: 26 of 26 shader(s) linked for multiview GLES, 83 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 78 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 5 of 5 block-compressed texture(s) readable (5 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f82e (Get Your Wish - nasafrasa)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4f82e__Get_Your_Wish_-_nasafrasa_/4f82e__Get_Your_Wish_-_nasafrasa__70893057d532e8f6.vivify' (translated 26 of 26 shader(s) (158 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 5 of 5 block-compressed texture(s) marked readable (5 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ea5c (Odysseus - slabs37)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4ea5c__Odysseus_-_slabs37_/4ea5c__Odysseus_-_slabs37__7251e0404acd5c3b.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4ea5c__Odysseus_-_slabs37_/4ea5c__Odysseus_-_slabs37__7251e0404acd5c3b.vivify' to reconvert
+[INFO] Vivify shader conversion: 15 of 15 shader(s) linked for multiview GLES, 320 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 674 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 1 of 1 block-compressed texture(s) readable (1 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4ea5c (Odysseus - slabs37)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4ea5c__Odysseus_-_slabs37_/4ea5c__Odysseus_-_slabs37__7251e0404acd5c3b.vivify' (translated 15 of 15 shader(s) (604 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 1 of 1 block-compressed texture(s) marked readable (1 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5112d (LAND OF FIRE [FITBEAT] - slabs37)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5112d (LAND OF FIRE [FITBEAT] - slabs37)/bundleWindows2019.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/5112d__LAND_OF_FIRE__FITBEAT__-_slabs37_/5112d__LAND_OF_FIRE__FITBEAT__-_slabs37__3f95dca61169e6f2.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a26 (luminescent - nasafrasa)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a26 (luminescent - nasafrasa)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43a26__luminescent_-_nasafrasa_/43a26__luminescent_-_nasafrasa__b6899bfddebc0cb2.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/558d8 (VIVIFY Divine Madness - Pixy31 X atomsun)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/558d8 (VIVIFY Divine Madness - Pixy31 X atomsun)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/558d8__VIVIFY_Divine_Madness_-_Pixy31_X_atomsun_/558d8__VIVIFY_Divine_Madness_-_Pixy31_X_atomsun__999ec1a12ab05dcc.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a4b (Yoi Okashi to Warui Okashi - Elecast)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43a4b__Yoi_Okashi_to_Warui_Okashi_-_Elecast_/43a4b__Yoi_Okashi_to_Warui_Okashi_-_Elecast__b4472bf90a5cdf7a.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43a4b__Yoi_Okashi_to_Warui_Okashi_-_Elecast_/43a4b__Yoi_Okashi_to_Warui_Okashi_-_Elecast__b4472bf90a5cdf7a.vivify' to reconvert
+[INFO] Vivify shader translation left some variants on DirectX -- Roystan/Grass: hull/domain tessellation stages remain DirectX; linked vertex/fragment/geometry programs are partial coverage
+[INFO] Vivify shader conversion: 24 of 24 shader(s) linked for multiview GLES, 163 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 306 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 33 of 33 block-compressed texture(s) readable (33 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a4b (Yoi Okashi to Warui Okashi - Elecast)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43a4b__Yoi_Okashi_to_Warui_Okashi_-_Elecast_/43a4b__Yoi_Okashi_to_Warui_Okashi_-_Elecast__b4472bf90a5cdf7a.vivify' (translated 24 of 24 shader(s) (216 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 33 of 33 block-compressed texture(s) marked readable (33 streamed); 1 shader(s) retain untranslated tessellation stages)
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/46165 (norlore jumpscare - WDG_pagdorn)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/46165 (norlore jumpscare - WDG_pagdorn)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/46165__norlore_jumpscare_-_WDG_pagdorn_/46165__norlore_jumpscare_-_WDG_pagdorn__3b33748c07221385.vivify'
+[INFO] Vivify fixed material: chart eligibility=true for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/477a7 (Before The Infinite Eclipse - slabs37)/bundleWindows2019.vivify'
+[INFO] Vivify shader conversion: 21 of 21 shader(s) linked for multiview GLES, 263 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 666 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 5 of 5 block-compressed texture(s) readable (5 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/477a7 (Before The Infinite Eclipse - slabs37)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/477a7__Before_The_Infinite_Eclipse_-_slabs37_/477a7__Before_The_Infinite_Eclipse_-_slabs37__42ba51103a4bb05f.vivify' (translated 21 of 21 shader(s) (471 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 5 of 5 block-compressed texture(s) marked readable (5 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/47aa6 (Obama Prism - 5Green)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/47aa6 (Obama Prism - 5Green)/bundleWindows2021.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/47aa6__Obama_Prism_-_5Green_/47aa6__Obama_Prism_-_5Green__e177ab9790f663b7.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51873 (I Got No Time - SwervyMan)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51873 (I Got No Time - SwervyMan)/bundleWindows2019.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/51873__I_Got_No_Time_-_SwervyMan_/51873__I_Got_No_Time_-_SwervyMan__20a709c63995c889.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__2b2a6960e8545acb.vivify'
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4cbae (Your Idol - MadChase, Bytrius)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4cbae__Your_Idol_-_MadChase__Bytrius_/4cbae__Your_Idol_-_MadChase__Bytrius__d2e0b045249e3247.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4cbae__Your_Idol_-_MadChase__Bytrius_/4cbae__Your_Idol_-_MadChase__Bytrius__d2e0b045249e3247.vivify' to reconvert
+[INFO] Vivify shader conversion: 17 of 17 shader(s) linked for multiview GLES, 349 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 836 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 4 of 4 block-compressed texture(s) readable (4 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4cbae (Your Idol - MadChase, Bytrius)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4cbae__Your_Idol_-_MadChase__Bytrius_/4cbae__Your_Idol_-_MadChase__Bytrius__d2e0b045249e3247.vivify' (translated 17 of 17 shader(s) (668 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 4 of 4 block-compressed texture(s) marked readable (4 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4589a (Wasteland - HickeyChan)/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4589a__Wasteland_-_HickeyChan_/4589a__Wasteland_-_HickeyChan__0594c9329dd28649.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4589a__Wasteland_-_HickeyChan_/4589a__Wasteland_-_HickeyChan__0594c9329dd28649.vivify' to reconvert
+[INFO] Vivify shader conversion: 20 of 20 shader(s) linked for multiview GLES, 347 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 668 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 2 of 2 block-compressed texture(s) readable (2 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4589a (Wasteland - HickeyChan)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4589a__Wasteland_-_HickeyChan_/4589a__Wasteland_-_HickeyChan__0594c9329dd28649.vivify' (translated 20 of 20 shader(s) (488 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 2 of 2 block-compressed texture(s) marked readable (2 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bb17 (Huntress - slabs37)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4bb17__Huntress_-_slabs37_/4bb17__Huntress_-_slabs37__442e92c8f3a7185c.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4bb17__Huntress_-_slabs37_/4bb17__Huntress_-_slabs37__442e92c8f3a7185c.vivify' to reconvert
+[INFO] Vivify shader conversion: 12 of 12 shader(s) linked for multiview GLES, 241 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 638 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 1 of 1 block-compressed texture(s) readable (1 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bb17 (Huntress - slabs37)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4bb17__Huntress_-_slabs37_/4bb17__Huntress_-_slabs37__442e92c8f3a7185c.vivify' (translated 12 of 12 shader(s) (440 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 1 of 1 block-compressed texture(s) marked readable (1 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/44750 (Celeste First Steps - Pixy)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/44750__Celeste_First_Steps_-_Pixy_/44750__Celeste_First_Steps_-_Pixy__bab32cd9f2cd0ff9.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/44750__Celeste_First_Steps_-_Pixy_/44750__Celeste_First_Steps_-_Pixy__bab32cd9f2cd0ff9.vivify' to reconvert
+[INFO] Vivify shader conversion: 7 of 7 shader(s) linked for multiview GLES, 127 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 226 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 4 of 4 block-compressed texture(s) readable (4 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/44750 (Celeste First Steps - Pixy)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/44750__Celeste_First_Steps_-_Pixy_/44750__Celeste_First_Steps_-_Pixy__bab32cd9f2cd0ff9.vivify' (translated 7 of 7 shader(s) (182 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 4 of 4 block-compressed texture(s) marked readable (4 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/20a58945e967d1710e3b954177d22b32972409d6/bundleWindows2021.vivify'
+[INFO] Vivify bulk convert: cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/20a58945e967d1710e3b954177d22b32972409d6/20a58945e967d1710e3b954177d22b32972409d6_2d41f0ef8c326798.vivify' predates this converter, redoing it
+[INFO] Vivify bulk convert: discarded cached '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/20a58945e967d1710e3b954177d22b32972409d6/20a58945e967d1710e3b954177d22b32972409d6_2d41f0ef8c326798.vivify' to reconvert
+[INFO] Vivify shader conversion: 11 of 11 shader(s) linked for multiview GLES, 48 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 102 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 4 of 4 block-compressed texture(s) readable (4 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/20a58945e967d1710e3b954177d22b32972409d6/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/20a58945e967d1710e3b954177d22b32972409d6/20a58945e967d1710e3b954177d22b32972409d6_2d41f0ef8c326798.vivify' (translated 11 of 11 shader(s) (84 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 4 of 4 block-compressed texture(s) marked readable (4 streamed))
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/519ba (Banana Run - Precontation)/bundleWindows2019.vivify'
+[INFO] Vivify bulk convert: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/519ba (Banana Run - Precontation)/bundleWindows2019.vivify' already cached at '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/519ba__Banana_Run_-_Precontation_/519ba__Banana_Run_-_Precontation__b3273f2f9d948baf.vivify'
+[INFO] Vivify bulk convert finished: scanned=411 converted=36 alreadyDone=29 failed=0
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f95d (The Purple Dimension - Jiuyn)' isCustom=true hasDetails=true
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' isCustom=true hasDetails=true
+[INFO] Vivify score submission: enabled for this Vivify map
+[INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+[INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__2b2a6960e8545acb.vivify' cached=true
+[INFO] Vivify depth copy: PC 2D material=true PC array-slice material=true native slice binding=true
+[INFO] Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__2b2a6960e8545acb.vivify' grabs _GrabTexture1
+[INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__2b2a6960e8545acb.vivify' -> needed by Swifter/VFX/StarFlare, Swifter/VFX/RingArtifact, Swifter/Blit/Bokeh
+[INFO] Vivify: '4968d (743_Aether____ . _ 111} _ , . - Swifter)' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' isCustom=true hasDetails=true
+[INFO] Vivify score submission: enabled for this Vivify map
+[INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+[INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743_Aether____ . _ 111} _ , . - Swifter)/bundleWindows2019.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_________111________-_Swifter_/4968d__743_Aether_________111________-_Swifter__2b2a6960e8545acb.vivify' cached=true
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.00,1.71,-0.02) fwd=(0.72,-0.03,0.69)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify graphics: api=OpenGLES3 (11) shaderLevel=50 (SM5.0) geometryShaderStagePossible=true gpu='Adreno (TM) 740'
+[INFO] Vivify Projector interface: managedType=false nativeGetMaterial=true nativeSetMaterial=true
+[INFO] Vivify texture decode: scanned 222 material(s), replaced 0 unsupported texture reference(s) in 6ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+[INFO] Vivify: GPU instancing turned off on 64 material(s) of this converted bundle, so notes drawn together (chords, chains) each get their own transform
+[INFO] Vivify: maps may turn realtime reflection probes on (full quality)
+[INFO] Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+[INFO] Vivify: this map has its own saber, so 'ReeSaber' (ReeSabers::ReeSaberController) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+[INFO] Vivify: this map has its own saber, so 'BlurSaber' (ReeSabers::BlurSaber) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+[INFO] Vivify saber: the map's model was not being drawn (another saber mod hid or switched off the game's model); re-enabled 0 renderer(s), moved 1 object(s) onto the saber, visible now: true
+[INFO] Vivify saber trail: 1 map trail(s) created (following the game's trail)
+[INFO] Vivify saber: the map's model was not being drawn (another saber mod hid or switched off the game's model); re-enabled 0 renderer(s), moved 1 object(s) onto the saber, visible now: true
+[INFO] Vivify saber trail: 1 map trail(s) created (following the game's trail)
+[INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+[INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+[INFO] Vivify Blit check: effect(s) 'Swifter/Blit/Bokeh' -- 3+ colour(s) among 16 blocks going in, 3+ coming out (first rgb=(11,15,15)); screen 1680x1760 slices=2; _ScreenParams before the effects=(1680,1760)
+[INFO] Vivify heat: GPU temperature 54 C, Android thermal status 0
+[INFO] Vivify visual check at 5s: 6 live note(s), 6 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+[INFO] Vivify visual check: a live note has 6 renderer(s) (map prefab):
+[INFO] Vivify visual check:   'NoteCube' enabled=false active=true layer=8 material='NoteHD' shader='Custom/NoteHD' supported=true queue=2004 block: _Cutout=1.00 _Color=(1.00,0.20,0.20,1.00)
+[INFO] Vivify visual check:   'NoteArrow' enabled=false active=true layer=8 material='NoteArrowHD' shader='Custom/GlowingInstancedHD' supported=true queue=2002 block: _Cutout=0.78 _Color=(0.00,0.00,0.00,0.00)
+[INFO] Vivify visual check:   'NoteArrowGlow' enabled=false active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(1.00,0.20,0.20,1.00)
+[INFO] Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(1.00,0.20,0.20,1.00)
+[INFO] Vivify visual check:   'Base' enabled=true active=true layer=8 material='Terrain Note' shader='Swifter/SimpleTerrainFog' supported=true queue=2000 block: _Cutout=0.00 _Color=(1.00,0.20,0.20,1.00)
+[INFO] Vivify visual check:   'Arrow' enabled=true active=true layer=8 material='White Arrow' shader='Swifter/CustomNoteArrow' supported=true queue=2000 block: _Cutout=0.00 _Color=(1.00,0.20,0.20,1.00)
+[INFO] Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+[INFO] Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+[INFO] Vivify visual check at 5s: 415 active renderer(s), 0 with no runnable shader; most drawn: Swifter/SimpleTerrainFog x372, Custom/CustomParticles x9, Swifter/Gemstone x8, Swifter/CustomNoteArrow x6, Custom/NoteLW x4, Swifter/VFX/StarFlare x3, Swifter/SimpleColor x2, Swifter/VFX/RingArtifact x2; screen effects: 0 before, 1 after the main effect
+[INFO] Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+[INFO] Vivify visual check: main camera cullingMask=0x3d3bfd37 depthTextureMode=1 clearFlags=2
+[INFO] Vivify Blit check: effect(s) 'Swifter/Blit/Bokeh' -- 3+ colour(s) among 16 blocks going in, 2 coming out (first rgb=(0,0,0)); screen 1680x1760 slices=2; _ScreenParams before the effects=(1680,1760)
+[WARN] Vivify Blit: the screen came out as 2 colour(s) across all 16 blocks; every screen effect is off for the rest of this level (Flat-Screen Effect Guard in settings)
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.07,1.68,-0.01) fwd=(0.13,-0.21,0.97)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+[INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+[INFO] Vivify level end: level ended (quit or finished)
+[INFO] Vivify level end: camera effects removed
+[INFO] Vivify level end: note and saber visuals restored
+[INFO] Vivify level end: camera restored
+[INFO] Vivify level end: map prefabs destroyed
+[INFO] Vivify level end: render textures released
+[INFO] Vivify level end: render settings restored
+[INFO] Vivify level end: done
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/29f8d (nieuwe tune - Sync)' isCustom=true hasDetails=true
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55246 (_N.Gate - Lio)' isCustom=true hasDetails=true
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/552b0 (______ ____________________ ____________ _3 - __________ ____________)' isCustom=true hasDetails=true
+[INFO] Vivify replay recorder: not recording this level (a replay is being watched or rendered)
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.10,1.32,-0.02) fwd=(0.04,-0.21,0.98)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera cullingMask is now 0x7f7bfdf7
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.09,1.31,0.00) fwd=(0.09,-0.33,0.94)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (a replay is being watched or rendered)
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.09,1.35,0.00) fwd=(0.04,-0.11,0.99)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera cullingMask is now 0x7f7bfdf7
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.08,1.31,-0.01) fwd=(0.03,-0.42,0.91)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.07,1.70,-0.03) fwd=(0.08,-0.04,1.00)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.07,1.65,-0.01) fwd=(-0.08,-0.38,0.92)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.01,1.67,-0.03) fwd=(0.02,-0.26,0.96)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.07,1.64,-0.01) fwd=(-0.01,-0.32,0.95)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.08,1.66,-0.01) fwd=(-0.03,-0.32,0.95)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.10,1.62,-0.05) fwd=(-0.32,-0.41,0.86)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.05,1.68,-0.02) fwd=(0.11,-0.22,0.97)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.04,1.65,-0.01) fwd=(-0.11,-0.41,0.91)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.04,1.68,0.00) fwd=(-0.21,-0.21,0.96)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.05,1.64,0.01) fwd=(0.01,-0.47,0.88)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.07,1.68,-0.03) fwd=(-0.08,-0.16,0.98)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.04,1.70,-0.00) fwd=(0.12,-0.11,0.99)
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.05,1.69,-0.01) fwd=(-0.07,-0.14,0.99)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.13,1.68,-0.06) fwd=(-0.27,-0.08,0.96)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.06,1.65,-0.09) fwd=(-0.08,-0.29,0.95)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.07,1.68,0.01) fwd=(-0.07,-0.19,0.98)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.64,-0.02) fwd=(-0.10,-0.40,0.91)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.08,1.68,-0.01) fwd=(0.07,-0.16,0.99)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.64,0.00) fwd=(0.08,-0.54,0.84)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.01,1.69,-0.02) fwd=(-0.26,-0.16,0.95)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.09,1.65,0.00) fwd=(-0.24,-0.29,0.93)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (a replay is being watched or rendered)
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.12,1.33,-0.01) fwd=(-0.05,-0.22,0.97)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera cullingMask is now 0x7f7bfdf7
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.02,1.33,-0.02) fwd=(-0.02,-0.19,0.98)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.02,1.70,-0.03) fwd=(-0.02,0.01,1.00)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.03,1.70,-0.02) fwd=(0.03,-0.03,1.00)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.01,1.69,-0.01) fwd=(-0.02,-0.12,0.99)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.02,1.61,-0.01) fwd=(-0.13,-0.57,0.81)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.01,1.68,-0.04) fwd=(0.07,-0.20,0.98)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.00,1.66,0.07) fwd=(-0.00,-0.43,0.90)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.09,1.69,0.06) fwd=(-0.06,-0.21,0.98)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.01,1.62,0.08) fwd=(-0.10,-0.60,0.79)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.01,1.68,0.03) fwd=(-0.11,-0.22,0.97)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.01,1.67,0.07) fwd=(-0.02,-0.38,0.92)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.01,1.64,0.04) fwd=(-0.12,-0.47,0.87)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.04,1.64,-0.01) fwd=(0.50,-0.38,0.78)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.00,1.69,0.00) fwd=(-0.00,-0.14,0.99)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.66,-0.02) fwd=(0.03,-0.33,0.94)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.00,1.69,0.00) fwd=(-0.06,-0.15,0.99)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.06,1.65,-0.01) fwd=(-0.03,-0.43,0.90)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.00,1.68,0.01) fwd=(-0.19,-0.16,0.97)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.65,-0.01) fwd=(0.07,-0.37,0.92)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.01,1.68,0.02) fwd=(-0.06,-0.17,0.98)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.66,-0.02) fwd=(0.09,-0.36,0.93)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/2ca6b (stasis - oermergeesh)' isCustom=true hasDetails=true
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3a414 (Hold Angel - Slayx)' isCustom=true hasDetails=true
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a47 (Breezer - Jan Ilavsky)' isCustom=true hasDetails=true
+[INFO] Vivify score submission: enabled for this Vivify map
+[INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a47 (Breezer - Jan Ilavsky)/bundleAndroid2021.vivify'
+[INFO] Vivify: play button blocked by Vivify ("Checking shaders...")
+[INFO] Vivify: play button is enabled (no mod is blocking it)
+[INFO] Vivify: the Replay mod's button is clickable again now that the map is ready
+[INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a47 (Breezer - Jan Ilavsky)/bundleAndroid2021.vivify' -> not needed
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.01,1.69,0.01) fwd=(0.38,-0.13,0.91)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.69,0.02) fwd=(0.27,-0.22,0.94)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.01,1.68,0.02) fwd=(-0.20,-0.22,0.95)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.07,1.68,-0.02) fwd=(0.09,-0.24,0.97)
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.00,1.67,-0.04) fwd=(0.32,-0.28,0.90)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a47 (Breezer - Jan Ilavsky)' isCustom=true hasDetails=true
+[INFO] Vivify score submission: enabled for this Vivify map
+[INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+[INFO] Vivify: play button blocked by Vivify ("Checking shaders...")
+[INFO] Vivify: play button is enabled (no mod is blocking it)
+[INFO] Vivify: the Replay mod's button is clickable again now that the map is ready
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.03,1.68,-0.01) fwd=(-0.02,-0.16,0.99)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.67,-0.03) fwd=(0.12,-0.22,0.97)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.05,1.70,-0.01) fwd=(-0.01,-0.03,1.00)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.68,0.01) fwd=(0.07,-0.16,0.98)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a47 (Breezer - Jan Ilavsky)' isCustom=true hasDetails=true
+[INFO] Vivify score submission: enabled for this Vivify map
+[INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+[INFO] Vivify: play button blocked by Vivify ("Checking shaders...")
+[INFO] Vivify: play button is enabled (no mod is blocking it)
+[INFO] Vivify: the Replay mod's button is clickable again now that the map is ready
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.03,1.68,-0.01) fwd=(0.09,-0.20,0.97)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.03,1.65,-0.02) fwd=(-0.41,-0.31,0.86)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/53cd6 (pree me at the party - Wind)' isCustom=true hasDetails=true
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/53cd6 (pree me at the party - Wind)' isCustom=true hasDetails=true
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.10,1.68,-0.00) fwd=(0.23,-0.07,0.97)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.08,1.61,-0.00) fwd=(0.36,-0.58,0.73)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.01,1.68,0.03) fwd=(-0.05,-0.20,0.98)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.08,1.65,-0.03) fwd=(0.28,-0.40,0.87)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/33705 (999 - Bitz)' isCustom=true hasDetails=true
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.00,1.68,0.05) fwd=(0.09,-0.14,0.99)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.08,1.69,-0.04) fwd=(0.42,-0.15,0.90)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/33705 (999 - Bitz)' isCustom=true hasDetails=true
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.03,1.69,-0.00) fwd=(0.27,-0.12,0.95)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.05,1.64,0.08) fwd=(-0.19,-0.43,0.88)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/555e9 (Heartbreak and handjobs - Literallymass)' isCustom=true hasDetails=true
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/2d165 (Forget - Flickclickboom)' isCustom=true hasDetails=true
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/27be6 (99.9 - Spoekle & yabje)' isCustom=true hasDetails=true
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bd60 (The Snail - Vainstains)' isCustom=true hasDetails=true
+[INFO] Vivify score submission: enabled for this Vivify map
+[INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+[INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bd60 (The Snail - Vainstains)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bd60 (The Snail - Vainstains)/bundleWindows2021.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4bd60__The_Snail_-_Vainstains_/4bd60__The_Snail_-_Vainstains__6f3f005d6d0cef8e.vivify' cached=true
+[INFO] Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4bd60__The_Snail_-_Vainstains_/4bd60__The_Snail_-_Vainstains__6f3f005d6d0cef8e.vivify' grabs _GrabTexture1
+[INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4bd60__The_Snail_-_Vainstains_/4bd60__The_Snail_-_Vainstains__6f3f005d6d0cef8e.vivify' -> needed by Legacy Shaders/Particles/Additive
+[INFO] Vivify: '4bd60 (The Snail - Vainstains)' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+[INFO] Vivify replay render: preparing the single-view conversion of '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4bd60 (The Snail - Vainstains)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4bd60__The_Snail_-_Vainstains_/4bd60__The_Snail_-_Vainstains__6f3f005d6d0cef8e_replay.vivify'
+[INFO] Vivify shader conversion: 6 of 6 shader(s) linked for multiview GLES, 8 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 0 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 2 of 2 block-compressed texture(s) readable (2 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify replay render: single-view conversion ready: translated 6 of 6 shader(s) (16 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 2 of 2 block-compressed texture(s) marked readable (2 streamed)
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55e07 (_Perfect Pair__ - Error404)' isCustom=true hasDetails=true
+[INFO] Vivify score submission: enabled for this Vivify map
+[INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+[INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55e07 (_Perfect Pair__ - Error404)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/55e07 (_Perfect Pair__ - Error404)/bundleWindows2021.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55e07___Perfect_Pair___-_Error404_/55e07___Perfect_Pair___-_Error404__ccd4cae14fb1a5c3.vivify' cached=true
+[INFO] Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55e07___Perfect_Pair___-_Error404_/55e07___Perfect_Pair___-_Error404__ccd4cae14fb1a5c3.vivify' grabs _PPNoteGrab
+[INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55e07___Perfect_Pair___-_Error404_/55e07___Perfect_Pair___-_Error404__ccd4cae14fb1a5c3.vivify' -> not needed
+[INFO] Vivify: '55e07 (_Perfect Pair__ - Error404)' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+[INFO] Vivify Blit: 51 single-view shader(s) ready for blits into screen textures and the map's texture cameras ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55e07___Perfect_Pair___-_Error404_/55e07___Perfect_Pair___-_Error404__ccd4cae14fb1a5c3_blit.vivify')
+[INFO] Vivify texture cameras: 43 more single-view shader(s) from the map's prefabs
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.11,1.69,0.04) fwd=(0.40,-0.10,0.91)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify texture decode: scanned 100 material(s), replaced 0 unsupported texture reference(s) in 0ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+[INFO] Vivify: GPU instancing turned off on 97 material(s) of this converted bundle, so notes drawn together (chords, chains) each get their own transform
+[INFO] Vivify: maps may turn realtime reflection probes on (full quality)
+[INFO] Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+[INFO] Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+[INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+[INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+[INFO] Vivify Blit check: effect(s) 'PerfectPair/LakeFlareView' -- 2 colour(s) among 16 blocks going in, 2 coming out (first rgb=(0,0,0)); screen 1680x1760 slices=2; _ScreenParams before the effects=(1680,1760)
+[WARN] Vivify frame stall: the game did not draw for 1.1s (songTime 2.54, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55e07___Perfect_Pair___-_Error404_/55e07___Perfect_Pair___-_Error404__ccd4cae14fb1a5c3.vivify')
+[INFO] Vivify visual check at 5s: 2 live note(s), 2 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+[INFO] Vivify visual check: a live note has 6 renderer(s) (map prefab):
+[INFO] Vivify visual check:   'NoteCube' enabled=false active=true layer=8 material='NoteLW' shader='Custom/NoteLW' supported=true queue=2004 block: _Cutout=0.00 _Color=(1.00,0.20,0.20,1.00)
+[INFO] Vivify visual check:   'NoteArrow' enabled=false active=true layer=8 material='NoteArrowLW' shader='Custom/GlowingInstancedLW' supported=true queue=2002 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+[INFO] Vivify visual check:   'NoteArrowGlow' enabled=false active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(1.00,0.20,0.20,1.00)
+[INFO] Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(1.00,0.20,0.20,1.00)
+[INFO] Vivify visual check:   'PPNoteArrow(Clone)' enabled=true active=true layer=8 material='PPNoteGlass' shader='PerfectPair/PPNote' supported=true queue=3100 block: _Cutout=0.00 _Color=(1.00,0.20,0.20,1.00)
+[INFO] Vivify visual check:   'Mark' enabled=true active=true layer=8 material='PPNoteMark' shader='PerfectPair/PPNoteMark' supported=true queue=3101 block: _Cutout=0.00 _Color=(1.00,0.20,0.20,1.00)
+[INFO] Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+[INFO] Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+[INFO] Vivify visual check at 5s: 34 active renderer(s), 0 with no runnable shader; most drawn: Custom/CustomParticles x9, Custom/NoteHD x5, TextMeshPro/Mobile/Distance Field Zero Alpha Write x2, Custom/NoteLW x2, Custom/GlowingInstancedLW x2, Ree/BlurlessSaber x2, PerfectPair/PPNote x2, PerfectPair/PPNoteMark x2; screen effects: 0 before, 5 after the main effect
+[INFO] Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+[INFO] Vivify grab texture '_PPNoteGrab' at 5s: render texture dimension=5 layers=2 1680x1760 msaa=1
+[INFO] Vivify visual check: main camera cullingMask=0x3d3bfd37 depthTextureMode=0 clearFlags=2
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.66,0.02) fwd=(0.12,-0.22,0.97)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+[INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+[INFO] Vivify level end: level ended (quit or finished)
+[INFO] Vivify level end: camera effects removed
+[INFO] Vivify level end: note and saber visuals restored
+[INFO] Vivify level end: camera restored
+[INFO] Vivify level end: map prefabs destroyed
+[INFO] Vivify level end: render textures released
+[INFO] Vivify level end: render settings restored
+[INFO] Vivify level end: done
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.04,1.69,0.08) fwd=(0.12,-0.12,0.98)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify texture decode: scanned 100 material(s), replaced 0 unsupported texture reference(s) in 0ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+[INFO] Vivify: GPU instancing turned off on 97 material(s) of this converted bundle, so notes drawn together (chords, chains) each get their own transform
+[INFO] Vivify: maps may turn realtime reflection probes on (full quality)
+[INFO] Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+[INFO] Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+[INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+[INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+[INFO] Vivify Blit check: effect(s) 'PerfectPair/LakeFlareView' -- 3+ colour(s) among 16 blocks going in, 3+ coming out (first rgb=(0,0,0)); screen 1680x1760 slices=2; _ScreenParams before the effects=(1680,1760)
+[INFO] Vivify Auto Effect Resolution: frames at 28.2 ms against a best of 18.8 ms; map effects down to 90%
+[INFO] Vivify visual check at 5s: 2 live note(s), 2 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+[INFO] Vivify visual check: a live note has 6 renderer(s) (map prefab):
+[INFO] Vivify visual check:   'NoteCube' enabled=false active=true layer=8 material='NoteLW' shader='Custom/NoteLW' supported=true queue=2004 block: _Cutout=0.00 _Color=(0.00,0.56,1.00,1.00)
+[INFO] Vivify visual check:   'NoteArrow' enabled=false active=true layer=8 material='NoteArrowLW' shader='Custom/GlowingInstancedLW' supported=true queue=2002 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+[INFO] Vivify visual check:   'NoteArrowGlow' enabled=false active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.00,0.56,1.00,1.00)
+[INFO] Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.00,0.56,1.00,1.00)
+[INFO] Vivify visual check:   'PPNoteArrow(Clone)' enabled=true active=true layer=8 material='PPNoteGlass' shader='PerfectPair/PPNote' supported=true queue=3100 block: _Cutout=0.00 _Color=(0.00,0.56,1.00,1.00)
+[INFO] Vivify visual check:   'Mark' enabled=true active=true layer=8 material='PPNoteMark' shader='PerfectPair/PPNoteMark' supported=true queue=3101 block: _Cutout=0.00 _Color=(0.00,0.56,1.00,1.00)
+[INFO] Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+[INFO] Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+[INFO] Vivify visual check at 5s: 34 active renderer(s), 0 with no runnable shader; most drawn: Custom/CustomParticles x9, Custom/NoteHD x5, TextMeshPro/Mobile/Distance Field Zero Alpha Write x2, Custom/NoteLW x2, Custom/GlowingInstancedLW x2, Ree/BlurlessSaber x2, PerfectPair/PPNote x2, PerfectPair/PPNoteMark x2; screen effects: 0 before, 5 after the main effect
+[INFO] Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+[INFO] Vivify grab texture '_PPNoteGrab' at 5s: render texture dimension=5 layers=2 1680x1760 msaa=1
+[INFO] Vivify visual check: main camera cullingMask=0x3d3bfd37 depthTextureMode=0 clearFlags=2
+[INFO] Vivify Auto Effect Resolution: frames at 30.3 ms against a best of 18.8 ms; map effects down to 80%
+[INFO] Vivify Auto Effect Resolution: frames at 28.5 ms against a best of 18.8 ms; map effects down to 70%
+[INFO] Vivify Auto Effect Resolution: frames at 29.0 ms against a best of 18.8 ms; map effects down to 60%
+[INFO] Vivify Auto Effect Resolution: frames at 28.1 ms against a best of 18.8 ms; map effects down to 50%
+[INFO] Vivify Auto Effect Resolution: frames at 28.1 ms against a best of 18.8 ms; map effects down to 40%
+[INFO] Vivify Blit check: effect(s) 'PerfectPair/LakeBlur', 'PerfectPair/LotCapture', 'PerfectPair/LakeFlareView', 'PerfectPair/LakePano' -- 3+ colour(s) among 16 blocks going in, 2 coming out (first rgb=(0,0,0)); screen 1680x1760 slices=2; _ScreenParams before the effects=(1680,1760)
+[WARN] Vivify Blit: the screen came out as 2 colour(s) across all 16 blocks; every screen effect is off for the rest of this level (Flat-Screen Effect Guard in settings)
+[WARN] Vivify frame stall: the game did not draw for 0.6s (songTime 14.75, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/55e07___Perfect_Pair___-_Error404_/55e07___Perfect_Pair___-_Error404__ccd4cae14fb1a5c3.vivify')
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.04,1.68,0.01) fwd=(-0.06,-0.05,1.00)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+[INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+[INFO] Vivify level end: level ended (quit or finished)
+[INFO] Vivify level end: camera effects removed
+[INFO] Vivify level end: note and saber visuals restored
+[INFO] Vivify level end: camera restored
+[INFO] Vivify level end: map prefabs destroyed
+[INFO] Vivify level end: render textures released
+[INFO] Vivify level end: render settings restored
+[INFO] Vivify level end: done
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/436e5 (Aishite Aishite Aishite - nitronik.exe)' isCustom=true hasDetails=true
+[INFO] Vivify Send Logs: queued behind the current upload
+[INFO] Vivify Send Logs: queued behind the current upload
+[INFO] Vivify Send Logs: queued behind the current upload
+[INFO] Vivify Send Logs: relay health check succeeded
+[INFO] Vivify Send Logs: uploaded 5 file part(s), 251 KB (logs/2026-11-27/182651_0.15.53_f900c086c46f1c97 09ed954; stored 5, deduplicated 0; 65470368 bytes saved cumulatively
+[INFO] )
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56061 (Golden Hour - Rytia_Bucam)' isCustom=true hasDetails=true
+[INFO] Vivify score submission: enabled for this Vivify map
+[INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=40% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56061 (Golden Hour - Rytia_Bucam)/bundleWindows2019.vivify'
+[INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56061 (Golden Hour - Rytia_Bucam)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56061 (Golden Hour - Rytia_Bucam)/bundleWindows2019.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/56061__Golden_Hour_-_Rytia_Bucam_/56061__Golden_Hour_-_Rytia_Bucam__43a5243e3c0ee7bc.vivify' cached=false
+[INFO] Vivify: play button blocked by Vivify ("Converting PC assets...")
+[INFO] Vivify converting PC asset bundle on device: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56061 (Golden Hour - Rytia_Bucam)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/56061__Golden_Hour_-_Rytia_Bucam_/56061__Golden_Hour_-_Rytia_Bucam__43a5243e3c0ee7bc.vivify'
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56061 (Golden Hour - Rytia_Bucam)' isCustom=true hasDetails=true
+[INFO] Vivify score submission: enabled for this Vivify map
+[INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=40% sceneDepth=true prepareShaders=false geometryEffects=false offscreenCulling=false farCulling=0m crashGuard=true pcBundleForMissingShaders=false replayRenderMode=false windowsBundleForThisMap=false mapRealtimeShadows=false mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+[INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56061 (Golden Hour - Rytia_Bucam)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56061 (Golden Hour - Rytia_Bucam)/bundleWindows2019.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/56061__Golden_Hour_-_Rytia_Bucam_/56061__Golden_Hour_-_Rytia_Bucam__43a5243e3c0ee7bc.vivify' cached=false
+[INFO] Vivify shader conversion: 5 of 5 shader(s) linked for multiview GLES, 10 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 0 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 2 of 2 block-compressed texture(s) readable (2 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify source bundle shaders: unity=2021.3.16f1 serializedFiles=1 shaders=5 runnableOnQuest=0 platforms=[Direct3D 11(4)] programs=42 glslSource=0 binary=42 shadersWithTessellation=0 programTypes=[unknown, D3D11 vertex sm4.0, D3D11 pixel sm4.0]
+[INFO] Vivify bundle conversion succeeded: translated 5 of 5 shader(s) (20 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 2 of 2 block-compressed texture(s) marked readable (2 streamed)
+[INFO] Vivify: play button is enabled (no mod is blocking it)
+[INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/56061__Golden_Hour_-_Rytia_Bucam_/56061__Golden_Hour_-_Rytia_Bucam__43a5243e3c0ee7bc.vivify' -> not needed
+[INFO] Vivify: the Replay mod's button is clickable again now that the map is ready
+[INFO] Vivify replay render: preparing the single-view conversion of '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56061 (Golden Hour - Rytia_Bucam)/bundleWindows2019.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/56061__Golden_Hour_-_Rytia_Bucam_/56061__Golden_Hour_-_Rytia_Bucam__43a5243e3c0ee7bc_replay.vivify'
+[INFO] Vivify shader conversion: 5 of 5 shader(s) linked for multiview GLES, 5 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 0 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify conversion marked 2 of 2 block-compressed texture(s) readable (2 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+[INFO] Vivify replay render: single-view conversion ready: translated 5 of 5 shader(s) (10 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 2 of 2 block-compressed texture(s) marked readable (2 streamed)
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.09,1.69,0.03) fwd=(0.39,-0.10,0.91)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify texture decode: scanned 5 material(s), replaced 0 unsupported texture reference(s) in 0ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+[INFO] Vivify: GPU instancing turned off on 1 material(s) of this converted bundle, so notes drawn together (chords, chains) each get their own transform
+[INFO] Vivify: maps may turn realtime reflection probes on (full quality)
+[INFO] Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+[INFO] Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+[INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+[INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+[INFO] Vivify Blit check: effect(s) 'Golden/Sun Lens Flare' -- 3+ colour(s) among 16 blocks going in, 2 coming out (first rgb=(0,0,0)); screen 1680x1760 slices=2; _ScreenParams before the effects=(1680,1760)
+[WARN] Vivify Blit: the screen came out as 2 colour(s) across all 16 blocks; every screen effect is off for the rest of this level (Flat-Screen Effect Guard in settings)
+[INFO] Vivify Send Logs: uploaded 1 file part(s), 1536 KB (logs/2026-11-27/182700_0.15.53_90f88c51a63747b3 63415e3; stored 1, deduplicated 0; 65470368 bytes saved cumulatively
+[INFO] )
+[INFO] Vivify visual check at 5s: 25 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+[INFO] Vivify visual check: a live note has 4 renderer(s):
+[INFO] Vivify visual check:   'NoteCube' enabled=true active=true layer=8 material='NoteHD' shader='Custom/NoteHD' supported=true queue=2004 block: _Cutout=0.00 _Color=(0.00,0.56,1.00,1.00)
+[INFO] Vivify visual check:   'NoteArrow' enabled=true active=true layer=8 material='NoteArrowHD' shader='Custom/GlowingInstancedHD' supported=true queue=2002 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+[INFO] Vivify visual check:   'NoteArrowGlow' enabled=true active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.00,0.56,1.00,1.00)
+[INFO] Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.00,0.56,1.00,1.00)
+[INFO] Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+[INFO] Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+[INFO] Vivify visual check at 5s: 402 active renderer(s), 0 with no runnable shader; most drawn: Golden/Wind Grass x168, Golden/Meadow Field x80, Custom/CustomParticles x36, Custom/NoteLW x28, Custom/GlowingInstancedLW x28, Custom/NoteHD x27, Custom/GlowingInstancedHD x21, TextMeshPro/Mobile/Distance Field Zero Alpha Write x5; screen effects: 0 before, 0 after the main effect
+[INFO] Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+[INFO] Vivify grab texture '_PPNoteGrab' at 5s: nothing bound
+[INFO] Vivify visual check: main camera cullingMask=0x3d3bfd37 depthTextureMode=0 clearFlags=2
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.69,0.02) fwd=(0.10,-0.06,0.99)
+[INFO] Vivify main camera cullingMask is now 0x3d3aff37
+[INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+[INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+[INFO] Vivify level end: level ended (quit or finished)
+[INFO] Vivify level end: camera effects removed
+[INFO] Vivify level end: note and saber visuals restored
+[INFO] Vivify level end: camera restored
+[INFO] Vivify level end: map prefabs destroyed
+[INFO] Vivify level end: render textures released
+[INFO] Vivify level end: render settings restored
+[INFO] Vivify level end: done
+[INFO] Vivify Send Logs: uploaded 1 file part(s), 1536 KB (logs/2026-11-27/182711_0.15.53_eecd51d627ad7a70 513f135; stored 1, deduplicated 0; 65470368 bytes saved cumulatively
+[INFO] )
+[INFO] Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.02,1.70,0.04) fwd=(-0.00,-0.10,1.00)
+[INFO] Vivify main camera cullingMask is now 0x3d3bfd37
+[INFO] Vivify texture decode: scanned 5 material(s), replaced 0 unsupported texture reference(s) in 0ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+[INFO] Vivify: GPU instancing turned off on 1 material(s) of this converted bundle, so notes drawn together (chords, chains) each get their own transform
+[INFO] Vivify: maps may turn realtime reflection probes on (full quality)
+[INFO] Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+[INFO] Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+[INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+[INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+[INFO] Vivify Blit check: effect(s) 'Golden/Sun Lens Flare' -- 3+ colour(s) among 16 blocks going in, 2 coming out (first rgb=(0,0,0)); screen 1680x1760 slices=2; _ScreenParams before the effects=(1680,1760)
+[WARN] Vivify Blit: the screen came out as 2 colour(s) across all 16 blocks; every screen effect is off for the rest of this level (Flat-Screen Effect Guard in settings)
+[INFO] Vivify visual check at 5s: 24 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+[INFO] Vivify visual check: a live note has 4 renderer(s):
+[INFO] Vivify visual check:   'NoteCube' enabled=true active=true layer=8 material='NoteHD' shader='Custom/NoteHD' supported=true queue=2004 block: _Cutout=0.00 _Color=(0.00,0.56,1.00,1.00)
+[INFO] Vivify visual check:   'NoteArrow' enabled=true active=true layer=8 material='NoteArrowHD' shader='Custom/GlowingInstancedHD' supported=true queue=2002 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00)
+[INFO] Vivify visual check:   'NoteArrowGlow' enabled=true active=true layer=8 material='NoteArrowGlow' shader='Custom/CustomParticles' supported=true queue=3005 block: _Cutout=0.00 _Color=(0.00,0.56,1.00,1.00)
+[INFO] Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(0.00,0.56,1.00,1.00)
+[INFO] Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+[INFO] Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+[INFO] Vivify visual check at 5s: 399 active renderer(s), 0 with no runnable shader; most drawn: Golden/Wind Grass x168, Golden/Meadow Field x80, Custom/CustomParticles x36, Custom/NoteLW x27, Custom/GlowingInstancedLW x27, Custom/NoteHD x26, Custom/GlowingInstancedHD x21, TextMeshPro/Mobile/Distance Field Zero Alpha Write x5; screen effects: 0 before, 0 after the main effect
+[INFO] Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+[INFO] Vivify grab texture '_PPNoteGrab' at 5s: nothing bound
+[INFO] Vivify visual check: main camera cullingMask=0x3d3bfd37 depthTextureMode=0 clearFlags=2
+[INFO] Vivify Send Logs: uploaded 1 file part(s), 803 KB (logs/2026-11-27/182722_0.15.53_983a31c7c80c1401 2815d4b; stored 1, deduplicated 0; 65470368 bytes saved cumulatively
+[INFO] )
+[INFO] Vivify Send Logs: relay health check succeeded
