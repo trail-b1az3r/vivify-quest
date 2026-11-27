@@ -1,0 +1,731 @@
+[INFO] Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.45,-0.01) fwd=(-0.04,0.10,0.99)
+[INFO] Vivify main camera cullingMask is now 0x3818ff37
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.03,1.45,-0.00) fwd=(-0.06,0.16,0.99)
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.00,1.45,-0.01) fwd=(0.02,0.14,0.99)
+[INFO] Vivify Send Logs: uploaded 5 file part(s), 102 KB (logs/2026-11-27/193207_0.15.44_de756bd4881f1cf6 87e5c3e; stored 5, deduplicated 0; 75074420 bytes saved cumulatively
+[INFO] )
+[INFO] Vivify: the game uses STEREO_MULTIVIEW_ON (60 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+[INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+[INFO] Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a24 (End Times - Chaimzy)' isCustom=true hasDetails=true
+[INFO] Vivify score submission: enabled for this Vivify map
+[INFO] Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=75% sceneDepth=true prepareShaders=true geometryEffects=true offscreenCulling=false farCulling=0m crashGuard=false pcBundleForMissingShaders=true replayRenderMode=false windowsBundleForThisMap=true mapRealtimeShadows=true mapReflectionProbes=full crashRecovery=true gameMirrors=true mapSabers=true
+[INFO] Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a24 (End Times - Chaimzy)/HardStandard.dat' at condition 690
+[INFO] Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a24 (End Times - Chaimzy)/bundleAndroid2021.vivify'
+[INFO] Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a24 (End Times - Chaimzy)' androidBundle=yes, Windows bundle chosen for this map android2021=268337194 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a24 (End Times - Chaimzy)/bundleAndroid2021.vivify' convertedCache='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43a24__End_Times_-_Chaimzy_/43a24__End_Times_-_Chaimzy__c9055f2e0921f7ba.vivify' cached=false
+[INFO] Vivify: play button blocked by Vivify ("Converting PC assets...")
+[INFO] Vivify converting PC asset bundle on device: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a24 (End Times - Chaimzy)/bundleAndroid2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/43a24__End_Times_-_Chaimzy_/43a24__End_Times_-_Chaimzy__c9055f2e0921f7ba.vivify'
+[INFO] Vivify shader conversion: 0 of 41 shader(s) linked for multiview GLES, 0 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 0 variant(s) given their single-pass stereo twin's per-eye code, 0 stereo variant(s) moved to STEREO_MULTIVIEW_ON beside single-view plain variants, 0 shader(s) refused
+[INFO] Vivify source bundle shaders: unity=2021.3.16f1 serializedFiles=1 shaders=41 runnableOnQuest=41 platforms=[OpenGL ES 3.x(9), Vulkan(18)] programs=1246 glslSource=352 binary=894 shadersWithTessellation=0 programTypes=[unknown, GLES 3.0, SPIR-V]
+[INFO] Vivify bundle conversion succeeded: already targets Android and has no DirectX shaders to translate
+[INFO] Vivify: play button is enabled (no mod is blocking it)
+[INFO] Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a24 (End Times - Chaimzy)/bundleAndroid2021.vivify'
+[INFO] Vivify depth copy: PC 2D material=true PC array-slice material=true native slice binding=true
+[INFO] Vivify material: context=bundle-load asset=assets/memorysequence/material/memorypanel.mat material='MemoryPanel' shader='Swifter/MemoryPanel' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/memorysequence/material/memorypanelblocker.mat material='MemoryPanelBlocker' shader='Swifter/MemoryPanelBlocker' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/memorysequence/material/props_nom_mask_trim_mat.mat material='Props_NOM_Mask_Trim_mat' shader='Swifter/SimpleMaterialPointLight' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/blit/death.mat material='Death' shader='Chaim/Burn' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/blit/eyes.mat material='Eyes' shader='Chaim/Blink' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/sabers/dreamtrail/dreamtrail.mat material='DreamTrail' shader='Aeroluna/DreamTrail' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/sabers/nomaitrail/nomaitrail.mat material='NomaiTrail' shader='Chaim/NomaiTrail' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/boostarrow.mat material='BoostArrow' shader='Aeroluna/OuterWildsUIArrow' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/boostgauge.mat material='BoostGauge' shader='Aeroluna/OuterWildsUIFuel' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/boosttext.mat material='BoostText' shader='Aeroluna/OuterWildsUIBoostText' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/desktop/overlayuitex.mat material='OverlayUITex' shader='Aeroluna/OverlayUITex' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/fuelarrow.mat material='FuelArrow' shader='Aeroluna/OuterWildsUIArrow' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/fuelgauge.mat material='FuelGauge' shader='Aeroluna/OuterWildsUIFuel' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/healthvignette.mat material='HealthVignette' shader='Aeroluna/OuterWildsUIHealthVignette' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/multipliertext.mat material='MultiplierText' shader='Aeroluna/OuterWildsUIComboText' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/o2arrow.mat material='O2Arrow' shader='Aeroluna/OuterWildsUIArrow' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/o2gauge.mat material='O2Gauge' shader='Aeroluna/OuterWildsUIFuel' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/shaders/bloom/bloom.mat material='Bloom' shader='Aeroluna/Bloom' supported=true internalError=false
+[INFO] Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a24 (End Times - Chaimzy)/bundleAndroid2021.vivify' grabs _GrabTexture2
+[INFO] Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a24 (End Times - Chaimzy)/bundleAndroid2021.vivify' -> not needed
+[INFO] Vivify replay recorder: not recording this level (the Replay mod is not installed)
+[INFO] Vivify saber chain modelNode(smc): BasicSaberModel(Clone)[w=(0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+[INFO] Vivify saber chain saberNode: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+[INFO] Vivify saber chain initParent: RightSaber[w=(0.20,0.23,0.05) l=(0.00,0.03,0.05)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+[INFO] Vivify saber chain modelNode(smc): BasicSaberModel(Clone)[w=(-0.20,0.23,0.05) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+[INFO] Vivify saber chain saberNode: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+[INFO] Vivify saber chain initParent: LeftSaber[w=(-0.20,0.23,0.05) l=(-0.00,0.03,0.05)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Origin[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- LocalPlayerGameCore[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- StandardGameplay[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- Wrapper[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- 
+[INFO] Vivify main camera: name='MainCamera' cullingMask=0x3819ff37 stereoMode=3 multipassSetting=false pos=(-0.13,1.42,-0.02) fwd=(0.20,-0.11,0.97)
+[INFO] Vivify main camera cullingMask is now 0x3819ff37
+[INFO] Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=520
+[INFO] Vivify PrepareBeatmap: v2=false customEvents=693 triggerTime=-11.25 beatmapAD=true
+[INFO] Vivify graphics: api=OpenGLES3 (11) shaderLevel=50 (SM5.0) geometryShaderStagePossible=true gpu='Adreno (TM) 650'
+[INFO] Vivify platform: os='Android OS 14 / API-34 (UP1A.231005.007.A1/52371960014500150)' device='Oculus Quest 2' gpu='Adreno (TM) 650' vendor='Qualcomm' api=11 stereoMode=3 xrOcclusionMesh=true supportsInstancing=true supportsR8=true supportsDepthRT=true
+[INFO] Vivify bundle preloaded, rebuilding asset caches: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a24 (End Times - Chaimzy)/bundleAndroid2021.vivify'
+[INFO] Vivify material: context=bundle-load asset=assets/memorysequence/material/memorypanel.mat material='MemoryPanel' shader='Swifter/MemoryPanel' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/memorysequence/material/memorypanelblocker.mat material='MemoryPanelBlocker' shader='Swifter/MemoryPanelBlocker' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/memorysequence/material/props_nom_mask_trim_mat.mat material='Props_NOM_Mask_Trim_mat' shader='Swifter/SimpleMaterialPointLight' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/blit/death.mat material='Death' shader='Chaim/Burn' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/blit/eyes.mat material='Eyes' shader='Chaim/Blink' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/sabers/dreamtrail/dreamtrail.mat material='DreamTrail' shader='Aeroluna/DreamTrail' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/sabers/nomaitrail/nomaitrail.mat material='NomaiTrail' shader='Chaim/NomaiTrail' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/boostarrow.mat material='BoostArrow' shader='Aeroluna/OuterWildsUIArrow' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/boostgauge.mat material='BoostGauge' shader='Aeroluna/OuterWildsUIFuel' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/boosttext.mat material='BoostText' shader='Aeroluna/OuterWildsUIBoostText' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/desktop/overlayuitex.mat material='OverlayUITex' shader='Aeroluna/OverlayUITex' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/fuelarrow.mat material='FuelArrow' shader='Aeroluna/OuterWildsUIArrow' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/fuelgauge.mat material='FuelGauge' shader='Aeroluna/OuterWildsUIFuel' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/healthvignette.mat material='HealthVignette' shader='Aeroluna/OuterWildsUIHealthVignette' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/multipliertext.mat material='MultiplierText' shader='Aeroluna/OuterWildsUIComboText' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/o2arrow.mat material='O2Arrow' shader='Aeroluna/OuterWildsUIArrow' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/player/ui/o2gauge.mat material='O2Gauge' shader='Aeroluna/OuterWildsUIFuel' supported=true internalError=false
+[INFO] Vivify material: context=bundle-load asset=assets/shaders/bloom/bloom.mat material='Bloom' shader='Aeroluna/Bloom' supported=true internalError=false
+[INFO] Vivify Projector interface: managedType=false nativeGetMaterial=true nativeSetMaterial=true
+[INFO] Vivify texture decode: scanned 122 material(s), replaced 0 unsupported texture reference(s) in 8ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+[WARN] Vivify crash recovery: this map did not end cleanly last time, so it plays in recovery mode: unused assets unloaded, textures at half resolution, effects at 50% or less. 'Forget Crash Recovery' in the advanced settings turns it off for every map
+[WARN] Vivify visual check: Crash recovery mode: textures at half resolution
+[INFO] Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_masterTextureLimit'
+[INFO] Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_masterTextureLimit'
+[INFO] Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_realtimeReflectionProbes'
+[INFO] Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_realtimeReflectionProbes'
+[INFO] Vivify: realtime reflection probes off for this level (crash recovery mode; the game had them off)
+[INFO] Vivify: 'Map Realtime Shadows' is on; the game's shadow quality is left as it is
+[INFO] Vivify preload prefab: asset='assets/player/sounds/breathein1.prefab' id='prefab_breathein1_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/player/ship/hearthianship.prefab' id='prefab_hearthianship_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/space/stars.prefab' id='prefab_stars_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/space/space.prefab' id='prefab_space_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/player/ui/outerwildsui.prefab' id='prefab_outerwildsui_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/sun/sun.prefab' id='prefab_sun_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/planets/giants deep/gdorbit.prefab' id='prefab_gdorbit_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/planets/giants deep/opc/opc_probe.prefab' id='prefab_opc_probe_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/planets/dark bramble/dborbit.prefab' id='prefab_dborbit_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/planets/hourglass twins/htorbit.prefab' id='prefab_htorbit_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/planets/brittle hollow/bhorbit.prefab' id='prefab_bhorbit_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/planets/timber hearth/thorbit.prefab' id='prefab_thorbit_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/space/dsr.prefab' id='prefab_dsr_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/player/platform/hearthianplatform.prefab' id='prefab_hearthianplatform_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera0.prefab' id='prefab_camera0_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera1.prefab' id='prefab_camera1_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera2.prefab' id='prefab_camera2_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera3.prefab' id='prefab_camera3_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera4.prefab' id='prefab_camera4_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera5.prefab' id='prefab_camera5_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera6.prefab' id='prefab_camera6_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera7.prefab' id='prefab_camera7_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera8.prefab' id='prefab_camera8_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera9.prefab' id='prefab_camera9_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera10.prefab' id='prefab_camera10_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera11.prefab' id='prefab_camera11_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera12.prefab' id='prefab_camera12_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera13.prefab' id='prefab_camera13_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera14.prefab' id='prefab_camera14_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera15.prefab' id='prefab_camera15_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera16.prefab' id='prefab_camera16_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera17.prefab' id='prefab_camera17_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera18.prefab' id='prefab_camera18_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera19.prefab' id='prefab_camera19_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera20.prefab' id='prefab_camera20_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera21.prefab' id='prefab_camera21_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera22.prefab' id='prefab_camera22_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera23.prefab' id='prefab_camera23_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera24.prefab' id='prefab_camera24_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera25.prefab' id='prefab_camera25_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera26.prefab' id='prefab_camera26_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera27.prefab' id='prefab_camera27_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera28.prefab' id='prefab_camera28_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera29.prefab' id='prefab_camera29_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera30.prefab' id='prefab_camera30_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera31.prefab' id='prefab_camera31_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera32.prefab' id='prefab_camera32_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera33.prefab' id='prefab_camera33_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera34.prefab' id='prefab_camera34_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera35.prefab' id='prefab_camera35_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera36.prefab' id='prefab_camera36_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera37.prefab' id='prefab_camera37_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera38.prefab' id='prefab_camera38_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera39.prefab' id='prefab_camera39_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera40.prefab' id='prefab_camera40_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera41.prefab' id='prefab_camera41_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera42.prefab' id='prefab_camera42_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera43.prefab' id='prefab_camera43_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera44.prefab' id='prefab_camera44_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera45.prefab' id='prefab_camera45_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera46.prefab' id='prefab_camera46_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera47.prefab' id='prefab_camera47_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera48.prefab' id='prefab_camera48_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera49.prefab' id='prefab_camera49_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera50.prefab' id='prefab_camera50_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera51.prefab' id='prefab_camera51_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera52.prefab' id='prefab_camera52_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera53.prefab' id='prefab_camera53_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera54.prefab' id='prefab_camera54_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera55.prefab' id='prefab_camera55_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera56.prefab' id='prefab_camera56_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera57.prefab' id='prefab_camera57_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera58.prefab' id='prefab_camera58_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera59.prefab' id='prefab_camera59_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera60.prefab' id='prefab_camera60_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera61.prefab' id='prefab_camera61_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera62.prefab' id='prefab_camera62_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera63.prefab' id='prefab_camera63_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera64.prefab' id='prefab_camera64_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera65.prefab' id='prefab_camera65_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera66.prefab' id='prefab_camera66_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera67.prefab' id='prefab_camera67_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera68.prefab' id='prefab_camera68_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera69.prefab' id='prefab_camera69_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera70.prefab' id='prefab_camera70_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera71.prefab' id='prefab_camera71_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera72.prefab' id='prefab_camera72_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera73.prefab' id='prefab_camera73_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera74.prefab' id='prefab_camera74_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera75.prefab' id='prefab_camera75_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera76.prefab' id='prefab_camera76_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera77.prefab' id='prefab_camera77_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera78.prefab' id='prefab_camera78_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera79.prefab' id='prefab_camera79_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera80.prefab' id='prefab_camera80_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera81.prefab' id='prefab_camera81_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera82.prefab' id='prefab_camera82_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera83.prefab' id='prefab_camera83_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera84.prefab' id='prefab_camera84_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera85.prefab' id='prefab_camera85_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera86.prefab' id='prefab_camera86_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera87.prefab' id='prefab_camera87_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera88.prefab' id='prefab_camera88_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera89.prefab' id='prefab_camera89_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera90.prefab' id='prefab_camera90_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera91.prefab' id='prefab_camera91_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera92.prefab' id='prefab_camera92_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera93.prefab' id='prefab_camera93_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera94.prefab' id='prefab_camera94_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera95.prefab' id='prefab_camera95_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera96.prefab' id='prefab_camera96_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera97.prefab' id='prefab_camera97_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera98.prefab' id='prefab_camera98_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera99.prefab' id='prefab_camera99_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera100.prefab' id='prefab_camera100_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera101.prefab' id='prefab_camera101_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera102.prefab' id='prefab_camera102_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera103.prefab' id='prefab_camera103_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera104.prefab' id='prefab_camera104_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera105.prefab' id='prefab_camera105_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera106.prefab' id='prefab_camera106_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera107.prefab' id='prefab_camera107_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera108.prefab' id='prefab_camera108_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera109.prefab' id='prefab_camera109_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera110.prefab' id='prefab_camera110_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera111.prefab' id='prefab_camera111_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera112.prefab' id='prefab_camera112_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera113.prefab' id='prefab_camera113_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera114.prefab' id='prefab_camera114_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera115.prefab' id='prefab_camera115_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera116.prefab' id='prefab_camera116_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera117.prefab' id='prefab_camera117_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera118.prefab' id='prefab_camera118_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera119.prefab' id='prefab_camera119_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera120.prefab' id='prefab_camera120_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera121.prefab' id='prefab_camera121_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera122.prefab' id='prefab_camera122_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera123.prefab' id='prefab_camera123_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera124.prefab' id='prefab_camera124_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera125.prefab' id='prefab_camera125_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera126.prefab' id='prefab_camera126_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera127.prefab' id='prefab_camera127_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera128.prefab' id='prefab_camera128_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera129.prefab' id='prefab_camera129_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera130.prefab' id='prefab_camera130_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera131.prefab' id='prefab_camera131_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera132.prefab' id='prefab_camera132_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera133.prefab' id='prefab_camera133_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera134.prefab' id='prefab_camera134_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera135.prefab' id='prefab_camera135_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera136.prefab' id='prefab_camera136_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/sun/supernova/motes.prefab' id='prefab_motes_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/sun/supernova/nebulaefast.prefab' id='prefab_nebulaefast_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/sun/supernova/nebulae.prefab' id='prefab_nebulae_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/sun/supernova/supernova.prefab' id='prefab_supernova_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/sun/supernova/novashockwave.prefab' id='prefab_novashockwave_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera137.prefab' id='prefab_camera137_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera138.prefab' id='prefab_camera138_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera139.prefab' id='prefab_camera139_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera140.prefab' id='prefab_camera140_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera141.prefab' id='prefab_camera141_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera142.prefab' id='prefab_camera142_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera143.prefab' id='prefab_camera143_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera144.prefab' id='prefab_camera144_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera145.prefab' id='prefab_camera145_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera146.prefab' id='prefab_camera146_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera147.prefab' id='prefab_camera147_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera148.prefab' id='prefab_camera148_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera149.prefab' id='prefab_camera149_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera150.prefab' id='prefab_camera150_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera151.prefab' id='prefab_camera151_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera152.prefab' id='prefab_camera152_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera153.prefab' id='prefab_camera153_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera154.prefab' id='prefab_camera154_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera155.prefab' id='prefab_camera155_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/cameras/camera156.prefab' id='prefab_camera156_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/memorysequence/invcyl.prefab' id='prefab_invcyl_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/memorysequence/memorysequence.prefab' id='prefab_memorysequence_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/sun/sun.prefab' id='prefab_sun_2' instance=true
+[INFO] Vivify preload prefab: asset='assets/planets/giants deep/gdorbit.prefab' id='prefab_gdorbit_2' instance=true
+[INFO] Vivify preload prefab: asset='assets/planets/giants deep/opc/opc_probe.prefab' id='prefab_opc_probe_2' instance=true
+[INFO] Vivify preload prefab: asset='assets/planets/dark bramble/dborbit.prefab' id='prefab_dborbit_2' instance=true
+[INFO] Vivify preload prefab: asset='assets/planets/hourglass twins/htorbit.prefab' id='prefab_htorbit_2' instance=true
+[INFO] Vivify preload prefab: asset='assets/planets/brittle hollow/bhorbit.prefab' id='prefab_bhorbit_2' instance=true
+[INFO] Vivify preload prefab: asset='assets/planets/timber hearth/thorbit.prefab' id='prefab_thorbit_2' instance=true
+[INFO] Vivify preload prefab: asset='assets/space/dsr.prefab' id='prefab_dsr_2' instance=true
+[INFO] Vivify preload prefab: asset='assets/space/stars.prefab' id='prefab_stars_2' instance=true
+[INFO] Vivify preload prefab: asset='assets/player/ship/hearthianship.prefab' id='prefab_hearthianship_2' instance=true
+[INFO] Vivify preload prefab: asset='assets/player/sounds/breathein1.prefab' id='prefab_breathein1_2' instance=true
+[INFO] Vivify preload prefab: asset='assets/player/scout/whitehole.prefab' id='prefab_whitehole_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/player/scout/blackhole.prefab' id='prefab_blackhole_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/player/scout/scout.prefab' id='prefab_scout_1' instance=true
+[INFO] Vivify preload prefab: asset='assets/player/platform/hearthianplatform.prefab' id='prefab_hearthianplatform_2' instance=true
+[INFO] Vivify preload prefab: asset='assets/player/scout/scoutphoto.prefab' id='prefab_scoutphoto_1' instance=true
+[INFO] Vivify PreloadInstantiatePrefabs: 194 prefab event(s) preloaded
+[INFO] Vivify catch-up: replayed 0 event(s) up to time=-11.25
+[INFO] Vivify PrepareBeatmap done: assets=520 livePrefabs=0 preloadedPrefabs=194
+[WARN] VRCenterAdjust.OnEnable skipped: missing _settingsManager=true _settingsApplicator=true
+[INFO] Vivify custom event: type='SetMaterialProperty' time=0 songTime=0
+[INFO] Vivify custom event: type='SetMaterialProperty' time=0 songTime=0
+[INFO] Vivify custom event: type='SetMaterialProperty' time=0 songTime=0
+[INFO] Vivify custom event: type='SetMaterialProperty' time=0 songTime=0
+[INFO] Vivify custom event: type='SetMaterialProperty' time=0 songTime=0
+[INFO] Vivify custom event: type='SetMaterialProperty' time=0 songTime=0
+[INFO] Vivify custom event: type='SetMaterialProperty' time=0 songTime=0
+[INFO] Vivify custom event: type='SetMaterialProperty' time=0 songTime=0
+[INFO] Vivify custom event: type='SetMaterialProperty' time=0 songTime=0
+[INFO] Vivify custom event: type='SetMaterialProperty' time=0 songTime=0
+[INFO] Vivify custom event: type='Blit' time=0 songTime=0
+[INFO] Vivify material: context=Blit asset=assets/player/blit/eyes.mat material='Eyes' shader='Chaim/Blink' supported=true internalError=false
+[INFO] Vivify Blit event: time=0 asset='assets/player/blit/eyes.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=2
+[INFO] Vivify custom event: type='CreateScreenTexture' time=0 songTime=0
+[INFO] Vivify custom event: type='CreateScreenTexture' time=0 songTime=0
+[INFO] Vivify custom event: type='CreateScreenTexture' time=0 songTime=0
+[INFO] Vivify custom event: type='CreateScreenTexture' time=0 songTime=0
+[INFO] Vivify custom event: type='CreateScreenTexture' time=0 songTime=0
+[INFO] Vivify custom event: type='CreateScreenTexture' time=0 songTime=0
+[INFO] Vivify custom event: type='CreateScreenTexture' time=0 songTime=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0 songTime=0
+[INFO] Vivify InstantiatePrefab: asset='assets/player/sounds/breathein1.prefab' id='prefab_breathein1_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_breathein1_1' asset='assets/player/sounds/breathein1.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0 songTime=0
+[INFO] Vivify InstantiatePrefab: asset='assets/player/ship/hearthianship.prefab' id='prefab_hearthianship_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_hearthianship_1' asset='assets/player/ship/hearthianship.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0 songTime=0
+[INFO] Vivify InstantiatePrefab: asset='assets/space/stars.prefab' id='prefab_stars_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_stars_1' asset='assets/space/stars.prefab' tracks=1 animators=0 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0 songTime=0
+[INFO] Vivify InstantiatePrefab: asset='assets/space/space.prefab' id='prefab_space_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_space_1' asset='assets/space/space.prefab' tracks=1 animators=0 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0 songTime=0
+[INFO] Vivify InstantiatePrefab: asset='assets/player/ui/outerwildsui.prefab' id='prefab_outerwildsui_1' alreadyLive=false
+[INFO] Vivify: watching cameras (reflection probes, the map's HUD)
+[INFO] Vivify HUD: 18 object(s) of 'assets/player/ui/outerwildsui.prefab' on layer 17 drawn at 70% of their distance
+[INFO] Vivify prefab 'assets/player/ui/outerwildsui.prefab' has objects on headset-only layer(s) 0x00020000; the main camera will draw them, as the PC headset camera does
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_outerwildsui_1' asset='assets/player/ui/outerwildsui.prefab' tracks=1 animators=0 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0 songTime=0
+[INFO] Vivify InstantiatePrefab: asset='assets/sun/sun.prefab' id='prefab_sun_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_sun_1' asset='assets/sun/sun.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0 songTime=0
+[INFO] Vivify InstantiatePrefab: asset='assets/planets/giants deep/gdorbit.prefab' id='prefab_gdorbit_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_gdorbit_1' asset='assets/planets/giants deep/gdorbit.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0 songTime=0
+[INFO] Vivify InstantiatePrefab: asset='assets/planets/giants deep/opc/opc_probe.prefab' id='prefab_opc_probe_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_opc_probe_1' asset='assets/planets/giants deep/opc/opc_probe.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0 songTime=0
+[INFO] Vivify InstantiatePrefab: asset='assets/planets/dark bramble/dborbit.prefab' id='prefab_dborbit_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_dborbit_1' asset='assets/planets/dark bramble/dborbit.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0 songTime=0
+[INFO] Vivify InstantiatePrefab: asset='assets/planets/hourglass twins/htorbit.prefab' id='prefab_htorbit_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_htorbit_1' asset='assets/planets/hourglass twins/htorbit.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0 songTime=0
+[INFO] Vivify InstantiatePrefab: asset='assets/planets/brittle hollow/bhorbit.prefab' id='prefab_bhorbit_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_bhorbit_1' asset='assets/planets/brittle hollow/bhorbit.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0 songTime=0
+[INFO] Vivify InstantiatePrefab: asset='assets/planets/timber hearth/thorbit.prefab' id='prefab_thorbit_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_thorbit_1' asset='assets/planets/timber hearth/thorbit.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0 songTime=0
+[INFO] Vivify InstantiatePrefab: asset='assets/space/dsr.prefab' id='prefab_dsr_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_dsr_1' asset='assets/space/dsr.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0 songTime=0
+[INFO] Vivify InstantiatePrefab: asset='assets/player/platform/hearthianplatform.prefab' id='prefab_hearthianplatform_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_hearthianplatform_1' asset='assets/player/platform/hearthianplatform.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='AssignObjectPrefab' time=0 songTime=0
+[INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/player/notes/warpnote.prefab' tracks=1 additive=false saberType=-
+[INFO] Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/player/notes/warpnotedebris.prefab' tracks=1 additive=false saberType=-
+[INFO] Vivify AssignObjectPrefab: objectType='bombNotes' kind=0 asset='assets/player/bombs/warpbomb.prefab' tracks=1 additive=false saberType=-
+[INFO] Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/player/sabers/dreamsaber.prefab' tracks=0 additive=false saberType=0
+[INFO] Vivify AssignObjectPrefab(trail): asset='assets/player/sabers/dreamtrail/dreamtrail.mat' saberType=0 additive=false
+[INFO] Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/player/sabers/dreamsaber.prefab' tracks=0 additive=false saberType=1
+[INFO] Vivify AssignObjectPrefab(trail): asset='assets/player/sabers/dreamtrail/dreamtrail.mat' saberType=1 additive=false
+[INFO] Vivify sync: registered 'DreamSaber(Clone)' with 0 video / 0 animator / 2 particle component(s), startTime=0
+[INFO] Vivify saber trail: 1 map trail(s) created (following the game's trail)
+[INFO] Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=5 hiddenOriginals=6
+[INFO] Vivify sync: registered 'DreamSaber(Clone)' with 0 video / 0 animator / 2 particle component(s), startTime=0
+[INFO] Vivify saber trail: 1 map trail(s) created (following the game's trail)
+[INFO] Vivify saber replaced (type 0): models=1 trails=1 spawned=2 renderers=5 hiddenOriginals=6
+[INFO] Vivify custom event: type='Blit' time=0 songTime=0
+[INFO] Vivify material: context=Blit asset=assets/player/ui/desktop/overlayuitex.mat material='OverlayUITex' shader='Aeroluna/OverlayUITex' supported=true internalError=false
+[INFO] Vivify Blit event: time=0 asset='assets/player/ui/desktop/overlayuitex.mat' source='_Main' targets=1 priority=10 pass=-1 order=6 durationBeats=245
+[WARN] VRCenterAdjust.Start skipped: missing _settingsManager=true _settingsApplicator=true
+[INFO] Vivify main camera: now draws layer(s) 0x00020000 for this map's headset-only objects
+[INFO] Vivify main camera cullingMask is now 0x381bff37
+[INFO] Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+[INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+[INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+[WARN] VRCenterAdjust.Update skipped: missing _settingsManager=true _settingsApplicator=true
+[INFO] Vivify CreateScreenTexture: id='_HalfUp' size=360x396 layers=2 dimension=5 graphicsFormat=4 filter=-1
+[INFO] Vivify CreateScreenTexture: id='_QuarterUp' size=180x198 layers=2 dimension=5 graphicsFormat=4 filter=-1
+[INFO] Vivify CreateScreenTexture: id='_Eigth' size=90x99 layers=2 dimension=5 graphicsFormat=4 filter=-1
+[INFO] Vivify CreateScreenTexture: id='_EigthUp' size=90x99 layers=2 dimension=5 graphicsFormat=4 filter=-1
+[INFO] Vivify CreateScreenTexture: id='_Sixteenth' size=45x49 layers=2 dimension=5 graphicsFormat=4 filter=-1
+[INFO] Vivify CreateScreenTexture: id='_Quarter' size=180x198 layers=2 dimension=5 graphicsFormat=4 filter=-1
+[INFO] Vivify CreateScreenTexture: id='_Half' size=360x396 layers=2 dimension=5 graphicsFormat=4 filter=-1
+[INFO] Vivify Blit check: effect(s) 'Aeroluna/OverlayUITex', 'Chaim/Blink' -- 1 colour(s) among 16 blocks going in, 1 coming out (first rgb=(0,0,0)); screen 1440x1584 slices=2; _ScreenParams before the effects=(1440,1584)
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0.046875 songTime=0.26663947
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera0.prefab' id='prefab_camera0_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera0_1' asset='assets/cameras/camera0.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=0.7496995 songTime=0.7599826
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera1.prefab' id='prefab_camera1_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera1_1' asset='assets/cameras/camera1.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=1.4525241 songTime=1.4591918
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera2.prefab' id='prefab_camera2_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera2_1' asset='assets/cameras/camera2.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=2.1553485 songTime=2.1596675
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera3.prefab' id='prefab_camera3_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera3_1' asset='assets/cameras/camera3.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=2.8581731 songTime=2.858642
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera4.prefab' id='prefab_camera4_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera4_1' asset='assets/cameras/camera4.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=3.5609977 songTime=3.5690608
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera5.prefab' id='prefab_camera5_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera5_1' asset='assets/cameras/camera5.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=4.263822 songTime=4.2668986
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera6.prefab' id='prefab_camera6_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera6_1' asset='assets/cameras/camera6.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=4.966646 songTime=4.967136
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera7.prefab' id='prefab_camera7_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera7_1' asset='assets/cameras/camera7.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify visual check at 5s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+[INFO] Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+[INFO] Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+[INFO] Vivify visual check: mirror 'TrackMirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'TrackMirror' enabled=true active=true layer=4 material='GridFakeMirror' shader='Custom/SimpleLit' supported=true queue=1970 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00) mirrorRenderer: stereo=2x2 mono=2x2 aa=1 disableDepth=true
+[INFO] Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00) mirrorRenderer: stereo=2x2 mono=2x2 aa=1 disableDepth=true
+[INFO] Vivify visual check: cameras that may render the mirror: 'CameraRight' stereo=false eye=0 target=texture mask=0xfffffb37; 'Camera' stereo=false eye=0 target=texture mask=0xfffffb37; 'Camera' stereo=false eye=0 target=texture mask=0x20000; 'MainCamera' stereo=true eye=3 target=screen mask=0x381bff37
+[INFO] Vivify visual check at 5s: 362 active renderer(s), 0 with no runnable shader; most drawn: Custom/Parametric3SliceSprite x106, Custom/OpaqueNeonLight x78, Custom/SimpleLit x54, Custom/TransparentNeonLight x28, Swifter/SimpleMaterialPointLight x23, Custom/CustomParticles x17, Aeroluna/OuterWildsUI x6, Swifter/Atmosphere x6; screen effects: 1 before, 0 after the main effect
+[INFO] Vivify grab texture '_GrabTexture2' at 5s: render texture dimension=2 layers=1 900x600 msaa=1
+[INFO] Vivify visual check: main camera cullingMask=0x381bff37 depthTextureMode=0 clearFlags=2
+[INFO] Vivify custom event: type='InstantiatePrefab' time=5.669471 songTime=5.679569
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera8.prefab' id='prefab_camera8_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera8_1' asset='assets/cameras/camera8.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=6.3722954 songTime=6.3801894
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera9.prefab' id='prefab_camera9_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera9_1' asset='assets/cameras/camera9.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=7.07512 songTime=7.0837913
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera10.prefab' id='prefab_camera10_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera10_1' asset='assets/cameras/camera10.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=7.7779446 songTime=7.7850547
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera11.prefab' id='prefab_camera11_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera11_1' asset='assets/cameras/camera11.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=8.480769 songTime=8.485013
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera12.prefab' id='prefab_camera12_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera12_1' asset='assets/cameras/camera12.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=9.183594 songTime=9.184365
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera13.prefab' id='prefab_camera13_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera13_1' asset='assets/cameras/camera13.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=9.886418 songTime=9.897702
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera14.prefab' id='prefab_camera14_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera14_1' asset='assets/cameras/camera14.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=10.589243 songTime=10.595197
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera15.prefab' id='prefab_camera15_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera15_1' asset='assets/cameras/camera15.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=11.292067 songTime=11.294641
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera16.prefab' id='prefab_camera16_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera16_1' asset='assets/cameras/camera16.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=11.994891 songTime=12.006303
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera17.prefab' id='prefab_camera17_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera17_1' asset='assets/cameras/camera17.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=12.628289
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+[INFO] Vivify sync: registered 'WarpBomb(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=12.673146
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=1
+[INFO] Vivify custom event: type='InstantiatePrefab' time=12.697716 songTime=12.698411
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera18.prefab' id='prefab_camera18_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera18_1' asset='assets/cameras/camera18.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify sync: registered 'WarpBomb(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=12.740041
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=1
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=12.777448
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=12.822446
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=12.822446
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+[INFO] Vivify sync: registered 'WarpBomb(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=12.875592
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=1
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=12.909982
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=13.01452
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+[INFO] Vivify sync: registered 'WarpBomb(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=13.077462
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=1
+[INFO] Vivify sync: registered 'WarpBomb(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=13.155183
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=1
+[INFO] Vivify sync: registered 'WarpBomb(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=13.235272
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=1
+[INFO] Vivify sync: registered 'WarpBomb(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=13.350659
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=1
+[INFO] Vivify custom event: type='InstantiatePrefab' time=13.40054 songTime=13.400922
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera19.prefab' id='prefab_camera19_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera19_1' asset='assets/cameras/camera19.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=14.103365 songTime=14.110112
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera20.prefab' id='prefab_camera20_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera20_1' asset='assets/cameras/camera20.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=14.80619 songTime=14.811715
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera21.prefab' id='prefab_camera21_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera21_1' asset='assets/cameras/camera21.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=15.509013 songTime=15.512956
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera22.prefab' id='prefab_camera22_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera22_1' asset='assets/cameras/camera22.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=16.211838 songTime=16.224821
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera23.prefab' id='prefab_camera23_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera23_1' asset='assets/cameras/camera23.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify: Reduce Debris player option = false (custom debris enabled)
+[INFO] Vivify custom event: type='InstantiatePrefab' time=16.914663 songTime=17.000055
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera24.prefab' id='prefab_camera24_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera24_1' asset='assets/cameras/camera24.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=17.617487 songTime=17.62235
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera25.prefab' id='prefab_camera25_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera25_1' asset='assets/cameras/camera25.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=18.320312 songTime=18.320608
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera26.prefab' id='prefab_camera26_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera26_1' asset='assets/cameras/camera26.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=19.023136 songTime=19.02739
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera27.prefab' id='prefab_camera27_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera27_1' asset='assets/cameras/camera27.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=19.725962 songTime=19.736568
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera28.prefab' id='prefab_camera28_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera28_1' asset='assets/cameras/camera28.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=20.428785 songTime=20.439842
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera29.prefab' id='prefab_camera29_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera29_1' asset='assets/cameras/camera29.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=21.13161 songTime=21.140892
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera30.prefab' id='prefab_camera30_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera30_1' asset='assets/cameras/camera30.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=21.834435 songTime=21.845795
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera31.prefab' id='prefab_camera31_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera31_1' asset='assets/cameras/camera31.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=22.53726 songTime=22.542889
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera32.prefab' id='prefab_camera32_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera32_1' asset='assets/cameras/camera32.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=23.240084 songTime=23.246422
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera33.prefab' id='prefab_camera33_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera33_1' asset='assets/cameras/camera33.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=23.876884
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=23.876884
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify custom event: type='InstantiatePrefab' time=23.94291 songTime=23.944435
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera34.prefab' id='prefab_camera34_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera34_1' asset='assets/cameras/camera34.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify sync: registered 'WarpBomb(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=24.019684
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=24.019684
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=24.019684
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=24.065403
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=24.161793
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=24.26524
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=24.26524
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=3
+[INFO] Vivify custom event: type='InstantiatePrefab' time=24.645733 songTime=24.65358
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera35.prefab' id='prefab_camera35_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera35_1' asset='assets/cameras/camera35.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=25.348558 songTime=25.360256
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera36.prefab' id='prefab_camera36_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera36_1' asset='assets/cameras/camera36.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=26.051382 songTime=26.05146
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera37.prefab' id='prefab_camera37_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera37_1' asset='assets/cameras/camera37.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=26.754208 songTime=26.757061
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera38.prefab' id='prefab_camera38_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera38_1' asset='assets/cameras/camera38.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=27.457031 songTime=27.462635
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera39.prefab' id='prefab_camera39_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera39_1' asset='assets/cameras/camera39.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=28.159857 songTime=28.163792
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera40.prefab' id='prefab_camera40_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera40_1' asset='assets/cameras/camera40.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=28.86268 songTime=28.86874
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera41.prefab' id='prefab_camera41_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera41_1' asset='assets/cameras/camera41.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=29.565506 songTime=29.571014
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera42.prefab' id='prefab_camera42_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera42_1' asset='assets/cameras/camera42.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify visual check at 30s: 8 live note(s), 8 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+[INFO] Vivify visual check at 30s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+[INFO] Vivify visual check: mirror 'TrackMirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'TrackMirror' enabled=true active=true layer=4 material='GridFakeMirror' shader='Custom/SimpleLit' supported=true queue=1970 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00) mirrorRenderer: stereo=2x2 mono=2x2 aa=1 disableDepth=true
+[INFO] Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout=0.00 _Color=(0.00,0.00,0.00,0.00) mirrorRenderer: stereo=2x2 mono=2x2 aa=1 disableDepth=true
+[INFO] Vivify visual check: cameras that may render the mirror: 'CameraRight' stereo=false eye=0 target=texture mask=0xfffffb37; 'Camera' stereo=false eye=0 target=texture mask=0xfffffb37; 'Camera' stereo=false eye=0 target=texture mask=0x20000; 'MainCamera' stereo=true eye=3 target=screen mask=0x381bff37
+[INFO] Vivify visual check at 30s: 405 active renderer(s), 0 with no runnable shader; most drawn: Custom/Parametric3SliceSprite x106, Custom/OpaqueNeonLight x78, Custom/SimpleLit x54, Swifter/SimpleMaterialPointLight x29, Custom/TransparentNeonLight x28, Custom/CustomParticles x17, Swifter/BlackHole x15, Custom/NoteLW x10; screen effects: 1 before, 0 after the main effect
+[INFO] Vivify grab texture '_GrabTexture2' at 30s: render texture dimension=5 layers=2 1440x1584 msaa=1
+[INFO] Vivify custom event: type='InstantiatePrefab' time=30.268328 songTime=30.27671
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera43.prefab' id='prefab_camera43_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera43_1' asset='assets/cameras/camera43.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=30.971153 songTime=30.979294
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera44.prefab' id='prefab_camera44_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera44_1' asset='assets/cameras/camera44.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=31.673977 songTime=31.686108
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera45.prefab' id='prefab_camera45_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera45_1' asset='assets/cameras/camera45.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=32.3768 songTime=32.38169
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera46.prefab' id='prefab_camera46_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera46_1' asset='assets/cameras/camera46.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=33.079628 songTime=33.085545
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera47.prefab' id='prefab_camera47_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera47_1' asset='assets/cameras/camera47.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=33.78245 songTime=33.78519
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera48.prefab' id='prefab_camera48_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera48_1' asset='assets/cameras/camera48.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=34.485275 songTime=34.489834
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera49.prefab' id='prefab_camera49_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera49_1' asset='assets/cameras/camera49.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=35.1881 songTime=35.194317
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera50.prefab' id='prefab_camera50_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera50_1' asset='assets/cameras/camera50.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=35.890926 songTime=35.905888
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera51.prefab' id='prefab_camera51_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera51_1' asset='assets/cameras/camera51.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=36.59375 songTime=36.606625
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera52.prefab' id='prefab_camera52_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera52_1' asset='assets/cameras/camera52.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=37.296574 songTime=37.299137
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera53.prefab' id='prefab_camera53_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera53_1' asset='assets/cameras/camera53.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=37.999397 songTime=38.012188
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera54.prefab' id='prefab_camera54_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera54_1' asset='assets/cameras/camera54.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=38.702225 songTime=38.702435
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera55.prefab' id='prefab_camera55_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera55_1' asset='assets/cameras/camera55.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=38.880146
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=38.880146
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=39.028698
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=39.076214
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=39.076214
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=39.16614
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=39.256054
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify custom event: type='InstantiatePrefab' time=39.40505 songTime=39.41322
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera56.prefab' id='prefab_camera56_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera56_1' asset='assets/cameras/camera56.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=40.107872 songTime=40.121037
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera57.prefab' id='prefab_camera57_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera57_1' asset='assets/cameras/camera57.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=40.810696 songTime=40.812946
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera58.prefab' id='prefab_camera58_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera58_1' asset='assets/cameras/camera58.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=41.513523 songTime=41.530125
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera59.prefab' id='prefab_camera59_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera59_1' asset='assets/cameras/camera59.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=42.216347 songTime=42.22418
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera60.prefab' id='prefab_camera60_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera60_1' asset='assets/cameras/camera60.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=42.91917 songTime=42.931896
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera61.prefab' id='prefab_camera61_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera61_1' asset='assets/cameras/camera61.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=43.621994 songTime=43.62727
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera62.prefab' id='prefab_camera62_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera62_1' asset='assets/cameras/camera62.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=44.32482 songTime=44.328297
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera63.prefab' id='prefab_camera63_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera63_1' asset='assets/cameras/camera63.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=45.027645 songTime=45.04183
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera64.prefab' id='prefab_camera64_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera64_1' asset='assets/cameras/camera64.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=45.73047 songTime=45.734142
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera65.prefab' id='prefab_camera65_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera65_1' asset='assets/cameras/camera65.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=46.433292 songTime=46.437542
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera66.prefab' id='prefab_camera66_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera66_1' asset='assets/cameras/camera66.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=47.13612 songTime=47.147617
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera67.prefab' id='prefab_camera67_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera67_1' asset='assets/cameras/camera67.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=47.838943 songTime=47.8438
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera68.prefab' id='prefab_camera68_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera68_1' asset='assets/cameras/camera68.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=48.541767 songTime=48.548794
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera69.prefab' id='prefab_camera69_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera69_1' asset='assets/cameras/camera69.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=49.24459 songTime=49.258152
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera70.prefab' id='prefab_camera70_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera70_1' asset='assets/cameras/camera70.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=49.94742 songTime=49.952915
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera71.prefab' id='prefab_camera71_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera71_1' asset='assets/cameras/camera71.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=50.65024 songTime=50.65772
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera72.prefab' id='prefab_camera72_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera72_1' asset='assets/cameras/camera72.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=51.353065 songTime=51.359104
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera73.prefab' id='prefab_camera73_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera73_1' asset='assets/cameras/camera73.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=52.05589 songTime=52.06551
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera74.prefab' id='prefab_camera74_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera74_1' asset='assets/cameras/camera74.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=52.758717 songTime=52.7653
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera75.prefab' id='prefab_camera75_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera75_1' asset='assets/cameras/camera75.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=53.46154 songTime=53.46274
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera76.prefab' id='prefab_camera76_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera76_1' asset='assets/cameras/camera76.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=53.88255
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=54.017284
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=54.07078
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=54.07078
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify custom event: type='InstantiatePrefab' time=54.164364 songTime=54.169827
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera77.prefab' id='prefab_camera77_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera77_1' asset='assets/cameras/camera77.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=54.169827
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=54.26132
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify sync: registered 'WarpNote(Clone)' with 0 video / 1 animator / 0 particle component(s), startTime=54.26132
+[INFO] Vivify note replaced: valid=1 spawned=1 replacementRenderers=2 hideOriginal=true hiddenOriginals=5
+[INFO] Vivify custom event: type='InstantiatePrefab' time=54.867188 songTime=54.871517
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera78.prefab' id='prefab_camera78_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera78_1' asset='assets/cameras/camera78.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=55.570015 songTime=55.586903
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera79.prefab' id='prefab_camera79_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera79_1' asset='assets/cameras/camera79.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=56.27284 songTime=56.27962
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera80.prefab' id='prefab_camera80_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera80_1' asset='assets/cameras/camera80.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify custom event: type='InstantiatePrefab' time=56.975662 songTime=56.976673
+[INFO] Vivify InstantiatePrefab: asset='assets/cameras/camera81.prefab' id='prefab_camera81_1' alreadyLive=false
+[INFO] Vivify InstantiatePrefab spawned: id='prefab_camera81_1' asset='assets/cameras/camera81.prefab' tracks=1 animators=1 offscreenCulled=0
+[INFO] Vivify pause menu opened: syncedObjects=18 secondaryCameras=0
+[WARN] VRCenterAdjust.OnDisable skipped: missing _settingsManager=true _settingsApplicator=true
+[INFO] Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.00,1.43,0.01) fwd=(-0.34,-0.12,0.93)
+[INFO] Vivify main camera: now draws layer(s) 0x00020000 for this map's headset-only objects
+[INFO] Vivify main camera cullingMask is now 0x381aff37
+[INFO] Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+[INFO] Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+[INFO] Vivify level end: level ended (quit or finished)
+[INFO] Vivify ResetRuntime: livePrefabs=96 preloaded=194 synced=16 secondaryCameras=0 declaredTextures=7 assets=520
+[INFO] Vivify level end: camera effects removed
+[INFO] Vivify level end: note and saber visuals restored
+[INFO] Vivify level end: camera restored
+[INFO] Vivify level end: map prefabs destroyed
+[INFO] Vivify level end: render textures released
+[INFO] Vivify level end: render settings restored
+[INFO] Vivify level end: done
