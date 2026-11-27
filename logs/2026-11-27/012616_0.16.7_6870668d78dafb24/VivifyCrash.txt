@@ -1,0 +1,73 @@
+=== Vivify 0.16.7 native crash at 1795742749 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27e200006190
+thread 25022 'UnityMain'
+pc 0x7b8274f9d8  lr 0x7b8274f9a8  sp 0x7a72237fe0  fp 0x7a72238080
+backtrace:
+  #00 pc 0x7b8274f9d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7b8274f9a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7a0ceecc64  libmetacore.so +0xcdc64
+  #03 fp 0x79f5881114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x79f5881264  libil2cpp.so +0x2226264
+  #05 fp 0x7a7db42d48  libsl2.so +0x4fad48
+  #06 fp 0x7a7db42ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x784280e400  libdiscordrichpresence.so +0x1c3400
+  #08 fp 0x79f58e00c8  libil2cpp.so +0x22850c8
+  #09 fp 0x79f581578c  libil2cpp.so +0x21ba78c
+  #10 fp 0x784a85f384  libplaylistcore.so +0x22d384
+  #11 fp 0x784a85e388  libplaylistcore.so +0x22c388 (_ZN52Hook_LevelCollectionNavigationController_DidActivate52hook_LevelCollectionNavigationController_DidActivateEPN15GlobalNamespace35LevelCollectionNavigationControllerEbbb +0x60c)
+  #12 fp 0x784a8e011c  libplaylistcore.so +0x2ae11c
+  #13 fp 0x78463dee44  libbsl.so +0x139e44
+  #14 fp 0x79f58e00c8  libil2cpp.so +0x22850c8
+  #15 fp 0x79f581578c  libil2cpp.so +0x21ba78c
+  #16 fp 0x79f71c62a0  libil2cpp.so +0x3b6b2a0
+  #17 fp 0x79f581578c  libil2cpp.so +0x21ba78c
+  #18 fp 0x7891f608ec  libBetterSongSearch.so +0x35b8ec
+  #19 fp 0x7891f60008  libBetterSongSearch.so +0x35b008 (_ZN16BetterSongSearch2UI15ViewControllers18SongListController8PlaySongEPKN16SongDetailsCache4SongE +0x1fc)
+  #20 fp 0x7891e159a0  libBetterSongSearch.so +0x2109a0
+  #21 fp 0x79f5815840  libil2cpp.so +0x21ba840
+  #22 fp 0x79f581578c  libil2cpp.so +0x21ba78c
+  #23 fp 0x7a222ad100  libbsml.so +0x25a100
+  #24 fp 0x79f7f1b000  libil2cpp.so +0x48c0000
+last Vivify log lines (oldest first):
+  Installing hook: VRCenterAdjust_Start to offset: 0x79f718e37c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x79f718e58c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x79f718e658
+  Installing hook: VRCenterAdjust_Update to offset: 0x79f718e560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x79f718e3e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x79f718e4a4
+  Installing hook: PauseController_Pause to offset: 0x79f72007ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x79f720ac54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x79f720b734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x79f720b094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x79f720ad88
+  Installing hook: GamePause_Resume to offset: 0x79f7206178
+  Installing hook: Recorder_InstallBindings to offset: 0x79f724f294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x79f72438b8
+  Installing hook: Recorder_SpawnNote to offset: 0x79f713a928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x79f7139dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x79f713bde4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x79f724944c
+  Installing hook: Recorder_ScoreStart to offset: 0x79f7249038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x79f5d0cdb4
+  Installing hook: Recorder_ProcessSwing to offset: 0x79f5d0d690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x79f713cae0
+  Installing hook: Recorder_ShowPause to offset: 0x79f720ac54
+  Installing hook: Recorder_Resume to offset: 0x79f720b76c
+  Installing hook: Recorder_Finish to offset: 0x79f719a1dc
+  Vivify: loaded mods (56): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, FakeId 0.1.9, BSML 0.4.55, FasterScroll 1.17.0, NoPromo 0.1.13, bstheater 0.1.0, CrashReporter 0.2.0, datakeeper 0.2.5, graphicstweaks 0.1.13, MetaCore 1.6.3, Hollywood 1.2.2, imagecoverexpander 0.2.4, Lapiz 0.2.23, mod-list 0.
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify Send Logs: upload attempt 1/4 failed (http 503, curl 0, Cloudflare: Worker exceeded resource limits | vivify-log-relay.vivify-logs-forquest.workers.dev | Cloudflare); retrying in 4 s
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.01,1.71,0.00) fwd=(-0.06,-0.07,1.00)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify Send Logs: upload attempt 2/4 failed (http 503, curl 0, Cloudflare: Worker exceeded resource limits | vivify-log-relay.vivify-logs-forquest.workers.dev | Cloudflare); retrying in 12 s
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.03,1.69,-0.05) fwd=(0.05,-0.24,0.97)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.05,1.69,-0.03) fwd=(0.04,-0.21,0.98)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify Send Logs: upload attempt 3/4 failed (http 503, curl 0, Cloudflare: Worker exceeded resource limits | vivify-log-relay.vivify-logs-forquest.workers.dev | Cloudflare); retrying in 30 s
+=== end ===
+
