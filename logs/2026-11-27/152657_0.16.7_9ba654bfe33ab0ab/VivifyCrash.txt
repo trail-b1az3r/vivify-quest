@@ -1,0 +1,111 @@
+=== Vivify 0.16.7 native crash at 1795787443 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0xc0000042cbd1ec
+thread 5683 'UnityMain'
+pc 0x7722ea17ac  lr 0x7552289184  sp 0x77347f9e80  fp 0x77347f9fd0
+backtrace:
+  #00 pc 0x7722ea17ac  libil2cpp.so +0x213b7ac
+  #01 lr 0x7552289184  libbl.so +0x662184
+  #02 fp 0x755234f7f8  libbl.so +0x7287f8 (_ZN10BeatLeader13ExperienceBar16ApplyPlayerStateERK6Playerb +0x88)
+  #03 fp 0x774a233040  libbsml.so +0x3d8040 (_ZN4BSML19MainThreadScheduler6UpdateEv +0x1104)
+  #04 fp 0x774a155e08  libbsml.so +0x2fae08
+  #05 fp 0x7722f20840  libil2cpp.so +0x21ba840
+  #06 fp 0x7722f2078c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.17,1.69,-0.03) fwd=(0.28,0.12,0.95)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.04,1.69,-0.00) fwd=(0.02,-0.07,1.00)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.14,1.47,0.08) fwd=(0.01,-0.75,0.66)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.13,1.67,-0.00) fwd=(-0.44,-0.13,0.89)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.14,1.61,-0.01) fwd=(0.55,0.31,0.78)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.14,1.67,-0.05) fwd=(-0.50,-0.16,0.85)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4936a (G4M3-0V3R - shrado)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4936a (G4M3-0V3R - shrado)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4936a (G4M3-0V3R - shrado)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.05,1.70,-0.03) fwd=(0.22,0.13,0.97)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.09,1.71,-0.06) fwd=(-0.19,0.22,0.96)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3e6cd (lustre - UglyApe, Darkrealm7, edgii)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3e6cd (lustre - UglyApe, Darkrealm7, edgii)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.23,1.69,-0.02) fwd=(0.31,0.04,0.95)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.17,1.70,-0.05) fwd=(-0.38,0.21,0.90)
+  Vivify main camera cullingMask is now 0x3d3aff37
+=== end ===
+
+=== Vivify 0.16.7 native crash at 1795793207 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x78246daaa8
+thread 8291 'UnityMain'
+pc 0x78c13016fc  lr 0x755c977f48  sp 0x77261f8ad0  fp 0x77261f8e90
+backtrace:
+  #00 pc 0x78c13016fc  libc.so +0xc76fc
+  #01 lr 0x755c977f48  libchroma.so +0x333f48
+  #02 fp 0x755c92b69c  libchroma.so +0x2e769c (_Z26LightSwitchEventEffectHookv +0x118)
+  #03 fp 0x755c973f50  libchroma.so +0x32ff50 (late_load +0x2b4)
+  #04 fp 0x779d54ab9c  libsl2.so +0x543b9c
+  #05 fp 0x7727ec5fb4  libunity.so +0xab1fb4
+  #06 fp 0x78b4e5c6c3
+  #07 fp 0x77261f9f40
+last Vivify log lines (oldest first):
+  Installing hook: BombNoteController_Init to offset: 0x77247c92d4
+  Installing hook: BurstSliderGameNoteController_Init to offset: 0x77247ca668
+  Installing hook: NoteCutCoreEffectsSpawner_SpawnNoteCutEffect to offset: 0x772486cbb8
+  Installing hook: NoteDebris_Init to offset: 0x77247cf2e8
+  Installing hook: CutoutEffect_SetCutout to offset: 0x7724863144
+  Installing hook: AlwaysVisibleQuad_OnEnable to offset: 0x7724d63968
+  Installing hook: ImageEffectController_OnRenderImage to offset: 0x77246c1018
+  Installing hook: MirrorRendererSO_RenderMirrorTexture to offset: 0x7724d66e78
+  Installing hook: MirrorRendererSO_PrepareForNextFrame to offset: 0x7724d669f0
+  Installing hook: MirrorRendererSO_RenderMirror to offset: 0x7724d67bb8
+  Installing hook: MirrorRendererSO_OnDisable to offset: 0x7724d67f2c
+  Installing hook: MirrorRendererSO_CreateOrUpdateMirrorCamera to offset: 0x7724d677f4
+  Installing hook: VRCenterAdjust_Start to offset: 0x772481637c
+  Installing hook: VRCenterAdjust_OnEnable to offset: 0x772481658c
+  Installing hook: VRCenterAdjust_OnDisable to offset: 0x7724816658
+  Installing hook: VRCenterAdjust_Update to offset: 0x7724816560
+  Installing hook: VRCenterAdjust_ResetRoom to offset: 0x77248163e0
+  Installing hook: VRCenterAdjust_SetRoomTransformOffset to offset: 0x77248164a4
+  Installing hook: PauseController_Pause to offset: 0x77248887ec
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x7724892c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x7724893734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x7724893094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x7724892d88
+  Installing hook: GamePause_Resume to offset: 0x772488e178
+  Installing hook: Recorder_InstallBindings to offset: 0x77248d7294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x77248cb8b8
+  Installing hook: Recorder_SpawnNote to offset: 0x77247c2928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x77247c1dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x77247c3de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x77248d144c
+  Installing hook: Recorder_ScoreStart to offset: 0x77248d1038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x7723394db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x7723395690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x77247c4ae0
+  Installing hook: Recorder_ShowPause to offset: 0x7724892c54
+  Installing hook: Recorder_Resume to offset: 0x772489376c
+  Installing hook: Recorder_Finish to offset: 0x77248221dc
+  Vivify: loaded mods (85): /data/user/0/com.beatgames.beatsaber/files/libs/libc++_shared.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libavutil.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libswresample.so 0.0.0, /
+  2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/early_mods/libBSMapLoader.so 0.0.0, BSML 0.4.55, CongXinJian 0.1.0, DlcSorter 0.1.13, EasyOffsetQuest 0.1.7, FakeId 0.1.9, FasterScroll 1.17.0, anytext 1.0.1, bsdc 0.6.4, bstheater 0.1
+  0.3, MappingExtensions 0.25.4, morebuttons 1.0.4, MultiplayerExtensions 1.1.0, NoodleExtensions 1.6.3, /data/user/0/com.beatgames.beatsaber/files/mods/libparticletuner.so 0.0.0, PlaylistDownloader 0.3.1, PlaylistManager 1.4.1, practicetwea
+=== end ===
+
