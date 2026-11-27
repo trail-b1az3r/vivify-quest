@@ -1,0 +1,64 @@
+=== Vivify 0.16.2 native crash at 1795793630 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x10
+thread 25939 'UnityMain'
+pc 0x7b81049d8c  lr 0x7b8116f4b4  sp 0x7d48f3cc90  fp 0x7d48f3cc90
+backtrace:
+  #00 pc 0x7b81049d8c  libbl.so +0x615d8c
+  #01 lr 0x7b8116f4b4  libbl.so +0x73b4b4 (_ZN13LeaderboardUI15getLevelDetailsEN15GlobalNamespace10BeatmapKeyE +0x3c)
+  #02 fp 0x7b8116f8a8  libbl.so +0x73b8a8 (_ZN13LeaderboardUI26refreshFromTheServerScoresEv +0x50)
+  #03 fp 0x7b81175340  libbl.so +0x741340 (_ZN13LeaderboardUI17updateLeaderboardEPN15GlobalNamespace33PlatformLeaderboardViewControllerE +0x1ddc)
+  #04 fp 0x7b8117a45c  libbl.so +0x74645c (_ZN13LeaderboardUI22refreshLeaderboardCallEv +0x44)
+  #05 fp 0x7b8117c3c8  libbl.so +0x7483c8 (_ZN13LeaderboardUI23Hook_RefreshLeaderboard23hook_RefreshLeaderboardEPN15GlobalNamespace33PlatformLeaderboardViewControllerEbb +0xcc)
+  #06 fp 0x7b811a3fac  libbl.so +0x76ffac
+  #07 fp 0x7b8116df88  libbl.so +0x739f88 (_ZN13LeaderboardUI24Hook_LeaderboardActivate24hook_LeaderboardActivateEPN15GlobalNamespace33PlatformLeaderboardViewControllerEbbb +0x30)
+  #08 fp 0x7b811a3184  libbl.so +0x76f184
+  #09 fp 0x7d1a28d0c8  libil2cpp.so +0x22850c8
+  #10 fp 0x7d1a1c278c  libil2cpp.so +0x21ba78c
+  #11 fp 0x7d1a28f770  libil2cpp.so +0x2287770
+  #12 fp 0x7d1a1c2840  libil2cpp.so +0x21ba840
+  #13 fp 0x7d1a1c278c  libil2cpp.so +0x21ba78c
+  #14 fp 0x7b714f3e90  libplaylistmanager.so +0x275e90 (_ZN15PlaylistManager8MainMenu20BackButtonWasPressedEPN4HMUI14ViewControllerE +0x74)
+  #15 fp 0x7d1c8c8000  libil2cpp.so +0x48c0000
+last Vivify log lines (oldest first):
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify main camera: scene depth texture enabled for this map
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify main camera: scene depth texture enabled for this map
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify main camera: scene depth texture enabled for this map
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify main camera: scene depth texture enabled for this map
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.OnEnable skipped: isolation toggle enabled
+  VRCenterAdjust.OnDisable skipped: isolation toggle enabled
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.04,1.36,0.07) fwd=(0.02,-0.14,0.99)
+  Vivify field of view: 115% for this map
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify main camera: scene depth texture enabled for this map
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  VRCenterAdjust.Update skipped: isolation toggle enabled
+  Vivify level end: level ended (quit or finished)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=6 synced=0 secondaryCameras=0 declaredTextures=0 assets=37
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/dc5d2c713c4d8bd8db7e9c33ef11de7012a43c55' isCustom=true hasDetails=true
+  Vivify Send Logs: uploaded 1 file part(s), 1536 KB (logs/2026-11-27/153331_0.16.2-lite_8d249e021cab59e8 6abd94b; stored 1, deduplicated 0; 65309562 bytes saved cumulatively
+  )
+=== end ===
+
