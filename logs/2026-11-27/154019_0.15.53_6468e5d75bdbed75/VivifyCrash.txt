@@ -1,0 +1,70 @@
+=== Vivify 0.15.53 native crash at 1795748294 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x0
+thread 10062 'UnityMain'
+pc 0x0  lr 0x7a2b5130f8  sp 0x7a9c46b7b0  fp 0x7a2d1ecf80
+backtrace:
+  #00 pc 0x0
+  #01 lr 0x7a2b5130f8  libil2cpp.so +0x32a80f8
+last Vivify log lines (oldest first):
+  Vivify visual check:   'NoteCircleGlow' enabled=false active=true layer=8 material='NoteCircleGlow' shader='Custom/CustomParticles' supported=true queue=2600 block: _Cutout=0.00 _Color=(1.00,0.00,0.00,1.00)
+  Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+  Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check: mirror 'WaterfallFlatClose' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'WaterfallFlatClose' enabled=true active=true layer=0 material='WaterfallFakeMirror' shader='Custom/WaterLit' supported=true queue=1970 block
+  Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout
+  Vivify visual check: mirror 'WaterfallFlatFar' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'WaterfallFlatFar' enabled=true active=true layer=0 material='WaterfallFakeMirror' shader='Custom/WaterLit' supported=true queue=1970 block: _C
+  Vivify visual check: cameras that may render the mirror: 'MainCamera' stereo=true eye=3 target=screen mask=0x7f7bfdf7
+  Vivify visual check at 5s: 273 active renderer(s), 0 with no runnable shader; most drawn: Ree/BlurlessSaber x130, Custom/Parametric3SliceSprite x52, Custom/TransparentNeonLight x26, Custom/CustomParticles x18, Custom/SimpleLit x14, Ree/Sim
+  Vivify grab texture '_GrabTexture' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+  Vivify grab texture '_GrabTextureWater' at 5s: nothing bound
+  Vivify grab texture '_MPSGrab' at 5s: nothing bound
+  Vivify grab texture '_PPNoteGrab' at 5s: nothing bound
+  Vivify grab texture '_SceneColor' at 5s: nothing bound
+  Vivify visual check: main camera cullingMask=0x7f7bfdf7 depthTextureMode=0 clearFlags=2
+  Vivify visual check at 30s: 1 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check at 30s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check: mirror 'WaterfallFlatClose' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'WaterfallFlatClose' enabled=true active=true layer=0 material='WaterfallFakeMirror' shader='Custom/WaterLit' supported=true queue=1970 block
+  Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout
+  Vivify visual check: mirror 'WaterfallFlatFar' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'WaterfallFlatFar' enabled=true active=true layer=0 material='WaterfallFakeMirror' shader='Custom/WaterLit' supported=true queue=1970 block: _C
+  Vivify visual check: cameras that may render the mirror: 'MainCamera' stereo=true eye=3 target=screen mask=0x7f7bfdf7
+  Vivify visual check at 30s: 281 active renderer(s), 0 with no runnable shader; most drawn: Ree/BlurlessSaber x130, Custom/Parametric3SliceSprite x52, Custom/TransparentNeonLight x26, Custom/CustomParticles x17, Custom/SimpleLit x14, Ree/Si
+  Vivify grab texture '_GrabTexture' at 30s: nothing bound
+  Vivify grab texture '_GrabTexture1' at 30s: render texture dimension=5 layers=2 3360x3520 msaa=1
+  Vivify grab texture '_GrabTextureWater' at 30s: nothing bound
+  Vivify grab texture '_MPSGrab' at 30s: nothing bound
+  Vivify grab texture '_PPNoteGrab' at 30s: nothing bound
+  Vivify grab texture '_SceneColor' at 30s: nothing bound
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.07,1.25,-0.73) fwd=(0.53,-0.42,0.74)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify level end: level ended (quit or finished)
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+=== end ===
+
+=== Vivify 0.15.53 native crash at 1795793980 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7d489acb08
+thread 7758 'UnityMain'
+pc 0x7dc22ea6fc  lr 0x7ad207b0ec  sp 0x7ca6484a10  fp 0x7ca6484dd0
+backtrace:
+  #00 pc 0x7dc22ea6fc  libc.so +0xc76fc
+  #01 lr 0x7ad207b0ec  libMultiplayerCore.so +0x41d0ec
+  #02 fp 0x7ad1f85f54  libMultiplayerCore.so +0x327f54
+  #03 fp 0x7ad207a5f4  libMultiplayerCore.so +0x41c5f4 (late_load +0xce8)
+  #04 fp 0x7cb3770b9c  libsl2.so +0x543b9c
+  #05 fp 0x7c4cceffb4  libunity.so +0xab1fb4
+  #06 fp 0x7dcc13d6c3
+last Vivify log lines (oldest first):
+  Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global.txt
+  Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+  Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
