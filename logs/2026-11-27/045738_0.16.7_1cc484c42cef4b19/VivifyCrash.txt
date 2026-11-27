@@ -1,0 +1,56 @@
+=== Vivify 0.16.2 native crash at 1795755444 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x80
+thread 29758 'UnityMain'
+pc 0x759f15d270  lr 0x759f15d270  sp 0x77a0654ed0  fp 0x77a0654ee0
+backtrace:
+  #00 pc 0x759f15d270  libBetterSongSearch.so +0x356270
+  #01 lr 0x759f15d270  libBetterSongSearch.so +0x356270
+  #02 fp 0x759f15d0ec  libBetterSongSearch.so +0x3560ec (_ZN16BetterSongSearch2UI15ViewControllers18SongListController9OnDestroyEv +0x46c)
+  #03 fp 0x759f0179a0  libBetterSongSearch.so +0x2109a0
+  #04 fp 0x7718b4a840  libil2cpp.so +0x21ba840
+  #05 fp 0x7718b4a78c  libil2cpp.so +0x21ba78c
+  #06 fp 0x78b4fcc6c3
+  #07 fp 0x77a0655f70
+last Vivify log lines (oldest first):
+  Vivify redownload: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a1f (you - Swifter)' from 'https://r2cdn.beatsaver.com/d265d40935983502ad6f05ddeb5417f3e37c2290.zip'
+  Vivify redownload: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/475ea (The Devourer of Gods (Non-stop Mix) - SkilljoyJr, Rashed, Meme Doggo)' from 'https://r2cdn.beatsaver.com/a0ea40ff62e0a1c4df5308df9dfcecb5a42e36c7
+  Vivify redownload: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4d158 (Once Again - Brakepie, Sonoluminn)' from 'https://r2cdn.beatsaver.com/4f0ee0c598ec2552df094d0a2169f05782ee0a93.zip'
+  Vivify redownload: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51652 (YEAH BOI - swervyman)' from 'https://r2cdn.beatsaver.com/8ab000f4cd67a9047cc2e78d03888c09454309b8.zip'
+  Vivify redownload: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/442f1 (Super Mario 64 in Beat Saber Electric Boogaloo - Uhhnoobie)' from 'https://r2cdn.beatsaver.com/4b0be75535140b450da76896e2385a5384b787df.zip'
+  Vivify redownload: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4f222 (Numb & Getting Colder - SkilljoyJr)' from 'https://r2cdn.beatsaver.com/a5ed9bfe56e83f728c16d4b6464947cbb48fc488.zip'
+  Vivify redownload: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/512ae (Hold My Hand - Nugget & Undeceiver)' from 'https://r2cdn.beatsaver.com/d109045201af797d614c79ee46030f83644ce2e9.zip'
+  Vivify redownload: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/49f94 (Transmission 11623-55-2 - Pixy31 X Animelover121)' from 'https://r2cdn.beatsaver.com/21b0b8802eb5aa2268b0a4750ffcf7248d8eee5b.zip'
+  Vivify redownload: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4662f (Transmission 3406-12 - Nugget)' from 'https://r2cdn.beatsaver.com/e9d6cb8de0e37b8b8cb961d7e211ec33526d8387.zip'
+  Vivify redownload: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a25 (Lifelike - nasafrasa)' from 'https://r2cdn.beatsaver.com/cb5470be988e526c08e1c7e98f2ba9c26ec6fbd0.zip'
+  Vivify redownload: Redownloaded 151 of 152 Vivify map(s); 1 failed (kept as they were, see VivifyMaps.txt)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.02,1.68,-0.00) fwd=(-0.15,-0.10,0.98)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/30e75 (Tetris - xxZAROKxx)' isCustom=true hasDetails=true
+  Vivify updater: Looking for the build...
+  Vivify updater: Downloading the latest build of main...
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/30e75 (Tetris - xxZAROKxx)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/51f14 (Masterpiece - Jonas)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/44f9c (CHOMP - ShayXavi)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(0.06,1.71,-0.01) fwd=(0.11,0.26,0.96)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.00,1.69,-0.01) fwd=(0.05,0.08,1.00)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/44f9c (CHOMP - ShayXavi)' isCustom=true hasDetails=true
+  Vivify updater: Installing the latest build of main...
+  Vivify updater: replacing /sdcard/ModData/com.beatgames.beatsaber/Modloader/mods/libVivify.so
+  Vivify updater: Installed Vivify 0.16.7 (the latest build of main). Restart Beat Saber to use it.
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/abe1 (Fairytale - Filletus)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (Record Replays is off)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfd37 stereoMode=3 multipassSetting=false pos=(-0.01,1.70,0.02) fwd=(0.17,0.16,0.97)
+  Vivify main camera cullingMask is now 0x3d3bfd37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.01,1.69,-0.02) fwd=(-0.12,0.03,0.99)
+  Vivify main camera cullingMask is now 0x3d3aff37
+=== end ===
+
