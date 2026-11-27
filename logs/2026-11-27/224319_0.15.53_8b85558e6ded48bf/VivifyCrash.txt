@@ -1,0 +1,70 @@
+=== Vivify 0.15.53 native crash at 1795819393 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x28
+thread 26845 'UnityMain'
+pc 0x6eb666bd90  lr 0x6eb666f794  sp 0x704351fe90  fp 0x704351feb0
+backtrace:
+  #00 pc 0x6eb666bd90  libnoodleextensions.so +0x13dd90
+  #01 lr 0x6eb666f794  libnoodleextensions.so +0x141794
+  #02 fp 0x6eb666e744  libnoodleextensions.so +0x140744 (_ZN16NoodleExtensions26NoodleMovementDataProvider10InitObjectEPN15GlobalNamespace17BeatmapObjectDataE +0x140)
+  #03 fp 0x6eb6720f7c  libnoodleextensions.so +0x1f2f7c
+  #04 fp 0x6eb6721584  libnoodleextensions.so +0x1f3584
+  #05 fp 0x6fe3bbab10  libil2cpp.so +0x5d21b10
+  #06 fp 0x6fe3baa398  libil2cpp.so +0x5d11398
+  #07 fp 0x6fe136ca68  libil2cpp.so +0x34d3a68
+  #08 fp 0x6eb958511c  libcustom-json-data.so +0x17911c
+  #09 fp 0x6eb95841b4  libcustom-json-data.so +0x1781b4
+  #10 fp 0x6eb9593444  libcustom-json-data.so +0x187444
+  #11 fp 0x6eacb8932c  libtracks.so +0x15f32c
+  #12 fp 0x6ebbf0fb30  libchroma.so +0x227b30
+  #13 fp 0x6ebbf48afc  libchroma.so +0x260afc
+  #14 fp 0x6eb66986e0  libnoodleextensions.so +0x16a6e0
+  #15 fp 0x6fe136caf4  libil2cpp.so +0x34d3af4
+  #16 fp 0x6fe136ca68  libil2cpp.so +0x34d3a68
+  #17 fp 0x70f101c69c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #18 fp 0x70f101c748  libgame.so +0x19748 (android_main +0x78)
+  #19 fp 0x70f1024920  libgame.so +0x21920
+  #20 fp 0x71a8d45470  libc.so +0x138470
+  #21 fp 0x71a8cdd334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  )
+  Vivify Send Logs: reached the 4 MB upload limit; use the menu button for the larger manual upload
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(-0.17,1.91,-0.04) fwd=(-0.22,0.01,0.98)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(-0.11,1.92,-0.04) fwd=(0.05,0.09,0.99)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(0.53,1.19,0.37) fwd=(-0.66,0.49,0.57)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56044 (Dilemma - )' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=true geometryEffects=true 
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56044 (Dilemma - )/bundleAndroid2021.vivify'
+  Vivify fixed material: chart proof declined '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56044 (Dilemma - )/ExpertPlusLawless.dat' at condition 691
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56044 (Dilemma - )/bundleAndroid2021.vivify'
+  Vivify: play button blocked by Vivify ("Checking shaders...")
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56044 (Dilemma - )' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=true geometryEffects=true 
+  Vivify bundle selection: using local Android bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56044 (Dilemma - )/bundleAndroid2021.vivify'
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify bundle preloaded: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56044 (Dilemma - )/bundleAndroid2021.vivify'
+  Vivify depth copy: PC 2D material=true PC array-slice material=true native slice binding=false
+  Vivify material: context=bundle-load asset=assets/fade.mat material='Fade' shader='Custom/HueSaturationThing' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/fucj.mat material='Fucj' shader='Custom/VignetteBlurBlit' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/fuck.mat material='Fuck' shader='Custom/VignetteBlit' supported=true internalError=false
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56044 (Dilemma - )/bundleAndroid2021.vivify' grabs _GrabTexture
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/56044 (Dilemma - )/bundleAndroid2021.vivify' -> not needed
+  Vivify: '56044 (Dilemma - )' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify saber chain modelNode(smc): RightBasicSaberModel[w=(0.21,0.13,0.16) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.21,0.13,0.16) l=(0.01,-0.07,0.16)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- RightSaberTrailReference[w=(0.00,0.
+  Vivify saber chain saberNode: RightSaber[w=(0.21,0.13,0.16) l=(0.01,-0.07,0.16)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- RightSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.0
+  Vivify saber chain initParent: RightSaber[w=(0.21,0.13,0.16) l=(0.01,-0.07,0.16)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- RightSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.
+  Vivify saber chain modelNode(smc): LeftBasicSaberModel[w=(-0.21,0.13,0.16) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.21,0.13,0.16) l=(-0.01,-0.07,0.16)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- LeftSaberTrailReference[w=(0.00,0
+  Vivify saber chain saberNode: LeftSaber[w=(-0.21,0.13,0.16) l=(-0.01,-0.07,0.16)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- LeftSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.
+  Vivify saber chain initParent: LeftSaber[w=(-0.21,0.13,0.16) l=(-0.01,-0.07,0.16)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- LeftSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(0.11,1.86,-0.17) fwd=(0.31,0.25,0.92)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+=== end ===
+
