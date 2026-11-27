@@ -1,0 +1,62 @@
+=== Vivify 0.15.45 native crash at 1795818740 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x2824000050b3
+thread 20734 'UnityMain'
+pc 0x7f421259d8  lr 0x7f421259a8  sp 0x7e1e858020  fp 0x7e1e8580c0
+backtrace:
+  #00 pc 0x7f421259d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x7f421259a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x7dc06f0c64  libmetacore.so +0xcdc64
+  #03 fp 0x7e28ba955c  libsl2.so +0x4fb55c
+  #04 fp 0x7e28ba8e74  libsl2.so +0x4fae74
+  #05 fp 0x7e28ba8d48  libsl2.so +0x4fad48
+  #06 fp 0x7e28ba8ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x7beb598cd4  libhitscorevisualizer.so +0x182cd4
+  #08 fp 0x7d994dffe0  libil2cpp.so +0x26b2fe0
+  #09 fp 0x7bf8cabdc8  libbl.so +0x699dc8 (_ZN14ReplayRecorder24Hook_ProcessNewSwingData24hook_ProcessNewSwingDataEPN15GlobalNamespace23SaberSwingRatingCounterENS1_24BladeMovementDataElementES4_b +0x7c)
+  #10 fp 0x7bf8cbf788  libbl.so +0x6ad788
+  #11 fp 0x7be4783fec  libnoodleextensions.so +0x295fec (_ZN43Hook_SaberSwingRatingCounter_ProcessNewData43hook_SaberSwingRatingCounter_ProcessNewDataEPN15GlobalNamespace23SaberSwingRatingCounterENS0_24BladeMovementDataElementES3_b +0x214)
+  #12 fp 0x7be47839a8  libnoodleextensions.so +0x2959a8
+  #13 fp 0x7d994de8dc  libil2cpp.so +0x26b18dc
+last Vivify log lines (oldest first):
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.01,1.60,-0.03) fwd=(0.21,-0.13,0.97)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/46e59 (did i tell u that i miss u - Rail Zen)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(0.39,1.58,-0.05) fwd=(0.56,-0.22,0.80)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.01,1.59,-0.06) fwd=(0.12,-0.15,0.98)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/f8d6 (DotA - SpookyBeard)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3d06a (driving with my eyes closed - Parapass, Classicstar & UglyApe)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/54854 (Drun of Justice - timesnap, Sbinchk)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/3e2c2 (Dual Doom Deathmatch - Blackjack)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(-0.04,1.60,-0.04) fwd=(0.18,-0.03,0.98)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.04,1.60,-0.05) fwd=(-0.10,-0.19,0.98)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(0.02,1.59,-0.08) fwd=(-0.00,-0.17,0.99)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(0.06,1.59,0.04) fwd=(-0.13,-0.09,0.99)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(0.03,1.61,-0.05) fwd=(0.07,-0.01,1.00)
+  Vivify main camera cullingMask is now 0x3d3bff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3aff37 stereoMode=3 multipassSetting=false pos=(-0.10,1.61,-0.01) fwd=(-0.30,0.02,0.95)
+  Vivify main camera cullingMask is now 0x3d3aff37
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/392e6 (een vliegtuig - Classicstar)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/392e6 (een vliegtuig - Classicstar)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (BeatLeader is installed and records its own (Record With BeatLeader is off))
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bff37 stereoMode=3 multipassSetting=false pos=(0.10,1.59,-0.05) fwd=(0.55,-0.15,0.82)
+  Vivify main camera cullingMask is now 0x3d3bff37
+=== end ===
+
