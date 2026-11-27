@@ -1,0 +1,70 @@
+=== Vivify 0.16.7 native crash at 1795786793 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x28a4000070e9
+thread 28966 'UnityMain'
+pc 0x78c13089d8  lr 0x78c13089a8  sp 0x779244a980  fp 0x779244aa20
+backtrace:
+  #00 pc 0x78c13089d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x78c13089a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x77272cec64  libmetacore.so +0xcdc64
+  #03 fp 0x779f75d55c  libsl2.so +0x4fb55c
+  #04 fp 0x779f75ce74  libsl2.so +0x4fae74
+  #05 fp 0x75469e29fc  libcustommodels.so +0x1ab9fc
+  #06 fp 0x75469e299c  libcustommodels.so +0x1ab99c (_ZSt9terminatev +0x3c)
+  #07 fp 0x7546ab7cd4  libcustommodels.so +0x280cd4
+  #08 fp 0x771942de8c  libil2cpp.so +0x3b89e8c
+  #09 fp 0x780271e5dc  libchroma.so +0x2ef5dc (_ZN44Hook_NoteCutEffectSpawner_SpawnNoteCutEffect44hook_NoteCutEffectSpawner_SpawnNoteCutEffectEPN15GlobalNamespace25NoteCutCoreEffectsSpawnerE5ByRefINS0_11NoteCutInfoEEPNS0_14NoteControllerEii +0x1d4)
+  #10 fp 0x780271dfd8  libchroma.so +0x2eefd8
+  #11 fp 0x771942db48  libil2cpp.so +0x3b89b48
+  #12 fp 0x7717a5e840  libil2cpp.so +0x21ba840
+  #13 fp 0x7717a5e78c  libil2cpp.so +0x21ba78c
+  #14 fp 0x7538a3262c  libnoodleextensions.so +0x1f462c
+  #15 fp 0x771938b15c  libil2cpp.so +0x3ae715c
+  #16 fp 0x7538a960bc  libnoodleextensions.so +0x2580bc
+  #17 fp 0x771938ddd8  libil2cpp.so +0x3ae9dd8
+  #18 fp 0x7538a53144  libnoodleextensions.so +0x215144
+  #19 fp 0x75272aeebc  libreplay.so +0x32cebc
+  #20 fp 0x771948e304  libil2cpp.so +0x3bea304
+  #21 fp 0x7717a5e78c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/prefabs/custom note dot.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliders' kind=0 asset='assets/prefabs/custom chain arrow.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='burstSliderElements' kind=0 asset='assets/prefabs/custom chain link arrow.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up: replayed 8 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=18 livePrefabs=1 preloadedPrefabs=1
+  Vivify mirror: isolated native reflection cache for camera 'MainCamera' (228788)
+  Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+  Vivify foveated rendering: level 4 for this map (was 4), eye-tracked false, accepted true; device 'Oculus Quest 3'
+  Vivify multiplayer check: inMultiplayerGameplay=false multiplayerModLoaded=true
+  Vivify separate-eye prototype: keeping normal frame: eye shader donors are not ready for this level
+  Vivify text check +1s: prefab='assets/prefabs/map.prefab' text='Lyric_Line' active=false enabled=true chars=29 shown=-1 lossyScale=(1,1,1) font='IBMPlexSerif-Light SDF' dynamic=false sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0)
+  Vivify text check +1s: prefab='assets/prefabs/map.prefab' text='Lyric_Line2' active=false enabled=true chars=53 shown=-1 lossyScale=(1,1,1) font='IBMPlexSerif-Light SDF' dynamic=false sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0
+  Vivify text check +1s: prefab='assets/prefabs/map.prefab' text='Lyric_Line3' active=false enabled=true chars=13 shown=-1 lossyScale=(1,1,1) font='IBMPlexSerif-Light SDF' dynamic=false sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0
+  Vivify text check +1s: prefab='assets/prefabs/map.prefab' text='Lyric_Line3 (1)' active=false enabled=true chars=14 shown=-1 lossyScale=(1,1,1) font='IBMPlexSerif-Light SDF' dynamic=false sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0
+  Vivify text check +1s: prefab='assets/prefabs/map.prefab' text='love u' active=false enabled=true chars=8 shown=-1 lossyScale=(1,1,1) font='Red' dynamic=false sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0) renderer=on material='I
+  Vivify text check +1s: prefab='assets/prefabs/map.prefab' text='Lyric_Line3 (2)' active=false enabled=true chars=20 shown=-1 lossyScale=(1,1,1) font='IBMPlexSerif-Light SDF' dynamic=false sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0
+  Vivify text check +1s: prefab='assets/prefabs/map.prefab' text='Lyric_Line4' active=false enabled=true chars=49 shown=-1 lossyScale=(1,1,1) font='IBMPlexSerif-Light SDF' dynamic=false sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0
+  Vivify text check +1s: prefab='assets/prefabs/map.prefab' text='Lyric_Line8' active=false enabled=true chars=11 shown=-1 lossyScale=(1,1,1) font='IBMPlexSerif-Light SDF' dynamic=false sourceFont=false mesh vertices=0 uv2[0]=- bounds=(0,0,0
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=2
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=2
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=2
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=2
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=2
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=2
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=2
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=2
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify note replaced: valid=1 spawned=1 replacementRenderers=1 hideOriginal=true hiddenOriginals=4
+  Vivify: Reduce Debris player option = true (custom debris disabled)
+=== end ===
+
