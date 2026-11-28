@@ -1,0 +1,72 @@
+=== Vivify 0.15.53 native crash at 1795826642 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x27d600001d92
+thread 7600 'UnityMain'
+pc 0x72147319d8  lr 0x72147319a8  sp 0x7084a1e750  fp 0x7084a1e7f0
+backtrace:
+  #00 pc 0x72147319d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x72147319a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x709b550c64  libmetacore.so +0xcdc64
+  #03 fp 0x706b93c114  libil2cpp.so +0x2226114 (_ZSt14get_unexpectedv +0x0)
+  #04 fp 0x706b93c264  libil2cpp.so +0x2226264
+  #05 fp 0x70f4931d48  libsl2.so +0x4fad48
+  #06 fp 0x70f4931ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x6eb9a50ee8  libnoodleextensions.so +0x198ee8 (_Z19CustomEventCallbackPN15GlobalNamespace26BeatmapCallbacksControllerEPN14CustomJSONData15CustomEventDataE +0x7e4)
+  #08 fp 0x6f13279b54  libcustom-json-data.so +0x191b54 (_ZN14CustomJSONData32CustomBeatmapDataCallbackWrapper12CallCallbackEPN15GlobalNamespace15BeatmapDataItemE +0x194)
+  #09 fp 0x706d1f2bbc  libil2cpp.so +0x3adcbbc
+  #10 fp 0x706b8d078c  libil2cpp.so +0x21ba78c
+  #11 fp 0x6f1328e2f0  libcustom-json-data.so +0x1a62f0
+  #12 fp 0x6f1328cff0  libcustom-json-data.so +0x1a4ff0 (_ZN53Hook_BeatmapCallbacksController_ManualUpdateTranspile53hook_BeatmapCallbacksController_ManualUpdateTranspileEPN15GlobalNamespace26BeatmapCallbacksControllerEf +0x238)
+  #13 fp 0x6f13296f38  libcustom-json-data.so +0x1aef38
+  #14 fp 0x6f1296dbc8  libtracks.so +0x14cbc8 (_ZN42Hook_BeatmapObjectCallbackController_Start42hook_BeatmapObjectCallbackController_StartEPN15GlobalNamespace26BeatmapCallbacksControllerEf +0x40)
+  #15 fp 0x6f1296d758  libtracks.so +0x14c758
+  #16 fp 0x6ec42b0098  libchroma.so +0x2a4098 (_ZN42Hook_BeatmapObjectCallbackController_Start42hook_BeatmapObjectCallbackController_StartEPN15GlobalNamespace26BeatmapCallbacksControllerEf +0x38)
+  #17 fp 0x6ec42afc30  libchroma.so +0x2a3c30
+  #18 fp 0x6ec42f4f9c  libchroma.so +0x2e8f9c (_ZN44Hook_BeatmapCallbacksController_ManualUpdate44hook_BeatmapCallbacksController_ManualUpdateEPN15GlobalNamespace26BeatmapCallbacksControllerEf +0x2bc)
+  #19 fp 0x6ec42f48b0  libchroma.so +0x2e88b0
+  #20 fp 0x6eb9a80c28  libnoodleextensions.so +0x1c8c28 (_ZN39Hook_BeatmapCallbacksUpdater_LateUpdate39hook_BeatmapCallbacksUpdater_LateUpdateEPN15GlobalNamespace23BeatmapCallbacksUpdaterE +0x21c)
+  #21 fp 0x6eb9a805dc  libnoodleextensions.so +0x1c85dc
+  #22 fp 0x706b8d0840  libil2cpp.so +0x21ba840
+  #23 fp 0x706b8d078c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify graphics: api=OpenGLES3 (11) shaderLevel=50 (SM5.0) geometryShaderStagePossible=true gpu='Adreno (TM) 740'
+  Vivify platform: os='Android OS 14 / API-34 (UP1A.231005.007.A1/52641960031600520)' device='Oculus Quest 3' gpu='Adreno (TM) 740' vendor='Qualcomm' api=11 stereoMode=3 xrOcclusionMesh=true supportsInstancing=true supportsR8=true supportsDe
+  Vivify bundle preloaded, rebuilding asset caches: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4a2b3 (Turret Orchestra - MadChase, RateGyro, Xentha_)/bundleAndroid2021.vivify'
+  Vivify Projector interface: managedType=false nativeGetMaterial=true nativeSetMaterial=true
+  Vivify texture decode: scanned 36 material(s), replaced 0 unsupported texture reference(s) in 8ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify: maps may turn realtime reflection probes on (reduced: 128 px, one face a frame, no HDR)
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadows'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadows'
+  Vivify: realtime shadows off for this level (the game had shadow quality 0; turn on 'Map Realtime Shadows' to keep them)
+  Vivify preload prefab: asset='assets/portal/up 2/turrents 1.prefab' id='Turret 1' instance=true
+  Vivify preload prefab: asset='assets/portal/up 2/env.prefab' id='env' instance=true
+  Vivify preload prefab: asset='assets/portal/up 2/portal 2 elevator.prefab' id='elevator' instance=true
+  Vivify preload prefab: asset='assets/portal/up 2/3.prefab' id='3a' instance=true
+  Vivify preload prefab: asset='assets/portal/up 2/4.prefab' id='4a' instance=true
+  Vivify preload prefab: asset='assets/portal/up 2/2.prefab' id='2a' instance=true
+  Vivify preload prefab: asset='assets/portal/up 2/sphere.prefab' id='sky' instance=true
+  Vivify preload prefab: asset='assets/portal/up 2/outside.prefab' id='outside' instance=true
+  Vivify PreloadInstantiatePrefabs: 8 prefab event(s) preloaded
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/portal/up 2/turrents 1.prefab' id='Turret 1' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='Turret 1' asset='assets/portal/up 2/turrents 1.prefab' tracks=0 animators=16 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/portal/up 2/env.prefab' id='env' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='env' asset='assets/portal/up 2/env.prefab' tracks=0 animators=3 offscreenCulled=0
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/portal/up 2/portal 2 elevator.prefab' id='elevator' alreadyLive=false
+  Vivify InstantiatePrefab spawned: id='elevator' asset='assets/portal/up 2/portal 2 elevator.prefab' tracks=1 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: ignoring the map's realtime shadow settings ('shadows' and the rest); turn on 'Map Realtime Shadows' to let maps enable them
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=0 asset='assets/portal/up 2/bloqalt.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=1 asset='assets/portal/up 2/bloqalt.prefab' tracks=1 additive=false saberType=-
+  Vivify AssignObjectPrefab: objectType='colorNotes' kind=2 asset='assets/portal/up 2/dib.prefab' tracks=1 additive=false saberType=-
+  Vivify catch-up: replayed 5 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=14 livePrefabs=3 preloadedPrefabs=8
+  Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: game main effect (bloom) is on; rendering it between the map's effects
+=== end ===
+
