@@ -1,0 +1,76 @@
+=== Vivify 0.15.53 native crash at 1795825703 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x30
+thread 24198 'UnityMain'
+pc 0x6e919656a0  lr 0x6e919fa0e0  sp 0x70917f2570  fp 0x70917f25b0
+backtrace:
+  #00 pc 0x6e919656a0  libscorepercentage.so +0x13c6a0
+  #01 lr 0x6e919fa0e0  libscorepercentage.so +0x1d10e0
+  #02 fp 0x6e919fe3d0  libscorepercentage.so +0x1d53d0
+  #03 fp 0x6e91a16860  libscorepercentage.so +0x1ed860
+  #04 fp 0x6e91a2a858  libscorepercentage.so +0x201858
+  #05 fp 0x6eb3f7d410  libbl.so +0x770410
+  #06 fp 0x706ae96534  libil2cpp.so +0x3b5a534
+  #07 fp 0x70694f678c  libil2cpp.so +0x21ba78c
+  #08 fp 0x6eb40080c8  libbl.so +0x7fb0c8
+  #09 fp 0x70691e89f8  libil2cpp.so +0x1eac9f8
+  #10 fp 0x70940c4fc8  libimagecoverexpander.so +0x9cfc8
+  #11 fp 0x70695c10c8  libil2cpp.so +0x22850c8
+  #12 fp 0x70694f678c  libil2cpp.so +0x21ba78c
+  #13 fp 0x706ad3d96c  libil2cpp.so +0x3a0196c
+  #14 fp 0x70695c10c8  libil2cpp.so +0x22850c8
+  #15 fp 0x70694f678c  libil2cpp.so +0x21ba78c
+  #16 fp 0x6eb7c67384  libplaylistcore.so +0x22d384
+  #17 fp 0x6eb7c66388  libplaylistcore.so +0x22c388 (_ZN52Hook_LevelCollectionNavigationController_DidActivate52hook_LevelCollectionNavigationController_DidActivateEPN15GlobalNamespace35LevelCollectionNavigationControllerEbbb +0x60c)
+  #18 fp 0x6eb7ce811c  libplaylistcore.so +0x2ae11c
+  #19 fp 0x6eb2ae7e44  libbsl.so +0x139e44
+  #20 fp 0x70695c10c8  libil2cpp.so +0x22850c8
+  #21 fp 0x709a5a87f8  libSqoreToggler.so +0xf37f8
+  #22 fp 0x6efe9a8800  libRandomSongPicker.so +0x117800
+  #23 fp 0x6efe9b30a8  libRandomSongPicker.so +0x1220a8
+  #24 fp 0x6eaebf7964  libchatplex-sdk-bs.so +0x6dc964
+  #25 fp 0x70695c10c8  libil2cpp.so +0x22850c8
+  #26 fp 0x70694f678c  libil2cpp.so +0x21ba78c
+  #27 fp 0x706ae85c28  libil2cpp.so +0x3b49c28
+last Vivify log lines (oldest first):
+  Vivify material: context=bundle-load asset=assets/cylinder/shader/panel.mat material='Panel' shader='Cylinder/Panel' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/icosphere/rain/reflectivewet.mat material='ReflectiveWet' shader='Podium/ReflectiveWet' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/libary/portalfloor.mat material='PortalFloor' shader='Library/ReflectiveFogPortal' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/libary/static.mat material='Static' shader='PostProcessing/FilmGrain' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/monitor/materials/wingdingscreen.mat material='WingDingScreen' shader='Monitor/DangerScreen' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/podium/lit/materials/volumetricfog.mat material='VolumetricFog' shader='PostProcessing/VolumetricFog' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/sabers/sabertrail.mat material='SaberTrail' shader='Saber/SaberTrail' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/blackout.mat material='BlackOut' shader='PostProcessing/BlackOut' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/bloom.mat material='Bloom' shader='PostProcessing/Bloom' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/boxcolorize.mat material='BoxColorize' shader='PostProcessing/BoxColorize' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/colormultiply.mat material='ColorMultiply' shader='PostProcessing/ColorMultiply' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/colorzoom.mat material='ColorZoom' shader='PostProcessing/ColorZoom' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/distortnotes/one.mat material='One' shader='PostProcessing/DistortNotes' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/filmgrain.mat material='FilmGrain' shader='PostProcessing/FilmGrain' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/invert.mat material='Invert' shader='PostProcessing/Invert' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/justaglitch.mat material='JustAGlitch' shader='PostProcessing/JustAGlitch' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/outline.mat material='Outline' shader='PostProcessing/Outline' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/pixelsort.mat material='PixelSort' shader='PostProcessing/PixelSort' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/scram.mat material='Scram' shader='PostProcessing/Scram' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/tile.mat material='Tile' shader='PostProcessing/Tile' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/transversechromaticaberration.mat material='TransverseChromaticAberration' shader='PostProcessing/TransverseChromaticAberration' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/tvdistort.mat material='TVDistort' shader='PostProcessing/TVDistort' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/tveffect.mat material='TvEffect' shader='PostProcessing/TvEffect' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/shaders/wipe.mat material='Wipe' shader='PostProcessing/Wipe' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/skybox/nebulaskybox.mat material='NebulaSkybox' shader='SkyboxCustom/Cubemap' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/wingdings/overlay.mat material='Overlay' shader='PostProcessing/OverlayTexture' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/wingdings/overlayquadmat.mat material='OverlayQuadMat' shader='Unlit/OverlayQuadTexture' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/wormhole/wormhole.mat material='Wormhole' shader='Wormhole/Wormhole' supported=true internalError=false
+  Vivify: '43999 (42-flux - Aeroluna)' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+  Vivify: the Replay mod's button is clickable again now that the map is ready
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleAndroid2021.vivify' grabs _BlackHoleGrabTex, _GrabTexture, _EclipseGrabTex, _Base
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43999 (42-flux - Aeroluna)/bundleAndroid2021.vivify' -> needed by BlackHole/BlackHole, PostProcessing/VolumetricFog, Library/Particle Fog, PostPro
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=71
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/13377 (Hardware Store - That_Narwhal)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/13377 (Hardware Store - That_Narwhal)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/13377 (Hardware Store - That_Narwhal)' isCustom=true hasDetails=true
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/13377 (Hardware Store - That_Narwhal)' isCustom=true hasDetails=true
+=== end ===
+
