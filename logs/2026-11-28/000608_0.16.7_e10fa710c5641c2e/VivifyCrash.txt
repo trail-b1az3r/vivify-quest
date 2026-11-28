@@ -1,0 +1,254 @@
+=== Vivify 0.16.2 native crash at 1795738534 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x5c
+thread 25080 'Thread-148'
+pc 0x727e81d7b4  lr 0x727e81d768  sp 0x7193602480  fp 0x71936027b0
+backtrace:
+  #00 pc 0x727e81d7b4  libunity.so +0x13ee7b4
+  #01 lr 0x727e81d768  libunity.so +0x13ee768
+  #02 fp 0x727ea039f4  libunity.so +0x15d49f4
+  #03 fp 0x73fc91f334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify main camera cullingMask is now 0x3819ff37
+  Vivify texture decode: scanned 122 material(s), replaced 0 unsupported texture reference(s) in 4ms, skipped 0 over budget, refused 0 unreadable and 0 blank
+  Vivify material 'StarNova': '_GridSize' is an int in shader 'Swifter/AftershockParticle'; set as integer 4
+  Vivify crash recovery: this map did not end cleanly last time, so it plays in recovery mode: unused assets unloaded, textures at half resolution, effects at 50% or less. 'Forget Crash Recovery' in the advanced settings turns it off for eve
+  Vivify visual check: Crash recovery mode: textures at half resolution
+  Vivify: realtime reflection probes off for this level (crash recovery mode; the game had them off)
+  Vivify: 'Map Realtime Shadows' is on; the game's shadow quality is left as it is
+  Vivify: watching cameras (reflection probes, the map's HUD)
+  Vivify HUD: 18 object(s) of 'assets/player/ui/outerwildsui.prefab' on layer 17 drawn at 70% of their distance
+  Vivify prefab 'assets/player/ui/outerwildsui.prefab' has objects on headset-only layer(s) 0x00020000; the main camera will draw them, as the PC headset camera does
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify saber trail: 1 map trail(s) created (following the game's trail)
+  Vivify desktop HUD: showing 'DesktopUITex' from 'Aeroluna/OverlayUITex' on a panel in front of the head
+  Vivify main camera: now draws layer(s) 0x00020000 for this map's headset-only objects
+  Vivify main camera cullingMask is now 0x381bff37
+  Vivify main camera: no shader in this map reads the scene depth texture; not rendering it
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify Blit: 'Aeroluna/OverlayUITex' leaves a texture out of its two-eye program; that is its headset path (as on PC VR), so it runs as a two-eye effect
+  Vivify separate-eye prototype: keeping normal frame: eye shader donors are not ready for this level
+  Vivify frame stall: the game did not draw for 1.0s (songTime 2.28, bundle '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/43a24 (End Times - Chaimzy)/bundleAndroid2021.vivify')
+  Vivify frame took 60.6ms, over the 50ms budget
+  Vivify visual check at 5s: 0 live note(s), 0 with a map prefab; 0 game note(s) whose body cannot draw; 0 map-prefab note(s) with nothing that can draw
+  Vivify visual check: 0 light(s) on, 0 with shadows; ambient mode=3 intensity=1.00 sun='<none>'
+  Vivify visual check at 5s: 0 reflection probe(s) on; environment reflection mode=0 custom='<none>' intensity=1.00
+  Vivify visual check: mirror 'TrackMirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'TrackMirror' enabled=true active=true layer=4 material='GridFakeMirror' shader='Custom/SimpleLit' supported=true queue=1970 block: _Cutout=0.00 _Co
+  Vivify visual check: mirror 'Mirror' isEnabled=false scale=(1.00,1.00,1.00) renderer: 'Mirror' enabled=true active=true layer=4 material='PlayersPlaceReflectionProbeBlurry' shader='Custom/SimpleLit' supported=true queue=2007 block: _Cutout
+  Vivify visual check: cameras that may render the mirror: 'CameraRight' stereo=false eye=0 target=texture mask=0xfffffb37; 'Camera' stereo=false eye=0 target=texture mask=0xfffffb37; 'Camera' stereo=false eye=0 target=texture mask=0x20000; 
+  Vivify visual check at 5s: 368 active renderer(s), 0 with no runnable shader; most drawn: Custom/Parametric3SliceSprite x106, Custom/OpaqueNeonLight x78, Custom/SimpleLit x54, Custom/TransparentNeonLight x28, Swifter/SimpleMaterialPointLig
+  Vivify grab texture '_Base' at 5s: nothing bound
+  Vivify grab texture '_BlackHoleGrabTex' at 5s: nothing bound
+  Vivify grab texture '_BloodGrab' at 5s: nothing bound
+  Vivify grab texture '_EclipseGrabTex' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture1' at 5s: nothing bound
+  Vivify grab texture '_GrabTexture2' at 5s: render texture dimension=5 layers=2 1680x1760 msaa=1
+  Vivify grab texture '_GrabTextureWater' at 5s: nothing bound
+  Vivify grab texture '_Refraction' at 5s: nothing bound
+  Vivify grab texture '_SceneColor' at 5s: nothing bound
+  Vivify visual check: main camera cullingMask=0x381bff37 depthTextureMode=0 clearFlags=2
+=== end ===
+
+=== Vivify 0.16.2 native crash at 1795758306 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x8
+thread 11612 'AssetGarbageCol'
+pc 0x6fb541d560  lr 0x6fb541d2a0  sp 0x6fb01c63f0  fp 0x6fb01c64a0
+backtrace:
+  #00 pc 0x6fb541d560  libil2cpp.so +0x2154560
+  #01 lr 0x6fb541d2a0  libil2cpp.so +0x21542a0
+  #02 fp 0x6fc9f4918c  libcustom-types.so +0x2ff18c
+  #03 fp 0x6fb541d148  libil2cpp.so +0x2154148
+  #04 fp 0x6fb541d148  libil2cpp.so +0x2154148
+  #05 fp 0x6fb541d148  libil2cpp.so +0x2154148
+  #06 fp 0x7115335334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.03,1.60,-0.06) fwd=(0.15,-0.06,0.99)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify main camera: the game's per-layer cull distances: none (along the view direction)
+  Vivify main camera: per-layer cull distances off for this map (Far Culling is 0)
+  Vivify main camera: scene depth texture enabled for this map
+  Vivify level end: level ended (quit or finished)
+  Vivify level end: camera effects removed
+  Vivify level end: note and saber visuals restored
+  Vivify level end: camera restored
+  Vivify level end: map prefabs destroyed
+  Vivify level end: render textures released
+  Vivify level end: render settings restored
+  Vivify level end: done
+=== end ===
+
+=== Vivify 0.16.2 native crash at 1795759298 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x280100005ac7
+thread 23303 'UnityMain'
+pc 0x71153339d8  lr 0x71153339a8  sp 0x6fd3b1c990  fp 0x6fd3b1ca30
+backtrace:
+  #00 pc 0x71153339d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x71153339a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x6fbfd4ec64  libmetacore.so +0xcdc64
+  #03 fp 0x7015aff55c  libsl2.so +0x4fb55c
+  #04 fp 0x7015afee74  libsl2.so +0x4fae74
+  #05 fp 0x7015afed48  libsl2.so +0x4fad48
+  #06 fp 0x7015afece8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x6e45129e54  libModifiersCoreQuest.so +0xefe54
+  #08 fp 0x6fb740b0a0  libil2cpp.so +0x4ac40a0
+  #09 fp 0x6fb4b0178c  libil2cpp.so +0x21ba78c
+  #10 fp 0x6fb4b0178c  libil2cpp.so +0x21ba78c
+  #11 fp 0x6fb4b0178c  libil2cpp.so +0x21ba78c
+  #12 fp 0x6fce4f89c4  libcustom-types.so +0x2d49c4
+  #13 fp 0x6fb71f14a8  libil2cpp.so +0x48aa4a8
+  #14 fp 0x6fb4b0178c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify: play button blocked by Vivify ("Preparing shaders 0/226...")
+  Vivify: preparing the shaders of 226 material(s) before play ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_______111________-_Swifter_/4968d__743_Aether_______111________-_Swifter__604b37adafe702c
+  Vivify: '4968d (743+Aether✧ .  111} + , . - Swifter)' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+  Vivify: play button blocked by Vivify ("Preparing shaders 0/226..."), VivifyRenderer ("Preparing map effects...")
+  Vivify shader preparation: material 'Shockwave' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'Shockwave' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'D - Terrain' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'D - Terrain' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material '261 - Nearby Terrain' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material '261 - Nearby Terrain' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify separate-eye classification: complete=true, 2 geometry/tessellation shader(s)
+  Vivify shader preparation: material 'Glass Note' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'Glass Note' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material '285 - Nearby Terrain' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material '285 - Nearby Terrain' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743+Aether✧ .  111} + , . - Swifter)' isCustom=true hasDetails=true
+  Vivify score submission: enabled for this Vivify map
+  Vivify settings for this level: standInShading=true convertPcBundlesOnDevice=true disableCustomNoteVisuals=false disableAllBlits=false multipassRendering=false effectResolution=100% sceneDepth=true prepareShaders=true geometryEffects=true 
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4968d (743+Aether✧ .  111} + , . - Swifter)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCor
+  Vivify: play button blocked by VivifyRenderer ("Preparing map effects...")
+  Vivify: play button blocked by VivifyRenderer ("Preparing map effects..."), Vivify ("Preparing shaders 140/226...")
+  Vivify Blit: 36 single-view shader(s) ready for blits into screen textures ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/4968d__743_Aether_______111________-_Swifter_/4968d__743_Aether_______111________-_Swifter__6
+  Vivify: shaders of 226 material(s) prepared in 2.2s
+  Vivify shader preparation: 574 pass bind attempt(s), 28 non-binding/exception result(s), including non-draw passes; compilation is not pixel validation
+  Vivify: play button blocked by VivifyRenderer ("Preparing map effects...")
+  Vivify separate-eye donor 0 ready: 35 shader object(s), 274 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 1 ready: 35 shader object(s), 274 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 2 ready: 35 shader object(s), 274 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 3 ready: 35 shader object(s), 274 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 4 ready: 35 shader object(s), 274 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 5 ready: 0 shader object(s), 0 asset bindings, 0 ambiguous display name(s)
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify renderer preflight complete: map effects ready; GPU image/performance validation is still required
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/198f3 (Spider Dance - nyri0)' isCustom=true hasDetails=true
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/2c888 (Splatter Party - Anammelech & Otricity)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3819ff37 stereoMode=3 multipassSetting=false pos=(-0.06,1.73,-0.10) fwd=(0.21,0.80,0.56)
+  Vivify main camera cullingMask is now 0x3819ff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(-0.06,1.67,-0.01) fwd=(-0.10,-0.24,0.97)
+  Vivify main camera cullingMask is now 0x3818ff37
+=== end ===
+
+=== Vivify 0.15.53 native crash at 1795807961 (seconds since 1970) ===
+SIGABRT (abort), code -1, fault address 0x280100002f32
+thread 12205 'UnityMain'
+pc 0x75e0ae69d8  lr 0x75e0ae69a8  sp 0x7472d45960  fp 0x7472d45a00
+backtrace:
+  #00 pc 0x75e0ae69d8  libc.so +0xce9d8 (abort +0xa8)
+  #01 lr 0x75e0ae69a8  libc.so +0xce9a8 (abort +0x78)
+  #02 fp 0x746ef2ac64  libmetacore.so +0xcdc64
+  #03 fp 0x74c5d6255c  libsl2.so +0x4fb55c
+  #04 fp 0x74c5d61e74  libsl2.so +0x4fae74
+  #05 fp 0x74c5d61d48  libsl2.so +0x4fad48
+  #06 fp 0x74c5d61ce8  libsl2.so +0x4face8 (_ZSt9terminatev +0x3c)
+  #07 fp 0x72f5d7fe54  libModifiersCoreQuest.so +0xefe54
+  #08 fp 0x744c4040a0  libil2cpp.so +0x4ac40a0
+  #09 fp 0x7449afa78c  libil2cpp.so +0x21ba78c
+  #10 fp 0x7449afa78c  libil2cpp.so +0x21ba78c
+  #11 fp 0x7449afa78c  libil2cpp.so +0x21ba78c
+  #12 fp 0x747f3909c4  libcustom-types.so +0x2d49c4
+  #13 fp 0x744c1ea4a8  libil2cpp.so +0x48aa4a8
+  #14 fp 0x7449afa78c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Vivify fixed material: chart eligibility=false for '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45051 (Nhelv - Remec)/bundleWindows2021.vivify'
+  Vivify bundle selection: level='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45051 (Nhelv - Remec)' androidBundle=no android2021=0 pcBundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45051 (Nh
+  Vivify: play button blocked by Vivify ("Converting PC assets...")
+  Vivify converting PC asset bundle on device: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/45051 (Nhelv - Remec)/bundleWindows2021.vivify' -> '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/45051
+  Vivify shader conversion: 17 of 17 shader(s) linked for multiview GLES, 128 keyword variant(s) linked and 0 left on DirectX (one of their stages did not translate), 232 variant(s) given their single-pass stereo twin's per-eye code, 0 stere
+  Vivify conversion marked 17 of 17 block-compressed texture(s) readable (17 keep their pixels in a companion stream). A texture that is not readable loses its pixels at load, and decoding it then produces solid black.
+  Vivify source bundle shaders: unity=2019.4.28f1 serializedFiles=1 shaders=17 runnableOnQuest=0 platforms=[Direct3D 11(4)] programs=372 glslSource=0 binary=372 shadersWithTessellation=0 programTypes=[D3D11 vertex sm4.0, D3D11 pixel sm4.0, D
+  Vivify bundle conversion succeeded: translated 17 of 17 shader(s) (162 program(s)) across 1 serialized file(s); 0 already ran here, 0 left as they were; 17 of 17 block-compressed texture(s) marked readable (17 streamed)
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify shaders: bundle='/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/45051__Nhelv_-_Remec_/45051__Nhelv_-_Remec__d6a6bce8ec66b5ea.vivify' converted=true total=29 runnable=29 noAndroidProgram=0 deviceRejected=0
+  Vivify: play button blocked by Vivify ("Preparing shaders 0/54...")
+  Vivify: preparing the shaders of 54 material(s) before play ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/45051__Nhelv_-_Remec_/45051__Nhelv_-_Remec__d6a6bce8ec66b5ea.vivify')
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/45051__Nhelv_-_Remec_/45051__Nhelv_-_Remec__d6a6bce8ec66b5ea.vivify' grabs _SceneColor, _Refraction
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/45051__Nhelv_-_Remec_/45051__Nhelv_-_Remec__d6a6bce8ec66b5ea.vivify' -> needed by N5KK7/ParticleUltimate/Soft Particle Additive Ultimate, N5KK7/
+  Vivify: play button blocked by Vivify ("Preparing shaders 0/54..."), VivifyRenderer ("Preparing map effects...")
+  Vivify: '45051 (Nhelv - Remec)' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+  Vivify shader preparation: material 'a' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material 'a' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material '[7] Glitch 4' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material '[7] Glitch 4' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material '[6] Water' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material '[6] Water' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material '[6] Spiral 2' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material '[6] Spiral 2' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material '[6] Spiral 1' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify shader preparation: material '[6] Spiral 1' pass 0 did not bind (non-draw passes such as GrabPass return false)
+  Vivify: shaders of 54 material(s) prepared in 1.0s
+  Vivify shader preparation: 148 pass bind attempt(s), 22 non-binding/exception result(s), including non-draw passes; compilation is not pixel validation
+  Vivify: play button blocked by VivifyRenderer ("Preparing map effects...")
+  Vivify Blit: 'Standard' samples a texture only in its single-view code; as a screen effect it will run once per eye
+  Vivify Blit: 14 single-view shader(s) ready for blits into screen textures ('/sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/ConvertedBundles/45051__Nhelv_-_Remec_/45051__Nhelv_-_Remec__d6a6bce8ec66b5ea_blit.vivify')
+  Vivify separate-eye classification: complete=true, 1 geometry/tessellation shader(s)
+  Vivify separate-eye donor 1 ready: 17 shader object(s), 133 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 4 ready: 17 shader object(s), 133 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 0 ready: 17 shader object(s), 133 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 5 ready: 0 shader object(s), 0 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 2 ready: 17 shader object(s), 133 asset bindings, 0 ambiguous display name(s)
+  Vivify separate-eye donor 3 ready: 17 shader object(s), 133 asset bindings, 0 ambiguous display name(s)
+  Vivify: play button is enabled (no mod is blocking it)
+  Vivify renderer preflight complete: map effects ready; GPU image/performance validation is still required
+=== end ===
+
+=== Vivify 0.15.53 native crash at 1795818407 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x754825b108
+thread 23151 'UnityMain'
+pc 0x75ae3396fc  lr 0x72dc36d99c  sp 0x7452543b20  fp 0x7452543ee0
+backtrace:
+  #00 pc 0x75ae3396fc  libc.so +0xc76fc
+  #01 lr 0x72dc36d99c  libtracks.so +0x15799c
+  #02 fp 0x72dc3617ac  libtracks.so +0x14b7ac (_Z43InstallBeatmapObjectCallbackControllerHooksv +0x140)
+  #03 fp 0x72dc36b514  libtracks.so +0x155514 (late_load +0x134)
+  #04 fp 0x74a676ab9c  libsl2.so +0x543b9c
+  #05 fp 0x744d6cbfb4  libunity.so +0xab1fb4
+  #06 fp 0x75b3c846c3
+  #07 fp 0x7452544f40
+last Vivify log lines (oldest first):
+  Vivify log files: session -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+  Vivify log files: global -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/vivify_global-p98.txt
+  Vivify log files: report -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifyReport.txt
+  Vivify startup compatibility: custom-types legacy liveness debug checks bypassed for 1.40.8; original Unity traversal remains active
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
