@@ -1,0 +1,107 @@
+=== Vivify 0.16.7 native crash at 1795803185 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x9d70
+thread 32309 'Thread-530'
+pc 0x725b467740  lr 0x725b4676f8  sp 0x716b68a480  fp 0x716b68a7b0
+backtrace:
+  #00 pc 0x725b467740  libunity.so +0x13ee740
+  #01 lr 0x725b4676f8  libunity.so +0x13ee6f8
+  #02 fp 0x725b64d9f4  libunity.so +0x15d49f4
+  #03 fp 0x73e5521334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify preload prefab: asset='assets/post drop.prefab' id='idk1' instance=true
+  Vivify PreloadInstantiatePrefabs: 3 prefab event(s) preloaded
+  Vivify catch-up event: type='Blit' time=0
+  Vivify material: context=Blit asset=assets/shaders/material.mat material='material' shader='Custom/BitcrushEffect' supported=true internalError=false
+  Vivify Blit event: time=0 asset='assets/shaders/material.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=99999
+  Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify InstantiatePrefab: asset='assets/main.prefab' id='main1' alreadyLive=false
+  Vivify: watching cameras (reflection probes, the map's HUD)
+  Vivify InstantiatePrefab spawned: id='main1' asset='assets/main.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/rsih saber.prefab' tracks=0 additive=false saberType=0
+  Vivify AssignObjectPrefab(trail): asset='assets/rsih saber/mats/rsih_saber_trail.mat' saberType=0 additive=false
+  Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/rsih saber.prefab' tracks=0 additive=false saberType=1
+  Vivify AssignObjectPrefab(trail): asset='assets/rsih saber/mats/rsih_saber_trail.mat' saberType=1 additive=false
+  Vivify: this map has its own saber, so 'CustomSaberAPI(Clone)' (CustomModels::CustomSaberAPI) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify: this map has its own saber, so 'CustomModelsTrail1' (CustomModels::CustomSaberTrail) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify saber trail: controller has no game trail (another saber mod); following the saber
+  Vivify saber trail: 1 map trail(s) created (following the saber)
+  Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=8 hiddenOriginals=16
+  Vivify saber trail: controller has no game trail (another saber mod); following the saber
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/512c7 (RSIH - Nugget & Serephor)/bundleAndroid2021.vivify' grabs _MWGrab
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/512c7 (RSIH - Nugget & Serephor)/bundleAndroid2021.vivify' -> not needed
+  Vivify saber trail: 1 map trail(s) created (following the saber)
+  Vivify saber replaced (type 0): models=1 trails=1 spawned=2 renderers=8 hiddenOriginals=16
+  Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadows'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadows'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowResolution'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowResolution'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowProjection'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowProjection'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowCascades'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowCascades'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowDistance'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowDistance'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_realtimeReflectionProbes'
+  Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_realtimeReflectionProbes'
+  Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify catch-up: replayed 4 event(s) up to time=0
+  Vivify PrepareBeatmap done: assets=7 livePrefabs=1 preloadedPrefabs=3
+=== end ===
+
+=== Vivify 0.16.7 native crash at 1795803195 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 2, fault address 0x7359571f40
+thread 14457 'UnityMain'
+pc 0x73e55186fc  lr 0x726a71e9dc  sp 0x72667499e0  fp 0x7266749da0
+backtrace:
+  #00 pc 0x73e55186fc  libc.so +0xc76fc
+  #01 lr 0x726a71e9dc  libbstheater.so +0x4f59dc
+  #02 fp 0x726a6ab9c0  libbstheater.so +0x4829c0 (late_load +0x28a8)
+  #03 fp 0x72cc7da7a8  libsl2.so +0x5437a8
+  #04 fp 0x725ccc4fb4  libunity.so +0xab1fb4
+  #05 fp 0x73db1be6c3
+  #06 fp 0x726674af40
+last Vivify log lines (oldest first):
+  Vivify crash report:   Vivify catch-up event: type='Blit' time=0
+  Vivify crash report:   Vivify material: context=Blit asset=assets/shaders/material.mat material='material' shader='Custom/BitcrushEffect' supported=true internalError=false
+  Vivify crash report:   Vivify Blit event: time=0 asset='assets/shaders/material.mat' source='_Main' targets=1 priority=0 pass=-1 order=7 durationBeats=99999
+  Vivify crash report:   Vivify catch-up event: type='InstantiatePrefab' time=0
+  Vivify crash report:   Vivify InstantiatePrefab: asset='assets/main.prefab' id='main1' alreadyLive=false
+  Vivify crash report:   Vivify: watching cameras (reflection probes, the map's HUD)
+  Vivify crash report:   Vivify InstantiatePrefab spawned: id='main1' asset='assets/main.prefab' tracks=0 animators=1 offscreenCulled=0
+  Vivify crash report:   Vivify catch-up event: type='AssignObjectPrefab' time=0
+  Vivify crash report:   Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/rsih saber.prefab' tracks=0 additive=false saberType=0
+  Vivify crash report:   Vivify AssignObjectPrefab(trail): asset='assets/rsih saber/mats/rsih_saber_trail.mat' saberType=0 additive=false
+  Vivify crash report:   Vivify AssignObjectPrefab: objectType='saber' kind=0 asset='assets/rsih saber.prefab' tracks=0 additive=false saberType=1
+  Vivify crash report:   Vivify AssignObjectPrefab(trail): asset='assets/rsih saber/mats/rsih_saber_trail.mat' saberType=1 additive=false
+  Vivify crash report:   Vivify: this map has its own saber, so 'CustomSaberAPI(Clone)' (CustomModels::CustomSaberAPI) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify crash report:   Vivify: this map has its own saber, so 'CustomModelsTrail1' (CustomModels::CustomSaberTrail) from another saber mod is off for this level; 'Map Sabers Turn Off Saber Mods' in settings keeps it
+  Vivify crash report:   Vivify saber trail: controller has no game trail (another saber mod); following the saber
+  Vivify crash report:   Vivify saber trail: 1 map trail(s) created (following the saber)
+  Vivify crash report:   Vivify saber replaced (type 1): models=1 trails=1 spawned=2 renderers=8 hiddenOriginals=16
+  Vivify crash report:   Vivify saber trail: controller has no game trail (another saber mod); following the saber
+  Vivify crash report:   Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/512c7 (RSIH - Nugget & Serephor)/bundleAndroid2021.vivify' grabs _MWGrab
+  Vivify crash report:   Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/512c7 (RSIH - Nugget & Serephor)/bundleAndroid2021.vivify' -> not needed
+  Vivify crash report:   Vivify saber trail: 1 map trail(s) created (following the saber)
+  Vivify crash report:   Vivify saber replaced (type 0): models=1 trails=1 spawned=2 renderers=8 hiddenOriginals=16
+  Vivify crash report:   Vivify catch-up event: type='SetRenderingSettings' time=0
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadows'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadows'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowResolution'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowResolution'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowProjection'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowProjection'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowCascades'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowCascades'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_shadowDistance'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_shadowDistance'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::get_realtimeReflectionProbes'
+  Vivify crash report:   Vivify SetRenderingSettings: resolved 'UnityEngine.QualitySettings::set_realtimeReflectionProbes'
+  Vivify crash report:   Vivify SetRenderingSettings: time=0 durationSeconds=0 immediate=true
+  Vivify crash report:   Vivify catch-up: replayed 4 event(s) up to time=0
+  Vivify crash report:   Vivify PrepareBeatmap done: assets=7 livePrefabs=1 preloadedPrefabs=3
+  Vivify crash report: === end ===
+  Vivify file logging active -> /sdcard/ModData/com.beatgames.beatsaber/Mods/Vivify/VivifySession.txt
+=== end ===
+
