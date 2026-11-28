@@ -1,0 +1,63 @@
+=== Vivify 0.15.53 native crash at 1795837911 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x28
+thread 14647 'UnityMain'
+pc 0x70f2849d90  lr 0x70f284d794  sp 0x72cc256eb0  fp 0x72cc256ed0
+backtrace:
+  #00 pc 0x70f2849d90  libnoodleextensions.so +0x13dd90
+  #01 lr 0x70f284d794  libnoodleextensions.so +0x141794
+  #02 fp 0x70f284c744  libnoodleextensions.so +0x140744 (_ZN16NoodleExtensions26NoodleMovementDataProvider10InitObjectEPN15GlobalNamespace17BeatmapObjectDataE +0x140)
+  #03 fp 0x70f28fef7c  libnoodleextensions.so +0x1f2f7c
+  #04 fp 0x70f28ff584  libnoodleextensions.so +0x1f3584
+  #05 fp 0x721b459b10  libil2cpp.so +0x5d21b10
+  #06 fp 0x721b449398  libil2cpp.so +0x5d11398
+  #07 fp 0x7218c0ba68  libil2cpp.so +0x34d3a68
+  #08 fp 0x70f4d7e11c  libcustom-json-data.so +0x17911c
+  #09 fp 0x70f4d7d1b4  libcustom-json-data.so +0x1781b4
+  #10 fp 0x70f4d8c444  libcustom-json-data.so +0x187444
+  #11 fp 0x70ea56a32c  libtracks.so +0x15f32c
+  #12 fp 0x70f502cb30  libchroma.so +0x227b30
+  #13 fp 0x721b53f1ec  libil2cpp.so +0x5e071ec
+  #14 fp 0x7218c0ba68  libil2cpp.so +0x34d3a68
+last Vivify log lines (oldest first):
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(-0.17,1.88,-0.20) fwd=(-0.89,0.08,0.45)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(-0.11,1.89,-0.16) fwd=(-0.24,0.29,0.93)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(-0.01,1.88,-0.15) fwd=(0.05,-0.02,1.00)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(0.19,1.90,-0.30) fwd=(0.04,0.24,0.97)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(0.09,1.79,-0.17) fwd=(0.29,-0.68,0.67)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(0.03,1.77,-0.18) fwd=(-0.04,-0.23,0.97)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(-0.01,1.90,-0.19) fwd=(-0.05,0.34,0.94)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(0.02,1.86,-0.21) fwd=(0.57,-0.12,0.82)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(-0.02,1.88,-0.21) fwd=(-0.03,0.13,0.99)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(0.03,1.70,-0.21) fwd=(0.02,-0.96,0.28)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(0.09,1.86,-0.23) fwd=(-0.04,-0.05,1.00)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3d3affb7 stereoMode=3 multipassSetting=false pos=(0.01,1.81,-0.21) fwd=(0.02,-0.63,0.78)
+  Vivify main camera cullingMask is now 0x3d3affb7
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/5601e ( uhh play this  - yellowgurt)' isCustom=true hasDetails=true
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(-0.02,1.88,-0.23) fwd=(0.31,0.25,0.92)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+=== end ===
+
