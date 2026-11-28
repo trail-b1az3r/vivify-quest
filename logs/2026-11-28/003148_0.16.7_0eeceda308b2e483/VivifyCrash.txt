@@ -1,0 +1,55 @@
+=== Vivify 0.16.7 native crash at 1795825898 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0xc8
+thread 15028 'UnityMain'
+pc 0x72766cee38  lr 0x726217f828  sp 0x74a4462640  fp 0x74a4462810
+backtrace:
+  #00 pc 0x72766cee38  libplaylistcore.so +0x2c0e38 (_ZN12PlaylistCore32DownloadMissingSongsFromPlaylistEPNS_8PlaylistENSt6__ndk18functionIFvvEEENS3_IFviiEEE +0x34)
+  #01 lr 0x726217f828  libplaylistdownloader.so +0x350828
+  #02 fp 0x72621944f8  libplaylistdownloader.so +0x3654f8
+  #03 fp 0x7458280040  libbsml.so +0x3d8040 (_ZN4BSML19MainThreadScheduler6UpdateEv +0x1104)
+  #04 fp 0x74581a2e08  libbsml.so +0x2fae08
+  #05 fp 0x742a582840  libil2cpp.so +0x21ba840
+  #06 fp 0x742a58278c  libil2cpp.so +0x21ba78c
+last Vivify log lines (oldest first):
+  Installing hook: PauseMenuManager_ShowMenu to offset: 0x742bf77c54
+  Installing hook: PauseMenuManager_MenuButtonPressed to offset: 0x742bf78734
+  Installing hook: PauseController_HandlePauseMenuManagerDidPressMenuButton to offset: 0x742bf78094
+  Installing hook: PauseController_HandlePauseMenuManagerDidFinishResumeAnimation to offset: 0x742bf77d88
+  Installing hook: GamePause_Resume to offset: 0x742bf73178
+  Installing hook: Recorder_InstallBindings to offset: 0x742bfbc294
+  Installing hook: Recorder_HeightLateUpdate to offset: 0x742bfb08b8
+  Installing hook: Recorder_SpawnNote to offset: 0x742bea7928
+  Installing hook: Recorder_SpawnObstacle to offset: 0x742bea6dec
+  Installing hook: Recorder_NoteWasCut to offset: 0x742bea8de4
+  Installing hook: Recorder_ScoreLateUpdate to offset: 0x742bfb644c
+  Installing hook: Recorder_ScoreStart to offset: 0x742bfb6038
+  Installing hook: Recorder_ComputeSwingRating to offset: 0x742aa79db4
+  Installing hook: Recorder_ProcessSwing to offset: 0x742aa7a690
+  Installing hook: Recorder_SpawnControllerStart to offset: 0x742bea9ae0
+  Installing hook: Recorder_ShowPause to offset: 0x742bf77c54
+  Installing hook: Recorder_Resume to offset: 0x742bf7876c
+  Installing hook: Recorder_Finish to offset: 0x742bf071dc
+  Vivify: loaded mods (52): /data/user/0/com.beatgames.beatsaber/files/libs/libpaper2_scotland2.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libbeatsaber-hook.so 0.0.0, /data/user/0/com.beatgames.beatsaber/files/libs/libzip.so 0
+  .1.26, MultiplayerCore 1.6.7, BeatTogether 2.2.5, CategoryTabs 0.1.2, HidePacks 0.1.1, ModifiersCoreQuest 0.1.0, CustomJSONData 0.24.5, Tracks 2.5.4, Vivify 0.16.7, PlaylistCore 1.5.5, bl 0.9.666, ChatPlexSDK-BS 6.4.5, Chroma 2.10.3, Custo
+  Vivify AudioLink: running (AudioLink 3.1.2 shader), publishing _AudioTexture
+  Vivify Send Logs: upload attempt 1/4 failed (http 503, curl 0, Cloudflare: Worker exceeded resource limits | vivify-log-relay.vivify-logs-forquest.workers.dev | Cloudflare); retrying in 4 s
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.02,1.66,-0.04) fwd=(0.03,0.07,1.00)
+  Vivify main camera cullingMask is now 0x3818ff37
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.04,1.05,-0.05) fwd=(0.01,-0.12,0.99)
+  Vivify main camera: name='MenuMainCamera' cullingMask=0x3818ff37 stereoMode=3 multipassSetting=false pos=(0.04,1.62,-0.02) fwd=(0.03,-0.38,0.92)
+  Vivify Send Logs: uploaded 5 file part(s), 320 KB (logs/2026-11-28/001630_0.16.7_114090dd805e7dfd 0b1eef2; stored 5, deduplicated 0; 87525315 bytes saved cumulatively
+  )
+  Vivify Send Logs: uploaded 1 file part(s), 1536 KB (logs/2026-11-28/001639_0.16.7_6691997f7f90c9b3 9194eae; stored 1, deduplicated 0; 87525315 bytes saved cumulatively
+  )
+  Vivify: the game uses STEREO_MULTIVIEW_ON (60 global keywords); converted shaders get separate single-view and multiview programs (2021 bundles)
+  Vivify ResetRuntime: livePrefabs=0 preloaded=0 synced=0 secondaryCameras=0 declaredTextures=0 assets=0
+  Vivify level selected: path='/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/112a7 (Unlimited Power - Ramen Noodle)' isCustom=true hasDetails=true
+  Vivify Send Logs: uploaded 1 file part(s), 1536 KB (logs/2026-11-28/001649_0.16.7_6d76325655144533 1251394; stored 1, deduplicated 0; 87525315 bytes saved cumulatively
+  )
+  Vivify Send Logs: upload attempt 1/4 failed (http 503, curl 0, Cloudflare: Worker exceeded resource limits | vivify-log-relay.vivify-logs-forquest.workers.dev | Cloudflare); retrying in 4 s
+  Vivify Send Logs: upload attempt 2/4 failed (http 503, curl 0, Cloudflare: Worker exceeded resource limits | vivify-log-relay.vivify-logs-forquest.workers.dev | Cloudflare); retrying in 12 s
+  Vivify Send Logs: uploaded 1 file part(s), 703 KB (logs/2026-11-28/001717_0.16.7_a7d1795685385b9f a4f4309; stored 1, deduplicated 0; 87525315 bytes saved cumulatively
+  )
+  Vivify Send Logs: reached the 4 MB upload limit; use the menu button for the larger manual upload
+=== end ===
+
