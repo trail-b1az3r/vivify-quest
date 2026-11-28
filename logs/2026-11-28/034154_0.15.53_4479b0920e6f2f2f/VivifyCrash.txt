@@ -1,0 +1,70 @@
+=== Vivify 0.15.53 native crash at 1795837301 (seconds since 1970) ===
+SIGSEGV (bad memory access), code 1, fault address 0x28
+thread 8631 'UnityMain'
+pc 0x70f25cbd90  lr 0x70f25cf794  sp 0x72cc23ce90  fp 0x72cc23ceb0
+backtrace:
+  #00 pc 0x70f25cbd90  libnoodleextensions.so +0x13dd90
+  #01 lr 0x70f25cf794  libnoodleextensions.so +0x141794
+  #02 fp 0x70f25ce744  libnoodleextensions.so +0x140744 (_ZN16NoodleExtensions26NoodleMovementDataProvider10InitObjectEPN15GlobalNamespace17BeatmapObjectDataE +0x140)
+  #03 fp 0x70f2680f7c  libnoodleextensions.so +0x1f2f7c
+  #04 fp 0x70f2681584  libnoodleextensions.so +0x1f3584
+  #05 fp 0x721ec24b10  libil2cpp.so +0x5d21b10
+  #06 fp 0x721ec14398  libil2cpp.so +0x5d11398
+  #07 fp 0x721c3d6a68  libil2cpp.so +0x34d3a68
+  #08 fp 0x70f4f8b11c  libcustom-json-data.so +0x17911c
+  #09 fp 0x70f4f8a1b4  libcustom-json-data.so +0x1781b4
+  #10 fp 0x70f4f99444  libcustom-json-data.so +0x187444
+  #11 fp 0x70eb96832c  libtracks.so +0x15f32c
+  #12 fp 0x70f5234b30  libchroma.so +0x227b30
+  #13 fp 0x70f526dafc  libchroma.so +0x260afc
+  #14 fp 0x70f25f86e0  libnoodleextensions.so +0x16a6e0
+  #15 fp 0x721c3d6af4  libil2cpp.so +0x34d3af4
+  #16 fp 0x721c3d6a68  libil2cpp.so +0x34d3a68
+  #17 fp 0x7321e5e69c  libgame.so +0x1969c (_Z8MainLoopP11android_app +0x40)
+  #18 fp 0x7321e5e748  libgame.so +0x19748 (android_main +0x78)
+  #19 fp 0x7321e66920  libgame.so +0x21920
+  #20 fp 0x73db9a8470  libc.so +0x138470
+  #21 fp 0x73db940334  libc.so +0xd0334
+last Vivify log lines (oldest first):
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/cloud1.mat material='Cloud1' shader='Urki/ColorFog' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/floor.mat material='Floor' shader='Urki/ColorFog' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/flyguy.mat material='Flyguy' shader='Urki/ColorFog' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/grass.mat material='Grass' shader='Urki/ColorFogNoise' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/lights.mat material='Lights' shader='Urki/Sprite' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/matte.mat material='Matte' shader='Urki/ColorFog' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/matteheightfog.mat material='MatteHeightFog' shader='Urki/ColorFog' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/note.mat material='Note' shader='Urki/ColorFogNote' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/notearrowglow.mat material='NoteArrowGlow' shader='Urki/SpriteNote' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/notedebris.mat material='NoteDebris' shader='Urki/ColorFogNote' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/post.mat material='Post' shader='Urki/Post/DitherPassRewrite' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/postanalog.mat material='PostAnalog' shader='Urki/Post/AV' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/saber/bladecore.mat material='BladeCore' shader='Urki/SimpleGrabPassPSX' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/saber/handle.mat material='Handle' shader='Urki/SimpleGrabPassPSX' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/saber/trail.mat material='trail' shader='Urki/Amplify/FunnyTrailRemake' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/shimmer.mat material='Shimmer' shader='Urki/Sprite' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/skybox.mat material='Skybox' shader='Urki/ColorFog' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/smoke.mat material='Smoke' shader='UrkiParticle/FresnelBugfix' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/speakbg.mat material='SpeakBG' shader='Urki/Sprite' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/speaksprite.mat material='SpeakSprite' shader='Urki/Sprite' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/standguy.mat material='StandGuy' shader='Urki/ColorFog' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/tris.mat material='Tris' shader='Urki/ColorFogNoise' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/valley/floor.mat material='floor' shader='Urki/ColorFogNoise' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/valley/material.004.mat material='Material.004' shader='Urki/ColorFog' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/valley/material.mat material='Material' shader='Urki/ColorFog' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/valley/sun.mat material='Sun' shader='Urki/ColorFog' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/valley/water.mat material='Water' shader='Urki/ScreenDisplacementGB' supported=true internalError=false
+  Vivify material: context=bundle-load asset=assets/materials/scaredthin/white.mat material='White' shader='Urki/ColorFog' supported=true internalError=false
+  Vivify grab passes: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4c645 (scaredThin TMP - Urki)/bundleAndroid2021.vivify' grabs _GrabTexture1, _GrabTexture
+  Vivify scene depth scan: '/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels/4c645 (scaredThin TMP - Urki)/bundleAndroid2021.vivify' -> not needed
+  Vivify: '4c645 (scaredThin TMP - Urki)' reads a screen grab; the Separate-Eye Renderer gives each eye its own copy
+  Vivify replay recorder: not recording this level (the Replay mod is not installed)
+  Vivify saber chain modelNode(smc): RightBasicSaberModel[w=(0.21,0.13,0.16) l=(0.00,0.00,0.00)] <- RightSaber[w=(0.21,0.13,0.16) l=(0.01,-0.07,0.16)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- RightSaberTrailReference[w=(0.00,0.
+  Vivify saber chain saberNode: RightSaber[w=(0.21,0.13,0.16) l=(0.01,-0.07,0.16)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- RightSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.0
+  Vivify saber chain initParent: RightSaber[w=(0.21,0.13,0.16) l=(0.01,-0.07,0.16)] <- RightHand[w=(0.20,0.20,0.00) l=(0.20,0.20,0.00)] <- RightSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.
+  Vivify saber chain modelNode(smc): LeftBasicSaberModel[w=(-0.21,0.13,0.16) l=(0.00,0.00,0.00)] <- LeftSaber[w=(-0.21,0.13,0.16) l=(-0.01,-0.07,0.16)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- LeftSaberTrailReference[w=(0.00,0
+  Vivify saber chain saberNode: LeftSaber[w=(-0.21,0.13,0.16) l=(-0.01,-0.07,0.16)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- LeftSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0.
+  Vivify saber chain initParent: LeftSaber[w=(-0.21,0.13,0.16) l=(-0.01,-0.07,0.16)] <- LeftHand[w=(-0.20,0.20,0.00) l=(-0.20,0.20,0.00)] <- LeftSaberTrailReference[w=(0.00,0.00,0.00) l=(0.00,0.00,0.00)] <- VRGameCore[w=(0.00,0.00,0.00) l=(0
+  Vivify main camera: name='MainCamera' cullingMask=0x3d3bfdb7 stereoMode=3 multipassSetting=false pos=(0.06,1.85,-0.49) fwd=(0.16,0.21,0.97)
+  Vivify main camera cullingMask is now 0x3d3bfdb7
+=== end ===
+
